@@ -1,0 +1,837 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Jobs\ImportStudentsJob;
+use App\Mail\StudentWelcomeCredentialsMail;
+use App\Models\AcademicYear;
+use App\Models\AlumniRecord;
+use App\Models\Organization;
+use App\Models\SchoolClass;
+use App\Models\Student;
+use App\Models\StudentAcademicHistory;
+use App\Models\StudentImport;
+use App\Models\User;
+use App\Services\SmtpSettingsService;
+use App\Services\StudentAcademicHistoryService;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Throwable;
+
+class StudentsController extends Controller
+{
+    private ?array $studentTableColumns = null;
+
+    public function __construct(
+        private readonly StudentAcademicHistoryService $studentAcademicHistoryService,
+        private readonly SmtpSettingsService $smtpSettingsService
+    ) {}
+
+    public function index()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        $classRecords = $this->getClassRecords($organization);
+        $studentRecords = $organization ? $this->getStudentRecords($organization) : collect();
+        $studentImports = $organization ? $this->getStudentImports($organization) : collect();
+
+        return Inertia::render('dashboard/StudentManagement', [
+            'user' => $user,
+            'classRecords' => $classRecords,
+            'studentRecords' => $studentRecords,
+            'studentImports' => $studentImports,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $this->validateStudentPayload($request->all(), $organization);
+        $credentialsEmailWarning = null;
+
+        try {
+            $student = Student::query()->create($this->buildStudentAttributes($validated, $organization));
+            $credentialsEmailWarning = $this->syncStudentUser($student, $organization);
+            $this->studentAcademicHistoryService->syncCurrentRecord($student->fresh('schoolClass'), 'admission', 'Created from student management.');
+        } catch (QueryException $exception) {
+            if ($this->isDuplicateAdmissionNumberException($exception)) {
+                return back()->with('error', 'Student could not be created because the generated admission number already exists. Please try again.');
+            }
+
+            throw $exception;
+        }
+
+        $successMessage = 'Student added successfully.';
+
+        if ($credentialsEmailWarning) {
+            $successMessage .= ' '.$credentialsEmailWarning;
+        }
+
+        return redirect()->route('students')->with('success', $successMessage);
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'students' => ['required', 'array', 'min:1'],
+        ]);
+
+        $submittedCount = count($validated['students']);
+        $studentImport = StudentImport::query()->create([
+            'organization_id' => $organization->id,
+            'requested_by_user_id' => $user->id,
+            'status' => 'queued',
+            'queue' => 'imports',
+            'submitted_count' => $submittedCount,
+        ]);
+
+        try {
+            $sourcePath = 'student-imports/import-'.$studentImport->id.'.json';
+            $encodedRows = json_encode(array_values($validated['students']), JSON_THROW_ON_ERROR);
+
+            if (! Storage::disk('local')->put($sourcePath, $encodedRows)) {
+                throw new \RuntimeException('Student import file could not be written.');
+            }
+
+            $studentImport->update(['source_path' => $sourcePath]);
+        } catch (Throwable $exception) {
+            $studentImport->update([
+                'status' => 'failed',
+                'error_message' => $exception->getMessage() ?: 'Student import file could not be prepared.',
+                'finished_at' => now(),
+            ]);
+
+            report($exception);
+
+            return back()->with('error', 'Student import could not be queued. Please try again.');
+        }
+
+        ImportStudentsJob::dispatch($studentImport->id);
+
+        $message = $submittedCount.' student'.($submittedCount === 1 ? '' : 's').' queued for import. Track status in Recent Imports.';
+
+        return redirect()->route('students')->with('success', $message);
+    }
+
+    public function destroyImport(StudentImport $studentImport): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization && $studentImport->organization_id === $organization->id, 403);
+
+        if (in_array($studentImport->status, ['queued', 'processing'], true)) {
+            return back()->with('error', 'Active imports cannot be deleted while they are still running.');
+        }
+
+        if ($studentImport->source_path) {
+            Storage::disk('local')->delete($studentImport->source_path);
+        }
+
+        $studentImport->delete();
+
+        return back()->with('success', 'Import history entry deleted.');
+    }
+
+    public function show(string $studentId)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        $student = Student::withTrashed()->with('schoolClass')->findOrFail($studentId);
+
+        abort_unless($organization, 403);
+        $this->ensureStudentBelongsToOrganization($student, $organization->id);
+
+        return Inertia::render('dashboard/students/StudentDetails', [
+            'user' => $user,
+            'studentId' => (string) $student->id,
+            'student' => $this->serializeStudent($student),
+            'studentRecords' => $this->buildStudentDetailsRecords($organization, $student),
+            'academicHistory' => $this->studentAcademicHistoryService
+                ->getStudentHistory($student)
+                ->map(fn ($history) => [
+                    'id' => (string) $history->id,
+                    'session' => $history->session ?: $history->academicYear?->name,
+                    'class' => $history->schoolClass?->name,
+                    'section' => $history->schoolClass?->section,
+                    'roll_number' => $history->roll_number,
+                    'status' => $history->status,
+                    'entry_type' => $history->entry_type,
+                    'effective_date' => optional($history->effective_date)->format('Y-m-d'),
+                    'is_current' => (bool) $history->is_current,
+                    'notes' => $history->notes,
+                ])
+                ->values(),
+        ]);
+    }
+
+    public function edit(Student $student)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        $this->ensureStudentBelongsToOrganization($student, $organization->id);
+
+        $student->load('schoolClass');
+
+        return Inertia::render('dashboard/students/EditStudent', [
+            'user' => $user,
+            'studentId' => (string) $student->id,
+            'student' => $this->serializeStudent($student),
+            'classRecords' => $this->getClassRecords($organization),
+        ]);
+    }
+
+    public function update(Request $request, Student $student): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        $this->ensureStudentBelongsToOrganization($student, $organization->id);
+
+        $validated = $this->validateStudentPayload($request->all(), $organization, $student);
+
+        $student->update($this->buildStudentAttributes($validated, $organization, $student));
+        $freshStudent = $student->fresh('schoolClass');
+        $this->syncStudentUser($freshStudent, $organization);
+        $this->studentAcademicHistoryService->syncCurrentRecord($freshStudent, 'updated', 'Student academic assignment updated from edit form.');
+
+        return redirect()
+            ->route('students.show', $student)
+            ->with('success', 'Student updated successfully.');
+    }
+
+    public function destroy(Student $student): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        $this->ensureStudentBelongsToOrganization($student, $organization->id);
+
+        $student->forceDelete();
+        $this->deleteStudentUser($student);
+
+        return redirect()->route('students')->with('success', 'Student deleted permanently.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'studentIds' => ['required', 'array', 'min:1'],
+            'studentIds.*' => ['required', 'integer'],
+        ]);
+
+        $students = Student::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('id', $validated['studentIds'])
+            ->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'No matching active students were found to delete.');
+        }
+
+        foreach ($students as $student) {
+            $student->forceDelete();
+            $this->deleteStudentUser($student);
+        }
+
+        return redirect()
+            ->route('bulk-delete-students')
+            ->with('success', $students->count().' student'.($students->count() === 1 ? '' : 's').' deleted permanently.');
+    }
+
+    public function bulkDelete()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return Inertia::render('dashboard/students/BulkDeleteStudents', [
+            'user' => $user,
+            'classRecords' => $this->getClassRecords($organization),
+            'studentRecords' => $organization ? $this->getStudentRecords($organization) : collect(),
+            'deletedStudentRecords' => $organization ? $this->getDeletedStudentRecords($organization) : collect(),
+        ]);
+    }
+
+    public function alumniRecords()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return Inertia::render('dashboard/students/AlumniRecords', [
+            'user' => $user,
+            'alumniRecords' => $organization ? $this->getAlumniRecords($organization) : collect(),
+            'sessions' => $organization ? $this->getAcademicSessions($organization) : [],
+        ]);
+    }
+
+    private function getClassRecords(?Organization $organization)
+    {
+        if (! $organization) {
+            return collect();
+        }
+
+        return SchoolClass::query()
+            ->forCurrentSession($organization->id)
+            ->where('status', 'active')
+            ->orderByRaw('CAST(name AS UNSIGNED), name')
+            ->orderBy('section')
+            ->get(['id', 'name', 'section']);
+    }
+
+    private function getStudentRecords(Organization $organization)
+    {
+        $activeAcademicYearId = AcademicYear::query()
+            ->where('organization_id', $organization->id)
+            ->where('is_current', true)
+            ->value('id');
+
+        return $this->studentAcademicHistoryService
+            ->getSessionEnrollments($organization->id, $activeAcademicYearId)
+            ->map(function (StudentAcademicHistory $history) {
+                $student = $history->student;
+
+                if (! $student) {
+                    return null;
+                }
+
+                return $this->serializeStudent($student, $history);
+            })
+            ->filter()
+            ->sortBy([
+                ['first_name', 'asc'],
+                ['last_name', 'asc'],
+            ])
+            ->values();
+    }
+
+    private function getStudentImports(Organization $organization)
+    {
+        return StudentImport::query()
+            ->where('organization_id', $organization->id)
+            ->latest()
+            ->limit(8)
+            ->get()
+            ->map(fn (StudentImport $studentImport) => [
+                'id' => (string) $studentImport->id,
+                'status' => $studentImport->status,
+                'queue' => $studentImport->queue,
+                'submitted_count' => $studentImport->submitted_count,
+                'created_count' => $studentImport->created_count,
+                'skipped_count' => $studentImport->skipped_count,
+                'error_message' => $studentImport->error_message,
+                'errors' => $studentImport->errors ?? [],
+                'created_at' => optional($studentImport->created_at)->toISOString(),
+                'started_at' => optional($studentImport->started_at)->toISOString(),
+                'finished_at' => optional($studentImport->finished_at)->toISOString(),
+            ])
+            ->values();
+    }
+
+    private function getDeletedStudentRecords(Organization $organization)
+    {
+        return Student::onlyTrashed()
+            ->where('organization_id', $organization->id)
+            ->with('schoolClass:id,name,section')
+            ->orderByDesc('deleted_at')
+            ->get()
+            ->map(fn (Student $student) => $this->serializeStudent($student))
+            ->values();
+    }
+
+    private function getAlumniRecords(Organization $organization)
+    {
+        return AlumniRecord::query()
+            ->where('organization_id', $organization->id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (AlumniRecord $record) => [
+                'id' => (string) $record->id,
+                'admission_no' => $record->admission_no,
+                'first_name' => $record->first_name,
+                'last_name' => $record->last_name,
+                'session' => $record->session,
+                'class' => $record->class,
+                'section' => $record->section,
+                'passing_year' => $record->passing_year,
+                'alumni_status' => $record->alumni_status,
+                'organization_name' => $record->organization_name,
+                'current_city' => $record->current_city,
+                'email' => $record->email,
+                'phone' => $record->phone,
+            ])
+            ->values();
+    }
+
+    private function getAcademicSessions(Organization $organization): array
+    {
+        $sessions = AcademicYear::query()
+            ->where('organization_id', $organization->id)
+            ->orderByDesc('is_current')
+            ->orderByDesc('start_date')
+            ->pluck('name')
+            ->filter()
+            ->values()
+            ->all();
+
+        if (! empty($sessions)) {
+            return $sessions;
+        }
+
+        return collect($organization->settings['sessions'] ?? [])
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function buildStudentDetailsRecords(Organization $organization, Student $student)
+    {
+        $records = $this->getStudentRecords($organization);
+
+        if ($student->trashed() && ! $records->contains(fn (array $record) => (string) $record['id'] === (string) $student->id)) {
+            $records->push($this->serializeStudent($student));
+        }
+
+        return $records->values();
+    }
+
+    private function serializeStudent(Student $student, ?StudentAcademicHistory $history = null): array
+    {
+        $className = $history?->schoolClass?->name ?? $student->schoolClass?->name;
+        $sectionName = $history?->schoolClass?->section ?? $student->schoolClass?->section;
+        $sessionName = $history?->session
+            ?: $history?->academicYear?->name
+            ?: $student->schoolClass?->academicYear?->name;
+        $sessionId = $history?->academic_year_id ?? $student->schoolClass?->academic_year_id;
+
+        return [
+            'id' => (string) $student->id,
+            'class_id' => $history?->class_id ?? $student->class_id,
+            'session_id' => $sessionId,
+            'session' => $sessionName,
+            'admission_no' => $student->admission_no,
+            'first_name' => $student->first_name,
+            'last_name' => $student->last_name,
+            'email' => $student->email,
+            'phone' => $student->phone,
+            'date_of_birth' => optional($student->date_of_birth)->format('Y-m-d'),
+            'gender' => $student->gender,
+            'blood_group' => $student->blood_group,
+            'class' => $className,
+            'section' => $sectionName,
+            'roll_number' => $student->roll_number,
+            'admission_date' => optional($student->admission_date)->format('Y-m-d'),
+            'father_name' => $student->father_name,
+            'father_phone' => $student->father_phone,
+            'father_occupation' => $student->father_occupation,
+            'mother_name' => $student->mother_name,
+            'mother_phone' => $student->mother_phone,
+            'mother_occupation' => $student->mother_occupation,
+            'address' => $student->current_address,
+            'city' => $student->city,
+            'state' => $student->state,
+            'pincode' => $student->pincode,
+            'category' => $student->category,
+            'religion' => $student->religion,
+            'caste' => $student->caste,
+            'previous_school' => $student->previous_school,
+            'transport_required' => (bool) $student->transport_required,
+            'transport_pickup_point' => $student->transport_pickup_point,
+            'transport_vehicle' => $student->transport_vehicle,
+            'transport_route_details' => $student->transport_route_details ?: $student->transport_route,
+            'hostel_required' => (bool) $student->hostel_required,
+            'status' => $student->status,
+            'deleted_at' => optional($student->deleted_at)->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    private function validateStudentPayload(array $payload, Organization $organization, ?Student $student = null, bool $allowCreateClass = false): array
+    {
+        $validated = validator($payload, [
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('students', 'email')->ignore($student?->id),
+                Rule::unique('users', 'email')->ignore($student?->user_id),
+            ],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'date_of_birth' => ['required', 'date'],
+            'gender' => ['required', Rule::in(['male', 'female', 'other'])],
+            'blood_group' => ['nullable', 'string', 'max:20'],
+            'class' => ['required', 'string', 'max:255'],
+            'section' => ['required', 'string', 'max:255'],
+            'roll_number' => ['nullable', 'string', 'max:50'],
+            'admission_date' => ['required', 'date'],
+            'father_name' => ['nullable', 'string', 'max:255'],
+            'father_phone' => ['nullable', 'string', 'max:30'],
+            'father_occupation' => ['nullable', 'string', 'max:255'],
+            'mother_name' => ['nullable', 'string', 'max:255'],
+            'mother_phone' => ['nullable', 'string', 'max:30'],
+            'mother_occupation' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string'],
+            'city' => ['nullable', 'string', 'max:255'],
+            'state' => ['nullable', 'string', 'max:255'],
+            'pincode' => ['nullable', 'string', 'max:20'],
+            'category' => ['nullable', 'string', 'max:100'],
+            'religion' => ['nullable', 'string', 'max:100'],
+            'caste' => ['nullable', 'string', 'max:100'],
+            'previous_school' => ['nullable', 'string', 'max:255'],
+            'transport_required' => ['nullable', 'boolean'],
+            'transport_pickup_point' => ['nullable', 'string', 'max:255'],
+            'transport_vehicle' => ['nullable', 'string', 'max:255'],
+            'transport_route_details' => ['nullable', 'string'],
+            'hostel_required' => ['nullable', 'boolean'],
+            'status' => ['nullable', Rule::in(['active', 'inactive', 'graduated', 'transferred', 'expelled'])],
+        ], [
+            'email.unique' => 'This email is already registered.',
+        ])->validate();
+
+        $schoolClass = $this->resolveClassForOrganization(
+            $organization,
+            (string) $validated['class'],
+            (string) $validated['section'],
+            $allowCreateClass
+        );
+
+        if (! $schoolClass) {
+            throw ValidationException::withMessages([
+                'class' => ['The selected class and section do not exist for this organization.'],
+            ]);
+        }
+
+        $validated['class_id'] = $schoolClass->id;
+        $validated['transport_required'] = filter_var($validated['transport_required'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $validated['hostel_required'] = filter_var($validated['hostel_required'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        return $validated;
+    }
+
+    private function buildStudentAttributes(array $validated, Organization $organization, ?Student $student = null): array
+    {
+        $admissionNumber = $student?->admission_no ?: $this->generateAdmissionNumber($organization);
+        $studentEmail = $this->resolveStudentAccountEmail(
+            $validated['email'] ?? null,
+            $organization,
+            $admissionNumber,
+            $student?->user_id
+        );
+
+        $attributes = [
+            'organization_id' => $organization->id,
+            'class_id' => $validated['class_id'],
+            'admission_no' => $admissionNumber,
+            'roll_number' => $validated['roll_number'] ?? null,
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'gender' => $validated['gender'],
+            'blood_group' => $validated['blood_group'] ?? null,
+            'religion' => $validated['religion'] ?? null,
+            'caste' => $validated['caste'] ?? null,
+            'category' => $validated['category'] ?? null,
+            'email' => $studentEmail,
+            'phone' => $validated['phone'] ?? null,
+            'current_address' => $validated['address'] ?? null,
+            'permanent_address' => $validated['address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'state' => $validated['state'] ?? null,
+            'pincode' => $validated['pincode'] ?? null,
+            'father_name' => $validated['father_name'] ?? null,
+            'father_phone' => $validated['father_phone'] ?? null,
+            'father_occupation' => $validated['father_occupation'] ?? null,
+            'mother_name' => $validated['mother_name'] ?? null,
+            'mother_phone' => $validated['mother_phone'] ?? null,
+            'mother_occupation' => $validated['mother_occupation'] ?? null,
+            'admission_date' => $validated['admission_date'],
+            'previous_school' => $validated['previous_school'] ?? null,
+            'transport_required' => $validated['transport_required'],
+            'transport_pickup_point' => $validated['transport_required'] ? ($validated['transport_pickup_point'] ?? null) : null,
+            'transport_vehicle' => $validated['transport_required'] ? ($validated['transport_vehicle'] ?? null) : null,
+            'transport_route' => $validated['transport_required'] ? ($validated['transport_route_details'] ?? null) : null,
+            'transport_route_details' => $validated['transport_required'] ? ($validated['transport_route_details'] ?? null) : null,
+            'hostel_required' => $validated['hostel_required'],
+            'status' => $validated['status'] ?? ($student?->status ?? 'active'),
+        ];
+
+        return array_intersect_key($attributes, array_flip($this->getStudentTableColumns()));
+    }
+
+    private function syncStudentUser(Student $student, Organization $organization, bool $sendCredentialsEmail = true): ?string
+    {
+        $studentEmail = $this->resolveStudentAccountEmail(
+            $student->email,
+            $organization,
+            $student->admission_no,
+            $student->user_id
+        );
+
+        if ($student->email !== $studentEmail) {
+            $student->forceFill(['email' => $studentEmail])->save();
+        }
+
+        $studentUser = $student->user_id ? User::query()->find($student->user_id) : null;
+
+        if (! $studentUser && $studentEmail) {
+            $studentUser = User::query()
+                ->where('email', $studentEmail)
+                ->where('organization_id', $organization->id)
+                ->first();
+        }
+
+        if ($studentUser) {
+            $studentUser->update([
+                'organization_id' => $organization->id,
+                'name' => trim($student->first_name.' '.$student->last_name),
+                'email' => $studentEmail,
+                'phone' => $student->phone,
+                'address' => $student->current_address,
+                'role' => 'student',
+                'status' => $student->status === 'active' ? 'active' : 'inactive',
+            ]);
+        } else {
+            $temporaryPassword = $this->generateStudentPassword();
+
+            $studentUser = User::query()->create([
+                'organization_id' => $organization->id,
+                'name' => trim($student->first_name.' '.$student->last_name),
+                'email' => $studentEmail,
+                'password' => $temporaryPassword,
+                'phone' => $student->phone,
+                'address' => $student->current_address,
+                'role' => 'student',
+                'status' => $student->status === 'active' ? 'active' : 'inactive',
+            ]);
+        }
+
+        if ($student->user_id !== $studentUser->id) {
+            $student->forceFill(['user_id' => $studentUser->id])->save();
+        }
+
+        if (! isset($temporaryPassword) || ! $sendCredentialsEmail) {
+            return null;
+        }
+
+        return $this->sendStudentCredentialsEmail($studentUser, $temporaryPassword);
+    }
+
+    private function resolveStudentAccountEmail(?string $requestedEmail, Organization $organization, string $admissionNumber, ?int $ignoreUserId = null): string
+    {
+        $baseEmail = $requestedEmail ?: Str::lower($admissionNumber.'@students.'.($organization->slug ?: 'gurukul').'.local');
+        $email = Str::lower(trim($baseEmail));
+
+        if (! $this->studentUserEmailExists($email, $ignoreUserId)) {
+            return $email;
+        }
+
+        $localPart = Str::before($email, '@');
+        $domainPart = Str::after($email, '@');
+        $suffix = 1;
+
+        do {
+            $candidate = $localPart.$suffix.'@'.$domainPart;
+            $suffix++;
+        } while ($this->studentUserEmailExists($candidate, $ignoreUserId));
+
+        return $candidate;
+    }
+
+    private function studentUserEmailExists(string $email, ?int $ignoreUserId = null): bool
+    {
+        return User::query()
+            ->when($ignoreUserId, fn ($query) => $query->where('id', '!=', $ignoreUserId))
+            ->where('email', $email)
+            ->exists();
+    }
+
+    private function sendStudentCredentialsEmail(User $studentUser, string $temporaryPassword): ?string
+    {
+        if (! $studentUser->email || Str::endsWith($studentUser->email, '.local')) {
+            return 'Welcome email was not sent because the student email address is missing or invalid.';
+        }
+
+        $settings = $this->smtpSettingsService->applyActiveSettings();
+
+        if (! $settings) {
+            return 'Welcome email was not sent because SMTP settings are not available.';
+        }
+
+        try {
+            Mail::to($studentUser->email)->send(
+                new StudentWelcomeCredentialsMail(
+                    $studentUser,
+                    $temporaryPassword,
+                    $studentUser->organization_id
+                        ? Organization::query()->find($studentUser->organization_id)?->name
+                        : null,
+                    $settings
+                )
+            );
+
+            return null;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $errorMessage = trim($exception->getMessage());
+
+            if ($errorMessage === '') {
+                return 'Welcome email was not sent. Please check SMTP settings and try again.';
+            }
+
+            return 'Welcome email was not sent: '.$errorMessage;
+        }
+    }
+
+    private function generateStudentPassword(): string
+    {
+        return Str::password(8, true, true, false, false);
+    }
+
+    private function resolveClassForOrganization(Organization $organization, string $className, string $sectionName, bool $allowCreate = false): ?SchoolClass
+    {
+        $query = SchoolClass::query()
+            ->where('organization_id', $organization->id)
+            ->where('name', $className)
+            ->where('section', $sectionName)
+            ->where('status', 'active');
+
+        $activeAcademicYearId = AcademicYear::query()
+            ->where('organization_id', $organization->id)
+            ->where('is_current', true)
+            ->value('id');
+
+        if ($activeAcademicYearId) {
+            $query->where('academic_year_id', $activeAcademicYearId);
+        }
+
+        $schoolClass = $query->first();
+
+        if ($schoolClass || ! $allowCreate) {
+            return $schoolClass;
+        }
+
+        return SchoolClass::query()->create([
+            'organization_id' => $organization->id,
+            'academic_year_id' => $activeAcademicYearId,
+            'name' => $className,
+            'section' => $sectionName,
+            'status' => 'active',
+        ]);
+    }
+
+    private function generateAdmissionNumber(Organization $organization): string
+    {
+        $lastAdmissionNumber = Student::withTrashed()
+            ->orderByDesc('id')
+            ->value('admission_no');
+
+        $lastSequence = (int) preg_replace('/\D/', '', (string) $lastAdmissionNumber);
+        $nextSequence = max($lastSequence + 1, 1);
+
+        do {
+            $candidate = 'A'.str_pad((string) $nextSequence, 3, '0', STR_PAD_LEFT);
+            $exists = Student::withTrashed()
+                ->where('admission_no', $candidate)
+                ->exists();
+            $nextSequence++;
+        } while ($exists);
+
+        return $candidate;
+    }
+
+    private function isDuplicateAdmissionNumberException(QueryException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return str_contains($message, 'students_admission_no_unique')
+            || str_contains($message, 'Duplicate entry');
+    }
+
+    private function ensureStudentBelongsToOrganization(Student $student, int $organizationId): void
+    {
+        abort_unless($student->organization_id === $organizationId, 403);
+    }
+
+    private function deleteStudentUser(Student $student): void
+    {
+        if (! $student->user_id) {
+            return;
+        }
+
+        User::query()
+            ->whereKey($student->user_id)
+            ->where('role', 'student')
+            ->forceDelete();
+    }
+
+    private function getStudentTableColumns(): array
+    {
+        if ($this->studentTableColumns !== null) {
+            return $this->studentTableColumns;
+        }
+
+        $this->studentTableColumns = Schema::getColumnListing('students');
+
+        return $this->studentTableColumns;
+    }
+
+    private function resolveOrganizationForUser(User $user): ?Organization
+    {
+        if ($user->organization_id) {
+            return Organization::query()->find($user->organization_id);
+        }
+
+        if ($user->role !== 'admin') {
+            return null;
+        }
+
+        $organization = Organization::query()
+            ->where('email', $user->email)
+            ->first();
+
+        if (! $organization && Organization::query()->count() === 1) {
+            $organization = Organization::query()->first();
+        }
+
+        if ($organization) {
+            $user->forceFill(['organization_id' => $organization->id])->save();
+            $user->organization_id = $organization->id;
+        }
+
+        return $organization;
+    }
+}

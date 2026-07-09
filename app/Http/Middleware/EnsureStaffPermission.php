@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Services\StaffPermissionService;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class EnsureStaffPermission
+{
+    public function __construct(private readonly StaffPermissionService $staffPermissionService)
+    {
+    }
+
+    public function handle(Request $request, Closure $next, string $feature, string $action = 'view'): Response
+    {
+        abort_unless(
+            $this->staffPermissionService->allows($request->user(), $feature, $action),
+            403
+        );
+
+        return $next($request);
+    }
+}
