@@ -68,7 +68,7 @@ export default function StudentFees({ user, activeSession, studentRecord, feeDat
                   <p className="text-xs uppercase tracking-wide text-slate-500">Session</p>
                   <p className="mt-2 text-lg font-bold text-slate-900">{activeSession || 'No active session'}</p>
                   <p className="text-sm text-slate-500">
-                    {studentRecord.first_name} {studentRecord.last_name} | Class {studentRecord.class}-{studentRecord.section}
+                    {studentRecord.first_name} {studentRecord.last_name} | {studentRecord.class}-{studentRecord.section}
                   </p>
                 </CardContent>
               </Card>
@@ -162,7 +162,7 @@ export default function StudentFees({ user, activeSession, studentRecord, feeDat
                     {studentRecord.first_name} {studentRecord.last_name}
                   </p>
                   <p className="text-sm text-slate-500">
-                    Class {studentRecord.class}-{studentRecord.section}
+                    {studentRecord.class}-{studentRecord.section}
                   </p>
               </CardContent>
             </Card>

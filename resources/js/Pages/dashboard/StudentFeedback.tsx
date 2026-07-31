@@ -158,7 +158,7 @@ export default function StudentFeedback({ user, studentRecord, teachers, campaig
             <CardContent className="px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
               <p className="mt-2 text-xl font-bold text-slate-900">
-                {studentRecord?.class ? `Class ${studentRecord.class}` : 'N/A'}
+                {studentRecord?.class ? `${studentRecord.class}` : 'N/A'}
                 {studentRecord?.section ? ` - ${studentRecord.section}` : ''}
               </p>
             </CardContent>

@@ -68,7 +68,7 @@ const getStaffDisplayName = (staff: StaffRecord) => staff.name || staff.email ||
 const getStudentDisplayName = (student: StudentRecord) => student.name || student.email || 'Student';
 
 const getStudentClassSectionLabel = (student: StudentRecord) => {
-  const classLabel = student.class ? `Class ${student.class}` : '';
+  const classLabel = student.class ? `${student.class}` : '';
   const sectionLabel = student.section ? `Section ${student.section}` : '';
   return [classLabel, sectionLabel].filter(Boolean).join(' - ');
 };
@@ -130,14 +130,6 @@ export default function SendEmails({
       )
     ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   }, [emailForm.targetClass, studentRecords]);
-
-  const classSectionGroups = useMemo(
-    () =>
-      Array.from(new Set(studentRecords.map((student) => `${student.class}-${student.section}`))).sort((a, b) =>
-        a.localeCompare(b, undefined, { numeric: true })
-      ),
-    [studentRecords]
-  );
 
   const staffRoleOptions = useMemo(
     () => Array.from(new Set(staffRecords.map((staff) => String(staff.role)))).sort(),
@@ -495,7 +487,10 @@ export default function SendEmails({
                         <Label>Class</Label>
                         <Select
                           value={emailForm.targetClass}
-                          onValueChange={(value) => setEmailForm((current) => ({ ...current, targetClass: value, targetSection: '' }))}
+                          onValueChange={(value) => {
+                            const sections = Array.from(new Set(studentRecords.filter((s) => String(s.class) === value).map((s) => String(s.section)))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                            setEmailForm((current) => ({ ...current, targetClass: value, targetSection: sections[0] || '' }));
+                          }}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select class" />
@@ -503,7 +498,7 @@ export default function SendEmails({
                           <SelectContent>
                             {classOptions.map((className) => (
                               <SelectItem key={className} value={className}>
-                                Class {className}
+                                {className}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -545,17 +540,6 @@ export default function SendEmails({
                           ) : (
                             <p className="text-sm text-slate-500">No class-section groups selected yet.</p>
                           )}
-                        </div>
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label>Quick Multi-Select</Label>
-                        <div className="grid gap-2 rounded-lg border border-slate-200 p-3 md:grid-cols-2">
-                          {classSectionGroups.map((group) => (
-                            <label key={group} className="flex items-center gap-2 text-sm text-slate-700">
-                              <Checkbox checked={emailForm.selectedGroups.includes(group)} onCheckedChange={() => toggleGroupSelection(group)} />
-                              <span>{group}</span>
-                            </label>
-                          ))}
                         </div>
                       </div>
                     </>
@@ -634,7 +618,7 @@ export default function SendEmails({
                             <SelectItem value="all">All Classes</SelectItem>
                             {classOptions.map((className) => (
                               <SelectItem key={className} value={className}>
-                                Class {className}
+                                {className}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -799,7 +783,7 @@ export default function SendEmails({
                                   ? 'bg-green-100 text-green-700 hover:bg-green-100'
                                   : email.status === 'Failed'
                                   ? 'bg-red-100 text-red-700 hover:bg-red-100'
-                                  : 'bg-amber-100 text-amber-700 hover:bg-amber-100'
+                                  : 'bg-blue-100 text-blue-700 hover:bg-blue-100'
                               }
                             >
                               {email.status}

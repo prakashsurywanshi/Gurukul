@@ -502,9 +502,9 @@ export default function IncomeManagement({ user, activeSession, sessions, entrie
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-500">Pending</p>
-                  <p className="mt-2 text-3xl font-semibold text-amber-600">{formatCurrency(pendingIncome)}</p>
+                  <p className="mt-2 text-3xl font-semibold text-blue-600">{formatCurrency(pendingIncome)}</p>
                 </div>
-                <IndianRupee className="h-10 w-10 text-amber-500" />
+                <IndianRupee className="h-10 w-10 text-blue-500" />
               </div>
             </CardContent>
           </Card>

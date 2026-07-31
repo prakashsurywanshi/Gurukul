@@ -97,7 +97,7 @@ const statusBadge = (status: string) => {
     return <Badge className="bg-blue-600 text-white hover:bg-blue-600">In Review</Badge>;
   }
 
-  return <Badge className="bg-amber-500 text-white hover:bg-amber-500">Open</Badge>;
+  return <Badge className="bg-blue-500 text-white hover:bg-blue-500">Open</Badge>;
 };
 
 export default function StudentHostel({ user, student, allocation, hostelFees, hostelComplaints }: StudentHostelProps) {
@@ -170,7 +170,7 @@ export default function StudentHostel({ user, student, allocation, hostelFees, h
             <CardContent className="px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
               <p className="mt-2 text-xl font-bold text-slate-900">
-                {student.class ? `Class ${student.class}` : 'N/A'}{student.section ? ` - ${student.section}` : ''}
+                {student.class ? `${student.class}` : 'N/A'}{student.section ? ` - ${student.section}` : ''}
               </p>
               <p className="text-sm text-slate-500">Roll No: {student.rollNumber || '-'}</p>
             </CardContent>
@@ -185,7 +185,7 @@ export default function StudentHostel({ user, student, allocation, hostelFees, h
           <Card>
             <CardContent className="px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">Pending Hostel Fee</p>
-              <p className="mt-2 text-xl font-bold text-amber-700">{formatCurrency(feeSummary.balance)}</p>
+              <p className="mt-2 text-xl font-bold text-blue-700">{formatCurrency(feeSummary.balance)}</p>
             </CardContent>
           </Card>
         </div>
@@ -280,9 +280,9 @@ export default function StudentHostel({ user, student, allocation, hostelFees, h
                     <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Paid</p>
                     <p className="mt-2 text-lg font-bold text-emerald-800">{formatCurrency(feeSummary.paid)}</p>
                   </div>
-                  <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-amber-700">Balance</p>
-                    <p className="mt-2 text-lg font-bold text-amber-800">{formatCurrency(feeSummary.balance)}</p>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                    <p className="text-xs font-medium uppercase tracking-wide text-blue-700">Balance</p>
+                    <p className="mt-2 text-lg font-bold text-blue-800">{formatCurrency(feeSummary.balance)}</p>
                   </div>
                 </div>
 
@@ -313,7 +313,7 @@ export default function StudentHostel({ user, student, allocation, hostelFees, h
                           </div>
                           <div>
                             <p className="text-slate-500">Balance</p>
-                            <p className="font-semibold text-amber-700">{formatCurrency(fee.balance)}</p>
+                            <p className="font-semibold text-blue-700">{formatCurrency(fee.balance)}</p>
                           </div>
                         </div>
                       </div>

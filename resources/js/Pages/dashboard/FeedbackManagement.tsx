@@ -248,7 +248,7 @@ export default function FeedbackManagement({ user, teacherCount, studentCount, t
                   <p className="text-sm text-slate-600">Responses</p>
                   <p className="text-2xl font-bold">{campaigns.reduce((sum, campaign) => sum + campaign.receivedResponses, 0)}</p>
                 </div>
-                <MessageSquare className="h-8 w-8 text-amber-600" />
+                <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>

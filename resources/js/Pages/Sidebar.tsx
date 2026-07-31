@@ -35,6 +35,7 @@ import {
   Boxes,
   Download,
   CalendarX,
+  ClipboardList,
 } from 'lucide-react';
 import { organizationService } from '../utils/mockDataService';
 import { router, usePage } from "@inertiajs/react";
@@ -63,6 +64,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
   const hostelTabs = ['hostel-management', 'hostel-fee-collection', 'my-hostel'];
   const transportTabs = ['transport-management', 'transport-fee-collection'];
   const settingTabs = ['settings', 'communication-settings', 'roles-permissions', 'sessions'];
+  const websiteCmsTabs = ['website-cms', 'pages-builder'];
+  const reportTabs = ['reports', 'reports-overview', 'reports-students', 'reports-attendance', 'reports-fees', 'reports-exams', 'reports-library', 'reports-transport', 'reports-hostel', 'reports-inventory', 'reports-front-office', 'reports-communication', 'reports-lesson-plan', 'reports-human-resource', 'reports-homework', 'reports-alumni', 'reports-activity-log', 'reports-audit-trail'];
   const [studentsOpen, setStudentsOpen] = useState(studentTabs.includes(activeTab));
   const [academicsOpen, setAcademicsOpen] = useState(academicTabs.includes(activeTab));
   const [frontOfficeOpen, setFrontOfficeOpen] = useState(frontOfficeTabs.includes(activeTab));
@@ -73,17 +76,17 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
   const [hostelOpen, setHostelOpen] = useState(hostelTabs.includes(activeTab));
   const [transportOpen, setTransportOpen] = useState(transportTabs.includes(activeTab));
   const [settingsOpen, setSettingsOpen] = useState(settingTabs.includes(activeTab));
+  const [websiteCmsOpen, setWebsiteCmsOpen] = useState(websiteCmsTabs.includes(activeTab));
+  const [reportsOpen, setReportsOpen] = useState(reportTabs.includes(activeTab));
 
-  if(user.role !== 'super_admin') {
-    useEffect(() => {
-      if (user.organization_id) {
-        const result = organizationService.getById(user.organization_id);
-        if (result) {
-          setOrganization(result.organization);
-        }
+  useEffect(() => {
+    if (user.role !== 'super_admin' && user.organization_id) {
+      const result = organizationService.getById(user.organization_id);
+      if (result) {
+        setOrganization(result.organization);
       }
-    }, [user.organization_id]);
-  }
+    }
+  }, [user.organization_id, user.role]);
 
   useEffect(() => {
     shouldScrollToActiveRef.current = true;
@@ -118,6 +121,12 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     if (settingTabs.includes(activeTab)) {
       setSettingsOpen(true);
     }
+    if (websiteCmsTabs.includes(activeTab)) {
+      setWebsiteCmsOpen(true);
+    }
+    if (reportTabs.includes(activeTab)) {
+      setReportsOpen(true);
+    }
   }, [activeTab]);
 
   useEffect(() => {
@@ -138,7 +147,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     }
 
     shouldScrollToActiveRef.current = false;
-  }, [activeTab, studentsOpen, academicsOpen, frontOfficeOpen, examsOpen, certificatesOpen, communicationOpen, hrOpen, hostelOpen, transportOpen, settingsOpen]);
+  }, [activeTab, studentsOpen, academicsOpen, frontOfficeOpen, examsOpen, certificatesOpen, communicationOpen, hrOpen, hostelOpen, transportOpen, settingsOpen, websiteCmsOpen]);
 
   const hasPermission = (feature: string) => {
     if (user.role === 'super_admin') {
@@ -244,10 +253,17 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         return hasSettingsMenu;
       }
 
+      if (item.id === 'website-cms') {
+        return hasWebsiteCmsMenu;
+      }
+
+      if (item.id === 'reports') {
+        return hasReportMenu;
+      }
+
       return canAccessItem(item.roles, item.feature);
     });
   };
-  const role = user.role;
   const studentMenuItems = [
     { id: 'search_students', label: 'Search Students', icon: Users, href: '/search_students', roles: ['super_admin', 'admin', 'receptionist', 'teacher'], feature: 'Search Students' },
     { id: 'online-admission', label: 'Online Admission', icon: FileText, href: '/online-admission', roles: ['super_admin', 'admin', 'receptionist', 'teacher'], feature: 'Online Admission' },
@@ -327,13 +343,38 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     { id: 'sessions', label: 'Sessions', icon: CalendarCheck, href: '/sessions', roles: ['admin'], feature: 'Sessions' },
   ].filter((item) => canAccessItem(item.roles, item.feature));
   const hasSettingsMenu = settingsMenuItems.length > 0;
+  const websiteCmsMenuItems = [
+    { id: 'website-cms', label: 'CMS Editor', icon: Globe, href: '/website-cms', roles: ['admin'], feature: 'Website CMS' },
+    { id: 'pages-builder', label: 'Pages', icon: FileText, href: '/pages-builder', roles: ['admin'], feature: 'Website Pages' },
+  ].filter((item) => canAccessItem(item.roles, item.feature));
+  const hasWebsiteCmsMenu = websiteCmsMenuItems.length > 0;
+  const reportMenuItems = [
+    { id: 'reports-overview', label: 'Overview Dashboard', icon: BarChart3, href: '/reports', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-students', label: 'Students', icon: Users, href: '/reports?module=students', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-attendance', label: 'Attendance', icon: CalendarCheck, href: '/reports?module=attendance', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-fees', label: 'Fees', icon: IndianRupee, href: '/reports?module=fees', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-exams', label: 'Exams', icon: FileText, href: '/reports?module=exams', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-library', label: 'Library', icon: Book, href: '/reports?module=library', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-transport', label: 'Transport', icon: BusFront, href: '/reports?module=transport', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-hostel', label: 'Hostel', icon: BedDouble, href: '/reports?module=hostel', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-inventory', label: 'Inventory', icon: Boxes, href: '/reports?module=inventory', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-front-office', label: 'Front Office', icon: Briefcase, href: '/reports?module=front-office', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-communication', label: 'Communication', icon: MessageSquare, href: '/reports?module=communication', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-lesson-plan', label: 'Lesson Plan', icon: BookOpen, href: '/reports?module=lesson-plan', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-human-resource', label: 'Human Resource', icon: UserCog, href: '/reports?module=human-resource', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-homework', label: 'Homework', icon: ClipboardPenLine, href: '/reports?module=homework', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-alumni', label: 'Alumni', icon: GraduationCap, href: '/reports?module=alumni', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-activity-log', label: 'Activity Log', icon: ClipboardList, href: '/reports?module=activity-log', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+    { id: 'reports-audit-trail', label: 'Audit Trail', icon: ShieldCheck, href: '/reports?module=audit-trail', roles: ['super_admin', 'admin'], feature: 'Reports & Analytics' },
+  ].filter((item) => canAccessItem(item.roles, item.feature));
+  const hasReportMenu = reportMenuItems.length > 0;
   const menuItems = getMenuItems();
 
   return (
-    <div className="h-full w-64 flex-col border-r border-[rgba(209,173,106,0.18)] bg-[radial-gradient(circle_at_top,#15283d_0%,#0b1623_58%,#09131f_100%)] text-[var(--sidebar-foreground)] shadow-[18px_0_40px_rgba(8,19,31,0.22)] flex">
-      <div className="border-b border-[rgba(209,173,106,0.16)] p-6">
+    <div className="h-full w-64 flex-col border-r border-[rgba(59,130,246,0.18)] bg-[radial-gradient(circle_at_top,#15283d_0%,#0b1623_58%,#09131f_100%)] text-[var(--sidebar-foreground)] shadow-[18px_0_40px_rgba(8,19,31,0.22)] flex">
+      <div className="border-b border-[rgba(59,130,246,0.16)] p-6">
         <div className="flex items-center gap-3">
-          <div className={`flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-[0_16px_30px_rgba(178,135,69,0.28)] ${schoolLogo ? 'bg-white' : 'bg-[linear-gradient(135deg,#ecd3a0,#b28745)]'}`}>
+          <div className={`flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl shadow-[0_16px_30px_rgba(59,130,246,0.28)] ${schoolLogo ? 'bg-white' : 'bg-[linear-gradient(135deg,#93c5fd,#3b82f6)]'}`}>
             {schoolLogo ? (
               <img src={schoolLogo} alt={`${schoolName || 'School'} logo`} className="max-h-full max-w-full object-contain p-1" />
             ) : (
@@ -342,7 +383,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-[0.02em] text-[var(--sidebar-foreground)]">{schoolName || 'Gurukul'}</h1>
-            <p className="text-xs uppercase tracking-[0.28em] text-[rgba(246,239,223,0.62)]">ERP System</p>
+            <p className="text-xs uppercase tracking-[0.28em] text-[rgba(226,232,240,0.62)]">ERP System</p>
           </div>
         </div>
       </div>
@@ -361,8 +402,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         certificateTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setCertificatesOpen((current) => !current)}
                     >
@@ -374,7 +415,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {certificatesOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {certificateMenuItems.map((certificateItem) => {
                           const CertificateIcon = certificateItem.icon;
                           const isCertificateActive = activeTab === certificateItem.id;
@@ -385,7 +426,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isCertificateActive ? activeItemRef : undefined}
                               variant={isCertificateActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isCertificateActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isCertificateActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(certificateItem.href);
@@ -406,8 +447,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         communicationTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setCommunicationOpen((current) => !current)}
                     >
@@ -419,7 +460,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {communicationOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {communicationMenuItems.map((communicationItem) => {
                           const CommunicationIcon = communicationItem.icon;
                           const isCommunicationActive = activeTab === communicationItem.id;
@@ -430,7 +471,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isCommunicationActive ? activeItemRef : undefined}
                               variant={isCommunicationActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isCommunicationActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isCommunicationActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(communicationItem.href);
@@ -451,8 +492,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         hrTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setHrOpen((current) => !current)}
                     >
@@ -464,7 +505,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {hrOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {staffMenuItems.map((staffItem) => {
                           const StaffItemIcon = staffItem.icon;
                           const isStaffItemActive = activeTab === staffItem.id;
@@ -475,7 +516,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isStaffItemActive ? activeItemRef : undefined}
                               variant={isStaffItemActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isStaffItemActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isStaffItemActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(staffItem.href);
@@ -496,8 +537,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         hostelTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setHostelOpen((current) => !current)}
                     >
@@ -509,7 +550,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {hostelOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {hostelMenuItems.map((hostelItem) => {
                           const HostelItemIcon = hostelItem.icon;
                           const isHostelItemActive = activeTab === hostelItem.id;
@@ -520,7 +561,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isHostelItemActive ? activeItemRef : undefined}
                               variant={isHostelItemActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isHostelItemActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isHostelItemActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(hostelItem.href);
@@ -541,8 +582,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         transportTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setTransportOpen((current) => !current)}
                     >
@@ -554,7 +595,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {transportOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {transportMenuItems.map((transportItem) => {
                           const TransportItemIcon = transportItem.icon;
                           const isTransportItemActive = activeTab === transportItem.id;
@@ -565,7 +606,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isTransportItemActive ? activeItemRef : undefined}
                               variant={isTransportItemActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isTransportItemActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isTransportItemActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(transportItem.href);
@@ -580,14 +621,59 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       </div>
                     )}
                   </div>
+                ) : item.id === 'website-cms' && hasWebsiteCmsMenu ? (
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
+                        websiteCmsTabs.includes(activeTab)
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                      }`}
+                      onClick={() => setWebsiteCmsOpen((current) => !current)}
+                    >
+                      <span className="flex items-center gap-3">
+                        <Globe className="h-4 w-4" />
+                        Website CMS
+                      </span>
+                      {websiteCmsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </button>
+
+                    {websiteCmsOpen && (
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
+                        {websiteCmsMenuItems.map((cmsItem) => {
+                          const CmsItemIcon = cmsItem.icon;
+                          const isCmsItemActive = activeTab === cmsItem.id;
+
+                          return (
+                            <Button
+                              key={cmsItem.id}
+                              ref={isCmsItemActive ? activeItemRef : undefined}
+                              variant={isCmsItemActive ? 'default' : 'ghost'}
+                              className={`w-full justify-start ${
+                                isCmsItemActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                              }`}
+                              onClick={() => {
+                                router.visit(cmsItem.href);
+                                onNavigate?.();
+                              }}
+                            >
+                              <CmsItemIcon className="w-4 h-4 mr-3" />
+                              {cmsItem.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 ) : item.id === 'settings' && hasSettingsMenu ? (
                   <div className="pt-1">
                     <button
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         settingTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setSettingsOpen((current) => !current)}
                     >
@@ -599,7 +685,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {settingsOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {settingsMenuItems.map((settingsItem) => {
                           const SettingsItemIcon = settingsItem.icon;
                           const isSettingsItemActive = activeTab === settingsItem.id;
@@ -610,7 +696,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isSettingsItemActive ? activeItemRef : undefined}
                               variant={isSettingsItemActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isSettingsItemActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isSettingsItemActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(settingsItem.href);
@@ -631,8 +717,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         frontOfficeTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setFrontOfficeOpen((current) => !current)}
                     >
@@ -644,7 +730,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {frontOfficeOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {frontOfficeMenuItems.map((frontOfficeItem) => {
                           const FrontOfficeIcon = frontOfficeItem.icon;
                           const isFrontOfficeActive = activeTab === frontOfficeItem.id;
@@ -655,7 +741,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isFrontOfficeActive ? activeItemRef : undefined}
                               variant={isFrontOfficeActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isFrontOfficeActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isFrontOfficeActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(`/${frontOfficeItem.id}`);
@@ -676,8 +762,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         studentTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setStudentsOpen((current) => !current)}
                     >
@@ -689,7 +775,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {studentsOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {studentMenuItems.map((studentItem) => {
                           const StudentIcon = studentItem.icon;
                           const isStudentActive = activeTab === studentItem.id;
@@ -700,7 +786,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isStudentActive ? activeItemRef : undefined}
                               variant={isStudentActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isStudentActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isStudentActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(studentItem.href);
@@ -721,8 +807,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         examTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setExamsOpen((current) => !current)}
                     >
@@ -734,7 +820,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {examsOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {examMenuItems.map((examItem) => {
                           const ExamIcon = examItem.icon;
                           const isExamActive = activeTab === examItem.id;
@@ -745,7 +831,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isExamActive ? activeItemRef : undefined}
                               variant={isExamActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isExamActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isExamActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(examItem.href);
@@ -766,8 +852,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       type="button"
                       className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
                         academicTabs.includes(activeTab)
-                          ? 'bg-[linear-gradient(135deg,rgba(209,173,106,0.24),rgba(178,135,69,0.14))] text-[#f5e6c7] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
-                          : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                       }`}
                       onClick={() => setAcademicsOpen((current) => !current)}
                     >
@@ -779,7 +865,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </button>
 
                     {academicsOpen && (
-                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(209,173,106,0.14)] pl-3">
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
                         {academicMenuItems.map((academicItem) => {
                           const AcademicIcon = academicItem.icon;
                           const isAcademicActive = activeTab === academicItem.id;
@@ -790,7 +876,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                               ref={isAcademicActive ? activeItemRef : undefined}
                               variant={isAcademicActive ? 'default' : 'ghost'}
                               className={`w-full justify-start ${
-                                isAcademicActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                isAcademicActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                               }`}
                               onClick={() => {
                                 router.visit(academicItem.href ?? `/${academicItem.id}`);
@@ -805,12 +891,57 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                       </div>
                     )}
                   </div>
+                ) : item.id === 'reports' && hasReportMenu ? (
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition ${
+                        reportTabs.includes(activeTab)
+                          ? 'bg-[linear-gradient(135deg,rgba(59,130,246,0.24),rgba(59,130,246,0.14))] text-[#dbeafe] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]'
+                          : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                      }`}
+                      onClick={() => setReportsOpen((current) => !current)}
+                    >
+                      <span className="flex items-center gap-3">
+                        <BarChart3 className="h-4 w-4" />
+                        Reports Center
+                      </span>
+                      {reportsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </button>
+
+                    {reportsOpen && (
+                      <div className="mt-1 ml-4 space-y-1 border-l border-[rgba(59,130,246,0.14)] pl-3">
+                        {reportMenuItems.map((reportItem) => {
+                          const ReportIcon = reportItem.icon;
+                          const isReportActive = activeTab === reportItem.id;
+
+                          return (
+                            <Button
+                              key={reportItem.id}
+                              ref={isReportActive ? activeItemRef : undefined}
+                              variant={isReportActive ? 'default' : 'ghost'}
+                              className={`w-full justify-start ${
+                                isReportActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                              }`}
+                              onClick={() => {
+                                router.visit(reportItem.href);
+                                onNavigate?.();
+                              }}
+                            >
+                              <ReportIcon className="w-4 h-4 mr-3" />
+                              {reportItem.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <Button
                     ref={isActive ? activeItemRef : undefined}
                     variant={isActive ? 'default' : 'ghost'}
                     className={`w-full justify-start ${
-                      isActive ? 'border border-[rgba(209,173,106,0.42)] bg-[linear-gradient(135deg,#e6c581,#b28745)] text-[#08131f] shadow-[0_14px_28px_rgba(178,135,69,0.22)] hover:bg-[linear-gradient(135deg,#edd29a,#ba9150)]' : 'text-[rgba(246,239,223,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                      isActive ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)] hover:bg-[linear-gradient(135deg,#93c5fd,#2563eb)]' : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
                     }`}
                     onClick={() => {
                       router.visit(item.href ?? `/${item.id}`);

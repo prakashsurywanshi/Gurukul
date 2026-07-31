@@ -118,7 +118,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
       studentId: student.id,
       studentName: `${student.first_name} ${student.last_name}`,
       studentCardId: buildStudentCardId(student),
-      classLabel: `Class ${student.class}-${student.section}`,
+      classLabel: `${student.class}-${student.section}`,
       templateTitle: index === 0 ? 'Default ID Card' : 'Senior Wing ID Card',
       issuedOn: new Date().toISOString().split('T')[0],
       status: 'Generated',
@@ -162,7 +162,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
     studentId: student.id,
     studentName: `${student.first_name} ${student.last_name}`,
     studentCardId: buildStudentCardId(student),
-    classLabel: `Class ${student.class}-${student.section}`,
+    classLabel: `${student.class}-${student.section}`,
     templateTitle: cardTitle,
     issuedOn: new Date().toISOString().split('T')[0],
     status: 'Generated',
@@ -617,7 +617,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
         <body>
           <h1 class="sheet-title">${escapeHtml(cardTitle || 'Student ID Card')} Bulk Download</h1>
           <p class="sheet-subtitle">
-            Class ${escapeHtml(selectedClass)} Section ${escapeHtml(selectedSection)} • ${filteredStudents.length} students
+            ${escapeHtml(selectedClass)} Section ${escapeHtml(selectedSection)} • ${filteredStudents.length} students
           </p>
           <div class="cards">${cardsMarkup}</div>
         </body>
@@ -680,7 +680,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
                   <SelectContent>
                     {classOptions.map((className) => (
                       <SelectItem key={className} value={className}>
-                        Class {className}
+                        {className}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -714,7 +714,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
                   <SelectContent>
                     {filteredStudents.map((student) => (
                       <SelectItem key={student.id} value={student.id}>
-                        {student.first_name} {student.last_name} • Class {student.class}-{student.section}
+                        {student.first_name} {student.last_name} • {student.class}-{student.section}
                       </SelectItem>
                     ))}
                   </SelectContent>

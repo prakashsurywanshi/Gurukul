@@ -133,7 +133,7 @@ class ReportsApiController extends Controller
             ['label' => 'Class 1-5', 'from' => 1, 'to' => 5, 'color' => '#3b82f6'],
             ['label' => 'Class 6-8', 'from' => 6, 'to' => 8, 'color' => '#8b5cf6'],
             ['label' => 'Class 9-10', 'from' => 9, 'to' => 10, 'color' => '#ec4899'],
-            ['label' => 'Class 11-12', 'from' => 11, 'to' => 12, 'color' => '#f59e0b'],
+            ['label' => 'Class 11-12', 'from' => 11, 'to' => 12, 'color' => '#2563EB'],
         ];
 
         return collect($groups)->map(function (array $group) use ($students) {

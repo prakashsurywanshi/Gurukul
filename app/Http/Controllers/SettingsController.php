@@ -7,6 +7,8 @@ use App\Models\Organization;
 use App\Models\Role;
 use App\Models\RolePermission;
 use App\Models\User;
+use App\Models\WebsitePage;
+use App\Models\WebsiteSetting;
 use App\Services\KnowledgeBaseService;
 use App\Services\StaffPermissionService;
 use App\Support\RolePermissionCatalog;
@@ -207,7 +209,32 @@ class SettingsController extends Controller
 
         return inertia('dashboard/WebsiteCms', [
             'user' => $user,
-            'websiteContent' => $organization?->settings['website_cms_content'] ?? null,
+            'websiteContent' => $organization ? $this->getWebsiteCmsContent($organization) : null,
+        ]);
+    }
+
+    public function websiteCmsEditor()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $publishedPages = $organization
+            ? WebsitePage::where('organization_id', $organization->id)
+                ->published()
+                ->ordered()
+                ->get(['id', 'title', 'slug'])
+                ->map(fn ($page) => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ])
+                ->toArray()
+            : [];
+
+        return inertia('dashboard/WebsiteCmsEditor', [
+            'user' => $user,
+            'websiteContent' => $organization ? $this->getWebsiteCmsContent($organization) : null,
+            'publishedPages' => $publishedPages,
         ]);
     }
 
@@ -221,13 +248,14 @@ class SettingsController extends Controller
         }
 
         $request->validate([
-            'activeTemplate' => ['required', Rule::in(['template1', 'template2', 'template3', 'template4'])],
+            'activeTemplate' => ['required', Rule::in(['template1', 'template2', 'template3', 'template4', 'template5'])],
             'theme' => ['required', Rule::in(['white', 'aurora', 'sunrise', 'emerald'])],
             'shared' => ['nullable', 'array'],
             'template1' => ['nullable', 'array'],
             'template2' => ['nullable', 'array'],
             'template3' => ['nullable', 'array'],
             'template4' => ['nullable', 'array'],
+            'template5' => ['nullable', 'array'],
             'highlights' => ['nullable', 'array'],
             'features' => ['nullable', 'array'],
             'programs' => ['nullable', 'array'],
@@ -249,9 +277,65 @@ class SettingsController extends Controller
         $organization->update([
             'settings' => [
                 ...($organization->settings ?? []),
-                'website_cms_content' => $request->all(),
             ],
         ]);
+
+        WebsiteSetting::where('organization_id', $organization->id)->delete();
+
+        WebsiteSetting::create([
+            'organization_id' => $organization->id,
+            'key' => 'activeTemplate',
+            'value' => $request->input('activeTemplate'),
+            'group' => 'meta',
+        ]);
+
+        WebsiteSetting::create([
+            'organization_id' => $organization->id,
+            'key' => 'theme',
+            'value' => $request->input('theme'),
+            'group' => 'meta',
+        ]);
+
+        $sliderImages = $request->input('sliderImages');
+        if (is_array($sliderImages)) {
+            WebsiteSetting::create([
+                'organization_id' => $organization->id,
+                'key' => 'sliderImages',
+                'value' => json_encode($sliderImages),
+                'group' => 'meta',
+            ]);
+        }
+
+        $shared = $request->input('shared');
+        if (is_array($shared)) {
+            WebsiteSetting::saveMany($organization->id, $shared, 'shared');
+        }
+
+        $templateGroups = ['template1', 'template2', 'template3', 'template4', 'template5'];
+        foreach ($templateGroups as $group) {
+            $templateData = $request->input($group);
+            if (is_array($templateData)) {
+                WebsiteSetting::saveMany($organization->id, $templateData, $group);
+            }
+        }
+
+        $topLevelArrayKeys = [
+            'highlights', 'features', 'programs', 'pillars', 'campusStats',
+            'news', 'outcomes', 'journeySteps', 'testimonials', 'faqs',
+            'templateTwoSlides', 'templateTwoAboutCards', 'templateTwoGalleryItems',
+            'templateTwoContactItems',
+        ];
+        foreach ($topLevelArrayKeys as $key) {
+            $value = $request->input($key);
+            if (is_array($value)) {
+                WebsiteSetting::create([
+                    'organization_id' => $organization->id,
+                    'key' => $key,
+                    'value' => json_encode($value),
+                    'group' => 'meta',
+                ]);
+            }
+        }
 
         return redirect()->route('website-cms')->with('success', 'Website content updated successfully.');
     }
@@ -277,12 +361,10 @@ class SettingsController extends Controller
         $sliderImages[] = Storage::url($path);
         $websiteContent['sliderImages'] = array_values($sliderImages);
 
-        $organization->update([
-            'settings' => [
-                ...($organization->settings ?? []),
-                'website_cms_content' => $websiteContent,
-            ],
-        ]);
+        WebsiteSetting::updateOrCreate(
+            ['organization_id' => $organization->id, 'key' => 'sliderImages', 'group' => 'meta'],
+            ['value' => json_encode($websiteContent['sliderImages'])]
+        );
 
         return response()->json([
             'message' => 'Slider image uploaded successfully.',
@@ -314,12 +396,10 @@ class SettingsController extends Controller
         unset($sliderImages[$index]);
         $websiteContent['sliderImages'] = array_values($sliderImages);
 
-        $organization->update([
-            'settings' => [
-                ...($organization->settings ?? []),
-                'website_cms_content' => $websiteContent,
-            ],
-        ]);
+        WebsiteSetting::updateOrCreate(
+            ['organization_id' => $organization->id, 'key' => 'sliderImages', 'group' => 'meta'],
+            ['value' => json_encode($websiteContent['sliderImages'])]
+        );
 
         return response()->json([
             'message' => 'Slider image deleted successfully.',
@@ -333,8 +413,39 @@ class SettingsController extends Controller
             ->orderBy('id')
             ->first();
 
+        $user = Auth::user();
+
+        $publishedPages = $organization
+            ? WebsitePage::where('organization_id', $organization->id)
+                ->published()
+                ->ordered()
+                ->get(['id', 'title', 'slug'])
+                ->map(fn ($page) => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ])
+                ->toArray()
+            : [];
+
+        $menuPages = $organization
+            ? WebsitePage::where('organization_id', $organization->id)
+                ->inMenu()
+                ->ordered()
+                ->get(['id', 'title', 'slug'])
+                ->map(fn ($page) => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ])
+                ->toArray()
+            : [];
+
         return inertia('Home', [
             'websiteContent' => $this->publicWebsiteContent($organization),
+            'user' => $user,
+            'publishedPages' => $publishedPages,
+            'menuPages' => $menuPages,
         ]);
     }
 
@@ -344,8 +455,39 @@ class SettingsController extends Controller
             ->orderBy('id')
             ->first();
 
+        $user = Auth::user();
+
+        $publishedPages = $organization
+            ? WebsitePage::where('organization_id', $organization->id)
+                ->published()
+                ->ordered()
+                ->get(['id', 'title', 'slug'])
+                ->map(fn ($page) => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ])
+                ->toArray()
+            : [];
+
+        $menuPages = $organization
+            ? WebsitePage::where('organization_id', $organization->id)
+                ->inMenu()
+                ->ordered()
+                ->get(['id', 'title', 'slug'])
+                ->map(fn ($page) => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ])
+                ->toArray()
+            : [];
+
         return inertia('PublicAdmissionForm', [
             'websiteContent' => $this->publicWebsiteContent($organization),
+            'user' => $user,
+            'publishedPages' => $publishedPages,
+            'menuPages' => $menuPages,
         ]);
     }
 
@@ -355,8 +497,11 @@ class SettingsController extends Controller
             ->orderBy('id')
             ->first();
 
+        $user = Auth::user();
+
         return inertia('PrivacyPolicy', [
             'websiteContent' => $this->publicWebsiteContent($organization),
+            'user' => $user,
         ]);
     }
 
@@ -366,18 +511,16 @@ class SettingsController extends Controller
             return null;
         }
 
-        $content = $organization->settings['website_cms_content'] ?? [];
-
-        if (! is_array($content)) {
-            $content = [];
-        }
+        $content = $this->getWebsiteCmsContent($organization);
 
         return [
             ...$content,
             'brandLogo' => $organization->logo,
+            'schoolName' => $organization->name,
             'shared' => [
-                ...(is_array($content['shared'] ?? null) ? $content['shared'] : []),
+                ...($content['shared'] ?? []),
                 'brandLogo' => $organization->logo,
+                'schoolName' => $organization->name,
             ],
         ];
     }
@@ -394,9 +537,39 @@ class SettingsController extends Controller
 
     private function getWebsiteCmsContent(Organization $organization): array
     {
-        return is_array($organization->settings['website_cms_content'] ?? null)
-            ? $organization->settings['website_cms_content']
-            : [];
+        $settings = WebsiteSetting::where('organization_id', $organization->id)->get();
+
+        $content = [];
+        $shared = [];
+        $templates = [];
+
+        foreach ($settings as $setting) {
+            $value = $setting->value;
+
+            if ($value !== null && in_array($setting->key, ['sliderImages'])) {
+                $decoded = json_decode($value, true);
+                $content[$setting->key] = is_array($decoded) ? $decoded : [];
+                continue;
+            }
+
+            if ($setting->group === 'meta') {
+                $decoded = json_decode($value, true);
+                $content[$setting->key] = is_array($decoded) ? $decoded : $value;
+            } elseif ($setting->group === 'shared') {
+                $decoded = json_decode($value, true);
+                $shared[$setting->key] = is_array($decoded) ? $decoded : $value;
+            } elseif (str_starts_with($setting->group, 'template')) {
+                $decoded = json_decode($value, true);
+                $templates[$setting->group][$setting->key] = is_array($decoded) ? $decoded : $value;
+            }
+        }
+
+        $content['shared'] = $shared;
+        foreach ($templates as $group => $data) {
+            $content[$group] = $data;
+        }
+
+        return $content;
     }
 
     private function deleteWebsiteCmsSliderAsset(string $url): void
@@ -410,6 +583,43 @@ class SettingsController extends Controller
         if ($path !== '') {
             Storage::disk('public')->delete($path);
         }
+    }
+
+    public function updateWebsiteCmsSection(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json(['message' => 'No organization linked.'], 422);
+        }
+
+        $validated = $request->validate([
+            'section' => ['required', 'string'],
+            'data' => ['required', 'array'],
+        ]);
+
+        $websiteContent = $this->getWebsiteCmsContent($organization);
+        $section = $validated['section'];
+        $data = $validated['data'];
+
+        $websiteContent[$section] = $data;
+
+        if (str_starts_with($section, 'template')) {
+            WebsiteSetting::saveMany($organization->id, $data, $section);
+        } elseif ($section === 'shared') {
+            WebsiteSetting::saveMany($organization->id, $data, 'shared');
+        } else {
+            WebsiteSetting::updateOrCreate(
+                ['organization_id' => $organization->id, 'key' => $section, 'group' => 'meta'],
+                ['value' => is_array($data) ? json_encode($data) : $data]
+            );
+        }
+
+        return response()->json([
+            'message' => "Section '{$section}' updated successfully.",
+            'content' => $websiteContent[$section],
+        ]);
     }
 
     public function sessions()

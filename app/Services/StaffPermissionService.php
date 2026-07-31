@@ -127,6 +127,7 @@ class StaffPermissionService
             'Roles & Permissions' => '/settings/roles-permissions',
             'Sessions' => '/sessions',
             'Website CMS' => '/website-cms',
+            'Website Pages' => '/pages-builder',
             'Profile' => '/profile',
             'Edit Profile' => '/profile/edit',
             'My Leaves' => '/my-leaves',

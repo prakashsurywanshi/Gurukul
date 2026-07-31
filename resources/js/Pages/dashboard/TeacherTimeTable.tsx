@@ -170,7 +170,7 @@ export default function TeacherTimeTable({
 
   const getClassLabel = (classId: string) => {
     const classItem = classes.find((item) => item.id === classId);
-    return classItem ? `Class ${classItem.name}-${classItem.section}` : 'Unassigned Class';
+    return classItem ? `${classItem.name}-${classItem.section}` : 'Unassigned Class';
   };
 
   const getExistingEntry = (day: string, periodId: string) =>
@@ -222,7 +222,7 @@ export default function TeacherTimeTable({
           teacherId: selectedTeacher.id,
           teacherName: selectedTeacher.name,
           room: assignedClass.room_number || 'TBD',
-          classLabel: `Class ${assignedClass.name}-${assignedClass.section}`,
+          classLabel: `${assignedClass.name}-${assignedClass.section}`,
           startTime: '08:30',
           endTime: '09:15',
         };
@@ -520,7 +520,7 @@ export default function TeacherTimeTable({
                 <SelectContent>
                   {teacherClasses.map((classItem) => (
                     <SelectItem key={classItem.id} value={classItem.id}>
-                      Class {classItem.name}-{classItem.section}
+                      {classItem.name}-{classItem.section}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -104,7 +104,7 @@ const sections = [
 export default function PrivacyPolicy({ websiteContent }: PrivacyPolicyProps) {
   const cmsContent = normalizeWebsiteContent(websiteContent);
   const theme = websiteThemes[cmsContent.theme];
-  const isLightTheme = cmsContent.theme === 'white';
+  const isLightTheme = true;
   const pageTextClass = isLightTheme ? 'text-slate-900' : 'text-slate-100';
   const headingTextClass = isLightTheme ? 'text-slate-950' : 'text-white';
   const bodyTextClass = isLightTheme ? 'text-slate-600' : 'text-slate-300';

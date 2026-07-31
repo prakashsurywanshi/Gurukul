@@ -197,7 +197,7 @@ export default function PostalDelivery({ user, entries, tableReady }: PostalDeli
     }
 
     if (status === 'pending') {
-      return <Badge className="bg-amber-500 text-white hover:bg-amber-500">Pending</Badge>;
+      return <Badge className="bg-blue-500 text-white hover:bg-blue-500">Pending</Badge>;
     }
 
     return <Badge className="bg-slate-700 text-white hover:bg-slate-700">Received</Badge>;
@@ -305,7 +305,7 @@ export default function PostalDelivery({ user, entries, tableReady }: PostalDeli
             </CardHeader>
             <CardContent className="space-y-4">
               {!tableReady && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                   The `postal_delivery_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.
                 </div>
               )}

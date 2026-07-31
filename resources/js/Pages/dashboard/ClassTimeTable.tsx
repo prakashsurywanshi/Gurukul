@@ -333,7 +333,7 @@ export default function ClassTimeTable({
               <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
                 {studentRecord ? (
                   <span>
-                    Class {studentRecord.className} - Section {studentRecord.section}
+                    {studentRecord.className} - Section {studentRecord.section}
                   </span>
                 ) : (
                   <span>Student class not found.</span>
@@ -349,7 +349,7 @@ export default function ClassTimeTable({
                     <SelectContent>
                       {normalizedClasses.map((classItem) => (
                         <SelectItem key={classItem.id} value={classItem.id}>
-                          Class {classItem.name} - Section {classItem.section}
+                          {classItem.name} - Section {classItem.section}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -432,9 +432,9 @@ export default function ClassTimeTable({
                               {slot.entries.length > 0 ? (
                                 <div className="space-y-3">
                                   {slot.entries.map((entry, entryIndex) => (
-                                    <div key={entry.id} className={entryIndex > 0 ? 'rounded-xl border border-amber-200 bg-amber-50 p-3' : ''}>
+                                    <div key={entry.id} className={entryIndex > 0 ? 'rounded-xl border border-blue-200 bg-blue-50 p-3' : ''}>
                                       {entryIndex === 1 ? (
-                                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-700">
                                           Multiple entries found in this slot
                                         </p>
                                       ) : null}
@@ -480,19 +480,19 @@ export default function ClassTimeTable({
           </Card>
 
           {!isStudentView && flash.timetableConflict && flash.timetableConflict.classId === selectedClassId ? (
-            <Card className="border-amber-300 bg-amber-50">
+            <Card className="border-blue-300 bg-blue-50">
               <CardHeader>
-                <CardTitle className="text-amber-900">Conflicting Saved Entry</CardTitle>
+                <CardTitle className="text-blue-900">Conflicting Saved Entry</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                  <p className="font-medium text-amber-950">
+                  <p className="font-medium text-blue-950">
                     {flash.timetableConflict.day} • {getPeriodLabel(flash.timetableConflict.periodId)}
                   </p>
-                  <p className="text-sm text-amber-900">
+                  <p className="text-sm text-blue-900">
                     {flash.timetableConflict.subject} • {flash.timetableConflict.teacherName}
                   </p>
-                  <p className="text-sm text-amber-800">
+                  <p className="text-sm text-blue-800">
                     {flash.timetableConflict.startTime} - {flash.timetableConflict.endTime} • Room {flash.timetableConflict.room}
                   </p>
                 </div>

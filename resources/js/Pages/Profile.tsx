@@ -364,15 +364,15 @@ export function SuperAdminProfile({ user, inSuperAdminShell = false }: SuperAdmi
             </Card>
 
             {user.pending_email && (
-              <Card className="border-amber-200 bg-amber-50">
+              <Card className="border-blue-200 bg-blue-50">
                 <CardHeader>
-                  <CardTitle className="text-amber-900">Pending Email Verification</CardTitle>
-                  <CardDescription className="text-amber-800">
+                  <CardTitle className="text-blue-900">Pending Email Verification</CardTitle>
+                  <CardDescription className="text-blue-800">
                     Verify the OTP sent to {user.pending_email} to complete your email update.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button asChild variant="outline" className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100">
+                  <Button asChild variant="outline" className="border-blue-300 bg-white text-blue-900 hover:bg-blue-100">
                     <Link href={inSuperAdminShell ? "/superadmin/profile/edit" : "/profile/edit"}>Complete Verification</Link>
                   </Button>
                 </CardContent>

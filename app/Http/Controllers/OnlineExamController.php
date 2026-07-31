@@ -426,7 +426,7 @@ class OnlineExamController extends Controller
             ->map(fn (SchoolClass $schoolClass) => [
                 'className' => (string) $schoolClass->name,
                 'section' => (string) $schoolClass->section,
-                'label' => sprintf('Class %s / Section %s', $schoolClass->name, $schoolClass->section),
+                'label' => sprintf('%s / Section %s', $schoolClass->name, $schoolClass->section),
                 'value' => sprintf('%s::%s', $schoolClass->name, $schoolClass->section),
             ])
             ->unique(fn (array $assignment) => $assignment['value'])

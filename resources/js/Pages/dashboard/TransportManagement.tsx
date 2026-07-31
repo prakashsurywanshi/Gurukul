@@ -120,13 +120,13 @@ const routeStatusTone: Record<TransportRoute['status'], string> = {
 
 const vehicleStatusTone: Record<TransportVehicle['status'], string> = {
   active: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-  maintenance: 'bg-amber-100 text-amber-700 hover:bg-amber-100',
+  maintenance: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
   inactive: 'bg-slate-100 text-slate-700 hover:bg-slate-100',
 };
 
 const assignmentStatusTone: Record<TransportAssignment['status'], string> = {
   active: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
-  pending: 'bg-amber-100 text-amber-700 hover:bg-amber-100',
+  pending: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
   paused: 'bg-slate-100 text-slate-700 hover:bg-slate-100',
   inactive: 'bg-rose-100 text-rose-700 hover:bg-rose-100',
 };
@@ -625,7 +625,7 @@ export default function TransportManagement({
   };
   const selectedAssignmentStudent = getStudent(assignmentForm.studentId);
   const selectedAssignmentStudentLabel = selectedAssignmentStudent
-    ? `${selectedAssignmentStudent.first_name} ${selectedAssignmentStudent.last_name} (${selectedAssignmentStudent.admission_no || '-'}) - Class ${selectedAssignmentStudent.class || '-'} ${selectedAssignmentStudent.section || ''}`.trim()
+    ? `${selectedAssignmentStudent.first_name} ${selectedAssignmentStudent.last_name} (${selectedAssignmentStudent.admission_no || '-'}) - ${selectedAssignmentStudent.class || '-'} ${selectedAssignmentStudent.section || ''}`.trim()
     : '';
 
   const assignmentsByRouteId = useMemo(
@@ -637,7 +637,7 @@ export default function TransportManagement({
     [assignments]
   );
   const selectedAssignmentSnapshotLabel = assignmentForm.studentId
-    ? `${editingAssignment?.studentName || 'Selected student'} (${editingAssignment?.admissionNo || '-'}) - Class ${editingAssignment?.className || '-'} ${editingAssignment?.section || ''}`.trim()
+    ? `${editingAssignment?.studentName || 'Selected student'} (${editingAssignment?.admissionNo || '-'}) - ${editingAssignment?.className || '-'} ${editingAssignment?.section || ''}`.trim()
     : '';
 
   const syncRoutesAfterSave = (page: any, fallbackRoutes: TransportRoute[]) => {
@@ -1279,7 +1279,7 @@ export default function TransportManagement({
                     <p className="text-sm text-slate-500">Assigned Students</p>
                     <p className="mt-1 text-3xl font-bold text-slate-900">{assignments.length}</p>
                   </div>
-                  <Users className="h-6 w-6 text-amber-600" />
+                  <Users className="h-6 w-6 text-blue-600" />
                 </div>
               </CardContent>
             </Card>
@@ -1462,7 +1462,7 @@ export default function TransportManagement({
                           <SelectContent>
                             {allClasses.map((className) => (
                               <SelectItem key={className} value={className}>
-                                Class {className}
+                                {className}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1528,7 +1528,7 @@ export default function TransportManagement({
                               <CommandEmpty>No student found.</CommandEmpty>
                               <CommandGroup>
                                 {filteredStudentsForAssignment.map((student) => {
-                                const studentLabel = `${student.first_name} ${student.last_name} (${student.admission_no || '-'}) - Class ${student.class || '-'} ${student.section || ''}`.trim();
+                                const studentLabel = `${student.first_name} ${student.last_name} (${student.admission_no || '-'}) - ${student.class || '-'} ${student.section || ''}`.trim();
 
                                   return (
                                     <CommandItem
@@ -1757,7 +1757,7 @@ export default function TransportManagement({
                           <SelectContent>
                             {availableClasses.map((className) => (
                               <SelectItem key={className} value={className}>
-                                Class {className}
+                                {className}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1819,7 +1819,7 @@ export default function TransportManagement({
                                 <TableCell>
                                   <p className="font-medium text-slate-900">{student?.first_name || assignment.studentName || 'Unknown Student'} {student?.last_name || ''}</p>
                                   <p className="text-sm text-slate-500">
-                                    {student?.admission_no || assignment.admissionNo || '-'} • Class {student?.class || assignment.className || '-'} {student?.section || assignment.section || '-'}
+                                    {student?.admission_no || assignment.admissionNo || '-'} • {student?.class || assignment.className || '-'} {student?.section || assignment.section || '-'}
                                   </p>
                                 </TableCell>
                                 <TableCell>{route?.name || '-'}</TableCell>

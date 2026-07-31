@@ -199,7 +199,7 @@ export default function AdmissionEnquiry({ user, inquiries, tableReady, classOpt
       return <Badge className="bg-blue-600 text-white hover:bg-blue-600">Follow Up</Badge>;
     }
 
-    return <Badge className="bg-amber-500 text-white hover:bg-amber-500">Pending</Badge>;
+    return <Badge className="bg-blue-500 text-white hover:bg-blue-500">Pending</Badge>;
   };
 
   return (
@@ -259,8 +259,8 @@ export default function AdmissionEnquiry({ user, inquiries, tableReady, classOpt
                     <p className="text-sm text-slate-500">Pending</p>
                     <p className="text-3xl font-bold text-slate-900">{stats.pending}</p>
                   </div>
-                  <div className="rounded-full bg-amber-100 p-3">
-                    <UserRound className="h-5 w-5 text-amber-600" />
+                  <div className="rounded-full bg-blue-100 p-3">
+                    <UserRound className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
@@ -304,7 +304,7 @@ export default function AdmissionEnquiry({ user, inquiries, tableReady, classOpt
             </CardHeader>
             <CardContent className="space-y-4">
               {!tableReady && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                   The `front_office_admission_enquiries` table is not available yet. Run `php artisan migrate` to create it before using this page.
                 </div>
               )}

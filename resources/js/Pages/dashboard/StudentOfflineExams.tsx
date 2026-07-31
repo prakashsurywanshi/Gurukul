@@ -167,7 +167,7 @@ export default function StudentOfflineExams({
             <div style="font-size: 26px; font-weight: 700;">${escapeHtml(organization?.name || 'School')}</div>
             <div style="margin-top: 6px; font-size: 16px;">${escapeHtml(group.name)} - Exam Result</div>
             <div class="muted" style="margin-top: 6px;">
-              Student: ${escapeHtml(studentName)} | Class ${escapeHtml(group.className || '-')} - ${escapeHtml(group.section || '-')}
+              Student: ${escapeHtml(studentName)} | ${escapeHtml(group.className || '-')} - ${escapeHtml(group.section || '-')}
             </div>
           </div>
           <div class="muted">${escapeHtml(formatDate(new Date(), 'TBA'))}</div>
@@ -231,7 +231,7 @@ export default function StudentOfflineExams({
             <CardContent className="px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
               <p className="mt-2 text-lg font-bold text-slate-900">
-                {studentRecord?.class ? `Class ${studentRecord.class}` : 'N/A'}
+                {studentRecord?.class ? `${studentRecord.class}` : 'N/A'}
                 {studentRecord?.section ? ` - ${studentRecord.section}` : ''}
               </p>
               <p className="text-sm text-slate-500">Roll No. {studentRecord?.roll_number || 'N/A'}</p>
@@ -270,7 +270,7 @@ export default function StudentOfflineExams({
                       <CardDescription className="mt-2 flex flex-wrap items-center gap-4 text-sm">
                         <span className="flex items-center gap-1.5">
                           <School className="h-4 w-4" />
-                          Class {group.className} - {group.section}
+                          {group.className} - {group.section}
                         </span>
                         <span className="flex items-center gap-1.5">
                           <CalendarDays className="h-4 w-4" />

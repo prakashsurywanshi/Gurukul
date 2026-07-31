@@ -59,7 +59,7 @@ export function NoticeBoardPanel({ notices, actions, singleColumn = false }: Not
                       <div className="flex flex-wrap items-center gap-3">
                         <h3 className="text-lg font-semibold tracking-wide text-emerald-50">{notice.title}</h3>
                         {notice.pinned ? (
-                          <Badge className="border border-amber-200/40 bg-amber-300/15 text-amber-100 hover:bg-amber-300/15">
+                          <Badge className="border border-blue-200/40 bg-blue-300/15 text-blue-100 hover:bg-blue-300/15">
                             <Pin className="mr-1 h-3.5 w-3.5" />
                             Pinned
                           </Badge>

@@ -258,8 +258,8 @@ export default function VisitorRegister({ user, entries, tableReady }: VisitorRe
                     <p className="text-sm text-slate-500">Inside Campus</p>
                     <p className="text-3xl font-bold text-slate-900">{stats.openVisits}</p>
                   </div>
-                  <div className="rounded-full bg-amber-100 p-3">
-                    <Clock3 className="h-5 w-5 text-amber-600" />
+                  <div className="rounded-full bg-blue-100 p-3">
+                    <Clock3 className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
@@ -289,7 +289,7 @@ export default function VisitorRegister({ user, entries, tableReady }: VisitorRe
             </CardHeader>
             <CardContent className="space-y-4">
               {!tableReady && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                   The `visitor_register_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.
                 </div>
               )}

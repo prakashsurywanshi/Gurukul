@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\UserDeviceToken;
@@ -62,6 +63,16 @@ class AuthController extends Controller
 
         $token = $user->createToken('flutter-gurukul-' . now()->timestamp)->plainTextToken;
         $this->storeDeviceTokenForUser($user, $request);
+
+        ActivityLog::create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'action' => 'login',
+            'module' => 'auth',
+            'description' => $user->name . ' logged in via API.',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'message' => 'Login successful',

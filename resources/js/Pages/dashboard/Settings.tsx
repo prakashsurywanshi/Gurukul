@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Image as ImageIcon, Pencil, Save } from 'lucide-react';
+import { Image as ImageIcon, Pencil, Save, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -61,6 +62,7 @@ export default function Settings({ user, organization, sessionRecords }: Setting
   const activeSession = page.props.activeSession ?? null;
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(defaultSettingsForm);
+  const { theme, setTheme } = useTheme();
 
   const availableSessions = useMemo(
     () => sessionRecords.map((session) => session.name),
@@ -137,12 +139,12 @@ export default function Settings({ user, organization, sessionRecords }: Setting
 
   return (
     <DashboardLayout user={user} activeTab="settings">
-      <div className="min-h-full bg-slate-50 p-8">
+      <div className="min-h-full bg-slate-50 p-8 dark:bg-[var(--background)]">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">General Setting</h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-[var(--foreground)]">General Setting</h1>
+              <p className="mt-1 text-sm text-slate-600 dark:text-[var(--muted-foreground)]">
                 Update your organization details, academic session, and format preferences from one place.
               </p>
             </div>
@@ -158,9 +160,166 @@ export default function Settings({ user, organization, sessionRecords }: Setting
             </Button>
           </div>
 
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
             <CardHeader>
-              <CardTitle>General Setting</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-[var(--foreground)]">
+                <Sun className="h-5 w-5 text-blue-500" />
+                Dashboard Theme
+              </CardTitle>
+              <CardDescription>Switch between light and dark mode for the admin dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => setTheme('light')}
+                  className={`group relative overflow-hidden rounded-2xl border-2 p-1 transition-all ${
+                    theme === 'light'
+                      ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-[var(--border)] dark:hover:border-slate-600'
+                  }`}
+                >
+                  <div className="rounded-xl bg-[#f0f4ff] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-[#09131f]" />
+                        <div className="h-2 w-16 rounded bg-[#2563eb]" />
+                      </div>
+                      <Sun className="h-4 w-4 text-[#1d4ed8]" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-[#09131f]" />
+                        <div className="flex-1 space-y-1">
+                          <div className="h-2 w-20 rounded bg-[#2563eb]/40" />
+                          <div className="h-2 w-14 rounded bg-[#2563eb]/20" />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-[rgba(37,99,235,0.18)] bg-white p-2">
+                        <div className="mb-1 h-2 w-12 rounded bg-[#2563eb]/60" />
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-full rounded bg-slate-200" />
+                          <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+                          <div className="h-1.5 w-5/6 rounded bg-slate-200" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 py-3">
+                    <Sun className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Light Mode</span>
+                  </div>
+                  {theme === 'light' && (
+                    <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTheme('dark')}
+                  className={`group relative overflow-hidden rounded-2xl border-2 p-1 transition-all ${
+                    theme === 'dark'
+                      ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-[var(--border)] dark:hover:border-slate-600'
+                  }`}
+                >
+                  <div className="rounded-xl bg-[#0b1623] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-[#2563eb]" />
+                        <div className="h-2 w-16 rounded bg-[#2563eb]/60" />
+                      </div>
+                      <Moon className="h-4 w-4 text-[#2563eb]" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-[#2563eb]/20" />
+                        <div className="flex-1 space-y-1">
+                          <div className="h-2 w-20 rounded bg-[#2563eb]/30" />
+                          <div className="h-2 w-14 rounded bg-[#2563eb]/15" />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-[rgba(59,130,246,0.15)] bg-[#0f1f32] p-2">
+                        <div className="mb-1 h-2 w-12 rounded bg-[#2563eb]/40" />
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-full rounded bg-[#15283d]" />
+                          <div className="h-1.5 w-3/4 rounded bg-[#15283d]" />
+                          <div className="h-1.5 w-5/6 rounded bg-[#15283d]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 py-3">
+                    <Moon className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Dark Mode</span>
+                  </div>
+                  {theme === 'dark' && (
+                    <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTheme('system')}
+                  className={`group relative overflow-hidden rounded-2xl border-2 p-1 transition-all ${
+                    theme === 'system'
+                      ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]'
+                      : 'border-slate-200 hover:border-slate-300 dark:border-[var(--border)] dark:hover:border-slate-600'
+                  }`}
+                >
+                  <div className="rounded-xl bg-gradient-to-br from-[#f0f4ff] to-[#0b1623] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-[#09131f] to-[#2563eb]" />
+                        <div className="h-2 w-16 rounded bg-gradient-to-r from-[#2563eb]/40 to-[#2563eb]/60" />
+                      </div>
+                      <Monitor className="h-4 w-4 text-[#2563eb]" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#09131f] to-[#2563eb]/20" />
+                        <div className="flex-1 space-y-1">
+                          <div className="h-2 w-20 rounded bg-gradient-to-r from-[#2563eb]/30 to-[#2563eb]/40" />
+                          <div className="h-2 w-14 rounded bg-gradient-to-r from-[#2563eb]/15 to-[#2563eb]/20" />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-[rgba(59,130,246,0.2)] bg-gradient-to-br from-white/50 to-[#0f1f32]/80 p-2">
+                        <div className="mb-1 h-2 w-12 rounded bg-gradient-to-r from-[#2563eb]/40 to-[#2563eb]/30" />
+                        <div className="space-y-1">
+                          <div className="h-1.5 w-full rounded bg-gradient-to-r from-slate-200 to-[#15283d]" />
+                          <div className="h-1.5 w-3/4 rounded bg-gradient-to-r from-slate-200 to-[#15283d]" />
+                          <div className="h-1.5 w-5/6 rounded bg-gradient-to-r from-slate-200 to-[#15283d]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 py-3">
+                    <Monitor className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">System</span>
+                  </div>
+                  {theme === 'system' && (
+                    <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
+            <CardHeader>
+              <CardTitle className="text-slate-900 dark:text-[var(--foreground)]">General Setting</CardTitle>
               <CardDescription>Keep your organization settings in a simple editable form.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -178,19 +337,19 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                 )}
 
                 {!user.organization_id && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
                     No organization is linked to this admin account yet.
                   </div>
                 )}
 
                 {user.organization_id && !organization && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
                     Organization data could not be loaded. Refresh the page and try again.
                   </div>
                 )}
 
                 {organization && availableSessions.length === 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
                     No academic sessions were found in the database. Add one in Sessions first to choose it here.
                   </div>
                 )}

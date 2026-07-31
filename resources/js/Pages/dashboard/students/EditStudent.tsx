@@ -261,7 +261,7 @@ export default function EditStudent({ user, studentId, student, classRecords }: 
                     <SelectContent>
                       {classOptions.map((className) => (
                         <SelectItem key={className} value={className}>
-                          Class {className}
+                           {className}
                         </SelectItem>
                       ))}
                     </SelectContent>

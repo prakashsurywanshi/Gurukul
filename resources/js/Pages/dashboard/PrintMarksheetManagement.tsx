@@ -334,7 +334,7 @@ export default function PrintMarksheetManagement({ user, organization, students,
                 <SelectContent>
                   {availableClassOptions.map((classOption) => (
                     <SelectItem key={classOption} value={classOption}>
-                      Class {classOption}
+                      {classOption}
                     </SelectItem>
                   ))}
                 </SelectContent>

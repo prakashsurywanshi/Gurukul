@@ -75,4 +75,4 @@ Route::get('/', function () {
 
 
 <!-- Command to run jobs -->
-php artisan queue:work database --queue=imports,whatsapp,default --tries=1 --timeout=900# qgurukul_web
+php artisan queue:work database --queue=imports,whatsapp,default --tries=1 --timeout=900

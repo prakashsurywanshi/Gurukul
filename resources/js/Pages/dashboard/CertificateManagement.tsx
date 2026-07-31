@@ -163,16 +163,16 @@ const getPresetTheme = (preset: TemplatePreset) => {
       };
     case 'yellow':
       return {
-        frameClass: 'border-[10px] border-double border-yellow-500 bg-gradient-to-br from-amber-50 via-yellow-50 to-white shadow-inner',
+        frameClass: 'border-[10px] border-double border-yellow-500 bg-gradient-to-br from-blue-50 via-yellow-50 to-white shadow-inner',
         titleColor: '#ca8a04',
         bodyColor: '#713f12',
         watermarkColor: '#a16207',
-        backgroundImage: 'linear-gradient(135deg, rgba(250,204,21,.12), transparent 48%), radial-gradient(circle at top right, rgba(245,158,11,.08), transparent 35%)',
+        backgroundImage: 'linear-gradient(135deg, rgba(234,179,8,.12), transparent 48%), radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 35%)',
         backgroundSize: '100% 100%',
       };
     case 'green':
       return {
-        frameClass: 'border-[14px] border-double border-emerald-800 bg-[#fffdf7] shadow-inner',
+        frameClass: 'border-[14px] border-double border-emerald-800 bg-[#f8fafc] shadow-inner',
         titleColor: '#047857',
         bodyColor: '#365314',
         watermarkColor: '#065f46',
@@ -181,20 +181,20 @@ const getPresetTheme = (preset: TemplatePreset) => {
       };
     case 'orange':
       return {
-        frameClass: 'border-[10px] border-double border-orange-600 bg-gradient-to-br from-orange-50 via-amber-50 to-white shadow-inner',
+        frameClass: 'border-[10px] border-double border-orange-600 bg-gradient-to-br from-orange-50 via-blue-50 to-white shadow-inner',
         titleColor: '#ea580c',
-        bodyColor: '#7c2d12',
-        watermarkColor: '#c2410c',
+        bodyColor: '#1e3a5f',
+        watermarkColor: '#1d4ed8',
         backgroundImage: 'radial-gradient(circle at 18px 18px, rgba(234,88,12,.10) 1px, transparent 0)',
         backgroundSize: '36px 36px',
       };
     case 'all':
       return {
-        frameClass: 'border-[12px] border-double border-fuchsia-700 bg-gradient-to-br from-rose-50 via-amber-50 to-sky-50 shadow-inner',
+        frameClass: 'border-[12px] border-double border-fuchsia-700 bg-gradient-to-br from-rose-50 via-blue-50 to-sky-50 shadow-inner',
         titleColor: '#be185d',
         bodyColor: '#334155',
         watermarkColor: '#7c3aed',
-        backgroundImage: 'linear-gradient(120deg, rgba(239,68,68,.08), rgba(245,158,11,.08), rgba(234,179,8,.08), rgba(34,197,94,.08), rgba(59,130,246,.08))',
+        backgroundImage: 'linear-gradient(120deg, rgba(239,68,68,.08), rgba(37,99,235,.08), rgba(234,179,8,.08), rgba(34,197,94,.08), rgba(59,130,246,.08))',
         backgroundSize: '100% 100%',
       };
     case 'red':
@@ -1165,13 +1165,13 @@ export default function CertificateManagement({ user, schoolName, certificates, 
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-blue-300 bg-white/90" />
           {canvasGuides.peerY !== null ? (
             <div
-              className="pointer-events-none absolute inset-x-0 border-t border-dashed border-amber-500"
+              className="pointer-events-none absolute inset-x-0 border-t border-dashed border-blue-500"
               style={{ top: canvasGuides.peerY }}
             />
           ) : null}
           {canvasGuides.peerLeft !== null ? (
             <div
-              className="pointer-events-none absolute inset-y-0 border-l border-dashed border-amber-500"
+              className="pointer-events-none absolute inset-y-0 border-l border-dashed border-blue-500"
               style={{ left: canvasGuides.peerLeft }}
             />
           ) : null}
@@ -1211,7 +1211,7 @@ export default function CertificateManagement({ user, schoolName, certificates, 
             editable
               ? `absolute cursor-move select-none rounded border border-dashed transition-all ${
                   selectedElementId === element.id
-                    ? 'border-amber-500 bg-amber-50/95 shadow-[0_0_0_2px_rgba(245,158,11,0.18)]'
+                    ? 'border-blue-500 bg-blue-50/95 shadow-[0_0_0_2px_rgba(37,99,235,0.18)]'
                     : 'border-transparent hover:border-slate-300'
                 }`
               : 'absolute'
@@ -1236,7 +1236,7 @@ export default function CertificateManagement({ user, schoolName, certificates, 
           onClick={editable ? () => setSelectedElementId(element.id) : undefined}
         >
           {editable && selectedElementId === element.id ? (
-            <span className="absolute -top-6 left-0 rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            <span className="absolute -top-6 left-0 rounded-md bg-blue-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
               Editing
             </span>
           ) : null}
@@ -1300,7 +1300,7 @@ export default function CertificateManagement({ user, schoolName, certificates, 
                           <SelectItem value="all">All Classes</SelectItem>
                           {availableClassOptions.map((option) => (
                             <SelectItem key={option} value={option}>
-                              Class {option}
+                              {option}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1356,7 +1356,7 @@ export default function CertificateManagement({ user, schoolName, certificates, 
                               <p className="text-xs text-gray-500">
                                 {student.admission_no || 'No admission no.'}
                                 {' | '}
-                                {student.class ? `Class ${student.class}` : 'No class'}
+                                {student.class ? `${student.class}` : 'No class'}
                                 {student.section ? ` - ${student.section}` : ''}
                               </p>
                             </div>
@@ -1854,7 +1854,7 @@ export default function CertificateManagement({ user, schoolName, certificates, 
                   <p className="text-sm text-gray-600">Certificates Issued</p>
                   <p className="text-2xl font-bold">{issuedCertificates.length}</p>
                 </div>
-                <Award className="h-8 w-8 text-amber-500" />
+                <Award className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
@@ -1976,7 +1976,7 @@ export default function CertificateManagement({ user, schoolName, certificates, 
                             <p className="text-sm text-slate-600">
                               {issuedCertificate.admissionNo || 'No admission no.'}
                               {' | '}
-                              {issuedCertificate.class ? `Class ${issuedCertificate.class}` : 'No class'}
+                              {issuedCertificate.class ? `${issuedCertificate.class}` : 'No class'}
                               {issuedCertificate.section ? ` - ${issuedCertificate.section}` : ''}
                             </p>
                             <p className="text-sm text-slate-600">

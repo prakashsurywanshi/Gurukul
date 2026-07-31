@@ -66,7 +66,7 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
     );
 
     if (duplicateClass) {
-      toast.error(`Class ${classForm.name} Section ${classForm.section} already exists`);
+      toast.error(`${classForm.name} Section ${classForm.section} already exists`);
       return;
     }
 
@@ -118,7 +118,7 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
   };
 
   const handleDeleteClass = (classItem: any) => {
-    const confirmed = window.confirm(`Delete Class ${classItem.name} Section ${classItem.section}?`);
+    const confirmed = window.confirm(`Delete ${classItem.name} Section ${classItem.section}?`);
 
     if (!confirmed) {
       return;
@@ -127,7 +127,7 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
     router.delete(`/classes/${classItem.id}`, {
       preserveScroll: true,
       onSuccess: () => {
-        toast.success(`Class ${classItem.name} Section ${classItem.section} deleted successfully!`);
+        toast.success(`${classItem.name} Section ${classItem.section} deleted successfully!`);
       },
     });
   };
@@ -395,8 +395,8 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
                 <p className="text-sm text-gray-600">Total Sections</p>
                 <p className="text-3xl font-bold text-gray-900">{sections.length}</p>
               </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                <Badge variant="outline" className="border-amber-300 text-amber-700">SEC</Badge>
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Badge variant="outline" className="border-blue-300 text-blue-700">SEC</Badge>
               </div>
             </div>
           </CardContent>
@@ -434,7 +434,7 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
                 <TableBody>
                   {classes.map((classItem) => (
                       <TableRow key={classItem.id}>
-                        <TableCell className="font-medium">Class {classItem.name}</TableCell>
+                        <TableCell className="font-medium">{classItem.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline">Section {classItem.section}</Badge>
                         </TableCell>
@@ -524,7 +524,7 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
                         <span className="text-sm font-bold text-blue-600">{className}</span>
                       </div>
                       <div>
-                        <p className="font-medium">Class {className}</p>
+                        <p className="font-medium">{className}</p>
                         <p className="text-sm text-gray-600">{classCount} sections</p>
                       </div>
                     </div>

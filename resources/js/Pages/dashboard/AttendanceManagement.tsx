@@ -46,7 +46,8 @@ export default function AttendanceManagement({
   attendanceRecords,
 }: AttendanceManagementProps) {
   const flash = (usePage().props as any).flash ?? {};
-  const [selectedClassId, setSelectedClassId] = useState('');
+  const [selectedClassName, setSelectedClassName] = useState('');
+  const [selectedSectionName, setSelectedSectionName] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [saved, setSaved] = useState(true);
@@ -62,10 +63,32 @@ export default function AttendanceManagement({
     }
   }, [flash.error, flash.success]);
 
-  const selectedClassRecord = useMemo(
-    () => classRecords.find((classRecord) => String(classRecord.id) === selectedClassId) ?? null,
-    [classRecords, selectedClassId]
+  const uniqueClassNames = useMemo(
+    () => [...new Set(classRecords.map((c) => c.name))].sort((a, b) => Number(a) - Number(b)),
+    [classRecords]
   );
+
+  const sectionsForClass = useMemo(
+    () =>
+      selectedClassName
+        ? [...new Set(classRecords.filter((c) => c.name === selectedClassName).map((c) => c.section))].sort()
+        : [],
+    [classRecords, selectedClassName]
+  );
+
+  const selectedClassRecord = useMemo(
+    () =>
+      classRecords.find((c) => c.name === selectedClassName && c.section === selectedSectionName) ?? null,
+    [classRecords, selectedClassName, selectedSectionName]
+  );
+
+  useEffect(() => {
+    if (sectionsForClass.length > 0) {
+      setSelectedSectionName(sectionsForClass[0]);
+    } else {
+      setSelectedSectionName('');
+    }
+  }, [sectionsForClass]);
 
   const students = useMemo(() => {
     if (!selectedClassRecord) {
@@ -207,17 +230,32 @@ export default function AttendanceManagement({
               <CardTitle>Select Class & Date</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
                 <div className="space-y-2">
                   <Label>Class</Label>
-                  <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                  <Select value={selectedClassName} onValueChange={setSelectedClassName}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select class" />
                     </SelectTrigger>
                     <SelectContent>
-                      {classRecords.map((classRecord) => (
-                        <SelectItem key={classRecord.id} value={String(classRecord.id)}>
-                          Class {classRecord.name} - Section {classRecord.section}
+                      {uniqueClassNames.map((name) => (
+                        <SelectItem key={name} value={name}>
+                           {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Section</Label>
+                  <Select value={selectedSectionName} onValueChange={setSelectedSectionName} disabled={!selectedClassName || sectionsForClass.length === 0}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sectionsForClass.map((section) => (
+                        <SelectItem key={section} value={section}>
+                          Section {section}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -415,7 +453,7 @@ export default function AttendanceManagement({
                   </div>
                   <Alert>
                     <AlertDescription>
-                      Class {selectedClassRecord.name} - Section {selectedClassRecord.section} | Date:{' '}
+                      {selectedClassRecord.name} - Section {selectedClassRecord.section} | Date:{' '}
                       {formatDate(selectedDate)}
                     </AlertDescription>
                   </Alert>

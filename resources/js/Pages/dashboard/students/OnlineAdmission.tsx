@@ -39,6 +39,8 @@ interface OnlineAdmissionProps {
 }
 
 const initialEnrollmentForm = {
+  selectedClassName: '',
+  selectedSection: '',
   class_id: '',
   date_of_birth: '',
   gender: '',
@@ -65,6 +67,16 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+  const enrollmentClassNameOptions = useMemo(
+    () => Array.from(new Set(classRecords.map((record) => record.name))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [classRecords]
+  );
+
+  const enrollmentSectionOptions = useMemo(
+    () => Array.from(new Set(classRecords.filter((record) => enrollmentForm.selectedClassName && record.name === enrollmentForm.selectedClassName).map((record) => record.section))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [classRecords, enrollmentForm.selectedClassName]
+  );
 
   const filteredInquiries = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -285,8 +297,8 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
                     <p className="text-sm text-slate-500">Pending Enrollment</p>
                     <p className="text-3xl font-bold text-slate-900">{pendingCount}</p>
                   </div>
-                  <div className="rounded-full bg-amber-100 p-3">
-                    <UserPlus className="h-5 w-5 text-amber-600" />
+                  <div className="rounded-full bg-blue-100 p-3">
+                    <UserPlus className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
@@ -337,7 +349,7 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
                         Requested class: {selectedInquiry.program_interest}
                       </p>
                     </div>
-                    <Badge className={selectedInquiry.status === 'enrolled' ? 'bg-emerald-600 text-white hover:bg-emerald-600' : 'bg-amber-500 text-white hover:bg-amber-500'}>
+                    <Badge className={selectedInquiry.status === 'enrolled' ? 'bg-emerald-600 text-white hover:bg-emerald-600' : 'bg-blue-500 text-white hover:bg-blue-500'}>
                       {selectedInquiry.status === 'enrolled' ? 'Enrolled' : 'Pending'}
                     </Badge>
                   </div>
@@ -345,17 +357,43 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="class_id">Enroll In Class / Section</Label>
+                    <Label>Class</Label>
                     <select
-                      id="class_id"
-                      value={enrollmentForm.class_id}
-                      onChange={(event) => setEnrollmentForm((current) => ({ ...current, class_id: event.target.value }))}
+                      value={enrollmentForm.selectedClassName}
+                      onChange={(event) => {
+                        const className = event.target.value;
+                        const sections = classRecords.filter((r) => r.name === className).map((r) => r.section).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                        const firstSection = sections[0] || '';
+                        const matchedRecord = classRecords.find((r) => r.name === className && r.section === firstSection);
+                        setEnrollmentForm((current) => ({ ...current, selectedClassName: className, selectedSection: firstSection, class_id: matchedRecord ? String(matchedRecord.id) : '' }));
+                      }}
                       className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none"
                     >
-                      <option value="">Select class and section</option>
-                      {classRecords.map((record) => (
-                        <option key={record.id} value={record.id}>
-                          {record.name} - Section {record.section}
+                      <option value="">Select class</option>
+                      {enrollmentClassNameOptions.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Section</Label>
+                    <select
+                      value={enrollmentForm.selectedSection}
+                      onChange={(event) => {
+                        const section = event.target.value;
+                        const matchedRecord = classRecords.find((r) => r.name === enrollmentForm.selectedClassName && r.section === section);
+                        setEnrollmentForm((current) => ({ ...current, selectedSection: section, class_id: matchedRecord ? String(matchedRecord.id) : '' }));
+                      }}
+                      disabled={!enrollmentForm.selectedClassName}
+                      className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none disabled:opacity-50"
+                    >
+                      <option value="">Select section</option>
+                      {enrollmentSectionOptions.map((section) => (
+                        <option key={section} value={section}>
+                          {section}
                         </option>
                       ))}
                     </select>
@@ -442,7 +480,7 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
             </CardHeader>
             <CardContent className="space-y-4">
               {!tableReady && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                   The `admission_inquiries` table is not available yet. Run `php artisan migrate` to create it and start seeing public website admission requests here.
                 </div>
               )}
@@ -502,7 +540,7 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge className={inquiry.status === 'enrolled' ? 'bg-emerald-600 text-white hover:bg-emerald-600' : 'bg-amber-500 text-white hover:bg-amber-500'}>
+                            <Badge className={inquiry.status === 'enrolled' ? 'bg-emerald-600 text-white hover:bg-emerald-600' : 'bg-blue-500 text-white hover:bg-blue-500'}>
                               {inquiry.status === 'enrolled' ? 'Enrolled' : 'Pending'}
                             </Badge>
                           </TableCell>

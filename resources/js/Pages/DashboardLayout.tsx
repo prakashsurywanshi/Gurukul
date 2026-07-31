@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { User, LogOut, Menu, X, ChevronDown, Pencil, ListTodo, CalendarCheck } from "lucide-react";
+import { User, LogOut, Menu, X, ChevronDown, Pencil, ListTodo, CalendarCheck, Globe } from "lucide-react";
 import { router, usePage } from "@inertiajs/react";
 import Sidebar from "./Sidebar";
 import { Button } from "./ui/button";
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export default function DashboardLayout({ user, activeTab, onLogout, children }: any) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -68,12 +69,12 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
   }, []);
 
   return (
-    <div className="dashboard-theme flex h-screen bg-transparent">
+    <div className="dashboard-theme flex h-screen bg-[var(--background)]">
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           variant="outline"
           size="icon"
-          className="border-[rgba(196,155,87,0.3)] bg-[rgba(255,248,235,0.92)] text-[var(--foreground)] shadow-[0_14px_35px_rgba(8,19,31,0.18)] hover:bg-[rgba(255,252,246,1)]"
+          className="border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm hover:bg-[var(--accent)]"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? <X /> : <Menu />}
@@ -101,21 +102,21 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
       )}
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="z-20 flex items-center justify-between border-b border-[rgba(118,86,45,0.18)] bg-[linear-gradient(180deg,rgba(11,22,35,0.96),rgba(16,31,46,0.9))] px-6 py-4 text-[var(--sidebar-foreground)] shadow-[0_18px_45px_rgba(8,19,31,0.18)] backdrop-blur-xl">
+        <div className="z-20 flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-6 py-4 text-[var(--foreground)] shadow-sm backdrop-blur-xl transition-colors duration-300">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-[rgba(209,173,106,0.28)] bg-[rgba(255,255,255,0.06)] px-3 py-2 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm shadow-sm">
               <CalendarCheck className="h-4 w-4 text-[var(--primary)]" />
-              <span className="text-[rgba(246,239,223,0.72)]">Session:</span>
-              <span className="font-semibold text-[var(--sidebar-foreground)]">{activeSession || 'Not Set'}</span>
+              <span className="text-[var(--muted-foreground)]">Session:</span>
+              <span className="font-semibold text-[var(--foreground)]">{activeSession || 'Not Set'}</span>
             </div>
 
             {canViewTodo && (
               <Button
                 variant={activeTab === "todo" ? "default" : "outline"}
-                className={`gap-2 border-[rgba(209,173,106,0.24)] ${
+                className={`gap-2 border-[var(--border)] ${
                   activeTab === "todo"
-                    ? "bg-[linear-gradient(180deg,rgba(11,22,35,0.96),rgba(16,31,46,0.9))] !text-[var(--sidebar-foreground)] shadow-[0_18px_35px_rgba(8,19,31,0.28)] hover:bg-[linear-gradient(180deg,rgba(16,31,46,0.98),rgba(23,41,59,0.94))]"
-                    : "bg-[linear-gradient(180deg,rgba(11,22,35,0.96),rgba(16,31,46,0.9))] !text-[var(--sidebar-foreground)] shadow-[0_18px_35px_rgba(8,19,31,0.2)] hover:bg-[linear-gradient(180deg,rgba(16,31,46,0.98),rgba(23,41,59,0.94))]"
+                    ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:bg-[var(--primary)]"
+                    : "bg-[var(--secondary)] text-[var(--foreground)] shadow-sm hover:bg-[var(--accent)]"
                 }`}
                 onClick={() => router.visit("/todo")}
               >
@@ -125,58 +126,70 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
             )}
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 rounded-xl border border-[rgba(209,173,106,0.22)] bg-[rgba(255,255,255,0.06)] px-3 py-2 text-left shadow-[0_12px_32px_rgba(8,19,31,0.16)] transition hover:bg-[rgba(255,255,255,0.1)]">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-[linear-gradient(135deg,#efd39d,#c49b57)] font-semibold text-[#08131f]">
-                    {user.name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-[var(--sidebar-foreground)]">{user.name}</p>
-                  <p className="text-xs text-[rgba(246,239,223,0.7)]">{formatRole(user.role)}</p>
-                </div>
-                <ChevronDown className="h-4 w-4 text-[rgba(246,239,223,0.7)]" />
-              </button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
 
-            <DropdownMenuContent align="end" className="w-56 rounded-xl">
-              <DropdownMenuLabel>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-[var(--foreground)]">{user.name}</p>
-                  <p className="text-xs font-normal text-[var(--muted-foreground)]">{user.email}</p>
-                </div>
-              </DropdownMenuLabel>
+            <button
+              onClick={() => window.open("/", "_blank")}
+              className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--secondary)] p-2 shadow-sm transition hover:bg-[var(--accent)]"
+              title="Visit Website"
+            >
+              <Globe className="h-4 w-4 text-[var(--primary)]" />
+            </button>
 
-              <DropdownMenuSeparator />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-left shadow-sm transition hover:bg-[var(--accent)]">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-[linear-gradient(135deg,#bfdbfe,#60a5fa)] font-semibold text-[#08131f]">
+                      {user.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden sm:block">
+                    <p className="text-sm font-medium text-[var(--foreground)]">{user.name}</p>
+                    <p className="text-xs text-[var(--muted-foreground)]">{formatRole(user.role)}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-[var(--muted-foreground)]" />
+                </button>
+              </DropdownMenuTrigger>
 
-              <DropdownMenuItem onClick={() => router.visit("/profile")}>
-                <User className="h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                <DropdownMenuLabel>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-[var(--foreground)]">{user.name}</p>
+                    <p className="text-xs font-normal text-[var(--muted-foreground)]">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
 
-              <DropdownMenuItem onClick={() => router.visit("/profile/edit")}>
-                <Pencil className="h-4 w-4" />
-                Edit Profile
-              </DropdownMenuItem>
+                <DropdownMenuSeparator />
 
-              <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-700">
-                <LogOut className="h-4 w-4" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem onClick={() => router.visit("/profile")}>
+                  <User className="h-4 w-4" />
+                  Profile
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={() => router.visit("/profile/edit")}>
+                  <Pencil className="h-4 w-4" />
+                  Edit Profile
+                </DropdownMenuItem>
+
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-700">
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {impersonation?.isImpersonating && (
-            <div className="border-b border-[rgba(209,173,106,0.22)] bg-[rgba(209,173,106,0.12)] px-6 py-3 text-sm text-[var(--foreground)]">
+            <div className="border-b border-[var(--border)] bg-[var(--accent)] px-6 py-3 text-sm text-[var(--foreground)]">
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
                 <p>
                   You are viewing this school as {user.name}. Return to {impersonation.impersonator.name}'s superadmin account when you're done.
                 </p>
-                <Button variant="outline" size="sm" className="border-[rgba(196,155,87,0.28)] bg-[rgba(255,248,235,0.7)] hover:bg-[rgba(255,252,246,1)]" onClick={handleLeaveImpersonation}>
+                <Button variant="outline" size="sm" className="border-[var(--border)] bg-[var(--card)] hover:bg-[var(--accent)]" onClick={handleLeaveImpersonation}>
                   Stop Impersonating
                 </Button>
               </div>
@@ -184,7 +197,7 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
           )}
 
           {subscriptionNotice && (
-            <div className="border-b border-[rgba(196,155,87,0.24)] bg-[linear-gradient(90deg,rgba(196,155,87,0.16),rgba(196,155,87,0.08))] px-6 py-3 text-sm text-[var(--foreground)]">
+            <div className="border-b border-[var(--border)] bg-[var(--accent)] px-6 py-3 text-sm text-[var(--foreground)]">
               <div className="mx-auto max-w-7xl">
                 <p>{subscriptionNotice.message}</p>
               </div>

@@ -108,9 +108,9 @@ const getPresetTheme = (preset: TemplatePreset) => {
         borderWidth: '10px',
         borderStyle: 'double',
         borderColor: '#eab308',
-        backgroundColor: '#fefce8',
+        backgroundColor: '#dbeafe',
         backgroundImage:
-          'linear-gradient(to bottom right, #fef3c7, #fefce8, #ffffff), linear-gradient(135deg, rgba(250,204,21,.12), transparent 48%), radial-gradient(circle at top right, rgba(245,158,11,.08), transparent 35%)',
+          'linear-gradient(to bottom right, #dbeafe, #dbeafe, #ffffff), linear-gradient(135deg, rgba(234,179,8,.12), transparent 48%), radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 35%)',
         backgroundSize: '100% 100%',
         boxShadow: 'inset 0 2px 14px rgba(234, 179, 8, 0.10)',
       };
@@ -119,7 +119,7 @@ const getPresetTheme = (preset: TemplatePreset) => {
         borderWidth: '14px',
         borderStyle: 'double',
         borderColor: '#065f46',
-        backgroundColor: '#fffdf7',
+        backgroundColor: '#f8fafc',
         backgroundImage: 'linear-gradient(90deg, rgba(5,150,105,.05), transparent 20%, rgba(132,204,22,.05) 80%)',
         backgroundSize: '100% 100%',
         boxShadow: 'inset 0 2px 14px rgba(5, 150, 105, 0.10)',
@@ -129,9 +129,9 @@ const getPresetTheme = (preset: TemplatePreset) => {
         borderWidth: '10px',
         borderStyle: 'double',
         borderColor: '#ea580c',
-        backgroundColor: '#fff7ed',
+        backgroundColor: '#eff6ff',
         backgroundImage:
-          'linear-gradient(to bottom right, #fff7ed, #fef3c7, #ffffff), radial-gradient(circle at 18px 18px, rgba(234,88,12,.10) 1px, transparent 0)',
+          'linear-gradient(to bottom right, #eff6ff, #dbeafe, #ffffff), radial-gradient(circle at 18px 18px, rgba(234,88,12,.10) 1px, transparent 0)',
         backgroundSize: '36px 36px',
         boxShadow: 'inset 0 2px 14px rgba(234, 88, 12, 0.10)',
       };
@@ -140,9 +140,9 @@ const getPresetTheme = (preset: TemplatePreset) => {
         borderWidth: '12px',
         borderStyle: 'double',
         borderColor: '#a21caf',
-        backgroundColor: '#fff7ed',
+        backgroundColor: '#eff6ff',
         backgroundImage:
-          'linear-gradient(to bottom right, #fff1f2, #fffbeb, #f0f9ff), linear-gradient(120deg, rgba(239,68,68,.08), rgba(245,158,11,.08), rgba(234,179,8,.08), rgba(34,197,94,.08), rgba(59,130,246,.08))',
+          'linear-gradient(to bottom right, #fff1f2, #fff7ed, #f0f9ff), linear-gradient(120deg, rgba(239,68,68,.08), rgba(37,99,235,.08), rgba(234,179,8,.08), rgba(34,197,94,.08), rgba(59,130,246,.08))',
         backgroundSize: '100% 100%',
         boxShadow: 'inset 0 2px 14px rgba(162, 28, 175, 0.10)',
       };
@@ -395,7 +395,7 @@ export default function StudentCertificates({ user, schoolName, studentRecord, i
                 <CardContent className="px-4 py-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
                   <p className="mt-2 text-xl font-bold text-slate-900">
-                    {studentRecord.class ? `Class ${studentRecord.class}` : 'N/A'}
+                    {studentRecord.class ? `${studentRecord.class}` : 'N/A'}
                     {studentRecord.section ? ` - ${studentRecord.section}` : ''}
                   </p>
                 </CardContent>

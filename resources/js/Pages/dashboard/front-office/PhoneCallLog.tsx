@@ -280,8 +280,8 @@ export default function PhoneCallLog({ user, entries, tableReady }: PhoneCallLog
                     <p className="text-sm text-slate-500">Follow Ups</p>
                     <p className="text-3xl font-bold text-slate-900">{stats.followUps}</p>
                   </div>
-                  <div className="rounded-full bg-amber-100 p-3">
-                    <CalendarDays className="h-5 w-5 text-amber-600" />
+                  <div className="rounded-full bg-blue-100 p-3">
+                    <CalendarDays className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
@@ -297,7 +297,7 @@ export default function PhoneCallLog({ user, entries, tableReady }: PhoneCallLog
             </CardHeader>
             <CardContent className="space-y-4">
               {!tableReady && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                   The `phone_call_log_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.
                 </div>
               )}

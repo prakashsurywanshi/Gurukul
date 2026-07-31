@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +72,16 @@ class LoginController extends Controller
                     'email' => $message,
                 ])->onlyInput('email');
             }
+
+            ActivityLog::create([
+                'organization_id' => $user->organization_id,
+                'user_id' => $user->id,
+                'action' => 'login',
+                'module' => 'auth',
+                'description' => $user->name . ' logged in successfully.',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
 
             return redirect($this->staffPermissionService->landingPathFor($user));
         }

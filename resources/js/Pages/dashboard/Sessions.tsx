@@ -138,13 +138,13 @@ export default function Sessions({ user, sessionRecords }: SessionsProps) {
               )}
 
               {user.organization_id == null && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
                   No organization is linked to this admin account yet.
                 </div>
               )}
 
               {user.organization_id != null && sessions.length === 0 && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
                   No academic sessions were found in the database yet. Add your first session to get started.
                 </div>
               )}

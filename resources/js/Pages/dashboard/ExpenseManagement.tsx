@@ -265,8 +265,8 @@ export default function ExpenseManagement({ user, activeSession, sessions, entri
               display: inline-block;
               padding: 8px 14px;
               border-radius: 999px;
-              background: ${expense.status === 'paid' ? '#fee2e2' : '#fef3c7'};
-              color: ${expense.status === 'paid' ? '#b91c1c' : '#92400e'};
+              background: ${expense.status === 'paid' ? '#fee2e2' : '#dbeafe'};
+              color: ${expense.status === 'paid' ? '#b91c1c' : '#1e3a8a'};
               font-weight: 700;
               font-size: 13px;
               text-transform: uppercase;
@@ -697,9 +697,9 @@ export default function ExpenseManagement({ user, activeSession, sessions, entri
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-500">Due</p>
-                  <p className="mt-2 text-3xl font-semibold text-amber-600">{formatCurrency(dueExpense)}</p>
+                  <p className="mt-2 text-3xl font-semibold text-blue-600">{formatCurrency(dueExpense)}</p>
                 </div>
-                <ReceiptIndianRupee className="h-10 w-10 text-amber-500" />
+                <ReceiptIndianRupee className="h-10 w-10 text-blue-500" />
               </div>
             </CardContent>
           </Card>

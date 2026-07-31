@@ -171,6 +171,8 @@ export default function OnlineExamManagement({
   const [onlineExamForm, setOnlineExamForm] = useState(createOnlineExamForm);
   const [onlineQuestions, setOnlineQuestions] = useState<OnlineExamQuestion[]>([createOnlineQuestion()]);
   const [selectedAssignments, setSelectedAssignments] = useState<string[]>([]);
+  const [assignmentClass, setAssignmentClass] = useState('');
+  const [assignmentSection, setAssignmentSection] = useState('');
   const [questionSource, setQuestionSource] = useState<'manual' | 'import'>('manual');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingExam, setViewingExam] = useState<OnlineExamRecord | null>(null);
@@ -209,7 +211,31 @@ export default function OnlineExamManagement({
     setOnlineExamForm(createOnlineExamForm());
     setOnlineQuestions([createOnlineQuestion()]);
     setSelectedAssignments([]);
+    setAssignmentClass('');
+    setAssignmentSection('');
     setQuestionSource('manual');
+  };
+
+  const assignmentSectionOptions = useMemo(
+    () => Array.from(new Set(classSectionOptions.filter((opt) => !assignmentClass || opt.className === assignmentClass).map((opt) => opt.section))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [classSectionOptions, assignmentClass]
+  );
+
+  const addAssignment = () => {
+    if (!assignmentClass || !assignmentSection) {
+      toast.error('Select class and section first');
+      return;
+    }
+    const value = `${assignmentClass}::${assignmentSection}`;
+    if (!selectedAssignments.includes(value)) {
+      setSelectedAssignments((current) => [...current, value]);
+    }
+    setAssignmentClass('');
+    setAssignmentSection('');
+  };
+
+  const removeAssignment = (value: string) => {
+    setSelectedAssignments((current) => current.filter((item) => item !== value));
   };
 
   const openOnlineExamEditor = (exam?: OnlineExamRecord) => {
@@ -514,7 +540,7 @@ export default function OnlineExamManagement({
         <div className="grid gap-4 md:grid-cols-4">
           <Card><CardContent className="px-4 py-4"><p className="text-xs uppercase tracking-wide text-slate-500">Total Quizzes</p><p className="mt-2 text-2xl font-bold text-slate-900">{stats.totalExams}</p></CardContent></Card>
           <Card><CardContent className="px-4 py-4"><p className="text-xs uppercase tracking-wide text-slate-500">Published</p><p className="mt-2 text-2xl font-bold text-emerald-600">{stats.publishedExams}</p></CardContent></Card>
-          <Card><CardContent className="px-4 py-4"><p className="text-xs uppercase tracking-wide text-slate-500">Draft</p><p className="mt-2 text-2xl font-bold text-amber-600">{stats.draftExams}</p></CardContent></Card>
+          <Card><CardContent className="px-4 py-4"><p className="text-xs uppercase tracking-wide text-slate-500">Draft</p><p className="mt-2 text-2xl font-bold text-blue-600">{stats.draftExams}</p></CardContent></Card>
           <Card><CardContent className="px-4 py-4"><p className="text-xs uppercase tracking-wide text-slate-500">Questions Banked</p><p className="mt-2 text-2xl font-bold text-slate-900">{stats.totalQuestions}</p></CardContent></Card>
         </div>
 
@@ -595,31 +621,50 @@ export default function OnlineExamManagement({
                       </div>
                       <div className="space-y-2 md:col-span-3">
                         <Label>Assign Class Sections</Label>
-                        <div className="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-2">
-                          {classSectionOptions.map((assignment) => (
-                            <label
-                              key={assignment.value}
-                              className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
-                                selectedAssignments.includes(assignment.value)
-                                  ? 'border-blue-500 bg-blue-50'
-                                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedAssignments.includes(assignment.value)}
-                                onChange={(e) =>
-                                  setSelectedAssignments((current) =>
-                                    e.target.checked
-                                      ? [...current, assignment.value]
-                                      : current.filter((item) => item !== assignment.value)
-                                  )
-                                }
-                                className="h-4 w-4 cursor-pointer rounded border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                              />
-                              <span className="text-sm text-slate-700">{assignment.label}</span>
-                            </label>
-                          ))}
+                        <div className="flex gap-2">
+                          <Select value={assignmentClass} onValueChange={(value) => {
+                            setAssignmentClass(value);
+                            const firstSection = classSectionOptions.filter((opt) => opt.className === value).map((opt) => opt.section).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))[0] || '';
+                            setAssignmentSection(firstSection);
+                          }}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select class" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {classOptions.map((cls) => (
+                                <SelectItem key={cls} value={cls}>
+                                  {cls}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={assignmentSection} onValueChange={setAssignmentSection} disabled={!assignmentClass}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select section" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {assignmentSectionOptions.map((section) => (
+                                <SelectItem key={section} value={section}>
+                                  {section}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button type="button" variant="outline" onClick={addAssignment}>Add</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 p-3">
+                          {selectedAssignments.length > 0 ? (
+                            selectedAssignments.map((assignment) => {
+                              const [cls, sec] = assignment.split('::');
+                              return (
+                                <Badge key={assignment} variant="secondary" className="cursor-pointer" onClick={() => removeAssignment(assignment)}>
+                                  {cls} - {sec}
+                                </Badge>
+                              );
+                            })
+                          ) : (
+                            <p className="text-sm text-slate-500">No class sections assigned yet.</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1000,7 +1045,7 @@ export default function OnlineExamManagement({
                         </TableCell>
                         <TableCell>
                           <div className="text-sm text-slate-900">
-                            {(exam.targetClassSections || []).slice(0, 2).map((assignment) => `${assignment.className}-${assignment.section}`).join(', ') || `Class ${exam.className} / ${exam.section}`}
+                            {(exam.targetClassSections || []).slice(0, 2).map((assignment) => `${assignment.className}-${assignment.section}`).join(', ') || `${exam.className} / ${exam.section}`}
                           </div>
                           {(exam.targetClassSections || []).length > 2 ? (
                             <div className="text-sm text-slate-500">+{exam.targetClassSections.length - 2} more</div>
@@ -1089,12 +1134,12 @@ export default function OnlineExamManagement({
                             key={`${viewingExam.id}_${assignment.className}_${assignment.section}`}
                             variant="outline"
                           >
-                            Class {assignment.className} / Section {assignment.section}
+                            {assignment.className} / Section {assignment.section}
                           </Badge>
                         ))
                       ) : (
                         <span className="text-sm text-slate-500">
-                          Class {viewingExam.className} / Section {viewingExam.section}
+                          {viewingExam.className} / Section {viewingExam.section}
                         </span>
                       )}
                     </div>

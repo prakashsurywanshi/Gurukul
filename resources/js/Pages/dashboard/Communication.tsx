@@ -91,12 +91,6 @@ export default function Communication({ user, staffRecords, studentRecords, sent
     ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   }, [composeForm.targetClass, studentRecords]);
 
-  const classSectionGroups = useMemo(() => {
-    return Array.from(new Set(studentRecords.filter((student) => student.hasUser).map((student) => `${student.class}-${student.section}`))).sort((a, b) =>
-      a.localeCompare(b, undefined, { numeric: true })
-    );
-  }, [studentRecords]);
-
   const staffRoleOptions = useMemo(
     () => Array.from(new Set(staffRecords.map((staff) => String(staff.role)).filter(Boolean))).sort(),
     [staffRecords]
@@ -325,14 +319,17 @@ export default function Communication({ user, staffRecords, studentRecords, sent
                     <>
                       <div className="space-y-2">
                         <Label>Class</Label>
-                        <Select value={composeForm.targetClass} onValueChange={(value) => setComposeForm((current) => ({ ...current, targetClass: value, targetSection: '' }))}>
+                        <Select value={composeForm.targetClass} onValueChange={(value) => {
+                          const sections = Array.from(new Set(studentRecords.filter((s) => String(s.class) === value).map((s) => String(s.section)).filter(Boolean))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                          setComposeForm((current) => ({ ...current, targetClass: value, targetSection: sections[0] || '' }));
+                        }}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select class" />
                           </SelectTrigger>
                           <SelectContent>
                             {classOptions.map((className) => (
                               <SelectItem key={className} value={className}>
-                                Class {className}
+                                {className}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -370,17 +367,6 @@ export default function Communication({ user, staffRecords, studentRecords, sent
                           ) : (
                             <p className="text-sm text-slate-500">No class-section groups selected yet.</p>
                           )}
-                        </div>
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label>Quick Multi-Select</Label>
-                        <div className="grid gap-2 rounded-lg border border-slate-200 p-3 md:grid-cols-2">
-                          {classSectionGroups.map((group) => (
-                            <label key={group} className="flex items-center gap-2 text-sm text-slate-700">
-                              <Checkbox checked={composeForm.selectedGroups.includes(group)} onCheckedChange={() => toggleGroupSelection(group)} />
-                              <span>{group}</span>
-                            </label>
-                          ))}
                         </div>
                       </div>
                     </>

@@ -273,7 +273,7 @@ export default function StudentManagement({ user, classRecords, studentRecords, 
       case 'queued':
         return 'border-blue-200 bg-blue-50 text-blue-700';
       case 'processing':
-        return 'border-amber-200 bg-amber-50 text-amber-700';
+        return 'border-blue-200 bg-blue-50 text-blue-700';
       case 'completed':
         return 'border-emerald-200 bg-emerald-50 text-emerald-700';
       case 'completed_with_errors':
@@ -689,7 +689,7 @@ export default function StudentManagement({ user, classRecords, studentRecords, 
                             </SelectTrigger>
                             <SelectContent>
                               {classOptions.map(c => (
-                                <SelectItem key={c} value={c}>Class {c}</SelectItem>
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -1183,7 +1183,7 @@ export default function StudentManagement({ user, classRecords, studentRecords, 
                 <SelectContent>
                   <SelectItem value="all">All Classes</SelectItem>
                   {classOptions.map(c => (
-                    <SelectItem key={c} value={c}>Class {c}</SelectItem>
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -292,7 +292,7 @@ export default function PromoteStudents({ user, studentRecords, classRecords, se
                     <SelectContent>
                       {classOptions.map((className) => (
                         <SelectItem key={className} value={className}>
-                          Class {className}
+                          {className}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -312,7 +312,7 @@ export default function PromoteStudents({ user, studentRecords, classRecords, se
                     <SelectContent>
                       {availableNextClassOptions.map((className) => (
                         <SelectItem key={className} value={className}>
-                          Class {className}
+                          {className}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -358,11 +358,11 @@ export default function PromoteStudents({ user, studentRecords, classRecords, se
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Selected From</p>
-                  <p className="mt-2 text-lg font-semibold text-slate-900">{fromClass ? `Class ${fromClass}` : 'Not selected'}</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">{fromClass ? `${fromClass}` : 'Not selected'}</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Selected To</p>
-                  <p className="mt-2 text-lg font-semibold text-slate-900">{toClass ? `Class ${toClass}` : 'Not selected'}</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-900">{toClass ? `${toClass}` : 'Not selected'}</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Selected Students</p>
@@ -430,7 +430,7 @@ export default function PromoteStudents({ user, studentRecords, classRecords, se
                 </div>
                 <p className="mt-2 text-sm text-blue-900">
                   {fromClass && toClass && targetSession
-                    ? `${selectedStudentIds.length || 0} selected student${selectedStudentIds.length === 1 ? '' : 's'} will be promoted from Class ${fromClass} to Class ${toClass} and enrolled in session ${targetSession}.`
+                    ? `${selectedStudentIds.length || 0} selected student${selectedStudentIds.length === 1 ? '' : 's'} will be promoted from ${fromClass} to ${toClass} and enrolled in session ${targetSession}.`
                     : 'Choose classes, a session, and at least one student to review the promotion summary.'}
                 </p>
                 <p className="mt-2 text-sm text-blue-900">
@@ -444,7 +444,7 @@ export default function PromoteStudents({ user, studentRecords, classRecords, se
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                  className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800"
                   disabled={!fromClass || !targetSession || selectedStudentIds.length === 0}
                   onClick={handleLeaveSchool}
                 >

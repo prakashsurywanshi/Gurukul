@@ -27,6 +27,8 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\HomeworkController;
+use App\Http\Controllers\UploadController;
+use App\Http\Controllers\WebsitePageController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -34,6 +36,7 @@ Route::get('/', function () {
 });
 Route::get('/privacy-policy', [SettingsController::class, 'publicPrivacyPolicy'])->name('privacy-policy');
 Route::get('/admissions/apply', [SettingsController::class, 'publicAdmissionForm'])->name('admissions.apply');
+Route::get('/pages/{slug}', [WebsitePageController::class, 'show'])->name('website-pages.show');
 Route::get('/login', [LoginController::class, 'viewLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::middleware('guest')->group(function () {
@@ -317,6 +320,7 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::patch('/todo/{todo}/toggle', [TodoController::class, 'toggle'])->middleware('staff.permission:Todo,edit')->name('todo.toggle');
     Route::delete('/todo/{todo}', [TodoController::class, 'destroy'])->middleware('staff.permission:Todo,delete')->name('todo.destroy');
     Route::get('/reports', [ReportsController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('reports');
+    Route::get('/reports/export-pdf', [ReportsController::class, 'exportPdf'])->middleware('staff.permission:Reports & Analytics,view')->name('reports.export-pdf');
     Route::patch('/reports/sessions/{academicYear}/activate', [SettingsController::class, 'activateSessionAndBack'])->middleware('staff.permission:Sessions,edit')->name('reports.sessions.activate');
     Route::get('/knowledge-base', [SettingsController::class, 'knowledgeBase'])->middleware('staff.permission:Knowledge Base,view')->name('knowledge-base');
     Route::get('/settings', [SettingsController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('settings');
@@ -334,9 +338,21 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::delete('/sessions/{academicYear}', [SettingsController::class, 'destroySession'])->middleware('staff.permission:Sessions,delete')->name('sessions.destroy');
     Route::patch('/sessions/{academicYear}/activate', [SettingsController::class, 'activateSession'])->middleware('staff.permission:Sessions,edit')->name('sessions.activate');
     Route::get('/website-cms', [SettingsController::class, 'websiteCms'])->middleware('staff.permission:Website CMS,view')->name('website-cms');
+    Route::get('/website-cms/editor', [SettingsController::class, 'websiteCmsEditor'])->middleware('staff.permission:Website CMS,edit')->name('website-cms.editor');
     Route::patch('/website-cms', [SettingsController::class, 'updateWebsiteCms'])->middleware('staff.permission:Website CMS,edit')->name('website-cms.update');
     Route::post('/website-cms/slider-images', [SettingsController::class, 'storeWebsiteCmsSliderImage'])->middleware('staff.permission:Website CMS,edit')->name('website-cms.slider-images.store');
     Route::delete('/website-cms/slider-images/{index}', [SettingsController::class, 'destroyWebsiteCmsSliderImage'])->middleware('staff.permission:Website CMS,edit')->name('website-cms.slider-images.destroy');
+    Route::patch('/website-cms/section', [SettingsController::class, 'updateWebsiteCmsSection'])->middleware('staff.permission:Website CMS,edit')->name('website-cms.section.update');
+    Route::post('/upload/image', [UploadController::class, 'storeImage'])->name('upload.image');
+    Route::get('/pages-builder', [WebsitePageController::class, 'index'])->middleware('staff.permission:Website Pages,view')->name('pages.index');
+    Route::get('/pages-builder/create', [WebsitePageController::class, 'create'])->middleware('staff.permission:Website Pages,add')->name('pages.create');
+    Route::post('/pages-builder', [WebsitePageController::class, 'store'])->middleware('staff.permission:Website Pages,add')->name('pages.store');
+    Route::get('/pages-builder/{page}/edit', [WebsitePageController::class, 'edit'])->middleware('staff.permission:Website Pages,edit')->name('pages.edit');
+    Route::patch('/pages-builder/{page}', [WebsitePageController::class, 'update'])->middleware('staff.permission:Website Pages,edit')->name('pages.update');
+    Route::delete('/pages-builder/{page}', [WebsitePageController::class, 'destroy'])->middleware('staff.permission:Website Pages,delete')->name('pages.destroy');
+    Route::post('/pages-builder/api', [WebsitePageController::class, 'storeApi'])->middleware('staff.permission:Website Pages,add')->name('pages.store-api');
+    Route::patch('/pages-builder/{page}/sections', [WebsitePageController::class, 'updateSections'])->middleware('staff.permission:Website Pages,edit')->name('pages.sections.update');
+    Route::patch('/pages-builder/{page}/content', [WebsitePageController::class, 'updateContent'])->middleware('staff.permission:Website Pages,edit')->name('pages.content.update');
     Route::get('/profile', [ProfileController::class, 'index'])->middleware('staff.permission:Profile,view')->name('profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->middleware('staff.permission:Edit Profile,view')->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('staff.permission:Edit Profile,edit')->name('profile.update');

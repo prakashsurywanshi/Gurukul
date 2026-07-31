@@ -211,7 +211,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
 
     setBulkGeneratedMarksheets(generatedHistory);
     setGeneratedMarksheet(null);
-    toast.success(`Generated ${generatedHistory.length} marksheet${generatedHistory.length === 1 ? '' : 's'} for Class ${selectedClass} Section ${selectedSection}`);
+    toast.success(`Generated ${generatedHistory.length} marksheet${generatedHistory.length === 1 ? '' : 's'} for ${selectedClass} Section ${selectedSection}`);
   };
 
   return (
@@ -261,7 +261,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                 <SelectContent>
                   {availableClassOptions.map((option) => (
                     <SelectItem key={option} value={option}>
-                      Class {option}
+                      {option}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -455,7 +455,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                     <div className="space-y-2 rounded-xl border border-slate-200 p-4">
                       <p className="text-xs uppercase tracking-wide text-slate-500">Class / Section</p>
                       <p className="text-lg font-semibold text-slate-900">
-                        Class {generatedMarksheet.class} - Section {generatedMarksheet.section}
+                        {generatedMarksheet.class} - Section {generatedMarksheet.section}
                       </p>
                     </div>
                     <div className="space-y-2 rounded-xl border border-slate-200 p-4">
@@ -526,7 +526,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
             <CardHeader>
               <CardTitle>Bulk Generated Marksheets</CardTitle>
               <p className="mt-1 text-sm text-slate-500">
-                {selectedExamGroup.name} | Class {selectedClass} | Section {selectedSection}
+                {selectedExamGroup.name} | {selectedClass} | Section {selectedSection}
               </p>
             </CardHeader>
             <CardContent>

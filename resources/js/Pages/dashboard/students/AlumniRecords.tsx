@@ -189,7 +189,7 @@ export default function AlumniRecords({ user, alumniRecords, sessions }: AlumniR
                     <p className="text-sm text-slate-500">Section Filter</p>
                     <p className="mt-1 text-2xl font-semibold text-slate-900">{sectionFilter === 'all' ? 'All' : sectionFilter}</p>
                   </div>
-                  <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">Alumni</Badge>
+                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Alumni</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -236,7 +236,7 @@ export default function AlumniRecords({ user, alumniRecords, sessions }: AlumniR
                     <SelectItem value="all">All Classes</SelectItem>
                     {classOptions.map((className) => (
                       <SelectItem key={className} value={className}>
-                        Class {className}
+                         {className}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -3,12 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\ActivityLog;
+use App\Models\AlumniRecord;
 use App\Models\Attendance;
+use App\Models\AuditTrail;
 use App\Models\ComplaintEntry;
+use App\Models\Department;
+use App\Models\Designation;
 use App\Models\EmailLog;
 use App\Models\ExamResult;
 use App\Models\FeePayment;
 use App\Models\FrontOfficeAdmissionEnquiry;
+use App\Models\Homework;
+use App\Models\HomeworkSubmission;
 use App\Models\Hostel;
 use App\Models\HostelAllocation;
 use App\Models\HostelRoom;
@@ -16,13 +23,18 @@ use App\Models\InventoryIssue;
 use App\Models\InventoryItem;
 use App\Models\InventoryStore;
 use App\Models\InventorySupplier;
+use App\Models\LeaveRequest;
+use App\Models\LessonPlan;
 use App\Models\LibraryBook;
 use App\Models\LibraryCirculation;
 use App\Models\Message;
 use App\Models\Organization;
 use App\Models\SchoolClass;
+use App\Models\StaffAttendance;
+use App\Models\StaffPayrollEntry;
 use App\Models\Student;
 use App\Models\StudentFee;
+use App\Models\Subject;
 use App\Models\TransportAssignment;
 use App\Models\TransportRoute;
 use App\Models\TransportVehicle;
@@ -33,12 +45,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class ReportsController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): InertiaResponse
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
@@ -48,8 +61,13 @@ class ReportsController extends Controller
         $selectedClass = $request->string('class')->value() ?: 'all';
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
         abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
+
         $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
         $activeModule = $request->string('module')->value() ?: 'students';
+        $page = max(1, (int) $request->input('page', 1));
+        $search = $request->string('search')->value() ?: '';
+        $dateFrom = $request->input('date_from') ?: null;
+        $dateTo = $request->input('date_to') ?: null;
 
         return Inertia::render('dashboard/ReportsAnalytics', [
             'user' => $user,
@@ -60,15 +78,47 @@ class ReportsController extends Controller
                 'month' => $selectedMonth,
                 'session' => (string) $selectedAcademicYear->id,
                 'module' => $activeModule,
+                'search' => $search,
             ],
             'attendanceData' => $this->attendanceData($organization, $selectedClass, $selectedAcademicYear),
             'feeCollectionData' => $this->feeCollectionData($organization, $selectedClass, $selectedAcademicYear),
             'studentDistribution' => $this->studentDistribution($organization),
             'examPerformance' => $this->examPerformance($organization, $selectedClass, $selectedAcademicYear),
             'metrics' => $this->metrics($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
-            'moduleReports' => $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
+            'moduleReports' => $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $dateFrom, $dateTo),
             'monthOptions' => $this->monthOptions($selectedAcademicYear),
         ]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $selectedClass = $request->string('class')->value() ?: 'all';
+        $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
+        abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
+
+        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
+        $module = $request->string('module')->value() ?: 'students';
+        $search = $request->string('search')->value() ?: '';
+
+        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, 1, $search);
+        $report = collect($reports)->firstWhere('id', $module) ?? $reports[0];
+
+        $html = view('reports.pdf-export', [
+            'report' => $report,
+            'organization' => $organization,
+            'generatedAt' => now()->format('d M Y, h:i A'),
+        ])->render();
+
+        $pdf = \Barryvdh\DomPDF\PDF::loadHTML($html)
+            ->setPaper('a4', 'landscape')
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->download("{$report['label']}-Report-" . now()->format('Y-m-d') . '.pdf');
     }
 
     private function getClassOptions(Organization $organization): Collection
@@ -78,12 +128,7 @@ class ReportsController extends Controller
             ->where('status', 'active')
             ->orderByRaw('CAST(name AS UNSIGNED), name')
             ->orderBy('section')
-            ->get(['id', 'name', 'section'])
-            ->map(fn (SchoolClass $class) => [
-                'value' => (string) $class->id,
-                'label' => 'Class ' . $class->name . ($class->section ? ' - ' . $class->section : ''),
-            ])
-            ->values();
+            ->get(['id', 'name', 'section']);
     }
 
     private function attendanceData(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear): Collection
@@ -164,7 +209,7 @@ class ReportsController extends Controller
             ['label' => 'Class 1-5', 'from' => 1, 'to' => 5, 'color' => '#3b82f6'],
             ['label' => 'Class 6-8', 'from' => 6, 'to' => 8, 'color' => '#8b5cf6'],
             ['label' => 'Class 9-10', 'from' => 9, 'to' => 10, 'color' => '#ec4899'],
-            ['label' => 'Class 11-12', 'from' => 11, 'to' => 12, 'color' => '#f59e0b'],
+            ['label' => 'Class 11-12', 'from' => 11, 'to' => 12, 'color' => '#2563EB'],
         ];
 
         return collect($groups)->map(function (array $group) use ($students) {
@@ -263,31 +308,37 @@ class ReportsController extends Controller
         ];
     }
 
-    private function moduleReports(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear): array
+    private function moduleReports(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?string $dateFrom = null, ?string $dateTo = null): array
     {
         return [
-            $this->studentModuleReport($organization, $selectedClass),
-            $this->attendanceModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
-            $this->feesModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
-            $this->examsModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
-            $this->libraryModuleReport($organization, $selectedMonth),
-            $this->transportModuleReport($organization, $selectedClass),
-            $this->hostelModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
-            $this->inventoryModuleReport($organization),
-            $this->frontOfficeModuleReport($organization, $selectedMonth),
-            $this->communicationModuleReport($organization, $selectedMonth),
+            $this->studentModuleReport($organization, $selectedClass, $page, $search),
+            $this->attendanceModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
+            $this->feesModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
+            $this->examsModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
+            $this->libraryModuleReport($organization, $selectedMonth, $page, $search),
+            $this->transportModuleReport($organization, $selectedClass, $page, $search),
+            $this->hostelModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
+            $this->inventoryModuleReport($organization, $page, $search),
+            $this->frontOfficeModuleReport($organization, $selectedMonth, $page, $search),
+            $this->communicationModuleReport($organization, $selectedMonth, $page, $search),
+            $this->lessonPlanModuleReport($organization, $selectedClass, $selectedMonth, $page, $search),
+            $this->humanResourceModuleReport($organization, $selectedMonth, $page, $search),
+            $this->homeworkModuleReport($organization, $selectedClass, $selectedMonth, $page, $search),
+            $this->alumniModuleReport($organization, $page, $search),
+            $this->activityLogModuleReport($organization, $selectedMonth, $page, $search),
+            $this->auditTrailModuleReport($organization, $selectedMonth, $page, $search),
         ];
     }
 
-    private function studentModuleReport(Organization $organization, string $selectedClass): array
+    private function studentModuleReport(Organization $organization, string $selectedClass, int $page = 1, string $search = ''): array
     {
-        $students = Student::query()
+        $paginator = Student::query()
             ->forCurrentSession($organization->id)
             ->with('schoolClass:id,name,section')
             ->when($selectedClass !== 'all', fn ($query) => $query->where('class_id', $selectedClass))
+            ->when($search !== '', fn ($q) => $q->where(function ($sq) use ($search) { $sq->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"); }))
             ->orderByDesc('admission_date')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         $baseQuery = Student::query()
             ->forCurrentSession($organization->id)
@@ -304,7 +355,7 @@ class ReportsController extends Controller
                 ['label' => 'Using Transport', 'value' => (string) (clone $baseQuery)->where('transport_required', true)->count()],
                 ['label' => 'Using Hostel', 'value' => (string) (clone $baseQuery)->where('hostel_required', true)->count()],
             ],
-            'rows' => $students->map(fn (Student $student) => [
+            'rows' => collect($paginator->items())->map(fn (Student $student) => [
                 $student->admission_no ?: '-',
                 trim($student->first_name . ' ' . ($student->last_name ?? '')),
                 $this->classLabel($student->schoolClass),
@@ -312,10 +363,16 @@ class ReportsController extends Controller
                 ucfirst((string) $student->status),
                 optional($student->admission_date)->format('d M Y') ?: '-',
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function attendanceModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear): array
+    private function attendanceModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $query = Attendance::query()
@@ -330,6 +387,8 @@ class ReportsController extends Controller
             ->with(['student:id,first_name,last_name', 'schoolClass:id,name,section'])
             ->get();
 
+        $entries = $entries->filter(fn ($entry) => !$search || str_contains(strtolower(trim(($entry->student?->first_name ?? '') . ' ' . ($entry->student?->last_name ?? ''))), strtolower($search)));
+
         $presentStatuses = ['present', 'late', 'half_day'];
         $studentWiseRows = $entries
             ->groupBy(fn (Attendance $entry) => (string) $entry->student_id)
@@ -343,19 +402,21 @@ class ReportsController extends Controller
                 $attendanceRate = $total > 0 ? round(($present / $total) * 100, 1) : 0;
 
                 return [
-                    'student' => trim(($firstEntry->student?->first_name ?? '') . ' ' . ($firstEntry->student?->last_name ?? '')) ?: '-',
-                    'class' => $this->classLabel($firstEntry->schoolClass),
-                    'present' => (string) $present,
-                    'absent' => (string) $absent,
-                    'lateHalfDay' => (string) $lateHalfDay,
-                    'attendanceRate' => $attendanceRate . '%',
+                    trim(($firstEntry->student?->first_name ?? '') . ' ' . ($firstEntry->student?->last_name ?? '')) ?: '-',
+                    $this->classLabel($firstEntry->schoolClass),
+                    (string) $present,
+                    (string) $absent,
+                    (string) $lateHalfDay,
+                    $attendanceRate . '%',
                 ];
             })
             ->sortBy([
-                ['class', 'asc'],
-                ['student', 'asc'],
+                [0, 'asc'],
+                [1, 'asc'],
             ])
             ->values();
+
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($studentWiseRows->forPage($page, 15), $studentWiseRows->count(), 15, $page);
 
         return [
             'id' => 'attendance',
@@ -369,20 +430,17 @@ class ReportsController extends Controller
                 ['label' => 'Absent', 'value' => (string) (clone $query)->where('status', 'absent')->count()],
                 ['label' => 'Late / Half Day', 'value' => (string) (clone $query)->whereIn('status', ['late', 'half_day'])->count()],
             ],
-            'rows' => $studentWiseRows
-                ->map(fn (array $row) => [
-                    $row['student'],
-                    $row['class'],
-                    $row['present'],
-                    $row['absent'],
-                    $row['lateHalfDay'],
-                    $row['attendanceRate'],
-                ])
-                ->all(),
+            'rows' => $paginator->items(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function feesModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear): array
+    private function feesModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $query = StudentFee::query()
@@ -392,13 +450,13 @@ class ReportsController extends Controller
             ->where('month', (int) $selectedMonthDate->format('n'))
             ->when($selectedClass !== 'all', function ($builder) use ($selectedClass) {
                 $builder->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $selectedClass));
-            });
+            })
+            ->when($search !== '', fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")));
 
-        $rows = (clone $query)
+        $paginator = (clone $query)
             ->with(['student.schoolClass:id,name,section', 'feeStructure:id,fee_type'])
             ->orderBy('due_date')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         $paymentsQuery = FeePayment::query()
             ->where('organization_id', $organization->id)
@@ -422,7 +480,7 @@ class ReportsController extends Controller
                 ['label' => 'Pending', 'value' => $this->money((float) (clone $query)->sum('balance'))],
                 ['label' => 'Overdue Records', 'value' => (string) (clone $query)->where('balance', '>', 0)->whereDate('due_date', '<', now()->toDateString())->count()],
             ],
-            'rows' => $rows->map(fn (StudentFee $fee) => [
+            'rows' => collect($paginator->items())->map(fn (StudentFee $fee) => [
                 trim(($fee->student?->first_name ?? '') . ' ' . ($fee->student?->last_name ?? '')) ?: '-',
                 $this->classLabel($fee->student?->schoolClass),
                 $fee->feeStructure?->fee_type ?: 'General Fee',
@@ -431,10 +489,16 @@ class ReportsController extends Controller
                 $this->money((float) $fee->balance),
                 ucfirst((string) $fee->status),
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function examsModuleReport(Organization $organization, string $selectedClass, string $selectedMonth): array
+    private function examsModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $query = ExamResult::query()
@@ -445,17 +509,17 @@ class ReportsController extends Controller
                     $selectedMonthDate->copy()->endOfMonth()->toDateString(),
                 ])
                     ->when($selectedClass !== 'all', fn ($scheduleQuery) => $scheduleQuery->where('class_id', $selectedClass));
-            });
+            })
+            ->when($search !== '', fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")));
 
-        $rows = (clone $query)
+        $paginator = (clone $query)
             ->with([
                 'student.schoolClass:id,name,section',
                 'examSchedule.subject:id,name',
                 'examSchedule.exam:id,name',
             ])
             ->latest('id')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         return [
             'id' => 'exams',
@@ -468,7 +532,7 @@ class ReportsController extends Controller
                 ['label' => 'Absent', 'value' => (string) (clone $query)->where('is_absent', true)->count()],
                 ['label' => 'Distinct Subjects', 'value' => (string) (clone $query)->with('examSchedule')->get()->pluck('examSchedule.subject_id')->filter()->unique()->count()],
             ],
-            'rows' => $rows->map(fn (ExamResult $result) => [
+            'rows' => collect($paginator->items())->map(fn (ExamResult $result) => [
                 $result->examSchedule?->exam?->name ?: 'Exam',
                 trim(($result->student?->first_name ?? '') . ' ' . ($result->student?->last_name ?? '')) ?: '-',
                 $this->classLabel($result->student?->schoolClass),
@@ -477,10 +541,16 @@ class ReportsController extends Controller
                 $result->grade ?: '-',
                 $result->is_absent ? 'Absent' : 'Evaluated',
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function libraryModuleReport(Organization $organization, string $selectedMonth): array
+    private function libraryModuleReport(Organization $organization, string $selectedMonth, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $query = LibraryCirculation::query()
@@ -488,13 +558,13 @@ class ReportsController extends Controller
             ->whereBetween('issue_date', [
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
-            ]);
+            ])
+            ->when($search !== '', fn ($q) => $q->where('book_title', 'like', "%{$search}%"));
 
-        $rows = (clone $query)
+        $paginator = (clone $query)
             ->with(['book:id,title,category', 'member:id,name,member_type'])
             ->orderByDesc('issue_date')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         return [
             'id' => 'library',
@@ -507,7 +577,7 @@ class ReportsController extends Controller
                 ['label' => 'Overdue', 'value' => (string) LibraryCirculation::query()->where('organization_id', $organization->id)->where('status', 'Overdue')->count()],
                 ['label' => 'Available Copies', 'value' => (string) LibraryBook::query()->where('organization_id', $organization->id)->sum('available_copies')],
             ],
-            'rows' => $rows->map(fn (LibraryCirculation $entry) => [
+            'rows' => collect($paginator->items())->map(fn (LibraryCirculation $entry) => [
                 optional($entry->issue_date)->format('d M Y') ?: '-',
                 $entry->book?->title ?: '-',
                 $entry->book?->category ?: '-',
@@ -515,22 +585,28 @@ class ReportsController extends Controller
                 $entry->member?->member_type ?: '-',
                 $entry->status ?: '-',
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function transportModuleReport(Organization $organization, string $selectedClass): array
+    private function transportModuleReport(Organization $organization, string $selectedClass, int $page = 1, string $search = ''): array
     {
         $query = TransportAssignment::query()
             ->whereHas('route', fn ($builder) => $builder->where('organization_id', $organization->id))
             ->when($selectedClass !== 'all', function ($builder) use ($selectedClass) {
                 $builder->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $selectedClass));
-            });
+            })
+            ->when($search !== '', fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")));
 
-        $rows = (clone $query)
+        $paginator = (clone $query)
             ->with(['student.schoolClass:id,name,section', 'route:id,route_name', 'vehicle:id,vehicle_number'])
             ->latest('id')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         return [
             'id' => 'transport',
@@ -543,7 +619,7 @@ class ReportsController extends Controller
                 ['label' => 'Active Vehicles', 'value' => (string) TransportVehicle::query()->where('organization_id', $organization->id)->where('status', 'active')->count()],
                 ['label' => 'Assigned Monthly Fee', 'value' => $this->money((float) (clone $query)->sum('monthly_fee'))],
             ],
-            'rows' => $rows->map(fn (TransportAssignment $assignment) => [
+            'rows' => collect($paginator->items())->map(fn (TransportAssignment $assignment) => [
                 trim(($assignment->student?->first_name ?? '') . ' ' . ($assignment->student?->last_name ?? '')) ?: '-',
                 $this->classLabel($assignment->student?->schoolClass),
                 $assignment->route?->route_name ?: '-',
@@ -552,23 +628,29 @@ class ReportsController extends Controller
                 $this->money((float) $assignment->monthly_fee),
                 ucfirst((string) $assignment->status),
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function hostelModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear): array
+    private function hostelModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $query = HostelAllocation::query()
             ->whereHas('hostel', fn ($builder) => $builder->where('organization_id', $organization->id))
             ->when($selectedClass !== 'all', function ($builder) use ($selectedClass) {
                 $builder->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $selectedClass));
-            });
+            })
+            ->when($search !== '', fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")));
 
-        $rows = (clone $query)
+        $paginator = (clone $query)
             ->with(['student.schoolClass:id,name,section', 'hostel:id,name', 'room:id,hostel_id,room_number'])
             ->latest('id')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         $hostelFeeQuery = StudentFee::query()
             ->where('organization_id', $organization->id)
@@ -591,7 +673,7 @@ class ReportsController extends Controller
                 ['label' => 'Rooms', 'value' => (string) HostelRoom::query()->whereHas('hostel', fn ($builder) => $builder->where('organization_id', $organization->id))->count()],
                 ['label' => 'Hostel Fee Pending', 'value' => $this->money((float) (clone $hostelFeeQuery)->sum('balance'))],
             ],
-            'rows' => $rows->map(fn (HostelAllocation $allocation) => [
+            'rows' => collect($paginator->items())->map(fn (HostelAllocation $allocation) => [
                 trim(($allocation->student?->first_name ?? '') . ' ' . ($allocation->student?->last_name ?? '')) ?: '-',
                 $this->classLabel($allocation->student?->schoolClass),
                 $allocation->hostel?->name ?: '-',
@@ -600,18 +682,24 @@ class ReportsController extends Controller
                 optional($allocation->departure_date)->format('d M Y') ?: '-',
                 ucfirst((string) $allocation->status),
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function inventoryModuleReport(Organization $organization): array
+    private function inventoryModuleReport(Organization $organization, int $page = 1, string $search = ''): array
     {
-        $query = InventoryItem::query()->where('organization_id', $organization->id);
+        $query = InventoryItem::query()->where('organization_id', $organization->id)
+            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('category', 'like', "%{$search}%"));
 
-        $rows = (clone $query)
+        $paginator = (clone $query)
             ->with(['category:id,name', 'store:id,name', 'supplier:id,name'])
             ->orderBy('name')
-            ->limit(10)
-            ->get();
+            ->paginate(15, ['*'], 'page', $page);
 
         return [
             'id' => 'inventory',
@@ -624,7 +712,7 @@ class ReportsController extends Controller
                 ['label' => 'Stores', 'value' => (string) InventoryStore::query()->where('organization_id', $organization->id)->count()],
                 ['label' => 'Open Issues', 'value' => (string) InventoryIssue::query()->where('organization_id', $organization->id)->where('status', 'Issued')->count()],
             ],
-            'rows' => $rows->map(fn (InventoryItem $item) => [
+            'rows' => collect($paginator->items())->map(fn (InventoryItem $item) => [
                 $item->name,
                 $item->category?->name ?: '-',
                 $item->store?->name ?: '-',
@@ -633,10 +721,16 @@ class ReportsController extends Controller
                 (string) $item->minimum_stock,
                 $item->available_stock <= $item->minimum_stock ? 'Low Stock' : 'Healthy',
             ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function frontOfficeModuleReport(Organization $organization, string $selectedMonth): array
+    private function frontOfficeModuleReport(Organization $organization, string $selectedMonth, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $enquiries = FrontOfficeAdmissionEnquiry::query()
@@ -645,8 +739,8 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
+            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"))
             ->latest('enquiry_date')
-            ->limit(4)
             ->get()
             ->map(fn (FrontOfficeAdmissionEnquiry $entry) => [
                 optional($entry->enquiry_date)->format('d M Y') ?: '-',
@@ -663,8 +757,8 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
+            ->when($search !== '', fn ($q) => $q->where('visitor_name', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"))
             ->latest('entry_date')
-            ->limit(3)
             ->get()
             ->map(fn (VisitorRegisterEntry $entry) => [
                 optional($entry->entry_date)->format('d M Y') ?: '-',
@@ -681,8 +775,8 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
+            ->when($search !== '', fn ($q) => $q->where('complainant_name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%"))
             ->latest('complaint_date')
-            ->limit(3)
             ->get()
             ->map(fn (ComplaintEntry $entry) => [
                 optional($entry->complaint_date)->format('d M Y') ?: '-',
@@ -692,6 +786,9 @@ class ReportsController extends Controller
                 $entry->category ?: '-',
                 ucfirst((string) $entry->status),
             ]);
+
+        $allRows = $enquiries->concat($visitors)->concat($complaints);
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($allRows->forPage($page, 15), $allRows->count(), 15, $page);
 
         return [
             'id' => 'front-office',
@@ -704,11 +801,17 @@ class ReportsController extends Controller
                 ['label' => 'Complaints', 'value' => (string) ComplaintEntry::query()->where('organization_id', $organization->id)->whereBetween('complaint_date', [$selectedMonthDate->copy()->startOfMonth()->toDateString(), $selectedMonthDate->copy()->endOfMonth()->toDateString()])->count()],
                 ['label' => 'Open Complaints', 'value' => (string) ComplaintEntry::query()->where('organization_id', $organization->id)->where('status', '!=', 'resolved')->count()],
             ],
-            'rows' => $enquiries->concat($visitors)->concat($complaints)->take(10)->values()->all(),
+            'rows' => $paginator->items(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
-    private function communicationModuleReport(Organization $organization, string $selectedMonth): array
+    private function communicationModuleReport(Organization $organization, string $selectedMonth, int $page = 1, string $search = ''): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
         $messages = Message::query()
@@ -717,9 +820,9 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
             ])
+            ->when($search !== '', fn ($q) => $q->where('subject', 'like', "%{$search}%"))
             ->with('sender:id,name')
             ->latest()
-            ->limit(4)
             ->get()
             ->map(fn (Message $entry) => [
                 optional($entry->created_at)->format('d M Y') ?: '-',
@@ -736,9 +839,9 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
             ])
+            ->when($search !== '', fn ($q) => $q->where('subject', 'like', "%{$search}%"))
             ->with('sender:id,name')
             ->latest()
-            ->limit(3)
             ->get()
             ->map(fn (EmailLog $entry) => [
                 optional($entry->sent_at ?? $entry->created_at)->format('d M Y') ?: '-',
@@ -755,9 +858,9 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
             ])
+            ->when($search !== '', fn ($q) => $q->where('subject', 'like', "%{$search}%"))
             ->with('sender:id,name')
             ->latest()
-            ->limit(3)
             ->get()
             ->map(fn (VoiceCallLog $entry) => [
                 optional($entry->sent_at ?? $entry->scheduled_for ?? $entry->created_at)->format('d M Y') ?: '-',
@@ -767,6 +870,9 @@ class ReportsController extends Controller
                 $entry->audience_type ?: '-',
                 ucfirst((string) $entry->status),
             ]);
+
+        $allRows = $messages->concat($emails)->concat($voiceCalls);
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($allRows->forPage($page, 15), $allRows->count(), 15, $page);
 
         return [
             'id' => 'communication',
@@ -779,7 +885,376 @@ class ReportsController extends Controller
                 ['label' => 'Voice Calls', 'value' => (string) VoiceCallLog::query()->where('organization_id', $organization->id)->whereBetween('created_at', [$selectedMonthDate->copy()->startOfMonth()->toDateString(), $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString()])->count()],
                 ['label' => 'Announcements', 'value' => (string) Message::query()->where('organization_id', $organization->id)->where('is_announcement', true)->count()],
             ],
-            'rows' => $messages->concat($emails)->concat($voiceCalls)->take(10)->values()->all(),
+            'rows' => $paginator->items(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
+        ];
+    }
+
+    private function lessonPlanModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, int $page = 1, string $search = ''): array
+    {
+        $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+
+        $query = LessonPlan::query()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('lesson_date', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->toDateString(),
+            ])
+            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name'])
+            ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass))
+            ->when($search !== '', fn ($q) => $q->where('lesson_title', 'like', "%{$search}%")->orWhere('topic', 'like', "%{$search}%"))
+            ->latest('lesson_date');
+
+        $paginator = (clone $query)
+            ->paginate(15, ['*'], 'page', $page);
+
+        $baseQuery = LessonPlan::query()
+            ->where('organization_id', $organization->id)
+            ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass));
+
+        $totalPlans = (clone $baseQuery)->count();
+        $completed = (clone $baseQuery)->where('status', 'completed')->count();
+        $inProgress = (clone $baseQuery)->where('status', 'in_progress')->count();
+        $planned = (clone $baseQuery)->where('status', 'planned')->count();
+
+        return [
+            'id' => 'lesson-plan',
+            'label' => 'Lesson Plan',
+            'description' => 'Lesson plans, topics covered, and teaching schedule.',
+            'columns' => ['Date', 'Class', 'Subject', 'Teacher', 'Title', 'Status'],
+            'stats' => [
+                ['label' => 'Total Plans', 'value' => (string) $totalPlans],
+                ['label' => 'Completed', 'value' => (string) $completed],
+                ['label' => 'In Progress', 'value' => (string) $inProgress],
+                ['label' => 'Planned', 'value' => (string) $planned],
+            ],
+            'rows' => collect($paginator->items())->map(fn (LessonPlan $plan) => [
+                optional($plan->lesson_date)->format('d M Y') ?: '-',
+                $this->classLabel($plan->schoolClass),
+                $plan->subject?->name ?: '-',
+                $plan->teacher?->name ?: '-',
+                $plan->lesson_title ?: '-',
+                ucfirst(str_replace('_', ' ', (string) $plan->status)),
+            ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
+        ];
+    }
+
+    private function humanResourceModuleReport(Organization $organization, string $selectedMonth, int $page = 1, string $search = ''): array
+    {
+        $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+
+        $staffPaginator = User::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('role', ['teacher', 'accountant', 'librarian', 'transport_manager', 'hostel_warden'])
+            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('employee_id', 'like', "%{$search}%"))
+            ->with(['designation:id,name', 'department:id,name'])
+            ->paginate(15, ['*'], 'page', $page);
+
+        $totalStaff = User::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('role', ['teacher', 'accountant', 'librarian', 'transport_manager', 'hostel_warden'])
+            ->count();
+
+        $presentToday = StaffAttendance::query()
+            ->where('organization_id', $organization->id)
+            ->whereDate('date', $selectedMonthDate->copy()->toDateString())
+            ->whereIn('status', ['present', 'late', 'half_day'])
+            ->count();
+
+        $pendingPayroll = StaffPayrollEntry::query()
+            ->where('organization_id', $organization->id)
+            ->where('payroll_month', $selectedMonthDate->copy()->toDateString())
+            ->where('status', '!=', 'paid')
+            ->count();
+
+        $onLeave = LeaveRequest::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', null)
+            ->where('status', 'approved')
+            ->where('from_date', '<=', $selectedMonthDate->copy()->endOfMonth()->toDateString())
+            ->where('to_date', '>=', $selectedMonthDate->copy()->startOfMonth()->toDateString())
+            ->count();
+
+        return [
+            'id' => 'human-resource',
+            'label' => 'Human Resource',
+            'description' => 'Staff attendance, payroll, and leave management.',
+            'columns' => ['Employee ID', 'Name', 'Designation', 'Department', 'Role', 'Status'],
+            'stats' => [
+                ['label' => 'Total Staff', 'value' => (string) $totalStaff],
+                ['label' => 'Present', 'value' => (string) $presentToday],
+                ['label' => 'Pending Payroll', 'value' => (string) $pendingPayroll],
+                ['label' => 'On Leave', 'value' => (string) $onLeave],
+            ],
+            'rows' => collect($staffPaginator->items())->map(fn (User $staff) => [
+                $staff->employee_id ?: '-',
+                $staff->name ?: '-',
+                $staff->designation?->name ?: '-',
+                $staff->department?->name ?: '-',
+                ucfirst(str_replace('_', ' ', (string) $staff->role)),
+                ucfirst((string) $staff->status),
+            ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $staffPaginator->currentPage(),
+                'lastPage' => $staffPaginator->lastPage(),
+                'total' => $staffPaginator->total(),
+                'perPage' => $staffPaginator->perPage(),
+            ],
+        ];
+    }
+
+    private function homeworkModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, int $page = 1, string $search = ''): array
+    {
+        $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+
+        $query = Homework::query()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('assign_date', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->toDateString(),
+            ])
+            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name', 'submissions'])
+            ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass))
+            ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%"))
+            ->latest('assign_date');
+
+        $paginator = (clone $query)
+            ->paginate(15, ['*'], 'page', $page);
+
+        $baseQuery = Homework::query()
+            ->where('organization_id', $organization->id)
+            ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass));
+
+        $totalAssigned = (clone $baseQuery)->count();
+        $totalSubmissions = HomeworkSubmission::query()
+            ->whereHas('homework', fn ($q) => $q->where('organization_id', $organization->id))
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->count();
+        $pendingReview = HomeworkSubmission::query()
+            ->whereHas('homework', fn ($q) => $q->where('organization_id', $organization->id))
+            ->where('status', 'submitted')
+            ->count();
+        $evaluated = HomeworkSubmission::query()
+            ->whereHas('homework', fn ($q) => $q->where('organization_id', $organization->id))
+            ->where('status', 'evaluated')
+            ->count();
+
+        return [
+            'id' => 'homework',
+            'label' => 'Homework',
+            'description' => 'Homework assignments, submissions, and evaluation status.',
+            'columns' => ['Date', 'Subject', 'Class', 'Teacher', 'Submissions', 'Max Marks'],
+            'stats' => [
+                ['label' => 'Total Assigned', 'value' => (string) $totalAssigned],
+                ['label' => 'Submissions', 'value' => (string) $totalSubmissions],
+                ['label' => 'Pending Review', 'value' => (string) $pendingReview],
+                ['label' => 'Evaluated', 'value' => (string) $evaluated],
+            ],
+            'rows' => collect($paginator->items())->map(fn (Homework $hw) => [
+                optional($hw->assign_date)->format('d M Y') ?: '-',
+                $hw->subject?->name ?: '-',
+                $this->classLabel($hw->schoolClass),
+                $hw->teacher?->name ?: '-',
+                (string) $hw->submissions()->count(),
+                $hw->max_marks ? (string) $hw->max_marks : '-',
+            ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
+        ];
+    }
+
+    private function alumniModuleReport(Organization $organization, int $page = 1, string $search = ''): array
+    {
+        $paginator = AlumniRecord::query()
+            ->where('organization_id', $organization->id)
+            ->when($search !== '', fn ($q) => $q->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%"))
+            ->latest('created_at')
+            ->paginate(15, ['*'], 'page', $page);
+
+        $totalAlumni = AlumniRecord::query()->where('organization_id', $organization->id)->count();
+        $leftSchool = AlumniRecord::query()->where('organization_id', $organization->id)->where('alumni_status', 'left_school')->count();
+        $passedOut = AlumniRecord::query()->where('organization_id', $organization->id)->where('alumni_status', 'passed_out')->count();
+        $transferred = AlumniRecord::query()->where('organization_id', $organization->id)->where('alumni_status', 'transferred')->count();
+
+        return [
+            'id' => 'alumni',
+            'label' => 'Alumni',
+            'description' => 'Alumni records, pass-out statistics, and contact details.',
+            'columns' => ['Name', 'Class', 'Passing Year', 'Status', 'Current City', 'Phone'],
+            'stats' => [
+                ['label' => 'Total Alumni', 'value' => (string) $totalAlumni],
+                ['label' => 'Left School', 'value' => (string) $leftSchool],
+                ['label' => 'Passed Out', 'value' => (string) $passedOut],
+                ['label' => 'Transferred', 'value' => (string) $transferred],
+            ],
+            'rows' => collect($paginator->items())->map(fn (AlumniRecord $record) => [
+                trim(($record->first_name ?? '') . ' ' . ($record->last_name ?? '')) ?: '-',
+                $record->class ? 'Class ' . $record->class . ($record->section ? ' - ' . $record->section : '') : '-',
+                $record->passing_year ?: '-',
+                ucfirst(str_replace('_', ' ', (string) $record->alumni_status)),
+                $record->current_city ?: '-',
+                $record->phone ?: '-',
+            ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
+        ];
+    }
+
+    private function activityLogModuleReport(Organization $organization, string $selectedMonth, int $page = 1, string $search = ''): array
+    {
+        $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+
+        $paginator = ActivityLog::query()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->when($search !== '', fn ($q) => $q->where('description', 'like', "%{$search}%")->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%")))
+            ->with('user:id,name')
+            ->latest()
+            ->paginate(15, ['*'], 'page', $page);
+
+        $totalLogins = ActivityLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('action', 'login')
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->count();
+
+        $totalLogouts = ActivityLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('action', 'logout')
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->count();
+
+        $uniqueUsers = ActivityLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('action', 'login')
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->distinct('user_id')
+            ->count('user_id');
+
+        return [
+            'id' => 'activity-log',
+            'label' => 'Activity Log',
+            'description' => 'Login and logout activity tracking for all users.',
+            'columns' => ['Timestamp', 'User', 'Action', 'Description', 'IP Address', 'Device'],
+            'stats' => [
+                ['label' => 'Total Logins', 'value' => (string) $totalLogins],
+                ['label' => 'Logouts', 'value' => (string) $totalLogouts],
+                ['label' => 'Unique Users', 'value' => (string) $uniqueUsers],
+            ],
+            'rows' => collect($paginator->items())->map(fn (ActivityLog $log) => [
+                optional($log->created_at)->format('d M Y, H:i') ?: '-',
+                $log->user?->name ?: '-',
+                ucfirst((string) $log->action),
+                $log->description ?: '-',
+                $log->ip_address ?: '-',
+                $log->user_agent ? substr($log->user_agent, 0, 40) : '-',
+            ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
+        ];
+    }
+
+    private function auditTrailModuleReport(Organization $organization, string $selectedMonth, int $page = 1, string $search = ''): array
+    {
+        $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+
+        $paginator = AuditTrail::query()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->when($search !== '', fn ($q) => $q->where('description', 'like', "%{$search}%"))
+            ->with('user:id,name')
+            ->latest()
+            ->paginate(15, ['*'], 'page', $page);
+
+        $totalEvents = AuditTrail::query()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('created_at', [
+                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+                $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+            ])
+            ->count();
+
+        $created = AuditTrail::query()->where('organization_id', $organization->id)->where('action', 'created')->whereBetween('created_at', [
+            $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+            $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+        ])->count();
+
+        $updated = AuditTrail::query()->where('organization_id', $organization->id)->where('action', 'updated')->whereBetween('created_at', [
+            $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+            $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+        ])->count();
+
+        $deleted = AuditTrail::query()->where('organization_id', $organization->id)->where('action', 'deleted')->whereBetween('created_at', [
+            $selectedMonthDate->copy()->startOfMonth()->toDateString(),
+            $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
+        ])->count();
+
+        return [
+            'id' => 'audit-trail',
+            'label' => 'Audit Trail',
+            'description' => 'System audit trail for data changes and critical actions.',
+            'columns' => ['Timestamp', 'User', 'Action', 'Model', 'Description', 'IP Address'],
+            'stats' => [
+                ['label' => 'Total Events', 'value' => (string) $totalEvents],
+                ['label' => 'Created', 'value' => (string) $created],
+                ['label' => 'Updated', 'value' => (string) $updated],
+                ['label' => 'Deleted', 'value' => (string) $deleted],
+            ],
+            'rows' => collect($paginator->items())->map(fn (AuditTrail $trail) => [
+                optional($trail->created_at)->format('d M Y, H:i') ?: '-',
+                $trail->user?->name ?: '-',
+                ucfirst((string) $trail->action),
+                class_basename((string) $trail->model_type) ?: '-',
+                $trail->description ?: '-',
+                $trail->ip_address ?: '-',
+            ])->values()->all(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'total' => $paginator->total(),
+                'perPage' => $paginator->perPage(),
+            ],
         ];
     }
 
@@ -858,7 +1333,7 @@ class ReportsController extends Controller
             return '-';
         }
 
-        return 'Class ' . $class->name . ($class->section ? ' - ' . $class->section : '');
+        return $class->name . ($class->section ? ' - ' . $class->section : '');
     }
 
     private function money(float $amount): string

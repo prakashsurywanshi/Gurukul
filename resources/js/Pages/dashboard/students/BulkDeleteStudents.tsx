@@ -189,7 +189,7 @@ export default function BulkDeleteStudents({ user, classRecords, studentRecords,
 
             <Card>
               <CardContent className="pt-6">
-                <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-800">
                   <AlertTriangle className="h-5 w-5" />
                   <p className="text-sm font-medium">Students are soft deleted and shown separately below.</p>
                 </div>
@@ -224,7 +224,7 @@ export default function BulkDeleteStudents({ user, classRecords, studentRecords,
                     <SelectItem value="all">All Classes</SelectItem>
                     {classOptions.map((className) => (
                       <SelectItem key={className} value={className}>
-                        Class {className}
+                         {className}
                       </SelectItem>
                     ))}
                   </SelectContent>

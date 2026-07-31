@@ -3,6 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import { Megaphone, Pencil, Plus, Trash2 } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Input } from '../ui/input';
@@ -23,11 +24,13 @@ interface NoticeRecord extends Notice {
 interface NoticeBoardProps {
   user: any;
   notices: NoticeRecord[];
-  classGroups: { value: string; label: string }[];
+  classOptions: string[];
+  sectionOptions: string[];
+  classSectionOptions: { value: string; label: string }[];
   canManageNotices: boolean;
 }
 
-export default function NoticeBoard({ user, notices, classGroups, canManageNotices }: NoticeBoardProps) {
+export default function NoticeBoard({ user, notices, classOptions, sectionOptions, classSectionOptions, canManageNotices }: NoticeBoardProps) {
   const { errors, flash } = usePage().props as any;
   const [showNoticeDialog, setShowNoticeDialog] = useState(false);
   const [editingNoticeId, setEditingNoticeId] = useState<string | null>(null);
@@ -38,6 +41,30 @@ export default function NoticeBoard({ user, notices, classGroups, canManageNotic
     description: '',
     pinned: false,
   });
+  const [noticeClass, setNoticeClass] = useState('');
+  const [noticeSection, setNoticeSection] = useState('');
+
+  const filteredSectionOptions = useMemo(
+    () => Array.from(new Set(classSectionOptions.filter((opt) => !noticeClass || opt.value.startsWith(noticeClass + '-')).map((opt) => {
+      const parts = opt.value.split('-');
+      return parts.slice(1).join('-');
+    }))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    [classSectionOptions, noticeClass]
+  );
+
+  const addNoticeGroup = () => {
+    if (!noticeClass || !noticeSection) {
+      toast.error('Select class and section first');
+      return;
+    }
+    const value = `${noticeClass}-${noticeSection}`;
+    setNoticeForm((current) => ({
+      ...current,
+      selectedGroups: current.selectedGroups.includes(value) ? current.selectedGroups : [...current.selectedGroups, value],
+    }));
+    setNoticeClass('');
+    setNoticeSection('');
+  };
 
   useEffect(() => {
     if (flash?.success) {
@@ -164,29 +191,62 @@ export default function NoticeBoard({ user, notices, classGroups, canManageNotic
                     {errors?.audienceType ? <p className="text-sm text-red-600">{errors.audienceType}</p> : null}
                   </div>
                   {noticeForm.audienceType === 'class_section' ? (
-                    <div className="space-y-2">
-                      <Label>Class / Section Groups</Label>
-                      <div className="grid gap-2 rounded-lg border border-slate-200 p-3">
-                        {classGroups.map((group) => (
-                          <label key={group.value} className="flex items-center gap-3">
-                            <Checkbox
-                              checked={noticeForm.selectedGroups.includes(group.value)}
-                              onCheckedChange={(checked) =>
-                                setNoticeForm((current) => ({
-                                  ...current,
-                                  selectedGroups: checked
-                                    ? [...current.selectedGroups, group.value]
-                                    : current.selectedGroups.filter((value) => value !== group.value),
-                                }))
-                              }
-                            />
-                            <span className="text-sm text-slate-700">{group.label}</span>
-                          </label>
-                        ))}
+                    <>
+                      <div className="space-y-2">
+                        <Label>Class</Label>
+                        <Select value={noticeClass} onValueChange={(value) => {
+                          setNoticeClass(value);
+                          setNoticeSection('');
+                        }}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select class" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {classOptions.map((cls) => (
+                              <SelectItem key={cls} value={cls}>
+                                {cls}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      {errors?.selectedGroups ? <p className="text-sm text-red-600">{errors.selectedGroups}</p> : null}
-                      {errors?.notice_recipients ? <p className="text-sm text-red-600">{errors.notice_recipients}</p> : null}
-                    </div>
+                      <div className="space-y-2">
+                        <Label>Section</Label>
+                        <div className="flex gap-2">
+                          <Select value={noticeSection} onValueChange={setNoticeSection} disabled={!noticeClass}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select section" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {filteredSectionOptions.map((section) => (
+                                <SelectItem key={section} value={section}>
+                                  {section}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button type="button" variant="outline" onClick={addNoticeGroup}>
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Selected Groups</Label>
+                        <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 p-3">
+                          {noticeForm.selectedGroups.length > 0 ? (
+                            noticeForm.selectedGroups.map((group) => (
+                              <Badge key={group} variant="secondary" className="cursor-pointer" onClick={() => setNoticeForm((current) => ({ ...current, selectedGroups: current.selectedGroups.filter((g) => g !== group) }))}>
+                                {group}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="text-sm text-slate-500">No class-section groups selected yet.</p>
+                          )}
+                        </div>
+                        {errors?.selectedGroups ? <p className="text-sm text-red-600">{errors.selectedGroups}</p> : null}
+                        {errors?.notice_recipients ? <p className="text-sm text-red-600">{errors.notice_recipients}</p> : null}
+                      </div>
+                    </>
                   ) : null}
                   <div className="space-y-2">
                     <Label htmlFor="notice-description">Description</Label>

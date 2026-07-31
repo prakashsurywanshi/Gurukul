@@ -450,8 +450,8 @@ export default function HostelFeeCollection({
               display: inline-block;
               padding: 8px 14px;
               border-radius: 999px;
-              background: ${payment.status === 'reverted' ? '#e2e8f0' : record.status === 'paid' ? '#dcfce7' : '#fef3c7'};
-              color: ${payment.status === 'reverted' ? '#475569' : record.status === 'paid' ? '#166534' : '#92400e'};
+              background: ${payment.status === 'reverted' ? '#e2e8f0' : record.status === 'paid' ? '#dcfce7' : '#dbeafe'};
+              color: ${payment.status === 'reverted' ? '#475569' : record.status === 'paid' ? '#166534' : '#1e3a8a'};
               font-weight: 700;
               font-size: 13px;
               text-transform: uppercase;
@@ -893,7 +893,7 @@ export default function HostelFeeCollection({
                     <p className="text-sm text-slate-500">Pending Balance</p>
                     <p className="text-2xl font-bold text-slate-900">₹ {totalBalance.toLocaleString('en-IN')}</p>
                   </div>
-                  <Wallet className="h-8 w-8 text-amber-500" />
+                  <Wallet className="h-8 w-8 text-blue-500" />
                 </div>
               </CardContent>
             </Card>

@@ -143,7 +143,7 @@ export default function StudentDetails({ user, studentId, student: initialStuden
                 </Button>
               )}
               <Badge variant="outline" className="px-3 py-1 text-sm">
-                Class {student.class}-{student.section}
+                {student.class}-{student.section}
               </Badge>
               {student.deleted_at && (
                 <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
@@ -183,7 +183,7 @@ export default function StudentDetails({ user, studentId, student: initialStuden
                       <SelectItem value="all">All Classes</SelectItem>
                       {classOptions.map((className) => (
                         <SelectItem key={className} value={className}>
-                          Class {className}
+                          {className}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -287,7 +287,7 @@ export default function StudentDetails({ user, studentId, student: initialStuden
                     <GraduationCap className="mt-0.5 h-5 w-5 text-blue-600" />
                     <div>
                       <p className="text-sm text-slate-500">Class & Section</p>
-                      <p className="font-medium text-slate-900">Class {student.class} - Section {student.section}</p>
+                      <p className="font-medium text-slate-900">{student.class} - Section {student.section}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -322,7 +322,7 @@ export default function StudentDetails({ user, studentId, student: initialStuden
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <p className="font-semibold text-slate-900">
-                                  {history.session || 'Session not set'} | Class {history.class || '-'} - {history.section || '-'}
+                                  {history.session || 'Session not set'} | {history.class || '-'} - {history.section || '-'}
                                 </p>
                                 {history.is_current ? (
                                   <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Current</Badge>

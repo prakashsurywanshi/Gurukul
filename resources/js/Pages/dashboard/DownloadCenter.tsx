@@ -405,7 +405,7 @@ export default function DownloadCenter({
                             <p className="mt-1 text-sm text-slate-500">
                               PDF, DOCX, XLSX, PPT, ZIP, MP4, MOV, and other school media are supported.
                             </p>
-                            {uploadLimits ? <p className="mt-2 text-xs text-amber-700">Current server upload limit: {uploadLimits.maxLabel}</p> : null}
+                            {uploadLimits ? <p className="mt-2 text-xs text-blue-700">Current server upload limit: {uploadLimits.maxLabel}</p> : null}
                             {selectedFile ? (
                               <p className="mt-3 text-xs text-slate-500">
                                 {formatFileSize(selectedFile.size)}

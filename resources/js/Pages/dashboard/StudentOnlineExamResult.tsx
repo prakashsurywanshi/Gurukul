@@ -93,7 +93,7 @@ export default function StudentOnlineExamResult({ user, attempt, exam }: Student
           <Card>
             <CardContent className="px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">Negative Marks</p>
-              <p className="mt-2 text-2xl font-bold text-amber-600">{attempt.negativeMarksApplied}</p>
+              <p className="mt-2 text-2xl font-bold text-blue-600">{attempt.negativeMarksApplied}</p>
             </CardContent>
           </Card>
         </div>

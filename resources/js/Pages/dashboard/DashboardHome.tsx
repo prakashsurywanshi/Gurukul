@@ -58,7 +58,7 @@ const adminQuickActions = [
     label: 'Attendance',
     description: 'Mark class attendance and monitor daily presence.',
     route: '/attendance',
-    color: 'bg-amber-50 text-amber-900 border-amber-200',
+    color: 'bg-blue-50 text-blue-900 border-blue-200',
   },
   {
     label: 'Online Exams',
@@ -125,7 +125,7 @@ export function DashboardHome({
               </h1>
               <p className="mt-2 text-sm text-slate-500">
                 {isStudent
-                  ? `Class ${studentRecord?.className || '-'} / Section ${studentRecord?.section || '-'}`
+                  ? `${studentRecord?.className || '-'} / Section ${studentRecord?.section || '-'}`
                   : 'A live operational snapshot of students, academics, fees, and campus activity for the selected session.'}
               </p>
               <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
@@ -176,7 +176,7 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
       value: formatCurrency(stats?.fees?.pending || 0),
       helper: `${stats?.fees?.pendingCount || 0} pending fee records`,
       icon: TrendingDown,
-      color: 'bg-amber-600',
+      color: 'bg-blue-600',
     },
     {
       title: 'Today Attendance',
@@ -285,7 +285,7 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
                 />
               </div>
             </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <p>
@@ -309,7 +309,7 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
                 <div>
                   <p className="font-semibold text-slate-900">{student.name}</p>
                   <p className="mt-1 text-sm text-slate-500">
-                    Class {student.className} / Section {student.section}
+                    {student.className} / Section {student.section}
                   </p>
                 </div>
                 <Badge variant="outline">{student.admissionDate}</Badge>
@@ -329,7 +329,7 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
                 <div>
                   <p className="font-semibold text-slate-900">{fee.studentName}</p>
                   <p className="mt-1 text-sm text-slate-500">
-                    Class {fee.className} / Section {fee.section}
+                    {fee.className} / Section {fee.section}
                   </p>
                 </div>
                 <Badge variant={fee.status === 'partial' ? 'secondary' : 'outline'}>{fee.status}</Badge>
@@ -353,7 +353,7 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
                 <div>
                   <p className="font-semibold text-slate-900">{exam.name}</p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {exam.subject} • Class {exam.className}-{exam.section}
+                    {exam.subject} • {exam.className}-{exam.section}
                   </p>
                 </div>
                 <Badge variant="outline">{exam.examDate}</Badge>
@@ -415,7 +415,7 @@ function StudentDashboard({ stats, notices }: { stats: any; notices: Notice[] })
       value: formatCurrency(stats?.overview?.pendingFees || 0),
       helper: `${stats?.fees?.pendingCount || 0} fee records pending`,
       icon: IndianRupee,
-      color: 'bg-amber-600',
+      color: 'bg-blue-600',
     },
     {
       title: 'Certificates',
@@ -544,7 +544,7 @@ function StudentDashboard({ stats, notices }: { stats: any; notices: Notice[] })
                 />
               </div>
             </div>
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <p>

@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'organization.subscription' => EnsureOrganizationSubscriptionIsActive::class,
             'staff.permission' => EnsureStaffPermission::class,
+            'audit.trail' => \App\Http\Middleware\LogAuditTrail::class,
         ]);
 
         $middleware->web(append: [

@@ -699,16 +699,16 @@ export default function InventoryManagement({
                   <p className="text-sm font-medium text-slate-600">Approx. stock purchase value</p>
                   <p className="mt-1 text-3xl font-bold text-slate-900">Rs. {totalInventoryValue.toLocaleString()}</p>
                 </div>
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                  <p className="text-sm font-medium text-amber-800">Low stock items</p>
+                <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                  <p className="text-sm font-medium text-blue-800">Low stock items</p>
                   <div className="mt-3 space-y-2">
                     {lowStockItems.length > 0 ? lowStockItems.map((item) => (
                       <div key={item.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm">
                         <span>{item.name}</span>
-                        <span className="font-semibold text-amber-700">{item.availableStock} left</span>
+                        <span className="font-semibold text-blue-700">{item.availableStock} left</span>
                       </div>
                     )) : (
-                      <p className="text-sm text-amber-800">No low stock alerts right now.</p>
+                      <p className="text-sm text-blue-800">No low stock alerts right now.</p>
                     )}
                   </div>
                 </div>

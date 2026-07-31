@@ -17,7 +17,7 @@ export const commonWebsiteSliderImages = [
           </linearGradient>
         </defs>
         <rect width="1600" height="900" fill="url(#sky)"/>
-        <circle cx="1260" cy="170" r="94" fill="#fef3c7" opacity="0.88"/>
+        <circle cx="1260" cy="170" r="94" fill="#bfdbfe" opacity="0.88"/>
         <rect x="0" y="620" width="1600" height="280" fill="url(#road)"/>
         <path d="M660 900 L790 520 L810 520 L940 900 Z" fill="#dbeafe" opacity="0.86"/>
         <path d="M715 900 L800 565 L885 900 Z" fill="#0f172a" opacity="0.48"/>
@@ -60,7 +60,7 @@ export const commonWebsiteSliderImages = [
           <linearGradient id="atrium" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#312e81"/>
             <stop offset="50%" stop-color="#7c3aed"/>
-            <stop offset="100%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#2563EB"/>
           </linearGradient>
         </defs>
         <rect width="1600" height="900" fill="url(#atrium)"/>
@@ -68,7 +68,7 @@ export const commonWebsiteSliderImages = [
         <rect x="160" y="150" width="1280" height="430" rx="38" fill="#ffffff" opacity="0.16"/>
         <rect x="250" y="230" width="160" height="280" rx="18" fill="#f8fafc" opacity="0.92"/>
         <rect x="455" y="230" width="160" height="280" rx="18" fill="#f8fafc" opacity="0.86"/>
-        <rect x="660" y="230" width="280" height="280" rx="24" fill="#fef3c7" opacity="0.8"/>
+        <rect x="660" y="230" width="280" height="280" rx="24" fill="#bfdbfe" opacity="0.8"/>
         <rect x="985" y="230" width="160" height="280" rx="18" fill="#f8fafc" opacity="0.86"/>
         <rect x="1190" y="230" width="160" height="280" rx="18" fill="#f8fafc" opacity="0.92"/>
       </svg>

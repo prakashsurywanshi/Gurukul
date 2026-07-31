@@ -899,7 +899,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                       </SelectTrigger>
                       <SelectContent>
                         {classOptions.map(c => (
-                          <SelectItem key={c} value={c}>Class {c}</SelectItem>
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1016,7 +1016,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                       </SelectTrigger>
                       <SelectContent>
                         {classOptions.map(c => (
-                          <SelectItem key={c} value={c}>Class {c}</SelectItem>
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1100,7 +1100,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                                   Assigned Fees: {getAssignedFeeLabelsForStudent(student.id).join(', ') || 'None'}
                                 </p>
                                 {hasSelectedFeeAssigned(student.id) && (
-                                  <p className="text-xs font-medium text-amber-600">
+                                  <p className="text-xs font-medium text-blue-600">
                                     Selected fee already assigned
                                   </p>
                                 )}
@@ -1152,7 +1152,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                       <CardContent className="pt-6">
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-lg">Class {key}</h3>
+                            <h3 className="font-bold text-lg">{key}</h3>
                             <Badge variant="outline">{summary.students} students</Badge>
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-sm">
@@ -1273,7 +1273,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                     <SelectContent>
                       <SelectItem value="all">All Classes</SelectItem>
                       {classOptions.map((c) => (
-                        <SelectItem key={c} value={c}>Class {c}</SelectItem>
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -1311,7 +1311,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                 <TableBody>
                   {filteredStructures.map((structure) => (
                     <TableRow key={structure.id}>
-                      <TableCell>Class {structure.class}</TableCell>
+                      <TableCell>{structure.class}</TableCell>
                       <TableCell>Section {structure.section}</TableCell>
                       <TableCell className="font-medium">{structure.feeType}</TableCell>
                       <TableCell>{formatCurrency(structure.amount)}</TableCell>
@@ -1374,7 +1374,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                       <SelectContent>
                         <SelectItem value="all">All Classes</SelectItem>
                         {classOptions.map(c => (
-                          <SelectItem key={c} value={c}>Class {c}</SelectItem>
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1410,7 +1410,7 @@ export default function FeeManagement({ user, organization, students, classRecor
                         </p>
                         <p className="text-xs text-gray-600">{student.admission_no}</p>
                         <p className="text-xs text-gray-600">
-                          Class {student.class}-{student.section}
+                          {student.class}-{student.section}
                         </p>
                       </div>
                     ))}

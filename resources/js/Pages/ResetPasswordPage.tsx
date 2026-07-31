@@ -31,36 +31,36 @@ export default function ResetPasswordPage({ token, email }: ResetPasswordPagePro
     <>
       <Head title="Reset Password" />
 
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(209,173,106,0.24),transparent_30%),linear-gradient(180deg,#fbf6ec_0%,#f3ead7_100%)]">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.24),transparent_30%),linear-gradient(180deg,#eff6ff_0%,#e0e7ff_100%)]">
         <div className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-10">
           <div className="grid w-full gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-            <section className="rounded-[2rem] border border-[rgba(209,173,106,0.2)] bg-[radial-gradient(circle_at_top,rgba(33,52,74,0.96),rgba(9,19,31,1)_58%)] p-8 text-white shadow-[0_32px_80px_rgba(8,19,31,0.28)] lg:p-10">
+            <section className="rounded-[2rem] border border-[rgba(59,130,246,0.2)] bg-[radial-gradient(circle_at_top,rgba(33,52,74,0.96),rgba(9,19,31,1)_58%)] p-8 text-white shadow-[0_32px_80px_rgba(8,19,31,0.28)] lg:p-10">
               <div className="mb-8 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#edd39c,#b28745)] text-[#08131f] shadow-[0_18px_40px_rgba(178,135,69,0.32)]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_18px_40px_rgba(59,130,246,0.32)]">
                   <GraduationCap className="h-9 w-9" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold tracking-tight text-[#f4deaf]">Gurukul</h1>
-                  <p className="text-sm uppercase tracking-[0.24em] text-[rgba(246,239,223,0.72)]">Educational Institution Management System</p>
+                  <h1 className="text-4xl font-bold tracking-tight text-[#93c5fd]">Gurukul</h1>
+                  <p className="text-sm uppercase tracking-[0.24em] text-[rgba(226,232,240,0.72)]">Educational Institution Management System</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#e1c07f]">Choose A New Password</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#60a5fa]">Choose A New Password</p>
                 <h2 className="text-3xl font-semibold">Secure your account</h2>
-                <p className="max-w-lg text-base leading-7 text-[rgba(246,239,223,0.72)]">
+                <p className="max-w-lg text-base leading-7 text-[rgba(226,232,240,0.72)]">
                   Create a new password with at least 8 characters. Once saved, you can sign in immediately with the updated password.
                 </p>
               </div>
 
-              <div className="mt-8 rounded-2xl border border-[rgba(236,211,160,0.28)] bg-[rgba(209,173,106,0.12)] p-4 text-sm text-[#f6efdf]">
+              <div className="mt-8 rounded-2xl border border-[rgba(147,197,253,0.28)] bg-[rgba(59,130,246,0.12)] p-4 text-sm text-[#f0f4ff]">
                 Choose something unique that you don&apos;t reuse across other services.
               </div>
             </section>
 
-            <Card className="border-[rgba(118,86,45,0.18)] bg-[rgba(255,250,239,0.94)] shadow-[0_28px_70px_rgba(8,19,31,0.12)]">
+            <Card className="border-[rgba(37,99,235,0.18)] bg-[rgba(255,255,255,0.94)] shadow-[0_28px_70px_rgba(8,19,31,0.12)]">
               <CardHeader className="space-y-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#f3dfb7,#d1ad6a)] text-[#08131f]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#93c5fd,#2563eb)] text-[#08131f]">
                   <KeyRound className="h-6 w-6" />
                 </div>
                 <CardTitle className="text-2xl text-[var(--foreground)]">Reset password</CardTitle>

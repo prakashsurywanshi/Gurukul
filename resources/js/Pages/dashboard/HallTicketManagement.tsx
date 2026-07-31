@@ -291,7 +291,7 @@ export default function HallTicketManagement({ user, organization, students, exa
                 <SelectContent>
                   {availableClassOptions.map((classOption) => (
                     <SelectItem key={classOption} value={classOption}>
-                      Class {classOption}
+                      {classOption}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -337,7 +337,7 @@ function getStatusBadgeClass(status: string) {
   }
 
   if (status === 'Low Stock' || status === 'Issued' || status === 'Ordered' || status === 'Medium') {
-    return 'bg-amber-100 text-amber-700 border-amber-200';
+    return 'bg-blue-100 text-blue-700 border-blue-200';
   }
 
   if (status === 'Overdue' || status === 'Issued Out' || status === 'Pending' || status === 'High') {
@@ -964,7 +964,7 @@ export default function LibraryManagement({
               <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <Sparkles className="h-5 w-5 text-amber-500" />
+                    <Sparkles className="h-5 w-5 text-blue-500" />
                     Librarian snapshot
                   </CardTitle>
                   <CardDescription>Quick view of the most important actions for {user?.name || 'your team'}.</CardDescription>
@@ -1034,7 +1034,7 @@ export default function LibraryManagement({
                   <p className="whitespace-nowrap text-sm text-slate-500">Active issues</p>
                   <p className="mt-2 text-3xl font-semibold text-slate-900">{activeIssues}</p>
                 </div>
-                <div className="rounded-2xl bg-amber-50 p-3 text-amber-700">
+                <div className="rounded-2xl bg-blue-50 p-3 text-blue-700">
                   <CalendarClock className="h-6 w-6" />
                 </div>
               </CardContent>
@@ -1150,7 +1150,7 @@ export default function LibraryManagement({
                   <CardContent className="space-y-3">
                     {[
                       { icon: AlertTriangle, label: `${overdueIssues} overdue circulation records`, tone: 'text-rose-600 bg-rose-50' },
-                      { icon: Clock3, label: `${lowStockTitles} low-stock titles`, tone: 'text-amber-700 bg-amber-50' },
+                      { icon: Clock3, label: `${lowStockTitles} low-stock titles`, tone: 'text-blue-700 bg-blue-50' },
                       { icon: CreditCard, label: `${pendingCardStudents} students waiting for a library card`, tone: 'text-indigo-700 bg-indigo-50' },
                       {
                         icon: BadgeIndianRupee,
@@ -1660,7 +1660,7 @@ export default function LibraryManagement({
                         <SelectContent>
                           {memberClasses.map((className) => (
                             <SelectItem key={className} value={className}>
-                              Class {className}
+                              {className}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1733,7 +1733,7 @@ export default function LibraryManagement({
                                   {member.libraryCardNumber ? (
                                     <span className="font-medium text-slate-900">{member.libraryCardNumber}</span>
                                   ) : (
-                                    <span className="text-sm text-amber-700">Not generated</span>
+                                    <span className="text-sm text-blue-700">Not generated</span>
                                   )}
                                 </TableCell>
                                 <TableCell>{member.activeLoans}</TableCell>
@@ -1743,7 +1743,7 @@ export default function LibraryManagement({
                                   </span>
                                 </TableCell>
                                 <TableCell>
-                                  <span className={member.fineDue > 0 ? 'font-medium text-amber-700' : 'text-slate-700'}>
+                                  <span className={member.fineDue > 0 ? 'font-medium text-blue-700' : 'text-slate-700'}>
                                     Rs. {member.fineDue}
                                   </span>
                                 </TableCell>

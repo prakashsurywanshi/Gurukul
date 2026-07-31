@@ -142,7 +142,7 @@ const statusBadgeClassName = (status: string) => {
     case 'submitted':
       return 'bg-blue-100 text-blue-700 hover:bg-blue-100';
     case 'late':
-      return 'bg-amber-100 text-amber-700 hover:bg-amber-100';
+      return 'bg-blue-100 text-blue-700 hover:bg-blue-100';
     default:
       return 'bg-slate-100 text-slate-700 hover:bg-slate-100';
   }
@@ -191,11 +191,13 @@ export default function HomeworkPage({
   const [submissionText, setSubmissionText] = useState('');
   const [submittingStudentWork, setSubmittingStudentWork] = useState(false);
   const [homeworkSubjectFilter, setHomeworkSubjectFilter] = useState('all');
-  const [homeworkClassSectionFilter, setHomeworkClassSectionFilter] = useState('all');
+  const [homeworkClassFilter, setHomeworkClassFilter] = useState('all');
+  const [homeworkSectionFilter, setHomeworkSectionFilter] = useState('all');
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState('all');
   const [submissionHomeworkDateFilter, setSubmissionHomeworkDateFilter] = useState('all');
   const [submissionSubjectFilter, setSubmissionSubjectFilter] = useState('all');
-  const [submissionClassSectionFilter, setSubmissionClassSectionFilter] = useState('all');
+  const [submissionClassFilter, setSubmissionClassFilter] = useState('all');
+  const [submissionSectionFilter, setSubmissionSectionFilter] = useState('all');
   const [homeworkPage, setHomeworkPage] = useState(1);
   const [evaluationState, setEvaluationState] = useState<EvaluationState>({});
   const [savingEvaluationId, setSavingEvaluationId] = useState<string | null>(null);
@@ -286,29 +288,26 @@ export default function HomeworkPage({
     [homeworkRecords]
   );
 
-  const homeworkClassSectionOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          homeworkRecords
-            .map((record) => `${record.className} - Section ${record.section}`)
-            .filter((value) => value !== ' - Section ')
-        )
-      ).sort((left, right) => left.localeCompare(right)),
+  const homeworkClassOptions = useMemo(
+    () => Array.from(new Set(homeworkRecords.map((record) => record.className).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
     [homeworkRecords]
+  );
+
+  const homeworkSectionOptions = useMemo(
+    () => Array.from(new Set(homeworkRecords.filter((record) => homeworkClassFilter === 'all' || record.className === homeworkClassFilter).map((record) => record.section).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
+    [homeworkRecords, homeworkClassFilter]
   );
 
   const filteredHomeworkRecords = useMemo(
     () =>
       homeworkRecords.filter((record) => {
         const subjectMatches = homeworkSubjectFilter === 'all' || record.subjectName === homeworkSubjectFilter;
-        const classSectionLabel = `${record.className} - Section ${record.section}`;
-        const classSectionMatches =
-          homeworkClassSectionFilter === 'all' || classSectionLabel === homeworkClassSectionFilter;
+        const classMatches = homeworkClassFilter === 'all' || record.className === homeworkClassFilter;
+        const sectionMatches = homeworkSectionFilter === 'all' || record.section === homeworkSectionFilter;
 
-        return subjectMatches && classSectionMatches;
+        return subjectMatches && classMatches && sectionMatches;
       }),
-    [homeworkClassSectionFilter, homeworkRecords, homeworkSubjectFilter]
+    [homeworkClassFilter, homeworkSectionFilter, homeworkRecords, homeworkSubjectFilter]
   );
 
   const homeworkTotalPages = Math.max(1, Math.ceil(filteredHomeworkRecords.length / homeworkRowsPerPage));
@@ -342,16 +341,14 @@ export default function HomeworkPage({
     [submissionRecords]
   );
 
-  const submissionClassSectionOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          submissionRecords
-            .map((record) => `${record.className} - Section ${record.section}`)
-            .filter((value) => value !== ' - Section ')
-        )
-      ).sort((left, right) => left.localeCompare(right)),
+  const submissionClassOptions = useMemo(
+    () => Array.from(new Set(submissionRecords.map((record) => record.className).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
     [submissionRecords]
+  );
+
+  const submissionSectionOptions = useMemo(
+    () => Array.from(new Set(submissionRecords.filter((record) => submissionClassFilter === 'all' || record.className === submissionClassFilter).map((record) => record.section).filter(Boolean))).sort((left, right) => left.localeCompare(right)),
+    [submissionRecords, submissionClassFilter]
   );
 
   const filteredSubmissionRecords = useMemo(
@@ -361,14 +358,14 @@ export default function HomeworkPage({
         const homeworkDateMatches =
           submissionHomeworkDateFilter === 'all' || record.homeworkDate === submissionHomeworkDateFilter;
         const subjectMatches = submissionSubjectFilter === 'all' || record.subjectName === submissionSubjectFilter;
-        const classSectionLabel = `${record.className} - Section ${record.section}`;
-        const classSectionMatches =
-          submissionClassSectionFilter === 'all' || classSectionLabel === submissionClassSectionFilter;
+        const classMatches = submissionClassFilter === 'all' || record.className === submissionClassFilter;
+        const sectionMatches = submissionSectionFilter === 'all' || record.section === submissionSectionFilter;
 
-        return statusMatches && homeworkDateMatches && subjectMatches && classSectionMatches;
+        return statusMatches && homeworkDateMatches && subjectMatches && classMatches && sectionMatches;
       }),
     [
-      submissionClassSectionFilter,
+      submissionClassFilter,
+      submissionSectionFilter,
       submissionHomeworkDateFilter,
       submissionRecords,
       submissionStatusFilter,
@@ -391,7 +388,7 @@ export default function HomeworkPage({
 
   useEffect(() => {
     setHomeworkPage(1);
-  }, [homeworkSubjectFilter, homeworkClassSectionFilter]);
+  }, [homeworkSubjectFilter, homeworkClassFilter, homeworkSectionFilter]);
 
   useEffect(() => {
     if (homeworkPage > homeworkTotalPages) {
@@ -542,7 +539,7 @@ export default function HomeworkPage({
               <>
                 <Card className="min-w-[180px]">
                   <CardContent className="flex items-center gap-3 pt-6">
-                    <ClipboardCheck className="h-8 w-8 text-amber-500" />
+                    <ClipboardCheck className="h-8 w-8 text-blue-500" />
                     <div>
                       <p className="text-sm text-gray-500">Pending</p>
                       <p className="text-2xl font-bold text-gray-900">{studentHomeworkSummary.pending}</p>
@@ -581,7 +578,7 @@ export default function HomeworkPage({
                 </Card>
                 <Card className="min-w-[180px]">
                   <CardContent className="flex items-center gap-3 pt-6">
-                    <GraduationCap className="h-8 w-8 text-amber-500" />
+                    <GraduationCap className="h-8 w-8 text-blue-500" />
                     <div>
                       <p className="text-sm text-gray-500">Pending Review</p>
                       <p className="text-2xl font-bold text-gray-900">{teacherHomeworkSummary.pendingReview}</p>
@@ -884,16 +881,36 @@ export default function HomeworkPage({
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Filter by Class Section</Label>
-                      <Select value={homeworkClassSectionFilter} onValueChange={setHomeworkClassSectionFilter}>
+                      <Label>Filter by Class</Label>
+                      <Select value={homeworkClassFilter} onValueChange={(value) => {
+                        setHomeworkClassFilter(value);
+                        setHomeworkSectionFilter('all');
+                      }}>
                         <SelectTrigger>
-                          <SelectValue placeholder="All class sections" />
+                          <SelectValue placeholder="All classes" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All class sections</SelectItem>
-                          {homeworkClassSectionOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
+                          <SelectItem value="all">All classes</SelectItem>
+                          {homeworkClassOptions.map((cls) => (
+                            <SelectItem key={cls} value={cls}>
+                              {cls}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Filter by Section</Label>
+                      <Select value={homeworkSectionFilter} onValueChange={setHomeworkSectionFilter} disabled={homeworkClassFilter === 'all'}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All sections" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All sections</SelectItem>
+                          {homeworkSectionOptions.map((section) => (
+                            <SelectItem key={section} value={section}>
+                              {section}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -926,7 +943,7 @@ export default function HomeworkPage({
                               <tr key={record.id} className="align-top">
                                 <td className="px-4 py-3 font-medium text-gray-900">{record.subjectName}</td>
                                 <td className="px-4 py-3 text-gray-600">
-                                  Class {record.className} - Section {record.section}
+                                  {record.className} - Section {record.section}
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">{formatDateLabel(record.homeworkDate)}</td>
                                 <td className="px-4 py-3 text-gray-600">{formatDateLabel(record.submissionDate)}</td>
@@ -1105,16 +1122,36 @@ export default function HomeworkPage({
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label>Filter by Class Section</Label>
-                        <Select value={submissionClassSectionFilter} onValueChange={setSubmissionClassSectionFilter}>
+                        <Label>Filter by Class</Label>
+                        <Select value={submissionClassFilter} onValueChange={(value) => {
+                          setSubmissionClassFilter(value);
+                          setSubmissionSectionFilter('all');
+                        }}>
                           <SelectTrigger className="h-9">
-                            <SelectValue placeholder="All class sections" />
+                            <SelectValue placeholder="All classes" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">All class sections</SelectItem>
-                            {submissionClassSectionOptions.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
+                            <SelectItem value="all">All classes</SelectItem>
+                            {submissionClassOptions.map((cls) => (
+                              <SelectItem key={cls} value={cls}>
+                                {cls}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label>Filter by Section</Label>
+                        <Select value={submissionSectionFilter} onValueChange={setSubmissionSectionFilter} disabled={submissionClassFilter === 'all'}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="All sections" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All sections</SelectItem>
+                            {submissionSectionOptions.map((section) => (
+                              <SelectItem key={section} value={section}>
+                                {section}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1151,7 +1188,7 @@ export default function HomeworkPage({
                                 <td className="px-4 py-3 text-gray-600">
                                   <div>{record.subjectName}</div>
                                   <div className="text-xs text-gray-500">
-                                    Class {record.className} - Section {record.section}
+                                    {record.className} - Section {record.section}
                                   </div>
                                 </td>
                                 <td className="px-4 py-3 text-gray-600">{formatDateLabel(record.homeworkDate)}</td>

@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { createInertiaApp, router } from "@inertiajs/react";
 import { useEffect } from "react";
 import { Toaster } from 'sonner';
+import { ThemeProvider } from './components/ThemeProvider';
 
 function setFavicon(href?: string | null) {
   const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
@@ -37,10 +38,10 @@ createInertiaApp({
   },
   setup({ el, App, props }) {
     createRoot(el).render(
-    <>
+    <ThemeProvider>
       <AppShell App={App} props={props} />
       <Toaster />
-    </>
+    </ThemeProvider>
     )
   },
 })

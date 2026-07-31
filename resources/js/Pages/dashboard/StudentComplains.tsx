@@ -128,7 +128,7 @@ export default function StudentComplains({ user, entries, tableReady, studentRec
       return <Badge className="bg-blue-600 text-white hover:bg-blue-600">In Review</Badge>;
     }
 
-    return <Badge className="bg-amber-500 text-white hover:bg-amber-500">Open</Badge>;
+    return <Badge className="bg-blue-500 text-white hover:bg-blue-500">Open</Badge>;
   };
 
   return (
@@ -159,7 +159,7 @@ export default function StudentComplains({ user, entries, tableReady, studentRec
             <CardContent className="px-4 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
               <p className="mt-2 text-xl font-bold text-slate-900">
-                {studentRecord?.class ? `Class ${studentRecord.class}` : 'N/A'}
+                {studentRecord?.class ? `${studentRecord.class}` : 'N/A'}
                 {studentRecord?.section ? ` - ${studentRecord.section}` : ''}
               </p>
             </CardContent>
@@ -189,7 +189,7 @@ export default function StudentComplains({ user, entries, tableReady, studentRec
             </CardHeader>
             <CardContent>
               {!tableReady ? (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                   The `complaint_entries` table is not available yet. Run `php artisan migrate` to enable complaints.
                 </div>
               ) : (

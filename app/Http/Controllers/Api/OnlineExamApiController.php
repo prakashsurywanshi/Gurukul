@@ -334,7 +334,7 @@ class OnlineExamApiController extends Controller
             ->map(fn (SchoolClass $c) => [
                 'class_name' => (string) $c->name,
                 'section' => (string) $c->section,
-                'label' => sprintf('Class %s / Section %s', $c->name, $c->section),
+                'label' => sprintf('%s / Section %s', $c->name, $c->section),
                 'value' => sprintf('%s::%s', $c->name, $c->section),
             ])->unique(fn ($a) => $a['value'])->values()->all();
     }

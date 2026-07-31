@@ -46,14 +46,14 @@ const statusLabels: Record<AttendanceStatus, string> = {
 
 const statusStyles: Record<AttendanceStatus, string> = {
   present: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
-  late: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+  late: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
   half_day: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
   absent: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
 };
 
 const selectedStatusStyles: Record<AttendanceStatus, string> = {
   present: '!border-emerald-700 !bg-none !bg-emerald-600 !text-white shadow-sm ring-2 ring-emerald-200 hover:!bg-emerald-700 hover:!text-white',
-  late: '!border-amber-700 !bg-none !bg-amber-600 !text-white shadow-sm ring-2 ring-amber-200 hover:!bg-amber-700 hover:!text-white',
+  late: '!border-blue-700 !bg-none !bg-blue-600 !text-white shadow-sm ring-2 ring-blue-200 hover:!bg-blue-700 hover:!text-white',
   half_day: '!border-blue-700 !bg-none !bg-blue-600 !text-white shadow-sm ring-2 ring-blue-200 hover:!bg-blue-700 hover:!text-white',
   absent: '!border-red-700 !bg-none !bg-red-600 !text-white shadow-sm ring-2 ring-red-200 hover:!bg-red-700 hover:!text-white',
 };
@@ -228,7 +228,7 @@ export default function StaffDailyAttendance({ user, staffRecords, staffAttendan
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Late</CardDescription>
-                <CardTitle className="text-2xl text-amber-600">{counts.late}</CardTitle>
+                <CardTitle className="text-2xl text-blue-600">{counts.late}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-slate-600">
                 <Clock3 className="mr-2 inline h-4 w-4" />

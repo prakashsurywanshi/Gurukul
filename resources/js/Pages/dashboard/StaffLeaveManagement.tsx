@@ -71,7 +71,7 @@ const leaveTypeLabels: Record<LeaveType, string> = {
 };
 
 const statusStyles: Record<LeaveStatus, string> = {
-  pending: 'border-amber-200 bg-amber-50 text-amber-700',
+  pending: 'border-blue-200 bg-blue-50 text-blue-700',
   approved: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   rejected: 'border-red-200 bg-red-50 text-red-700',
   cancelled: 'border-slate-200 bg-slate-50 text-slate-600',
@@ -304,7 +304,7 @@ export default function StaffLeaveManagement({ user, staffRecords, leaveRequests
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Pending</CardDescription>
-                <CardTitle className="text-2xl text-amber-600">{totals.pending}</CardTitle>
+                <CardTitle className="text-2xl text-blue-600">{totals.pending}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-slate-600">
                 <Clock3 className="mr-2 inline h-4 w-4" />

@@ -79,7 +79,7 @@ type TransportFeeRecord = {
 };
 
 const paymentStatusTone: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700 hover:bg-amber-100',
+  pending: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
   partial: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
   paid: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
   overdue: 'bg-rose-100 text-rose-700 hover:bg-rose-100',
@@ -464,7 +464,7 @@ export default function TransportFeeCollection({
                   <SelectContent>
                     <SelectItem value="all">All classes</SelectItem>
                     {classOptions.map((className) => (
-                      <SelectItem key={className} value={className}>Class {className}</SelectItem>
+                      <SelectItem key={className} value={className}>{className}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -609,7 +609,7 @@ export default function TransportFeeCollection({
                       <TableCell>
                         <p className="font-medium text-slate-900">{record.studentName}</p>
                         <p className="text-sm text-slate-500">
-                          {record.admissionNumber || '-'} | Class {record.class || '-'} {record.section || ''}
+                          {record.admissionNumber || '-'} | {record.class || '-'} {record.section || ''}
                         </p>
                       </TableCell>
                       <TableCell>

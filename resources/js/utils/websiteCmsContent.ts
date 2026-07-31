@@ -57,6 +57,34 @@ export type WebsiteGalleryItem = {
   title: string;
   category: string;
   description: string;
+  image?: string;
+};
+
+export type WebsiteMenuItem = {
+  label: string;
+  url: string;
+  pageSlug?: string;
+  children?: WebsiteMenuItem[];
+};
+
+export type WebsiteFooterColumn = {
+  title: string;
+  links: Array<{ label: string; url: string }>;
+};
+
+export type WebsiteDepartment = {
+  title: string;
+  description: string;
+};
+
+export type WebsiteAchievement = {
+  value: string;
+  label: string;
+};
+
+export type WebsiteMarqueeItem = {
+  text: string;
+  url: string;
 };
 
 export type WebsiteContactItem = {
@@ -66,7 +94,7 @@ export type WebsiteContactItem = {
 };
 
 export type WebsiteThemeKey = 'white' | 'aurora' | 'sunrise' | 'emerald';
-export type WebsiteTemplateKey = 'template1' | 'template2' | 'template3' | 'template4';
+export type WebsiteTemplateKey = 'template1' | 'template2' | 'template3' | 'template4' | 'template5';
 
 export type WebsiteContent = {
   activeTemplate: WebsiteTemplateKey;
@@ -76,6 +104,7 @@ export type WebsiteContent = {
   brandName: string;
   brandSubtitle: string;
   brandLogo: string;
+  schoolName: string;
   navAbout: string;
   navPrograms: string;
   navCampus: string;
@@ -191,6 +220,50 @@ export type WebsiteContent = {
   templateFourContactDescription: string;
   templateFourContactItems: WebsiteContactItem[];
   templateFourMapEmbedUrl: string;
+  templateFiveTopPhone: string;
+  templateFiveTopEmail: string;
+  templateFiveTopAddress: string;
+  templateFiveSocialFacebook: string;
+  templateFiveSocialTwitter: string;
+  templateFiveSocialYoutube: string;
+  templateFiveSocialInstagram: string;
+  templateFiveMarqueeItems: WebsiteMarqueeItem[];
+  templateFiveHeroTitle: string;
+  templateFiveHeroSubtitle: string;
+  templateFiveHeroDescription: string;
+  templateFivePrincipalName: string;
+  templateFivePrincipalDesignation: string;
+  templateFivePrincipalMessage: string;
+  templateFivePrincipalImage: string;
+  templateFiveSecretaryName: string;
+  templateFiveSecretaryDesignation: string;
+  templateFiveSecretaryMessage: string;
+  templateFiveSecretaryImage: string;
+  templateFiveAboutTitle: string;
+  templateFiveAboutDescription: string;
+  templateFiveAboutImage: string;
+  templateFiveDepartments: WebsiteDepartment[];
+  templateFiveAchievements: WebsiteAchievement[];
+  templateFiveWhyChooseUs: WebsiteCard[];
+  templateFiveTestimonials: WebsiteTestimonial[];
+  templateFiveEvents: WebsiteNews[];
+  templateFiveNews: WebsiteNews[];
+  templateFiveGalleryTitle: string;
+  templateFiveGalleryDescription: string;
+  templateFiveGalleryItems: WebsiteGalleryItem[];
+  templateFiveContactTitle: string;
+  templateFiveContactDescription: string;
+  templateFiveContactItems: WebsiteContactItem[];
+  templateFiveMapEmbedUrl: string;
+  templateFiveShowAccreditedBadge: boolean;
+  templateFiveAccreditedBadgeLabel: string;
+  templateFiveAccreditedBadgeGrade: string;
+  templateFiveShowLoginButton: boolean;
+  templateFiveShowAdmissionButton: boolean;
+  templateFiveMainMenuItems: WebsiteMenuItem[];
+  templateFiveFooterColumns: WebsiteFooterColumn[];
+  templateFiveFooterCopyright: string;
+  templateFiveFooterTagline: string;
 };
 
 export type WebsiteSharedContent = Pick<
@@ -218,6 +291,7 @@ export type WebsiteCmsContent = {
   template2: Partial<WebsiteContent>;
   template3: Partial<WebsiteContent>;
   template4: Partial<WebsiteContent>;
+  template5: Partial<WebsiteContent>;
 };
 
 export type WebsiteTheme = {
@@ -252,114 +326,114 @@ export const websiteThemes: Record<WebsiteThemeKey, WebsiteTheme> = {
   white: {
     name: 'White',
     description: 'A bright white default with soft blue accents and clean editorial surfaces.',
-    pageBackground: 'bg-[linear-gradient(180deg,#fffdf8_0%,#f8fbff_28%,#f6f8fc_58%,#eef4ff_100%)]',
+    pageBackground: 'bg-[linear-gradient(180deg,#f0f9ff_0%,#f8fbff_28%,#f6f8fc_58%,#eef4ff_100%)]',
     ambientBackground:
-      'bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_24%),radial-gradient(circle_at_20%_12%,_rgba(14,165,233,0.1),_transparent_20%),radial-gradient(circle_at_85%_10%,_rgba(251,191,36,0.12),_transparent_18%),radial-gradient(circle_at_80%_35%,_rgba(244,114,182,0.1),_transparent_20%)]',
+      'bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_24%),radial-gradient(circle_at_20%_12%,_rgba(14,165,233,0.1),_transparent_20%),radial-gradient(circle_at_85%_10%,_rgba(59,130,246,0.12),_transparent_18%),radial-gradient(circle_at_80%_35%,_rgba(99,102,241,0.1),_transparent_20%)]',
     leftGlow: 'bg-sky-300/30',
-    rightGlow: 'bg-amber-200/40',
+    rightGlow: 'bg-blue-200/40',
     heroBadge: 'border-sky-200 bg-white/90 text-sky-800 shadow-[0_12px_30px_rgba(59,130,246,0.12)]',
     primaryButton: 'bg-[linear-gradient(135deg,#0f172a,#2563eb)] text-white shadow-[0_18px_50px_rgba(37,99,235,0.24)]',
     secondaryButton: 'border-slate-200 bg-white/90 text-slate-800 hover:border-slate-300 hover:bg-white',
-    topActionButton: 'bg-[linear-gradient(135deg,#f59e0b,#fb7185)] text-white shadow-[0_18px_40px_rgba(245,158,11,0.2)]',
+    topActionButton: 'bg-[linear-gradient(135deg,#2563EB,#1d4ed8)] text-white shadow-[0_18px_40px_rgba(37,99,235,0.2)]',
     logoBadgeText: 'text-sky-700',
-    featureIcon: 'bg-[linear-gradient(135deg,#dbeafe,#fef3c7)] text-slate-800 shadow-sky-200/60',
-    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(255,255,255,0.94),rgba(239,246,255,0.92),rgba(255,251,235,0.88))]',
+    featureIcon: 'bg-[linear-gradient(135deg,#dbeafe,#dbeafe)] text-slate-800 shadow-sky-200/60',
+    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(255,255,255,0.94),rgba(239,246,255,0.92),rgba(239,246,255,0.88))]',
     spotlightInner: 'bg-[linear-gradient(160deg,#ffffff_0%,#f8fbff_52%,#eef4ff_100%)]',
-    openHousePanel: 'bg-[linear-gradient(135deg,rgba(219,234,254,0.92),rgba(254,243,199,0.72))]',
+    openHousePanel: 'bg-[linear-gradient(135deg,rgba(219,234,254,0.92),rgba(219,234,254,0.72))]',
     liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.88))]',
-    aboutPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(239,246,255,0.92),rgba(255,251,235,0.88))]',
+    aboutPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(239,246,255,0.92),rgba(239,246,255,0.88))]',
     pillarIcon: 'bg-[linear-gradient(135deg,#dbeafe,#bfdbfe)] text-slate-800 shadow-sky-200/60',
-    programEven: 'border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,251,235,0.96),rgba(255,255,255,0.92))]',
+    programEven: 'border-blue-200/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.92))]',
     programOdd: 'border-sky-200/80 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.92))]',
-    campusPanel: 'bg-[linear-gradient(135deg,rgba(255,251,235,0.92),rgba(239,246,255,0.95),rgba(255,255,255,0.94))]',
+    campusPanel: 'bg-[linear-gradient(135deg,rgba(239,246,255,0.92),rgba(239,246,255,0.95),rgba(255,255,255,0.94))]',
     newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.92))]',
-    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(239,246,255,0.94),rgba(255,251,235,0.9),rgba(255,255,255,0.98))]',
+    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(239,246,255,0.94),rgba(239,246,255,0.9),rgba(255,255,255,0.98))]',
     admissionsButton: 'bg-[linear-gradient(135deg,#0f172a,#2563eb)] text-white',
     admissionsFormButton: 'bg-[linear-gradient(135deg,#0f172a,#2563eb,#0ea5e9)] text-white shadow-[0_18px_40px_rgba(37,99,235,0.22)]',
   },
   aurora: {
     name: 'Aurora',
-    description: 'Deep navy with cyan, amber, and rose glows.',
-    pageBackground: 'bg-[radial-gradient(circle_at_top_left,#17335e_0%,#0b1223_30%,#070b16_65%,#03050b_100%)]',
+    description: 'Soft cyan and blue accents on a clean white background.',
+    pageBackground: 'bg-[linear-gradient(180deg,#f0fdfa_0%,#f8fbff_28%,#f6f8fc_58%,#eef4ff_100%)]',
     ambientBackground:
-      'bg-[radial-gradient(circle_at_top_left,_rgba(74,222,128,0.16),_transparent_20%),radial-gradient(circle_at_20%_10%,_rgba(96,165,250,0.25),_transparent_22%),radial-gradient(circle_at_80%_10%,_rgba(251,191,36,0.2),_transparent_18%),radial-gradient(circle_at_80%_35%,_rgba(168,85,247,0.18),_transparent_20%)]',
-    leftGlow: 'bg-cyan-400/20',
-    rightGlow: 'bg-fuchsia-500/20',
-    heroBadge: 'border-cyan-300/20 bg-cyan-300/10 text-cyan-100 shadow-[0_12px_30px_rgba(34,211,238,0.14)]',
-    primaryButton: 'bg-[linear-gradient(135deg,#22d3ee,#60a5fa)] text-slate-950 shadow-[0_18px_50px_rgba(34,211,238,0.3)]',
-    secondaryButton: 'border-white/15 bg-white/6 text-white hover:border-white/30 hover:bg-white/10',
-    topActionButton: 'bg-[linear-gradient(135deg,#f59e0b,#fb7185)] text-slate-950 shadow-[0_18px_40px_rgba(251,191,36,0.25)]',
-    logoBadgeText: 'text-amber-300',
-    featureIcon: 'bg-[linear-gradient(135deg,#fde68a,#f472b6)] text-slate-950 shadow-pink-500/10',
-    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(8,15,30,0.82),rgba(25,39,80,0.76),rgba(99,102,241,0.32))]',
-    spotlightInner: 'bg-[linear-gradient(160deg,#17305a_0%,#0f172a_52%,#171d38_100%)]',
-    openHousePanel: 'bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(244,114,182,0.08))]',
-    liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))]',
-    aboutPanel: 'bg-[linear-gradient(145deg,rgba(15,23,42,0.88),rgba(37,99,235,0.24),rgba(15,23,42,0.88))]',
-    pillarIcon: 'bg-[linear-gradient(135deg,#67e8f9,#38bdf8)] text-slate-950 shadow-cyan-500/20',
-    programEven: 'border-amber-300/18 bg-[linear-gradient(180deg,rgba(251,191,36,0.16),rgba(255,255,255,0.04))]',
-    programOdd: 'border-cyan-300/18 bg-[linear-gradient(180deg,rgba(34,211,238,0.14),rgba(255,255,255,0.04))]',
-    campusPanel: 'bg-[linear-gradient(135deg,rgba(251,191,36,0.18),rgba(244,114,182,0.12),rgba(15,23,42,0.75))]',
-    newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))]',
-    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(8,15,30,0.92),rgba(29,78,216,0.24),rgba(236,72,153,0.15),rgba(8,15,30,0.94))]',
-    admissionsButton: 'bg-[linear-gradient(135deg,#fde68a,#fb7185)] text-slate-950',
-    admissionsFormButton: 'bg-[linear-gradient(135deg,#22d3ee,#f59e0b,#fb7185)] text-slate-950 shadow-[0_18px_40px_rgba(34,211,238,0.22)]',
+      'bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.12),_transparent_24%),radial-gradient(circle_at_20%_12%,_rgba(96,165,250,0.1),_transparent_20%),radial-gradient(circle_at_85%_10%,_rgba(59,130,246,0.12),_transparent_18%),radial-gradient(circle_at_80%_35%,_rgba(168,85,247,0.1),_transparent_20%)]',
+    leftGlow: 'bg-cyan-200/40',
+    rightGlow: 'bg-blue-200/40',
+    heroBadge: 'border-cyan-200 bg-white/90 text-cyan-800 shadow-[0_12px_30px_rgba(34,211,238,0.12)]',
+    primaryButton: 'bg-[linear-gradient(135deg,#0891b2,#2563eb)] text-white shadow-[0_18px_50px_rgba(34,211,238,0.24)]',
+    secondaryButton: 'border-slate-200 bg-white/90 text-slate-800 hover:border-slate-300 hover:bg-white',
+    topActionButton: 'bg-[linear-gradient(135deg,#2563EB,#1d4ed8)] text-white shadow-[0_18px_40px_rgba(37,99,235,0.2)]',
+    logoBadgeText: 'text-cyan-700',
+    featureIcon: 'bg-[linear-gradient(135deg,#cffafe,#dbeafe)] text-slate-800 shadow-cyan-200/60',
+    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(255,255,255,0.94),rgba(240,253,250,0.92),rgba(239,246,255,0.88))]',
+    spotlightInner: 'bg-[linear-gradient(160deg,#ffffff_0%,#f0fdfa_52%,#ecfeff_100%)]',
+    openHousePanel: 'bg-[linear-gradient(135deg,rgba(207,250,254,0.92),rgba(219,234,254,0.72))]',
+    liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(240,253,250,0.88))]',
+    aboutPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(240,253,250,0.92),rgba(239,246,255,0.88))]',
+    pillarIcon: 'bg-[linear-gradient(135deg,#cffafe,#a5f3fc)] text-slate-800 shadow-cyan-200/60',
+    programEven: 'border-cyan-200/70 bg-[linear-gradient(180deg,rgba(240,253,250,0.96),rgba(255,255,255,0.92))]',
+    programOdd: 'border-blue-200/80 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.92))]',
+    campusPanel: 'bg-[linear-gradient(135deg,rgba(240,253,250,0.92),rgba(236,253,245,0.95),rgba(255,255,255,0.94))]',
+    newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.92))]',
+    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(240,253,250,0.94),rgba(239,246,255,0.9),rgba(255,255,255,0.98))]',
+    admissionsButton: 'bg-[linear-gradient(135deg,#0891b2,#2563eb)] text-white',
+    admissionsFormButton: 'bg-[linear-gradient(135deg,#0891b2,#2563eb,#0ea5e9)] text-white shadow-[0_18px_40px_rgba(34,211,238,0.22)]',
   },
   sunrise: {
     name: 'Sunrise',
-    description: 'Warm gold, coral, and dusk blue for a brighter admissions-first look.',
-    pageBackground: 'bg-[radial-gradient(circle_at_top_left,#7c2d12_0%,#3b1d3a_28%,#172554_62%,#020617_100%)]',
+    description: 'Clean blue and slate accents on a bright white background.',
+    pageBackground: 'bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_24%,#e2e8f0_55%,#dbeafe_100%)]',
     ambientBackground:
-      'bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.18),_transparent_22%),radial-gradient(circle_at_20%_10%,_rgba(251,113,133,0.22),_transparent_24%),radial-gradient(circle_at_80%_10%,_rgba(56,189,248,0.18),_transparent_20%),radial-gradient(circle_at_80%_35%,_rgba(253,186,116,0.12),_transparent_24%)]',
-    leftGlow: 'bg-amber-400/20',
-    rightGlow: 'bg-rose-400/20',
-    heroBadge: 'border-amber-200/30 bg-amber-300/10 text-amber-50 shadow-[0_12px_30px_rgba(251,191,36,0.16)]',
-    primaryButton: 'bg-[linear-gradient(135deg,#fb7185,#f59e0b)] text-slate-950 shadow-[0_18px_50px_rgba(251,113,133,0.28)]',
-    secondaryButton: 'border-white/20 bg-white/8 text-white hover:border-white/35 hover:bg-white/12',
-    topActionButton: 'bg-[linear-gradient(135deg,#fde68a,#fb7185)] text-slate-950 shadow-[0_18px_40px_rgba(251,191,36,0.22)]',
-    logoBadgeText: 'text-amber-200',
-    featureIcon: 'bg-[linear-gradient(135deg,#fdba74,#fb7185)] text-slate-950 shadow-orange-500/10',
-    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(61,23,23,0.82),rgba(124,45,18,0.62),rgba(30,41,59,0.42))]',
-    spotlightInner: 'bg-[linear-gradient(160deg,#4a1d1f_0%,#1e293b_54%,#2c1d4d_100%)]',
-    openHousePanel: 'bg-[linear-gradient(135deg,rgba(251,113,133,0.14),rgba(251,191,36,0.12))]',
-    liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))]',
-    aboutPanel: 'bg-[linear-gradient(145deg,rgba(120,53,15,0.8),rgba(251,113,133,0.18),rgba(30,41,59,0.88))]',
-    pillarIcon: 'bg-[linear-gradient(135deg,#fdba74,#fb7185)] text-slate-950 shadow-orange-500/20',
-    programEven: 'border-rose-300/18 bg-[linear-gradient(180deg,rgba(251,113,133,0.16),rgba(255,255,255,0.04))]',
-    programOdd: 'border-amber-300/18 bg-[linear-gradient(180deg,rgba(251,191,36,0.14),rgba(255,255,255,0.04))]',
-    campusPanel: 'bg-[linear-gradient(135deg,rgba(251,113,133,0.18),rgba(251,191,36,0.14),rgba(15,23,42,0.74))]',
-    newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))]',
-    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(76,29,149,0.26),rgba(251,113,133,0.2),rgba(120,53,15,0.24),rgba(8,15,30,0.92))]',
-    admissionsButton: 'bg-[linear-gradient(135deg,#fde68a,#fb7185)] text-slate-950',
-    admissionsFormButton: 'bg-[linear-gradient(135deg,#fb7185,#f59e0b,#fde68a)] text-slate-950 shadow-[0_18px_40px_rgba(251,113,133,0.22)]',
+      'bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_24%),radial-gradient(circle_at_20%_12%,_rgba(99,102,241,0.1),_transparent_20%),radial-gradient(circle_at_85%_10%,_rgba(59,130,246,0.12),_transparent_18%),radial-gradient(circle_at_80%_35%,_rgba(37,99,235,0.1),_transparent_20%)]',
+    leftGlow: 'bg-blue-200/40',
+    rightGlow: 'bg-indigo-200/40',
+    heroBadge: 'border-blue-200 bg-white/90 text-blue-800 shadow-[0_12px_30px_rgba(59,130,246,0.12)]',
+    primaryButton: 'bg-[linear-gradient(135deg,#1d4ed8,#2563eb)] text-white shadow-[0_18px_50px_rgba(37,99,235,0.24)]',
+    secondaryButton: 'border-slate-200 bg-white/90 text-slate-800 hover:border-slate-300 hover:bg-white',
+    topActionButton: 'bg-[linear-gradient(135deg,#2563EB,#1d4ed8)] text-white shadow-[0_18px_40px_rgba(37,99,235,0.2)]',
+    logoBadgeText: 'text-blue-700',
+    featureIcon: 'bg-[linear-gradient(135deg,#dbeafe,#e0e7ff)] text-slate-800 shadow-blue-200/60',
+    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(255,255,255,0.94),rgba(239,246,255,0.92),rgba(224,231,255,0.88))]',
+    spotlightInner: 'bg-[linear-gradient(160deg,#ffffff_0%,#eff6ff_52%,#dbeafe_100%)]',
+    openHousePanel: 'bg-[linear-gradient(135deg,rgba(219,234,254,0.92),rgba(224,231,255,0.72))]',
+    liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.88))]',
+    aboutPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(239,246,255,0.92),rgba(224,231,255,0.88))]',
+    pillarIcon: 'bg-[linear-gradient(135deg,#dbeafe,#c7d2fe)] text-slate-800 shadow-blue-200/60',
+    programEven: 'border-blue-200/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.92))]',
+    programOdd: 'border-indigo-200/80 bg-[linear-gradient(180deg,rgba(224,231,255,0.96),rgba(255,255,255,0.92))]',
+    campusPanel: 'bg-[linear-gradient(135deg,rgba(239,246,255,0.92),rgba(224,231,255,0.95),rgba(255,255,255,0.94))]',
+    newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.92))]',
+    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(239,246,255,0.94),rgba(224,231,255,0.9),rgba(255,255,255,0.98))]',
+    admissionsButton: 'bg-[linear-gradient(135deg,#1d4ed8,#2563eb)] text-white',
+    admissionsFormButton: 'bg-[linear-gradient(135deg,#1d4ed8,#2563eb,#3b82f6)] text-white shadow-[0_18px_40px_rgba(37,99,235,0.22)]',
   },
   emerald: {
     name: 'Emerald',
-    description: 'Forest-inspired greens with teal and slate for a calm academic tone.',
-    pageBackground: 'bg-[radial-gradient(circle_at_top_left,#0f3d2e_0%,#08281f_30%,#07131e_68%,#02050a_100%)]',
+    description: 'Fresh green and teal accents on a clean white background.',
+    pageBackground: 'bg-[linear-gradient(180deg,#f0fdf4_0%,#f0fdfa_28%,#ecfdf5_58%,#f0f9ff_100%)]',
     ambientBackground:
-      'bg-[radial-gradient(circle_at_top_left,_rgba(52,211,153,0.16),_transparent_22%),radial-gradient(circle_at_20%_10%,_rgba(45,212,191,0.2),_transparent_22%),radial-gradient(circle_at_80%_10%,_rgba(132,204,22,0.14),_transparent_20%),radial-gradient(circle_at_80%_35%,_rgba(56,189,248,0.12),_transparent_24%)]',
-    leftGlow: 'bg-emerald-400/20',
-    rightGlow: 'bg-teal-400/20',
-    heroBadge: 'border-emerald-300/20 bg-emerald-300/10 text-emerald-50 shadow-[0_12px_30px_rgba(52,211,153,0.14)]',
-    primaryButton: 'bg-[linear-gradient(135deg,#34d399,#2dd4bf)] text-slate-950 shadow-[0_18px_50px_rgba(52,211,153,0.28)]',
-    secondaryButton: 'border-white/15 bg-white/6 text-white hover:border-white/30 hover:bg-white/10',
-    topActionButton: 'bg-[linear-gradient(135deg,#bef264,#34d399)] text-slate-950 shadow-[0_18px_40px_rgba(34,197,94,0.22)]',
-    logoBadgeText: 'text-emerald-200',
-    featureIcon: 'bg-[linear-gradient(135deg,#bef264,#34d399)] text-slate-950 shadow-emerald-500/10',
-    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(6,78,59,0.78),rgba(15,118,110,0.54),rgba(15,23,42,0.4))]',
-    spotlightInner: 'bg-[linear-gradient(160deg,#0f3d2e_0%,#0f172a_54%,#113339_100%)]',
-    openHousePanel: 'bg-[linear-gradient(135deg,rgba(52,211,153,0.14),rgba(45,212,191,0.08))]',
-    liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))]',
-    aboutPanel: 'bg-[linear-gradient(145deg,rgba(6,78,59,0.84),rgba(45,212,191,0.16),rgba(15,23,42,0.88))]',
-    pillarIcon: 'bg-[linear-gradient(135deg,#34d399,#2dd4bf)] text-slate-950 shadow-emerald-500/20',
-    programEven: 'border-emerald-300/18 bg-[linear-gradient(180deg,rgba(52,211,153,0.16),rgba(255,255,255,0.04))]',
-    programOdd: 'border-lime-300/18 bg-[linear-gradient(180deg,rgba(132,204,22,0.14),rgba(255,255,255,0.04))]',
-    campusPanel: 'bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(45,212,191,0.1),rgba(15,23,42,0.76))]',
-    newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.04))]',
-    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(5,46,22,0.9),rgba(16,185,129,0.2),rgba(13,148,136,0.14),rgba(8,15,30,0.94))]',
-    admissionsButton: 'bg-[linear-gradient(135deg,#bef264,#34d399)] text-slate-950',
-    admissionsFormButton: 'bg-[linear-gradient(135deg,#34d399,#2dd4bf,#bef264)] text-slate-950 shadow-[0_18px_40px_rgba(16,185,129,0.22)]',
+      'bg-[radial-gradient(circle_at_top_left,_rgba(52,211,153,0.12),_transparent_24%),radial-gradient(circle_at_20%_12%,_rgba(45,212,191,0.1),_transparent_20%),radial-gradient(circle_at_85%_10%,_rgba(132,204,22,0.12),_transparent_18%),radial-gradient(circle_at_80%_35%,_rgba(16,185,129,0.1),_transparent_20%)]',
+    leftGlow: 'bg-emerald-200/40',
+    rightGlow: 'bg-teal-200/40',
+    heroBadge: 'border-emerald-200 bg-white/90 text-emerald-800 shadow-[0_12px_30px_rgba(52,211,153,0.12)]',
+    primaryButton: 'bg-[linear-gradient(135deg,#059669,#0d9488)] text-white shadow-[0_18px_50px_rgba(52,211,153,0.24)]',
+    secondaryButton: 'border-slate-200 bg-white/90 text-slate-800 hover:border-slate-300 hover:bg-white',
+    topActionButton: 'bg-[linear-gradient(135deg,#2563EB,#1d4ed8)] text-white shadow-[0_18px_40px_rgba(37,99,235,0.2)]',
+    logoBadgeText: 'text-emerald-700',
+    featureIcon: 'bg-[linear-gradient(135deg,#d1fae5,#ccfbf1)] text-slate-800 shadow-emerald-200/60',
+    spotlightPanel: 'bg-[linear-gradient(160deg,rgba(255,255,255,0.94),rgba(240,253,244,0.92),rgba(240,253,250,0.88))]',
+    spotlightInner: 'bg-[linear-gradient(160deg,#ffffff_0%,#f0fdf4_52%,#ecfdf5_100%)]',
+    openHousePanel: 'bg-[linear-gradient(135deg,rgba(209,250,229,0.92),rgba(204,251,241,0.72))]',
+    liveOverviewCard: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(240,253,244,0.88))]',
+    aboutPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.95),rgba(240,253,244,0.92),rgba(240,253,250,0.88))]',
+    pillarIcon: 'bg-[linear-gradient(135deg,#d1fae5,#99f6e4)] text-slate-800 shadow-emerald-200/60',
+    programEven: 'border-emerald-200/70 bg-[linear-gradient(180deg,rgba(240,253,244,0.96),rgba(255,255,255,0.92))]',
+    programOdd: 'border-teal-200/80 bg-[linear-gradient(180deg,rgba(240,253,250,0.96),rgba(255,255,255,0.92))]',
+    campusPanel: 'bg-[linear-gradient(135deg,rgba(240,253,244,0.92),rgba(240,253,250,0.95),rgba(255,255,255,0.94))]',
+    newsPanel: 'bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(240,253,244,0.92))]',
+    admissionsPanel: 'bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(240,253,244,0.94),rgba(240,253,250,0.9),rgba(255,255,255,0.98))]',
+    admissionsButton: 'bg-[linear-gradient(135deg,#059669,#0d9488)] text-white',
+    admissionsFormButton: 'bg-[linear-gradient(135deg,#059669,#0d9488,#10b981)] text-white shadow-[0_18px_40px_rgba(52,211,153,0.22)]',
   },
 };
 
@@ -371,6 +445,7 @@ export const defaultWebsiteContent: WebsiteContent = {
   brandName: 'Gurukul',
   brandSubtitle: 'School and College Excellence',
   brandLogo: '',
+  schoolName: 'Gurukul',
   navAbout: 'About',
   navPrograms: 'Programs',
   navCampus: 'Campus Life',
@@ -714,21 +789,25 @@ export const defaultWebsiteContent: WebsiteContent = {
       category: 'Campus',
       title: 'Morning Assembly',
       description: 'Daily gatherings that reflect discipline, culture, and the school community spirit.',
+      image: '',
     },
     {
       category: 'Academics',
       title: 'Interactive Classrooms',
       description: 'Bright learning spaces where teachers guide students through structured academic growth.',
+      image: '',
     },
     {
       category: 'Events',
       title: 'Annual Celebrations',
       description: 'Cultural events, achievements, and performances that bring families and students together.',
+      image: '',
     },
     {
       category: 'Sports',
       title: 'Playground Highlights',
       description: 'Team games, practice sessions, and student participation beyond the classroom.',
+      image: '',
     },
   ],
   templateFourEventsTitle: 'Events and announcements that keep the school community informed.',
@@ -769,6 +848,121 @@ export const defaultWebsiteContent: WebsiteContent = {
     },
   ],
   templateFourMapEmbedUrl: 'https://www.google.com/maps?q=Knowledge%20Park%20Road%2C%20Main%20Campus&z=15&output=embed',
+  templateFiveTopPhone: '+91 98765 43210',
+  templateFiveTopEmail: 'info@gurukul.edu',
+  templateFiveTopAddress: 'Knowledge Park Road, Main Campus, Gurukul City',
+  templateFiveSocialFacebook: 'https://facebook.com/gurukul',
+  templateFiveSocialTwitter: 'https://twitter.com/gurukul',
+  templateFiveSocialYoutube: 'https://youtube.com/gurukul',
+  templateFiveSocialInstagram: 'https://instagram.com/gurukul',
+  templateFiveMarqueeItems: [
+    { text: 'Admissions are open for the 2026-27 academic year', url: '/admissions/apply' },
+    { text: 'Campus visits available on all working days', url: '' },
+    { text: 'Annual day celebration on 15th August 2026', url: '' },
+  ],
+  templateFiveHeroTitle: 'Empowering Minds, Shaping Futures',
+  templateFiveHeroSubtitle: 'A Legacy of Academic Excellence Since 1979',
+  templateFiveHeroDescription: 'Gurukul provides quality education to students from diverse backgrounds through dedicated faculty, modern infrastructure, and a commitment to holistic development.',
+  templateFivePrincipalName: 'Dr. Ashok Eknath Kalange',
+  templateFivePrincipalDesignation: 'Principal',
+  templateFivePrincipalMessage: 'It is indeed a great privilege and honour for me to serve as the Principal of this esteemed institution. Our college has earned a reputation for academic excellence and holistic development. We are committed to providing quality education that prepares students for the challenges of tomorrow.',
+  templateFivePrincipalImage: '',
+  templateFiveSecretaryName: 'Shri. Virsinh Ransing',
+  templateFiveSecretaryDesignation: 'Secretary',
+  templateFiveSecretaryMessage: 'Our institution was founded with the objective of providing quality education to the rural masses at an affordable cost. We have made remarkable achievements in all academic and social fields, and we continue to strive for excellence.',
+  templateFiveSecretaryImage: '',
+  templateFiveAboutTitle: 'About Our Institution',
+  templateFiveAboutDescription: 'Established in 1979, our institution has been imparting value-based education and serving the socially, economically, and educationally weaker sections of society. The institution runs undergraduate programs in Arts, Commerce, and Science, along with Post-graduation in Commerce.',
+  templateFiveAboutImage: '',
+  templateFiveDepartments: [
+    { title: 'Arts', description: 'The Department of Arts offers a wide range of subjects including languages, social sciences, and humanities, fostering critical thinking and creative expression.' },
+    { title: 'Commerce', description: 'The Department of Commerce provides comprehensive education in business, accounting, and economics with both undergraduate and postgraduate programs.' },
+    { title: 'Science', description: 'The Department of Science offers programs in physics, chemistry, biology, and computer science with well-equipped laboratories.' },
+  ],
+  templateFiveAchievements: [
+    { value: '3200+', label: 'Students Enrolled' },
+    { value: '120+', label: 'Faculty Members' },
+    { value: '96%', label: 'Academic Results' },
+    { value: '45+', label: 'Years of Excellence' },
+  ],
+  templateFiveWhyChooseUs: [
+    { title: 'NAAC Accredited', description: 'Accredited by NAAC with B+ grade, ensuring quality standards in education.' },
+    { title: 'Experienced Faculty', description: 'Dedicated and qualified faculty members committed to student success.' },
+    { title: 'Modern Infrastructure', description: 'Well-equipped laboratories, library, and smart classrooms.' },
+    { title: 'Holistic Development', description: 'Focus on academic, cultural, and sports activities for all-round growth.' },
+  ],
+  templateFiveTestimonials: [
+    { quote: 'The college provides excellent education with supportive faculty. The campus environment is conducive to learning.', name: 'Priya Sharma', role: 'Alumni, B.Com' },
+    { quote: 'The science laboratories are well-maintained and the faculty provides personalized attention to every student.', name: 'Rahul Patil', role: 'Student, B.Sc' },
+    { quote: 'This institution has shaped my career with its comprehensive curriculum and placement support.', name: 'Sneha Deshmukh', role: 'Alumni, B.A' },
+  ],
+  templateFiveEvents: [
+    { title: 'Annual Day Celebration', detail: 'Join us for the annual day celebration featuring cultural performances and prize distribution.' },
+    { title: 'Science Exhibition', detail: 'Students showcase their innovative projects and research work at the science exhibition.' },
+    { title: 'Sports Tournament', detail: 'Inter-college sports tournament featuring cricket, volleyball, and athletics.' },
+  ],
+  templateFiveNews: [
+    { title: 'Admissions Open 2026-27', detail: 'Online and offline admissions are now open for all undergraduate and postgraduate programs.' },
+    { title: 'NAAC Reaccreditation', detail: 'The college has been reaccredited by NAAC with B+ grade for the third cycle.' },
+    { title: 'Placement Drive', detail: 'Campus placement drive organized in collaboration with leading companies.' },
+  ],
+  templateFiveGalleryTitle: 'Campus Gallery',
+  templateFiveGalleryDescription: 'Explore our vibrant campus life through photos of events, classrooms, laboratories, and student activities.',
+  templateFiveGalleryItems: [
+    { title: 'Campus Buildings', category: 'Infrastructure', description: 'Modern academic blocks and administrative buildings.', image: '' },
+    { title: 'Science Laboratories', category: 'Facilities', description: 'Well-equipped laboratories for practical learning.', image: '' },
+    { title: 'Library', category: 'Facilities', description: 'A vast collection of books and digital resources.', image: '' },
+    { title: 'Sports Ground', category: 'Sports', description: 'Large playground for cricket, football, and athletics.', image: '' },
+    { title: 'Cultural Events', category: 'Events', description: 'Annual day, festivals, and cultural celebrations.', image: '' },
+    { title: 'Student Activities', category: 'Life', description: 'Clubs, seminars, and extracurricular activities.', image: '' },
+  ],
+  templateFiveContactTitle: 'Contact Us',
+  templateFiveContactDescription: 'Get in touch with us for admissions, inquiries, or campus visits.',
+  templateFiveContactItems: [
+    { title: 'Phone', value: '+91 98765 43210', description: 'Call us for admissions and general inquiries.' },
+    { title: 'Email', value: 'info@gurukul.edu', description: 'Send us an email for detailed inquiries.' },
+    { title: 'Address', value: 'Knowledge Park Road, Main Campus', description: 'Visit our campus for in-person counseling and support.' },
+  ],
+  templateFiveMapEmbedUrl: 'https://www.google.com/maps?q=Knowledge%20Park%20Road%2C%20Main%20Campus&z=15&output=embed',
+  templateFiveShowAccreditedBadge: true,
+  templateFiveAccreditedBadgeLabel: 'Accredited',
+  templateFiveAccreditedBadgeGrade: 'NAAC A+ Grade',
+  templateFiveShowLoginButton: true,
+  templateFiveShowAdmissionButton: true,
+  templateFiveMainMenuItems: [
+    { label: 'Home', url: '/' },
+    { label: 'About Us', url: '/pages/about-us', pageSlug: 'about-us' },
+    { label: 'Admissions', url: '/pages/admissions', pageSlug: 'admissions' },
+    { label: 'Departments', url: '/pages/departments', pageSlug: 'departments' },
+    { label: 'Gallery', url: '/pages/gallery', pageSlug: 'gallery' },
+    { label: 'Contact', url: '/pages/contact', pageSlug: 'contact' },
+  ],
+  templateFiveFooterColumns: [
+    { title: 'About Us', links: [
+      { label: 'About Institution', url: '#about' },
+      { label: "Secretary's Message", url: '#secretary' },
+      { label: "Principal's Message", url: '#principal' },
+      { label: 'Vision & Mission', url: '#about' },
+    ]},
+    { title: 'Quick Links', links: [
+      { label: 'Admissions', url: '/admissions/apply' },
+      { label: 'Student Corner', url: '#' },
+      { label: 'Library', url: '#' },
+      { label: 'Gallery', url: '#gallery' },
+    ]},
+    { title: 'Departments', links: [
+      { label: 'Arts', url: '#departments' },
+      { label: 'Commerce', url: '#departments' },
+      { label: 'Science', url: '#departments' },
+    ]},
+    { title: 'Contact Info', links: [
+      { label: '+91 98765 43210', url: 'tel:+919876543210' },
+      { label: 'info@gurukul.edu', url: 'mailto:info@gurukul.edu' },
+      { label: 'Knowledge Park Road', url: '#' },
+    ]},
+  ],
+  templateFiveFooterCopyright: '© 2026 Gurukul Institution. All rights reserved.',
+  templateFiveFooterTagline: 'Empowering Minds, Shaping Futures',
 };
 
 const sharedContentKeys = [
@@ -986,6 +1180,64 @@ const template4ContentKeys = [
   'highlights',
 ] as const satisfies ReadonlyArray<keyof WebsiteContent>;
 
+const template5ContentKeys = [
+  'templateFiveTopPhone',
+  'templateFiveTopEmail',
+  'templateFiveTopAddress',
+  'templateFiveSocialFacebook',
+  'templateFiveSocialTwitter',
+  'templateFiveSocialYoutube',
+  'templateFiveSocialInstagram',
+  'templateFiveMarqueeItems',
+  'templateFiveHeroTitle',
+  'templateFiveHeroSubtitle',
+  'templateFiveHeroDescription',
+  'templateFivePrincipalName',
+  'templateFivePrincipalDesignation',
+  'templateFivePrincipalMessage',
+  'templateFivePrincipalImage',
+  'templateFiveSecretaryName',
+  'templateFiveSecretaryDesignation',
+  'templateFiveSecretaryMessage',
+  'templateFiveSecretaryImage',
+  'templateFiveAboutTitle',
+  'templateFiveAboutDescription',
+  'templateFiveAboutImage',
+  'templateFiveDepartments',
+  'templateFiveAchievements',
+  'templateFiveWhyChooseUs',
+  'templateFiveTestimonials',
+  'templateFiveEvents',
+  'templateFiveNews',
+  'templateFiveGalleryTitle',
+  'templateFiveGalleryDescription',
+  'templateFiveGalleryItems',
+  'templateFiveContactTitle',
+  'templateFiveContactDescription',
+  'templateFiveContactItems',
+  'templateFiveMapEmbedUrl',
+  'templateFiveShowAccreditedBadge',
+  'templateFiveAccreditedBadgeLabel',
+  'templateFiveAccreditedBadgeGrade',
+  'templateFiveShowLoginButton',
+  'templateFiveShowAdmissionButton',
+  'templateFiveMainMenuItems',
+  'templateFiveFooterColumns',
+  'templateFiveFooterCopyright',
+  'templateFiveFooterTagline',
+  'admissionsEyebrow',
+  'admissionsTitle',
+  'admissionsDescription',
+  'admissionsPointOne',
+  'admissionsPointTwo',
+  'admissionsEmail',
+  'admissionsContactButton',
+  'admissionsPortalButton',
+  'admissionsFormTitle',
+  'admissionsFormIntro',
+  'highlights',
+] as const satisfies ReadonlyArray<keyof WebsiteContent>;
+
 const STORAGE_KEY = 'website_cms_content';
 
 function normalizeWebsiteTheme(theme?: string): WebsiteThemeKey {
@@ -1001,7 +1253,7 @@ function normalizeWebsiteTheme(theme?: string): WebsiteThemeKey {
 }
 
 function normalizeWebsiteTemplate(template?: string): WebsiteTemplateKey {
-  if (template === 'template1' || template === 'template2' || template === 'template3' || template === 'template4') {
+  if (template === 'template1' || template === 'template2' || template === 'template3' || template === 'template4' || template === 'template5') {
     return template;
   }
 
@@ -1025,9 +1277,12 @@ function pickWebsiteValues<T extends object, K extends readonly (keyof T)[]>(sou
 function normalizeLegacyWebsiteContent(content?: Partial<WebsiteContent> | null): WebsiteContent {
   const parsed = content ?? {};
 
+  const schoolName = parsed.schoolName || parsed.brandName || defaultWebsiteContent.brandName;
+
   return {
     ...defaultWebsiteContent,
     ...parsed,
+    brandName: schoolName,
     activeTemplate: normalizeWebsiteTemplate(parsed.activeTemplate),
     theme: normalizeWebsiteTheme(parsed.theme),
     sliderImages: Array.isArray(parsed.sliderImages)
@@ -1047,6 +1302,22 @@ function normalizeLegacyWebsiteContent(content?: Partial<WebsiteContent> | null)
     templateTwoAboutCards: parsed.templateTwoAboutCards || defaultWebsiteContent.templateTwoAboutCards,
     templateTwoGalleryItems: parsed.templateTwoGalleryItems || defaultWebsiteContent.templateTwoGalleryItems,
     templateTwoContactItems: parsed.templateTwoContactItems || defaultWebsiteContent.templateTwoContactItems,
+    templateFiveMarqueeItems: parsed.templateFiveMarqueeItems || defaultWebsiteContent.templateFiveMarqueeItems,
+    templateFiveDepartments: parsed.templateFiveDepartments || defaultWebsiteContent.templateFiveDepartments,
+    templateFiveAchievements: parsed.templateFiveAchievements || defaultWebsiteContent.templateFiveAchievements,
+    templateFiveWhyChooseUs: parsed.templateFiveWhyChooseUs || defaultWebsiteContent.templateFiveWhyChooseUs,
+    templateFiveTestimonials: parsed.templateFiveTestimonials || defaultWebsiteContent.templateFiveTestimonials,
+    templateFiveEvents: parsed.templateFiveEvents || defaultWebsiteContent.templateFiveEvents,
+    templateFiveNews: parsed.templateFiveNews || defaultWebsiteContent.templateFiveNews,
+    templateFiveGalleryItems: parsed.templateFiveGalleryItems || defaultWebsiteContent.templateFiveGalleryItems,
+    templateFiveContactItems: parsed.templateFiveContactItems || defaultWebsiteContent.templateFiveContactItems,
+    templateFiveMainMenuItems: parsed.templateFiveMainMenuItems || defaultWebsiteContent.templateFiveMainMenuItems,
+    templateFiveFooterColumns: parsed.templateFiveFooterColumns || defaultWebsiteContent.templateFiveFooterColumns,
+    templateFiveShowAccreditedBadge: parsed.templateFiveShowAccreditedBadge !== undefined ? Boolean(parsed.templateFiveShowAccreditedBadge) : defaultWebsiteContent.templateFiveShowAccreditedBadge,
+    templateFiveAccreditedBadgeLabel: parsed.templateFiveAccreditedBadgeLabel || defaultWebsiteContent.templateFiveAccreditedBadgeLabel,
+    templateFiveAccreditedBadgeGrade: parsed.templateFiveAccreditedBadgeGrade || defaultWebsiteContent.templateFiveAccreditedBadgeGrade,
+    templateFiveShowLoginButton: parsed.templateFiveShowLoginButton !== undefined ? Boolean(parsed.templateFiveShowLoginButton) : defaultWebsiteContent.templateFiveShowLoginButton,
+    templateFiveShowAdmissionButton: parsed.templateFiveShowAdmissionButton !== undefined ? Boolean(parsed.templateFiveShowAdmissionButton) : defaultWebsiteContent.templateFiveShowAdmissionButton,
   };
 }
 
@@ -1069,6 +1340,9 @@ export function normalizeWebsiteCmsContent(
     : null;
   const templateFourOverrides = isRecord((parsed as Partial<WebsiteCmsContent>).template4)
     ? normalizeLegacyWebsiteContent((parsed as Partial<WebsiteCmsContent>).template4 as Partial<WebsiteContent>)
+    : null;
+  const templateFiveOverrides = isRecord((parsed as Partial<WebsiteCmsContent>).template5)
+    ? normalizeLegacyWebsiteContent((parsed as Partial<WebsiteCmsContent>).template5 as Partial<WebsiteContent>)
     : null;
 
   return {
@@ -1100,6 +1374,10 @@ export function normalizeWebsiteCmsContent(
       ...pickWebsiteValues(legacyContent, template4ContentKeys),
       ...(templateFourOverrides ? pickWebsiteValues(templateFourOverrides, template4ContentKeys) : {}),
     },
+    template5: {
+      ...pickWebsiteValues(legacyContent, template5ContentKeys),
+      ...(templateFiveOverrides ? pickWebsiteValues(templateFiveOverrides, template5ContentKeys) : {}),
+    },
   };
 }
 
@@ -1116,6 +1394,8 @@ export function normalizeWebsiteContent(
         ? cmsContent.template3
         : templateKey === 'template4'
           ? cmsContent.template4
+          : templateKey === 'template5'
+            ? cmsContent.template5
         : cmsContent.template1;
 
   return normalizeLegacyWebsiteContent({

@@ -165,7 +165,7 @@ type StaffRecord = {
 const bedStatusStyles: Record<Bed['status'], string> = {
   available: 'border-green-600 text-green-600',
   occupied: 'border-red-600 text-red-600',
-  maintenance: 'border-amber-600 text-amber-600',
+  maintenance: 'border-blue-600 text-blue-600',
 };
 const roomTypeLabels: Record<string, string> = {
   single: 'Single',
@@ -635,7 +635,7 @@ export default function HostelManagement({ user, organization, students, classRe
       return <Badge className="bg-blue-600 text-white hover:bg-blue-600">In Review</Badge>;
     }
 
-    return <Badge className="bg-amber-500 text-white hover:bg-amber-500">Open</Badge>;
+    return <Badge className="bg-blue-500 text-white hover:bg-blue-500">Open</Badge>;
   };
   const updateHostelComplaintStatus = (complaintId: string, status: string) => {
     router.patch(`/hostel-management/complaints/${complaintId}/status`, { status }, {
@@ -651,7 +651,7 @@ export default function HostelManagement({ user, organization, students, classRe
       return <Badge className="bg-blue-600 text-white hover:bg-blue-600">Claimed</Badge>;
     }
 
-    return <Badge className="bg-amber-500 text-white hover:bg-amber-500">Open</Badge>;
+    return <Badge className="bg-blue-500 text-white hover:bg-blue-500">Open</Badge>;
   };
   const escapeHtml = (value: string | number | null | undefined) =>
     String(value ?? '-')
@@ -1492,7 +1492,7 @@ export default function HostelManagement({ user, organization, students, classRe
                     <p className="text-sm text-slate-500">Fee Structures</p>
                     <p className="text-2xl font-bold text-slate-900">{feeStructures.length}</p>
                   </div>
-                  <IndianRupee className="h-8 w-8 text-amber-500" />
+                  <IndianRupee className="h-8 w-8 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
@@ -2045,7 +2045,7 @@ export default function HostelManagement({ user, organization, students, classRe
                                         key={bed.id}
                                         className={`min-h-[170px] rounded-lg border p-4 ${
                                           isMaintenance
-                                            ? 'border-amber-200 bg-amber-50'
+                                            ? 'border-blue-200 bg-blue-50'
                                             : isOccupied
                                             ? 'border-red-200 bg-red-50'
                                             : 'border-emerald-200 bg-emerald-50'
@@ -2054,7 +2054,7 @@ export default function HostelManagement({ user, organization, students, classRe
                                         <div className="flex items-start justify-between gap-3">
                                           <div className="flex items-center gap-2">
                                             <span className="flex h-10 w-10 items-center justify-center rounded-md bg-white shadow-sm">
-                                              <BedDouble className={`h-5 w-5 ${isOccupied ? 'text-red-600' : isMaintenance ? 'text-amber-600' : 'text-emerald-600'}`} />
+                                              <BedDouble className={`h-5 w-5 ${isOccupied ? 'text-red-600' : isMaintenance ? 'text-blue-600' : 'text-emerald-600'}`} />
                                             </span>
                                             <div>
                                               <p className="font-semibold text-slate-900">{bed.bedNumber}</p>
@@ -2289,7 +2289,7 @@ export default function HostelManagement({ user, organization, students, classRe
                         </div>
                       </div>
                       {roomCapacityReached && (
-                        <p className="text-sm text-amber-700">
+                        <p className="text-sm text-blue-700">
                           This room already has {selectedRoomForBedForm?.capacity} beds. Select an existing bed from the list to assign a student, or increase the room capacity first.
                         </p>
                       )}
@@ -2672,7 +2672,7 @@ export default function HostelManagement({ user, organization, students, classRe
                   <Card>
                     <CardContent className="pt-6">
                       <p className="text-sm text-slate-500">Open</p>
-                      <p className="mt-2 text-2xl font-bold text-amber-700">{hostelComplaintStats.open}</p>
+                      <p className="mt-2 text-2xl font-bold text-blue-700">{hostelComplaintStats.open}</p>
                     </CardContent>
                   </Card>
                   <Card>
@@ -2745,7 +2745,7 @@ export default function HostelManagement({ user, organization, students, classRe
                               <div>
                                 <p className="font-medium text-slate-900">{complaint.studentName || complaint.complainantName}</p>
                                 <p className="mt-1 text-sm text-slate-500">
-                                  {[complaint.admissionNumber, complaint.class && complaint.section ? `Class ${complaint.class}-${complaint.section}` : null]
+                                  {[complaint.admissionNumber, complaint.class && complaint.section ? `${complaint.class}-${complaint.section}` : null]
                                     .filter(Boolean)
                                     .join(' - ') || '-'}
                                 </p>

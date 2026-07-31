@@ -360,7 +360,7 @@ export default function LessonPlanManagement({
               <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
                 {studentRecord ? (
                   <span>
-                    Class {studentRecord.className} - Section {studentRecord.section}
+                    {studentRecord.className} - Section {studentRecord.section}
                   </span>
                 ) : (
                   <span>Student class not found.</span>
@@ -388,7 +388,7 @@ export default function LessonPlanManagement({
                       <SelectContent>
                         {scopedClasses.map((classItem) => (
                           <SelectItem key={classItem.id} value={classItem.id}>
-                            Class {classItem.name} - Section {classItem.section}
+                            {classItem.name} - Section {classItem.section}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -439,7 +439,7 @@ export default function LessonPlanManagement({
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-sm text-slate-500">In Progress</p>
-                  <p className="mt-1 text-2xl font-bold text-amber-600">{lessonStats.inProgress}</p>
+                  <p className="mt-1 text-2xl font-bold text-blue-600">{lessonStats.inProgress}</p>
                 </CardContent>
               </Card>
               <Card>

@@ -21,13 +21,14 @@ import {
   WebsiteTemplateKey,
   WebsiteThemeKey,
 } from '../../utils/websiteCmsContent';
+import { TemplateCardSelector, WebsiteThemeSelector } from '../../components/WebsiteThemePreviewCard';
 
 interface WebsiteCmsProps {
   user: any;
   websiteContent?: Partial<WebsiteContent> | Partial<WebsiteCmsContent> | null;
 }
 
-type TemplateSectionKey = 'template1' | 'template2' | 'template3' | 'template4';
+type TemplateSectionKey = 'template1' | 'template2' | 'template3' | 'template4' | 'template5';
 
 type FieldConfig = {
   key: string;
@@ -74,12 +75,16 @@ const templateOptions: Array<{
     label: 'Template 4 - Colorful Classic School',
     description: 'Classic school website with top contact bar, colorful tabs, gallery, events, contact, and admissions flow.',
   },
+  {
+    key: 'template5',
+    label: 'Template 5 - Classic Institutional',
+    description: 'Classic institutional layout with navy & blue theme, mega menu, principal messages, departments, and gallery.',
+  },
 ];
 
 const sharedFields: Array<FieldConfig> = [
   { key: 'seoTitle', label: 'SEO title' },
-  { key: 'brandName', label: 'Brand name' },
-  { key: 'brandSubtitle', label: 'Brand subtitle' },
+  { key: 'brandSubtitle', label: 'Subtitle / Tagline (shown below school name)' },
   { key: 'navAbout', label: 'Navigation: About' },
   { key: 'navPrograms', label: 'Navigation: Programs' },
   { key: 'navCampus', label: 'Navigation: Campus' },
@@ -162,6 +167,10 @@ function getPreviewEyebrow(content: WebsiteContent) {
     return content.templateFourHeroEyebrow;
   }
 
+  if (content.activeTemplate === 'template5') {
+    return content.templateFiveHeroSubtitle;
+  }
+
   return content.heroBadge;
 }
 
@@ -172,6 +181,10 @@ function getPreviewTitle(content: WebsiteContent) {
 
   if (content.activeTemplate === 'template4') {
     return content.templateFourHeroTitle;
+  }
+
+  if (content.activeTemplate === 'template5') {
+    return content.templateFiveHeroTitle;
   }
 
   return `${content.heroTitleLineOne} ${content.heroTitleAccent}`.trim();
@@ -186,20 +199,24 @@ function getPreviewDescription(content: WebsiteContent) {
     return content.templateFourHeroDescription;
   }
 
+  if (content.activeTemplate === 'template5') {
+    return content.templateFiveHeroDescription;
+  }
+
   return content.heroDescription;
 }
 
 function ArrayEditor({ title, description, items, fields, onChange }: ArrayEditorProps) {
   return (
-    <Card className="border-slate-200 shadow-sm">
+    <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
       <CardHeader>
-        <CardTitle className="text-slate-900">{title}</CardTitle>
+        <CardTitle className="text-slate-900 dark:text-[var(--foreground)]">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {items.map((item, index) => (
-          <div key={`${title}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="mb-4 text-sm font-semibold text-slate-900">{title} {index + 1}</p>
+          <div key={`${title}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-[var(--border)] dark:bg-[var(--secondary)]">
+            <p className="mb-4 text-sm font-semibold text-slate-900 dark:text-[var(--foreground)]">{title} {index + 1}</p>
             <div className="grid gap-4 md:grid-cols-2">
               {fields.map((field) => (
                 <div key={`${title}-${index}-${field.key}`} className={field.rows ? 'md:col-span-2 space-y-2' : 'space-y-2'}>
@@ -237,9 +254,9 @@ function FieldGrid({
   onChange: (key: string, value: string) => void;
 }) {
   return (
-    <Card className="border-slate-200 shadow-sm">
+    <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
       <CardHeader>
-        <CardTitle className="text-slate-900">{title}</CardTitle>
+        <CardTitle className="text-slate-900 dark:text-[var(--foreground)]">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
@@ -303,6 +320,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
   const templateTwoPreview = useMemo(() => normalizeWebsiteContent(content, 'template2'), [content]);
   const templateThreePreview = useMemo(() => normalizeWebsiteContent(content, 'template3'), [content]);
   const templateFourPreview = useMemo(() => normalizeWebsiteContent(content, 'template4'), [content]);
+  const templateFivePreview = useMemo(() => normalizeWebsiteContent(content, 'template5'), [content]);
 
   const updateSharedField = (key: string, value: string) => {
     setContent((current) => ({
@@ -414,54 +432,81 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
   return (
     <DashboardLayout user={user} activeTab="website-cms">
-      <form onSubmit={handleSave} className="min-h-full bg-slate-50 p-8">
+      <form onSubmit={handleSave} className="min-h-full bg-slate-50 p-8 dark:bg-[var(--background)]">
         <div className="mx-auto max-w-7xl space-y-6">
-          <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-            <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-sky-900 to-cyan-700 p-8 text-white shadow-xl">
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge className="border border-white/20 bg-white/10 text-white hover:bg-white/10">Website CMS</Badge>
-                <Badge className="border border-emerald-200/30 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/15">
-                  Template-Wise Content
-                </Badge>
+          <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-[var(--foreground)]">
+                <Globe className="h-5 w-5 text-blue-600" />
+                Publish Controls
+              </CardTitle>
+              <CardDescription>Choose the active template and save all website CMS sections.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-2xl bg-slate-100 p-4 dark:bg-[var(--secondary)]">
+                <p className="text-sm text-slate-500 dark:text-[var(--muted-foreground)]">Website brand</p>
+                <p className="mt-2 text-xl font-semibold text-slate-900 dark:text-[var(--foreground)]">{content.shared.brandName}</p>
               </div>
-              <h1 className="mt-5 text-3xl font-semibold tracking-tight md:text-4xl">Manage each website template separately</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-sky-100 md:text-base">
-                Shared brand details now stay separate from template content. Template 1, Template 2, and Template 3 each have their own CMS section so content no longer gets mixed together.
-              </p>
-            </div>
 
-            <Card className="border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <Globe className="h-5 w-5 text-blue-600" />
-                  Publish Controls
-                </CardTitle>
-                <CardDescription>Choose the active template and save all website CMS sections.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-slate-100 p-4">
-                  <p className="text-sm text-slate-500">Website brand</p>
-                  <p className="mt-2 text-xl font-semibold text-slate-900">{content.shared.brandName}</p>
+              <div className="space-y-2">
+                <Label>Active website template</Label>
+                <TemplateCardSelector
+                  activeTemplate={content.activeTemplate}
+                  onSelect={(template) => setContent((current) => ({ ...current, activeTemplate: template }))}
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Theme</Label>
+                  <Select
+                    value={content.theme}
+                    onValueChange={(value: WebsiteThemeKey) => setContent((current) => ({ ...current, theme: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(websiteThemes).map(([key, theme]) => (
+                        <SelectItem key={key} value={key}>
+                          {theme.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="rounded-2xl bg-blue-50 p-4">
-                  <p className="text-sm text-blue-700">Active template</p>
-                  <p className="mt-2 text-xl font-semibold text-blue-900">{getTemplateLabel(content.activeTemplate)}</p>
+
+                <div className="space-y-2">
+                  <Label>Active template</Label>
+                  <div className="rounded-2xl bg-blue-50 p-4 dark:bg-blue-900/20">
+                    <p className="text-xl font-semibold text-blue-900 dark:text-blue-100">{getTemplateLabel(content.activeTemplate)}</p>
+                  </div>
                 </div>
-                <div className="rounded-2xl bg-indigo-50 p-4">
-                  <p className="text-sm text-indigo-700">Public theme</p>
-                  <p className="mt-2 text-xl font-semibold text-indigo-900">{websiteThemes[content.theme].name}</p>
-                  <p className="mt-1 text-sm text-indigo-700/80">{websiteThemes[content.theme].description}</p>
-                </div>
-                <Button type="submit" className="w-full gap-2" disabled={isSaving}>
-                  <Save className="h-4 w-4" />
-                  {isSaving ? 'Saving...' : 'Save Website CMS'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+
+              <div className="rounded-2xl bg-indigo-50 p-4 dark:bg-indigo-900/20">
+                <p className="text-sm text-indigo-700 dark:text-indigo-300">Public theme</p>
+                <p className="mt-2 text-xl font-semibold text-indigo-900 dark:text-indigo-100">{websiteThemes[content.theme].name}</p>
+                <p className="mt-1 text-sm text-indigo-700/80 dark:text-indigo-300/80">{websiteThemes[content.theme].description}</p>
+              </div>
+
+              <Button type="submit" className="w-full gap-2" disabled={isSaving}>
+                <Save className="h-4 w-4" />
+                {isSaving ? 'Saving...' : 'Save Website CMS'}
+              </Button>
+
+              <a
+                href="/website-cms/editor"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
+              >
+                <Globe className="h-4 w-4" />
+                Open Visual Editor ({content.activeTemplate?.replace('template', 'Template ') || 'Template 1'})
+              </a>
+            </CardContent>
+          </Card>
 
           <Tabs defaultValue="shared" className="space-y-6">
-            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-2xl bg-white p-2 shadow-sm">
+            <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-2xl bg-white p-2 shadow-sm dark:bg-[var(--card)] dark:border dark:border-[var(--border)]">
               <TabsTrigger value="shared" className="data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 Shared CMS
               </TabsTrigger>
@@ -477,58 +522,65 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
               <TabsTrigger value="template4" className="data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 Template 4
               </TabsTrigger>
+              <TabsTrigger value="template5" className="data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                Template 5
+              </TabsTrigger>
               <TabsTrigger value="preview" className="data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 Preview
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="shared" className="space-y-6">
-              <Card className="border-slate-200 shadow-sm">
+              <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-[var(--foreground)]">
                     <LayoutTemplate className="h-5 w-5 text-blue-600" />
                     Shared Website Settings
                   </CardTitle>
                   <CardDescription>These values are reused across all templates.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Active website template</Label>
-                    <Select
-                      value={content.activeTemplate}
-                      onValueChange={(value: WebsiteTemplateKey) => setContent((current) => ({ ...current, activeTemplate: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select active template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {templateOptions.map((option) => (
-                          <SelectItem key={option.key} value={option.key}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <CardContent className="space-y-4">
+                <div className="rounded-2xl bg-slate-100 p-4 dark:bg-[var(--secondary)]">
+                  <p className="text-sm text-slate-500 dark:text-[var(--muted-foreground)]">Website brand</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-900 dark:text-[var(--foreground)]">{content.shared.brandName}</p>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label>Theme</Label>
-                    <Select
-                      value={content.theme}
-                      onValueChange={(value: WebsiteThemeKey) => setContent((current) => ({ ...current, theme: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select theme" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(websiteThemes).map(([key, theme]) => (
-                          <SelectItem key={key} value={key}>
-                            {theme.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label>Active website template</Label>
+                  <TemplateCardSelector
+                    activeTemplate={content.activeTemplate}
+                    onSelect={(template) => setContent((current) => ({ ...current, activeTemplate: template }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Theme</Label>
+                  <Select
+                    value={content.theme}
+                    onValueChange={(value: WebsiteThemeKey) => setContent((current) => ({ ...current, theme: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(websiteThemes).map(([key, theme]) => (
+                        <SelectItem key={key} value={key}>
+                          {theme.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="rounded-2xl bg-blue-50 p-4 dark:bg-blue-900/20">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Active template</p>
+                  <p className="mt-2 text-xl font-semibold text-blue-900 dark:text-blue-100">{getTemplateLabel(content.activeTemplate)}</p>
+                </div>
+                <div className="rounded-2xl bg-indigo-50 p-4 dark:bg-indigo-900/20">
+                  <p className="text-sm text-indigo-700 dark:text-indigo-300">Public theme</p>
+                  <p className="mt-2 text-xl font-semibold text-indigo-900 dark:text-indigo-100">{websiteThemes[content.theme].name}</p>
+                  <p className="mt-1 text-sm text-indigo-700/80 dark:text-indigo-300/80">{websiteThemes[content.theme].description}</p>
+                </div>
                 </CardContent>
               </Card>
 
@@ -540,9 +592,9 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
                 onChange={updateSharedField}
               />
 
-              <Card className="border-slate-200 shadow-sm">
+              <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-[var(--foreground)]">
                     <ImageIcon className="h-5 w-5 text-blue-600" />
                     Shared Slider Images
                   </CardTitle>
@@ -1186,29 +1238,224 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
               />
             </TabsContent>
 
+            <TabsContent value="template5" className="space-y-6">
+              <FieldGrid
+                title="Template 5 Top Bar"
+                description="Contact details shown in the navy top utility bar."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveTopPhone', label: 'Phone number' },
+                  { key: 'templateFiveTopEmail', label: 'Email address' },
+                  { key: 'templateFiveTopAddress', label: 'Address', rows: 2 },
+                  { key: 'templateFiveSocialFacebook', label: 'Facebook URL' },
+                  { key: 'templateFiveSocialTwitter', label: 'Twitter URL' },
+                  { key: 'templateFiveSocialYoutube', label: 'YouTube URL' },
+                  { key: 'templateFiveSocialInstagram', label: 'Instagram URL' },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 Hero"
+                description="Main hero section content with title, subtitle, and description."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveHeroTitle', label: 'Hero title', rows: 3 },
+                  { key: 'templateFiveHeroSubtitle', label: 'Hero subtitle', rows: 2 },
+                  { key: 'templateFiveHeroDescription', label: 'Hero description', rows: 4 },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 News Marquee"
+                description="Scrolling news ticker items shown below the navigation."
+                items={(content.template5.templateFiveMarqueeItems as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'text', label: 'News text' },
+                  { key: 'url', label: 'Link URL' },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveMarqueeItems', index, field, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 Principal Message"
+                description="Principal's greeting and message shown in the homepage."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFivePrincipalName', label: 'Principal name' },
+                  { key: 'templateFivePrincipalDesignation', label: 'Designation' },
+                  { key: 'templateFivePrincipalMessage', label: 'Message', rows: 5 },
+                  { key: 'templateFivePrincipalImage', label: 'Image URL' },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 Secretary Message"
+                description="Secretary's greeting and message shown in the homepage."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveSecretaryName', label: 'Secretary name' },
+                  { key: 'templateFiveSecretaryDesignation', label: 'Designation' },
+                  { key: 'templateFiveSecretaryMessage', label: 'Message', rows: 5 },
+                  { key: 'templateFiveSecretaryImage', label: 'Image URL' },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 About"
+                description="About section content for the institutional homepage."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveAboutTitle', label: 'About title', rows: 2 },
+                  { key: 'templateFiveAboutDescription', label: 'About description', rows: 5 },
+                  { key: 'templateFiveAboutImage', label: 'About image URL' },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Achievements"
+                description="Counter bar statistics shown below the hero."
+                items={(content.template5.templateFiveAchievements as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'value', label: 'Value (e.g. 3200+)' },
+                  { key: 'label', label: 'Label (e.g. Students Enrolled)' },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveAchievements', index, field, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Departments"
+                description="Academic department cards shown on the homepage."
+                items={(content.template5.templateFiveDepartments as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'title', label: 'Department name' },
+                  { key: 'description', label: 'Description', rows: 4 },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveDepartments', index, field, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Why Choose Us"
+                description="Feature cards highlighting institutional strengths."
+                items={(content.template5.templateFiveWhyChooseUs as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'title', label: 'Title' },
+                  { key: 'description', label: 'Description', rows: 3 },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveWhyChooseUs', index, field, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Events"
+                description="Upcoming events listed on the homepage."
+                items={(content.template5.templateFiveEvents as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'title', label: 'Event title' },
+                  { key: 'detail', label: 'Detail', rows: 3 },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveEvents', index, field, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 News"
+                description="Latest news items shown on the homepage."
+                items={(content.template5.templateFiveNews as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'title', label: 'News title' },
+                  { key: 'detail', label: 'Detail', rows: 3 },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveNews', index, field, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 Gallery"
+                description="Gallery section heading and intro copy."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveGalleryTitle', label: 'Gallery title', rows: 2 },
+                  { key: 'templateFiveGalleryDescription', label: 'Gallery description', rows: 3 },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Gallery Items"
+                description="Gallery cards for campus, classrooms, labs, and events."
+                items={(content.template5.templateFiveGalleryItems as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'category', label: 'Category' },
+                  { key: 'title', label: 'Title' },
+                  { key: 'description', label: 'Description', rows: 3 },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveGalleryItems', index, field, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Testimonials"
+                description="Student and alumni testimonial cards."
+                items={(content.template5.templateFiveTestimonials as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'quote', label: 'Quote', rows: 3 },
+                  { key: 'name', label: 'Name' },
+                  { key: 'role', label: 'Role' },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveTestimonials', index, field, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 Contact"
+                description="Contact section heading and Google Maps embed."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveContactTitle', label: 'Contact title', rows: 2 },
+                  { key: 'templateFiveContactDescription', label: 'Contact description', rows: 3 },
+                  { key: 'templateFiveMapEmbedUrl', label: 'Google Maps embed URL', rows: 2 },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+
+              <ArrayEditor
+                title="Template 5 Contact Items"
+                description="Phone, email, and address contact cards."
+                items={(content.template5.templateFiveContactItems as Array<Record<string, string>>) ?? []}
+                fields={[
+                  { key: 'title', label: 'Title' },
+                  { key: 'value', label: 'Value' },
+                  { key: 'description', label: 'Description', rows: 3 },
+                ]}
+                onChange={(index, field, value) => updateTemplateArrayItem('template5', 'templateFiveContactItems', index, field, value)}
+              />
+
+              <FieldGrid
+                title="Template 5 Footer"
+                description="Footer copyright text and tagline."
+                data={content.template5 as Record<string, string>}
+                fields={[
+                  { key: 'templateFiveFooterCopyright', label: 'Copyright text' },
+                  { key: 'templateFiveFooterTagline', label: 'Tagline' },
+                ]}
+                onChange={(key, value) => updateTemplateField('template5', key, value)}
+              />
+            </TabsContent>
+
             <TabsContent value="preview" className="space-y-6">
-              <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-4">
-                <TemplatePreviewCard
-                  label={templateOptions[0].label}
-                  description={templateOptions[0].description}
-                  content={{ ...templateOnePreview, activeTemplate: 'template1' }}
-                />
-                <TemplatePreviewCard
-                  label={templateOptions[1].label}
-                  description={templateOptions[1].description}
-                  content={{ ...templateTwoPreview, activeTemplate: 'template2' }}
-                />
-                <TemplatePreviewCard
-                  label={templateOptions[2].label}
-                  description={templateOptions[2].description}
-                  content={{ ...templateThreePreview, activeTemplate: 'template3' }}
-                />
-                <TemplatePreviewCard
-                  label={templateOptions[3].label}
-                  description={templateOptions[3].description}
-                  content={{ ...templateFourPreview, activeTemplate: 'template4' }}
-                />
-              </div>
+              <WebsiteThemeSelector
+                activeTemplate={content.activeTemplate}
+                activeTheme={content.theme}
+                content={templateOnePreview}
+                onSelect={(template, theme) => {
+                  setContent((current) => ({
+                    ...current,
+                    activeTemplate: template,
+                    theme: theme,
+                  }));
+                  toast.success(`Switched to ${templateOptions.find((t) => t.key === template)?.label} with ${websiteThemes[theme].name} theme`);
+                }}
+              />
             </TabsContent>
           </Tabs>
         </div>

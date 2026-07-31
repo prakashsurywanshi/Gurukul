@@ -202,12 +202,6 @@ export default function SendWhatsapp({ user, staffRecords, studentRecords, whats
     ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   }, [composeForm.targetClass, studentRecords]);
 
-  const classSectionGroups = useMemo(() => {
-    return Array.from(new Set(studentRecords.filter((student) => student.phone).map((student) => `${student.class}-${student.section}`))).sort((a, b) =>
-      a.localeCompare(b, undefined, { numeric: true })
-    );
-  }, [studentRecords]);
-
   const staffRoleOptions = useMemo(
     () => Array.from(new Set(staffRecords.filter((staff) => staff.phone).map((staff) => String(staff.role)).filter(Boolean))).sort(),
     [staffRecords]
@@ -425,14 +419,17 @@ export default function SendWhatsapp({ user, staffRecords, studentRecords, whats
                       <>
                         <div className="space-y-2">
                           <Label>Class</Label>
-                          <Select value={composeForm.targetClass} onValueChange={(value) => setComposeForm((current) => ({ ...current, targetClass: value, targetSection: '' }))}>
+                          <Select value={composeForm.targetClass} onValueChange={(value) => {
+                            const sections = Array.from(new Set(studentRecords.filter((s) => String(s.class) === value).map((s) => String(s.section)).filter(Boolean))).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                            setComposeForm((current) => ({ ...current, targetClass: value, targetSection: sections[0] || '' }));
+                          }}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select class" />
                             </SelectTrigger>
                             <SelectContent>
                               {classOptions.map((schoolClass) => (
                                 <SelectItem key={schoolClass} value={schoolClass}>
-                                  Class {schoolClass}
+                                  {schoolClass}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -464,18 +461,17 @@ export default function SendWhatsapp({ user, staffRecords, studentRecords, whats
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Selected Groups</Label>
-                          {classSectionGroups.length > 0 ? (
-                            <div className="grid gap-2 rounded-lg border border-slate-200 p-3 sm:grid-cols-2">
-                              {classSectionGroups.map((group) => (
-                                <label key={group} className="flex items-center gap-2 text-sm text-slate-700">
-                                  <Checkbox checked={composeForm.selectedGroups.includes(group)} onCheckedChange={() => toggleGroupSelection(group)} />
-                                  <span>{group.replace('-', ' - Section ')}</span>
-                                </label>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="rounded-lg border border-dashed border-slate-200 p-3 text-sm text-slate-500">No class and section groups with phone numbers are available.</p>
-                          )}
+                          <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 p-3">
+                            {composeForm.selectedGroups.length > 0 ? (
+                              composeForm.selectedGroups.map((group) => (
+                                <Badge key={group} variant="secondary" className="cursor-pointer" onClick={() => toggleGroupSelection(group)}>
+                                  {group.replace('-', ' - Section ')}
+                                </Badge>
+                              ))
+                            ) : (
+                              <p className="text-sm text-slate-500">No class-section groups selected yet.</p>
+                            )}
+                          </div>
                         </div>
                       </>
                     ) : (
@@ -496,7 +492,7 @@ export default function SendWhatsapp({ user, staffRecords, studentRecords, whats
                   </div>
 
                   {!bridgeStatus.connected ? (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
                       WhatsApp is currently disconnected. Scan the QR code in the setup section before sending.
                     </div>
                   ) : null}

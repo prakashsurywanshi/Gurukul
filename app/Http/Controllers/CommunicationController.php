@@ -156,7 +156,9 @@ class CommunicationController extends Controller
         return inertia('dashboard/NoticeBoard', [
             'user' => $user,
             'notices' => $this->noticeBoardPayload($organization, $user),
-            'classGroups' => $this->noticeBoardClassGroups($organization),
+            'classOptions' => $this->noticeBoardClassOptions($organization),
+            'sectionOptions' => $this->noticeBoardSectionOptions($organization),
+            'classSectionOptions' => $this->noticeBoardClassGroups($organization),
             'canManageNotices' => $this->canManageNotices($user),
         ]);
     }
@@ -1264,8 +1266,30 @@ class CommunicationController extends Controller
             ->get()
             ->map(fn (SchoolClass $schoolClass) => [
                 'value' => sprintf('%s-%s', $schoolClass->name, $schoolClass->section),
-                'label' => sprintf('Class %s - Section %s', $schoolClass->name, $schoolClass->section),
+                'label' => sprintf('%s - Section %s', $schoolClass->name, $schoolClass->section),
             ])
+            ->values()
+            ->all();
+    }
+
+    private function noticeBoardClassOptions(Organization $organization): array
+    {
+        return SchoolClass::query()
+            ->forCurrentSession($organization->id)
+            ->orderByRaw('CAST(name AS UNSIGNED), name')
+            ->distinct()
+            ->pluck('name')
+            ->values()
+            ->all();
+    }
+
+    private function noticeBoardSectionOptions(Organization $organization): array
+    {
+        return SchoolClass::query()
+            ->forCurrentSession($organization->id)
+            ->orderBy('section')
+            ->distinct()
+            ->pluck('section')
             ->values()
             ->all();
     }
@@ -1734,7 +1758,7 @@ class CommunicationController extends Controller
             ->get()
             ->map(fn (SchoolClass $schoolClass) => [
                 'id' => sprintf('class-%s-%s', str($schoolClass->name)->slug('-'), str($schoolClass->section)->slug('-')),
-                'label' => sprintf('Class %s - Section %s', $schoolClass->name, $schoolClass->section),
+                'label' => sprintf('%s - Section %s', $schoolClass->name, $schoolClass->section),
             ])
             ->all();
 

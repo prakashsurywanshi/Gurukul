@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-linear-to-br from-slate-700 via-slate-800 to-slate-950 text-white shadow-[0_12px_28px_-12px_rgba(15,23,42,0.85)] hover:shadow-[0_20px_42px_-16px_rgba(15,23,42,0.72)]",
+          "bg-primary text-primary-foreground shadow-[0_12px_28px_-12px_rgba(15,23,42,0.85)] hover:bg-primary/90 hover:shadow-[0_20px_42px_-16px_rgba(15,23,42,0.72)]",
         destructive:
-          "bg-linear-to-br from-red-700 via-red-800 to-zinc-950 text-white shadow-[0_12px_28px_-12px_rgba(127,29,29,0.8)] hover:shadow-[0_20px_42px_-16px_rgba(127,29,29,0.68)] focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-[#dc2626] text-white shadow-[0_12px_28px_-12px_rgba(220,38,38,0.8)] hover:bg-[#b91c1c] hover:shadow-[0_20px_42px_-16px_rgba(220,38,38,0.68)] focus-visible:ring-[#dc2626]/20 dark:focus-visible:ring-[#dc2626]/40",
         outline:
-          "border-slate-300 bg-linear-to-br from-slate-50 via-white to-slate-100 text-slate-800 shadow-[0_10px_22px_-16px_rgba(15,23,42,0.38)] hover:border-slate-400 hover:text-slate-950 hover:shadow-[0_18px_36px_-20px_rgba(15,23,42,0.5)] dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border-border bg-card text-card-foreground shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-linear-to-br from-slate-600 via-slate-700 to-slate-900 text-slate-100 shadow-[0_12px_28px_-12px_rgba(30,41,59,0.8)] hover:shadow-[0_20px_42px_-16px_rgba(30,41,59,0.68)]",
+          "bg-secondary text-secondary-foreground shadow-[0_12px_28px_-12px_rgba(30,41,59,0.8)] hover:bg-secondary/80 hover:shadow-[0_20px_42px_-16px_rgba(30,41,59,0.68)]",
         ghost:
-          "text-slate-700 hover:bg-slate-100 hover:text-slate-950 hover:shadow-[0_14px_28px_-20px_rgba(15,23,42,0.4)] dark:hover:bg-accent/50",
+          "text-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-[0_14px_28px_-20px_rgba(15,23,42,0.4)]",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

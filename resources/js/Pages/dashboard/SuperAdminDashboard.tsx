@@ -151,7 +151,7 @@ export default function SuperAdminDashboard({
                   <h2 className="text-xl font-bold text-gray-900">Schools Nearing Expiry</h2>
                   <p className="mt-1 text-sm text-gray-500">Review subscription dates to identify schools that may need follow-up soon.</p>
                 </div>
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
                   {nearingExpiryOrganizations.length} tracked
                 </span>
               </div>

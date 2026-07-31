@@ -1472,7 +1472,7 @@ export default function ExamManagement({ user, students, classOptions, subjectOp
                           <SelectContent>
                             {evaluationClassOptions.map((option) => (
                               <SelectItem key={option} value={option}>
-                                Class {option}
+                                {option}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1524,7 +1524,7 @@ export default function ExamManagement({ user, students, classOptions, subjectOp
                         ) : evaluationStudents.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={7} className="text-center text-slate-500">
-                              No students found for Class {evaluationClass} Section {evaluationSection}.
+                              No students found for {evaluationClass} Section {evaluationSection}.
                             </TableCell>
                           </TableRow>
                         ) : (
@@ -1699,7 +1699,7 @@ export default function ExamManagement({ user, students, classOptions, subjectOp
                         <TableCell>{result.subject}</TableCell>
                         <TableCell>{result.studentName}</TableCell>
                         <TableCell>
-                          Class {result.class} / {result.section}
+                          {result.class} / {result.section}
                         </TableCell>
                         <TableCell>
                           {result.marksObtained}/{result.totalMarks}
@@ -1769,7 +1769,7 @@ export default function ExamManagement({ user, students, classOptions, subjectOp
                           viewGroup.exams.map((exam) => (
                             <TableRow key={exam.id}>
                               <TableCell>{exam.subject}</TableCell>
-                              <TableCell>Class {exam.class} / {exam.section}</TableCell>
+                              <TableCell>{exam.class} / {exam.section}</TableCell>
                               <TableCell>{formatDate(exam.exam_date)}</TableCell>
                               <TableCell>{exam.start_time} - {exam.end_time}</TableCell>
                               <TableCell>{exam.total_marks}/{exam.passing_marks}</TableCell>

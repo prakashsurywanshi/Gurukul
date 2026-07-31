@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { CalendarCheck, Download, FileText } from 'lucide-react';
+import { BarChart3, BookOpen, CalendarCheck, CalendarDays, DollarSign, Download, FileText, Library, Search, TrendingUp, Users } from 'lucide-react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '../ui/chart';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -21,16 +24,59 @@ type ModuleReport = {
   columns: string[];
   stats: ModuleStat[];
   rows: string[][];
+  pagination?: {
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    perPage: number;
+  };
+};
+
+type Metrics = {
+  totalStudents: number;
+  attendanceRate: number;
+  feeCollected: number;
+  feeCollectionRate: number;
+  libraryBooks: number;
+  libraryIssued: number;
+};
+
+type AttendanceDatum = {
+  month: string;
+  present: number;
+  absent: number;
+};
+
+type FeeCollectionDatum = {
+  month: string;
+  collected: number;
+  pending: number;
+};
+
+type StudentDistributionDatum = {
+  class: string;
+  students: number;
+  color: string;
+};
+
+type ExamPerformanceDatum = {
+  subject: string;
+  average: number;
 };
 
 interface ReportsAnalyticsProps {
   user: any;
   accessToken?: string;
-  classOptions: { value: string; label: string }[];
+  classOptions: { id: number; name: string; section: string }[];
   sessionOptions: { value: string; label: string; isCurrent: boolean }[];
   monthOptions: { value: string; label: string }[];
-  selectedFilters: { class: string; month: string; session: string; module: string };
+  selectedFilters: { class: string; month: string; session: string; module: string; search: string };
   moduleReports: ModuleReport[];
+  metrics: Metrics;
+  attendanceData: AttendanceDatum[];
+  feeCollectionData: FeeCollectionDatum[];
+  studentDistribution: StudentDistributionDatum[];
+  examPerformance: ExamPerformanceDatum[];
 }
 
 const escapeCsvCell = (value: string | number) => {
@@ -89,6 +135,38 @@ const exportPdf = (title: string, headers: string[], rows: string[][]) => {
   printWindow.print();
 };
 
+const attendanceChartConfig = {
+  present: { label: 'Present', color: '#3b82f6' },
+  absent: { label: 'Absent', color: '#ef4444' },
+} satisfies ChartConfig;
+
+const feeChartConfig = {
+  collected: { label: 'Collected', color: '#22c55e' },
+  pending: { label: 'Pending', color: '#f59e0b' },
+} satisfies ChartConfig;
+
+const examChartConfig = {
+  average: { label: 'Average', color: '#6366f1' },
+} satisfies ChartConfig;
+
+const kpiIcons = {
+  totalStudents: Users,
+  attendanceRate: TrendingUp,
+  feeCollected: DollarSign,
+  feeCollectionRate: BarChart3,
+  libraryBooks: BookOpen,
+  libraryIssued: Library,
+};
+
+const kpiColors = {
+  totalStudents: 'bg-blue-50 text-blue-600',
+  attendanceRate: 'bg-emerald-50 text-emerald-600',
+  feeCollected: 'bg-amber-50 text-amber-600',
+  feeCollectionRate: 'bg-indigo-50 text-indigo-600',
+  libraryBooks: 'bg-purple-50 text-purple-600',
+  libraryIssued: 'bg-rose-50 text-rose-600',
+};
+
 export default function ReportsAnalytics({
   user,
   accessToken,
@@ -97,30 +175,96 @@ export default function ReportsAnalytics({
   monthOptions,
   selectedFilters,
   moduleReports,
+  metrics,
+  attendanceData,
+  feeCollectionData,
+  studentDistribution,
+  examPerformance,
 }: ReportsAnalyticsProps) {
-  const [selectedClass, setSelectedClass] = useState(selectedFilters.class);
+  const initialClassName = useMemo(
+    () => classOptions.find((c) => String(c.id) === selectedFilters.class)?.name ?? '',
+    [classOptions, selectedFilters.class]
+  );
+  const initialSection = useMemo(
+    () => classOptions.find((c) => String(c.id) === selectedFilters.class)?.section ?? '',
+    [classOptions, selectedFilters.class]
+  );
+
+  const [selectedClassName, setSelectedClassName] = useState(initialClassName);
+  const [selectedSection, setSelectedSection] = useState(initialSection);
   const [selectedMonth, setSelectedMonth] = useState(selectedFilters.month);
   const [selectedSession, setSelectedSession] = useState(selectedFilters.session);
-  const [activeModule, setActiveModule] = useState(selectedFilters.module || moduleReports[0]?.id || 'students');
+  const [activeModule, setActiveModule] = useState(selectedFilters.module || 'overview');
+  const [searchQuery, setSearchQuery] = useState(selectedFilters.search || '');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [dateRangeOpen, setDateRangeOpen] = useState(false);
 
   const selectedMonthLabel = monthOptions.find((option) => option.value === selectedMonth)?.label || selectedMonth;
   const selectedSessionOption = sessionOptions.find((option) => option.value === selectedSession);
+
+  const uniqueClassNames = useMemo(
+    () => [...new Set(classOptions.map((c) => c.name))].sort((a, b) => Number(a) - Number(b)),
+    [classOptions]
+  );
+
+  const sectionsForClass = useMemo(
+    () =>
+      selectedClassName
+        ? [...new Set(classOptions.filter((c) => c.name === selectedClassName).map((c) => c.section))].sort()
+        : [],
+    [classOptions, selectedClassName]
+  );
+
+  const selectedClassId = useMemo(() => {
+    const match = classOptions.find((c) => c.name === selectedClassName && c.section === selectedSection);
+    return match ? String(match.id) : 'all';
+  }, [classOptions, selectedClassName, selectedSection]);
+
+  useEffect(() => {
+    if (sectionsForClass.length > 0 && !sectionsForClass.includes(selectedSection)) {
+      setSelectedSection(sectionsForClass[0]);
+    }
+  }, [sectionsForClass, selectedSection]);
+
+  const classFilterInitialized = useRef(false);
+
+  useEffect(() => {
+    if (!classFilterInitialized.current) {
+      classFilterInitialized.current = true;
+      return;
+    }
+
+    if (selectedClassId !== selectedFilters.class) {
+      router.get('/reports', {
+        class: selectedClassId,
+        month: selectedMonth,
+        session: selectedSession,
+        module: activeModule,
+        search: searchQuery || undefined,
+      }, {
+        preserveScroll: true,
+        preserveState: true,
+      });
+    }
+  }, [selectedClassId]);
+
   const activeReport = useMemo(
     () => moduleReports.find((module) => module.id === activeModule) ?? moduleReports[0],
     [activeModule, moduleReports]
   );
 
-  const applyFilters = (nextClass: string, nextMonth: string, nextSession: string, nextModule = activeModule) => {
-    setSelectedClass(nextClass);
+  const applyFilters = (nextMonth: string, nextSession: string, nextModule = activeModule) => {
     setSelectedMonth(nextMonth);
     setSelectedSession(nextSession);
     setActiveModule(nextModule);
 
     router.get('/reports', {
-      class: nextClass,
+      class: selectedClassId,
       month: nextMonth,
       session: nextSession,
       module: nextModule,
+      search: searchQuery || undefined,
     }, {
       preserveScroll: true,
       preserveState: true,
@@ -130,14 +274,42 @@ export default function ReportsAnalytics({
   const handleModuleChange = (nextModule: string) => {
     setActiveModule(nextModule);
     router.get('/reports', {
-      class: selectedClass,
+      class: selectedClassId,
       month: selectedMonth,
       session: selectedSession,
       module: nextModule,
+      search: searchQuery || undefined,
     }, {
       preserveScroll: true,
       preserveState: true,
       replace: true,
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    router.get('/reports', {
+      class: selectedClassId,
+      month: selectedMonth,
+      session: selectedSession,
+      module: activeModule,
+      search: searchQuery || undefined,
+      page,
+    }, {
+      preserveScroll: true,
+      preserveState: true,
+    });
+  };
+
+  const handleSearch = () => {
+    router.get('/reports', {
+      class: selectedClassId,
+      month: selectedMonth,
+      session: selectedSession,
+      module: activeModule,
+      search: searchQuery || undefined,
+    }, {
+      preserveScroll: true,
+      preserveState: true,
     });
   };
 
@@ -147,8 +319,16 @@ export default function ReportsAnalytics({
   };
 
   const exportModulePdf = (module: ModuleReport) => {
-    exportPdf(`${module.label} Report`, module.columns, module.rows);
-    toast.success(`${module.label} PDF export opened`);
+    const params = new URLSearchParams({
+      module: module.id,
+      class: selectedClassId,
+      month: selectedMonth,
+      session: selectedSession,
+    });
+    if (searchQuery) params.set('search', searchQuery);
+
+    window.location.href = `/reports/export-pdf?${params.toString()}`;
+    toast.success(`${module.label} PDF export started`);
   };
 
   const handleSetCurrentSession = () => {
@@ -176,21 +356,50 @@ export default function ReportsAnalytics({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Select value={selectedClass} onValueChange={(value) => applyFilters(value, selectedMonth, selectedSession)}>
-              <SelectTrigger className="w-48 bg-white">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search records..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                className="h-10 w-64 rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+
+            <Select value={selectedClassName || '__all__'} onValueChange={(value) => { setSelectedClassName(value === '__all__' ? '' : value); }}>
+              <SelectTrigger className="w-40 bg-white">
                 <SelectValue placeholder="Select class" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Classes</SelectItem>
-                {classOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                <SelectItem value="__all__">All Classes</SelectItem>
+                {uniqueClassNames.map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            <Select value={selectedSession} onValueChange={(value) => applyFilters(selectedClass, selectedMonth, value)}>
+            <Select
+              value={selectedSection}
+              onValueChange={(value) => { setSelectedSection(value); }}
+              disabled={!selectedClassName || sectionsForClass.length === 0}
+            >
+              <SelectTrigger className="w-36 bg-white">
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent>
+                {sectionsForClass.map((section) => (
+                  <SelectItem key={section} value={section}>
+                    Section {section}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedSession} onValueChange={(value) => applyFilters(selectedMonth, value)}>
               <SelectTrigger className="w-48 bg-white">
                 <SelectValue placeholder="Select session" />
               </SelectTrigger>
@@ -203,7 +412,7 @@ export default function ReportsAnalytics({
               </SelectContent>
             </Select>
 
-            <Select value={selectedMonth} onValueChange={(value) => applyFilters(selectedClass, value, selectedSession)}>
+            <Select value={selectedMonth} onValueChange={(value) => applyFilters(value, selectedSession)}>
               <SelectTrigger className="w-36 bg-white">
                 <SelectValue placeholder="Select month" />
               </SelectTrigger>
@@ -226,15 +435,88 @@ export default function ReportsAnalytics({
               <CalendarCheck className="h-4 w-4" />
               {selectedSessionOption?.isCurrent ? 'Current Session' : 'Set Current Session'}
             </Button>
+
+            <Popover open={dateRangeOpen} onOpenChange={setDateRangeOpen}>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" className={`gap-2 bg-white ${dateFrom || dateTo ? 'border-blue-500 text-blue-600' : ''}`}>
+                  <CalendarDays className="h-4 w-4" />
+                  Date Range
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="end">
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-slate-900">Custom Date Range</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-slate-500">From</label>
+                      <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        className="mt-1 h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500">To</label>
+                      <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        className="mt-1 h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        setDateRangeOpen(false);
+                        router.get('/reports', {
+                          class: selectedClassId,
+                          month: selectedMonth,
+                          session: selectedSession,
+                          module: activeModule,
+                          search: searchQuery || undefined,
+                          date_from: dateFrom || undefined,
+                          date_to: dateTo || undefined,
+                        }, { preserveScroll: true, preserveState: true });
+                      }}
+                    >
+                      Apply
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setDateFrom('');
+                        setDateTo('');
+                        setDateRangeOpen(false);
+                        router.get('/reports', {
+                          class: selectedClassId,
+                          month: selectedMonth,
+                          session: selectedSession,
+                          module: activeModule,
+                          search: searchQuery || undefined,
+                        }, { preserveScroll: true, preserveState: true });
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
         <Card className="border-slate-200">
           <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle>{activeReport?.label ?? 'Module'} Reports</CardTitle>
+              <CardTitle>{activeModule === 'overview' ? 'Overview Dashboard' : `${activeReport?.label ?? 'Module'} Reports`}</CardTitle>
               <CardDescription>
-                {selectedMonthLabel} · {selectedSessionOption?.label || '-'} · Export-ready report tables.
+                {selectedMonthLabel} · {selectedSessionOption?.label || '-'} · {activeModule === 'overview' ? 'Key metrics and trends across all modules.' : 'Export-ready report tables.'}
               </CardDescription>
             </div>
           </CardHeader>
@@ -242,6 +524,12 @@ export default function ReportsAnalytics({
           <CardContent>
             <Tabs value={activeModule} onValueChange={handleModuleChange} className="space-y-6">
               <TabsList className="flex h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
+                <TabsTrigger
+                  value="overview"
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-slate-600 data-[state=active]:border-blue-600 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                >
+                  Overview
+                </TabsTrigger>
                 {moduleReports.map((module) => (
                   <TabsTrigger
                     key={module.id}
@@ -252,6 +540,139 @@ export default function ReportsAnalytics({
                   </TabsTrigger>
                 ))}
               </TabsList>
+
+              <TabsContent value="overview" className="space-y-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {[
+                    { key: 'totalStudents' as const, label: 'Total Students', value: metrics.totalStudents.toLocaleString() },
+                    { key: 'attendanceRate' as const, label: 'Attendance Rate', value: `${metrics.attendanceRate}%` },
+                    { key: 'feeCollected' as const, label: 'Fee Collected', value: `Rs ${metrics.feeCollected.toLocaleString()}` },
+                    { key: 'feeCollectionRate' as const, label: 'Fee Collection Rate', value: `${metrics.feeCollectionRate}%` },
+                    { key: 'libraryBooks' as const, label: 'Library Books', value: metrics.libraryBooks.toLocaleString() },
+                    { key: 'libraryIssued' as const, label: 'Books Issued', value: metrics.libraryIssued.toLocaleString() },
+                  ].map((kpi) => {
+                    const Icon = kpiIcons[kpi.key];
+                    return (
+                      <Card key={kpi.key} className="border-slate-200">
+                        <CardContent className="flex items-center gap-4 pt-6">
+                          <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${kpiColors[kpi.key]}`}>
+                            <Icon className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-500">{kpi.label}</p>
+                            <p className="text-2xl font-semibold text-slate-900">{kpi.value}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <Card className="border-slate-200">
+                    <CardHeader>
+                      <CardTitle className="text-base">Attendance Trends</CardTitle>
+                      <CardDescription>Monthly present vs absent percentages</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {attendanceData.length > 0 ? (
+                        <ChartContainer config={attendanceChartConfig} className="h-[300px] w-full">
+                          <AreaChart data={attendanceData}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} domain={[0, 100]} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Area type="monotone" dataKey="present" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.2} />
+                            <Area type="monotone" dataKey="absent" stackId="1" stroke="#ef4444" fill="#ef4444" fillOpacity={0.2} />
+                            <Legend />
+                          </AreaChart>
+                        </ChartContainer>
+                      ) : (
+                        <div className="flex h-[300px] items-center justify-center text-sm text-slate-500">No attendance data available</div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200">
+                    <CardHeader>
+                      <CardTitle className="text-base">Fee Collection</CardTitle>
+                      <CardDescription>Monthly collected vs pending amounts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {feeCollectionData.length > 0 ? (
+                        <ChartContainer config={feeChartConfig} className="h-[300px] w-full">
+                          <BarChart data={feeCollectionData}>
+                            <CartesianGrid vertical={false} />
+                            <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Bar dataKey="collected" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="pending" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                            <Legend />
+                          </BarChart>
+                        </ChartContainer>
+                      ) : (
+                        <div className="flex h-[300px] items-center justify-center text-sm text-slate-500">No fee data available</div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200">
+                    <CardHeader>
+                      <CardTitle className="text-base">Student Distribution</CardTitle>
+                      <CardDescription>Students across class ranges</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {studentDistribution.length > 0 ? (
+                        <ChartContainer config={{}} className="h-[300px] w-full">
+                          <PieChart>
+                            <Pie
+                              data={studentDistribution}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={60}
+                              outerRadius={100}
+                              dataKey="students"
+                              nameKey="class"
+                              paddingAngle={2}
+                            >
+                              {studentDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Legend />
+                          </PieChart>
+                        </ChartContainer>
+                      ) : (
+                        <div className="flex h-[300px] items-center justify-center text-sm text-slate-500">No distribution data available</div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-slate-200">
+                    <CardHeader>
+                      <CardTitle className="text-base">Exam Performance</CardTitle>
+                      <CardDescription>Average marks by subject</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {examPerformance.length > 0 ? (
+                        <ChartContainer config={examChartConfig} className="h-[300px] w-full">
+                          <BarChart data={examPerformance} layout="vertical">
+                            <CartesianGrid horizontal={false} />
+                            <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                            <YAxis type="category" dataKey="subject" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} width={100} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Bar dataKey="average" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ChartContainer>
+                      ) : (
+                        <div className="flex h-[300px] items-center justify-center text-sm text-slate-500">No exam data available</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
 
               {moduleReports.map((module) => (
                 <TabsContent key={module.id} value={module.id} className="space-y-5">
@@ -311,6 +732,60 @@ export default function ReportsAnalytics({
                       </TableBody>
                     </Table>
                   </div>
+
+                  {module.pagination && module.pagination.lastPage > 1 && (
+                    <div className="flex items-center justify-between px-2">
+                      <p className="text-sm text-slate-500">
+                        Showing {((module.pagination.currentPage - 1) * module.pagination.perPage) + 1} to{' '}
+                        {Math.min(module.pagination.currentPage * module.pagination.perPage, module.pagination.total)} of{' '}
+                        {module.pagination.total} records
+                      </p>
+                      <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={module.pagination.currentPage <= 1}
+                          onClick={() => handlePageChange(module.pagination!.currentPage - 1)}
+                        >
+                          Previous
+                        </Button>
+                        {Array.from({ length: Math.min(module.pagination.lastPage, 5) }, (_, i) => {
+                          let pageNum: number;
+                          if (module.pagination!.lastPage <= 5) {
+                            pageNum = i + 1;
+                          } else if (module.pagination!.currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (module.pagination!.currentPage >= module.pagination!.lastPage - 2) {
+                            pageNum = module.pagination!.lastPage - 4 + i;
+                          } else {
+                            pageNum = module.pagination!.currentPage - 2 + i;
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              type="button"
+                              variant={pageNum === module.pagination!.currentPage ? 'default' : 'outline'}
+                              size="sm"
+                              className={pageNum === module.pagination!.currentPage ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
+                              onClick={() => handlePageChange(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={module.pagination.currentPage >= module.pagination.lastPage}
+                          onClick={() => handlePageChange(module.pagination!.currentPage + 1)}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               ))}
             </Tabs>

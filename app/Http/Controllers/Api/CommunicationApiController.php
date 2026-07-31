@@ -1013,7 +1013,7 @@ class CommunicationApiController extends Controller
             ->get()
             ->map(fn (SchoolClass $schoolClass) => [
                 'id' => sprintf('%s-%s', $schoolClass->name, $schoolClass->section),
-                'label' => sprintf('Class %s - Section %s', $schoolClass->name, $schoolClass->section),
+                'label' => sprintf('%s - Section %s', $schoolClass->name, $schoolClass->section),
             ]);
 
         $students = Student::query()

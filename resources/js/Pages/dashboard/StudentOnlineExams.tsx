@@ -578,7 +578,7 @@ export default function StudentOnlineExams({ user, onlineExams, attempts, studen
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Online Exams</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Attend live online exams for Class {studentRecord.className} Section {studentRecord.section}, resume active attempts, and review your results.
+            Attend live online exams for {studentRecord.className} Section {studentRecord.section}, resume active attempts, and review your results.
           </p>
         </div>
 
