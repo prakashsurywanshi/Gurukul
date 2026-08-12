@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendQwaWhatsappMessageJob;
 use App\Jobs\SendWhatsappMessageJob;
 use App\Models\DownloadCenterMedia;
 use App\Models\DownloadCenterShare;
@@ -15,6 +16,7 @@ use App\Models\SuperAdminSetting;
 use App\Models\User;
 use App\Models\VoiceCallLog;
 use App\Services\FirebaseCloudMessagingService;
+use App\Services\QwaService;
 use App\Services\SmartfloService;
 use App\Services\StaffPermissionService;
 use App\Services\WhatsappBridgeService;
@@ -26,6 +28,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
@@ -43,6 +46,7 @@ class CommunicationController extends Controller
         private readonly SmartfloService $smartfloService,
         private readonly FirebaseCloudMessagingService $firebaseCloudMessagingService,
         private readonly WhatsappBridgeService $whatsappBridgeService,
+        private readonly QwaService $qwaService,
     ) {}
 
     public function index()
@@ -74,8 +78,7 @@ class CommunicationController extends Controller
             'selectedGroups' => ['nullable', 'array'],
             'selectedGroups.*' => ['string'],
             'subject' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string', 'max:10000'],
-            'sendNotification' => ['nullable', 'boolean'],
+            'content' => ['nullable', 'string', 'max:10000'],
         ]);
 
         [$recipientUsers, $recipientSummary] = $this->resolveMessageRecipients($organization, $validated);
@@ -791,6 +794,312 @@ class CommunicationController extends Controller
             ->with('success', 'WhatsApp history entry deleted successfully.');
     }
 
+    public function sendQwaWhatsapp()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        return inertia('dashboard/SendQwaWhatsapp', [
+            'user' => $user,
+            'staffRecords' => $this->staffVoiceRecords($organization),
+            'studentRecords' => $this->studentVoiceRecords($organization),
+            'qwaHistory' => $this->qwaHistoryPayload($organization, $user),
+            'qwaStatus' => $this->qwaDeliveryStatusPayload($organization),
+            'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+        ]);
+    }
+
+    public function storeQwaWhatsapp(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'audienceType' => ['required', Rule::in(['staff', 'students', 'class_section'])],
+            'selectedStaffRoles' => ['nullable', 'array'],
+            'selectedStaffRoles.*' => ['string'],
+            'selectedGroups' => ['nullable', 'array'],
+            'selectedGroups.*' => ['string'],
+            'subject' => ['required', 'string', 'max:255'],
+            'content' => ['nullable', 'string', 'max:10000'],
+            'messageType' => ['required', Rule::in(['text', 'photo', 'audio', 'document'])],
+            'mediaFile' => ['nullable', 'file', 'max:15360'],
+            'mediaCaption' => ['nullable', 'string', 'max:1024'],
+        ]);
+
+        $messageType = $validated['messageType'] ?? 'text';
+        $mediaCaption = trim((string) ($validated['mediaCaption'] ?? ''));
+
+        $mediaPath = null;
+        $mediaMime = null;
+        $mediaFilename = null;
+
+        if ($messageType !== 'text') {
+            $file = $request->file('mediaFile');
+
+            if (! $file) {
+                return back()->withErrors([
+                    'media_file' => 'Please select a media file to send.',
+                ]);
+            }
+
+            $allowedExtensions = match ($messageType) {
+                'photo' => ['jpeg', 'jpg', 'png', 'gif', 'webp', 'bmp'],
+                'audio' => ['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'amr', 'opus'],
+                'document' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf'],
+                default => [],
+            };
+
+            $extension = strtolower((string) $file->getClientOriginalExtension());
+
+            if (! in_array($extension, $allowedExtensions, true)) {
+                return back()->withErrors([
+                    'media_file' => 'The selected file type is not allowed for '.$messageType.' messages.',
+                ]);
+            }
+
+            $mediaPath = $file->store('qwa_whatsapp', 'public');
+            $mediaMime = $file->getMimeType();
+            $mediaFilename = $file->getClientOriginalName();
+        }
+
+        [$recipientContacts, $recipientSummary] = $this->resolveVoiceRecipients($organization, $validated);
+
+        if ($recipientContacts->isEmpty()) {
+            return back()->withErrors([
+                'qwa_recipients' => 'No valid QWA WhatsApp recipients found for the selected audience.',
+            ]);
+        }
+
+        $deliveryStatus = $this->qwaDeliveryStatusPayload($organization);
+
+        if (! ($deliveryStatus['configured'] ?? false)) {
+            return back()->withErrors([
+                'qwa_delivery' => 'QWA is not configured. Set up the QWA gateway in Communication Settings first.',
+            ]);
+        }
+
+        if (! ($deliveryStatus['connected'] ?? false)) {
+            return back()->withErrors([
+                'qwa_delivery' => 'QWA is not connected. Start the QWA session and scan the QR code before sending.',
+            ]);
+        }
+
+        $sessionId = $deliveryStatus['sessionId'];
+        $recipientCount = $recipientContacts->count();
+        $delayMin = max(1, (int) config('services.whatsapp_bridge.send_delay_min_seconds', 3));
+        $delayMax = max($delayMin, (int) config('services.whatsapp_bridge.send_delay_max_seconds', 6));
+        $delayCursor = 0;
+        $scheduledRecipients = $recipientContacts
+            ->values()
+            ->map(function (array $recipient, int $index) use (&$delayCursor, $delayMin, $delayMax) {
+                $delayCursor += $index === 0 ? 0 : random_int($delayMin, $delayMax);
+
+                return [
+                    'name' => $recipient['name'],
+                    'phone' => $recipient['phone'],
+                    'delay_seconds' => $delayCursor,
+                    'scheduled_at' => now()->addSeconds($delayCursor),
+                ];
+            });
+
+        $message = Message::query()->create([
+            'organization_id' => $organization->id,
+            'sender_id' => $user->id,
+            'subject' => $validated['subject'],
+            'message' => trim((string) ($validated['content'] ?? '')),
+            'attachments' => [
+                'channel' => 'qwa_whatsapp',
+                'qwa_whatsapp' => [
+                    'recipient_summary' => $recipientSummary,
+                    'recipient_count' => $recipientCount,
+                    'recipient_numbers' => $recipientContacts->pluck('phone')->values()->all(),
+                    'status' => 'queued',
+                    'session_id' => $sessionId,
+                    'message_type' => $messageType,
+                    'media_path' => $mediaPath,
+                    'media_mime' => $mediaMime,
+                    'media_filename' => $mediaFilename,
+                    'media_caption' => $mediaCaption ?: null,
+                    'queued_at' => now()->toDateTimeString(),
+                    'successful_count' => 0,
+                    'failed_count' => 0,
+                    'pending_count' => $recipientCount,
+                    'delay_min_seconds' => $delayMin,
+                    'delay_max_seconds' => $delayMax,
+                    'responses' => [],
+                    'recipients' => $scheduledRecipients
+                        ->map(fn (array $recipient) => [
+                            'name' => $recipient['name'],
+                            'phone' => $recipient['phone'],
+                            'status' => 'pending',
+                            'scheduled_at' => $recipient['scheduled_at']->toDateTimeString(),
+                            'sent_at' => null,
+                            'failed_reason' => null,
+                        ])
+                        ->all(),
+                ],
+            ],
+            'priority' => 'normal',
+            'is_announcement' => false,
+        ]);
+
+        $mediaCaptionForJob = $mediaCaption !== '' ? $mediaCaption : (trim((string) ($validated['content'] ?? '')) ?: $validated['subject']);
+
+        foreach ($scheduledRecipients as $index => $recipient) {
+            SendQwaWhatsappMessageJob::dispatch(
+                $message->id,
+                $organization->id,
+                $index,
+                $recipient['name'],
+                $recipient['phone'],
+                trim($validated['subject'])."\n\n".trim((string) ($validated['content'] ?? '')),
+                $messageType,
+                $mediaPath,
+                $mediaMime,
+                $mediaFilename,
+                $mediaCaptionForJob,
+            )->onQueue('whatsapp')->delay($recipient['scheduled_at']);
+        }
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('QWA WhatsApp campaign queued for %d recipient(s). A queue worker will send messages gradually in the background.', $recipientCount));
+    }
+
+    public function qwaWhatsappStatus(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        return response()->json([
+            ...$this->qwaDeliveryStatusPayload($organization),
+            'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+        ]);
+    }
+
+    public function qwaWhatsappConnect(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $settings = $this->qwaSettings($organization);
+        $configured = filled($settings['baseUrl'] ?? null)
+            && filled($settings['apiKey'] ?? null)
+            && filled($settings['sessionId'] ?? null);
+
+        if (! $configured) {
+            return response()->json([
+                'configured' => false,
+                'connected' => false,
+                'status' => 'not_configured',
+                'statusLabel' => 'Not Configured',
+                'sessionId' => null,
+                'phone' => null,
+                'pushName' => null,
+                'qrCode' => null,
+                'started' => false,
+                'message' => 'QWA is not configured. Set it up in Communication Settings first.',
+            ]);
+        }
+
+        $statusPayload = $this->qwaDeliveryStatusPayload($organization);
+
+        if ($statusPayload['connected']) {
+            return response()->json([
+                ...$statusPayload,
+                'qrCode' => null,
+                'started' => false,
+                'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+            ]);
+        }
+
+        $startResult = $this->qwaService->startSession($settings['baseUrl'], $settings['apiKey'], $settings['sessionId']);
+
+        if (! $startResult['success']) {
+            $message = match ($startResult['statusCode']) {
+                503 => $startResult['message'],
+                401 => 'API key is invalid or not authorized for this session.',
+                404 => 'QWA session not found. Create the session first, then check the session ID/name in Communication Settings.',
+                default => 'Unable to start the QWA session.',
+            };
+
+            return response()->json([
+                'configured' => true,
+                'connected' => false,
+                'status' => 'error',
+                'statusLabel' => 'Failed',
+                'sessionId' => $settings['sessionId'],
+                'phone' => null,
+                'pushName' => null,
+                'qrCode' => null,
+                'started' => false,
+                'message' => $message,
+            ]);
+        }
+
+        $body = is_array($startResult['body']) ? $startResult['body'] : [];
+        $status = (string) ($body['status'] ?? 'initializing');
+        $connected = $status === 'ready';
+        $qrCode = null;
+
+        if (! $connected) {
+            $qrResult = $this->qwaService->sessionQr($settings['baseUrl'], $settings['apiKey'], $settings['sessionId']);
+
+            if ($qrResult['success']) {
+                $qrBody = is_array($qrResult['body']) ? $qrResult['body'] : [];
+                $qrCode = $qrBody['qrCode'] ?? null;
+                $status = (string) ($qrBody['status'] ?? $status);
+            }
+        }
+
+        return response()->json([
+            'configured' => true,
+            'connected' => $connected,
+            'status' => $status,
+            'statusLabel' => match ($status) {
+                'ready' => 'Connected',
+                'initializing', 'qr_ready', 'authenticating' => 'Connecting',
+                'failed' => 'Failed',
+                default => 'Disconnected',
+            },
+            'sessionId' => $settings['sessionId'],
+            'phone' => $body['phone'] ?? null,
+            'pushName' => $body['pushName'] ?? null,
+            'qrCode' => $qrCode,
+            'started' => true,
+            'message' => $connected
+                ? 'QWA session started and is connected.'
+                : 'QWA session started. Scan the QR code with WhatsApp to connect.',
+        ]);
+    }
+
+    public function destroyQwaWhatsapp(Message $message): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        abort_unless((int) $message->organization_id === (int) $organization->id, 404);
+        abort_unless((int) $message->sender_id === (int) $user->id, 404);
+        abort_unless(($message->attachments['channel'] ?? null) === 'qwa_whatsapp', 404);
+
+        $message->recipients()->delete();
+        $message->delete();
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', 'QWA WhatsApp history entry deleted successfully.');
+    }
+
     public function destroyEmail(EmailLog $emailLog): RedirectResponse
     {
         $user = Auth::user();
@@ -1231,6 +1540,146 @@ class CommunicationController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    private function qwaHistoryPayload(Organization $organization, User $user): array
+    {
+        if (! Schema::hasTable('messages')) {
+            return [];
+        }
+
+        return Message::query()
+            ->where('organization_id', $organization->id)
+            ->where('sender_id', $user->id)
+            ->latest()
+            ->get()
+            ->filter(fn (Message $message) => ($message->attachments['channel'] ?? null) === 'qwa_whatsapp')
+            ->map(function (Message $message) {
+                $meta = is_array($message->attachments['qwa_whatsapp'] ?? null)
+                    ? $message->attachments['qwa_whatsapp']
+                    : [];
+
+                return [
+                    'id' => (string) $message->id,
+                    'subject' => $message->subject,
+                    'content' => $message->message,
+                    'to' => $meta['recipient_summary'] ?? 'QWA WhatsApp recipients',
+                    'time' => optional($message->created_at)->format('d M Y, h:i A') ?? '',
+                    'status' => ucfirst((string) ($meta['status'] ?? 'sent')),
+                    'recipientCount' => (int) ($meta['recipient_count'] ?? 0),
+                    'recipientNumbers' => collect($meta['recipient_numbers'] ?? [])->filter()->values()->all(),
+                    'sessionId' => $meta['session_id'] ?? null,
+                    'messageType' => $meta['message_type'] ?? 'text',
+                    'mediaFilename' => $meta['media_filename'] ?? null,
+                    'mediaCaption' => $meta['media_caption'] ?? null,
+                    'mediaUrl' => filled($meta['media_path'] ?? null)
+                        ? rtrim(request()->getSchemeAndHttpHost(), '/').'/storage/'.ltrim($meta['media_path'], '/')
+                        : null,
+                    'successfulCount' => (int) ($meta['successful_count'] ?? 0),
+                    'failedCount' => (int) ($meta['failed_count'] ?? 0),
+                    'pendingCount' => (int) ($meta['pending_count'] ?? 0),
+                    'recipients' => collect($meta['recipients'] ?? [])->values()->all(),
+                    'responses' => collect($meta['responses'] ?? [])->values()->all(),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function qwaDeliveryStatusPayload(Organization $organization): array
+    {
+        $settings = $this->qwaSettings($organization);
+
+        $configured = filled($settings['baseUrl'] ?? null)
+            && filled($settings['apiKey'] ?? null)
+            && filled($settings['sessionId'] ?? null);
+
+        if (! $configured) {
+            return [
+                'configured' => false,
+                'connected' => false,
+                'status' => 'not_configured',
+                'statusLabel' => 'Not Configured',
+                'sessionId' => null,
+                'phone' => null,
+                'pushName' => null,
+                'message' => 'QWA is not configured. Set it up in Communication Settings.',
+            ];
+        }
+
+        $sessionCheck = $this->qwaService->sessionStatus($settings['baseUrl'], $settings['apiKey'], $settings['sessionId']);
+
+        if (! $sessionCheck['success']) {
+            $statusLabel = match ($sessionCheck['statusCode']) {
+                401 => 'Unauthorized',
+                404 => 'Not Found',
+                503 => 'Unreachable',
+                default => 'Error',
+            };
+
+            $message = match ($sessionCheck['statusCode']) {
+                503 => $sessionCheck['message'],
+                401 => 'API key is invalid or not authorized for this session.',
+                404 => 'QWA session not found. Check the session ID/name in Communication Settings.',
+                default => 'Unable to fetch QWA session status.',
+            };
+
+            return [
+                'configured' => true,
+                'connected' => false,
+                'status' => 'error',
+                'statusLabel' => $statusLabel,
+                'sessionId' => $settings['sessionId'],
+                'phone' => null,
+                'pushName' => null,
+                'message' => $message,
+            ];
+        }
+
+        $body = is_array($sessionCheck['body']) ? $sessionCheck['body'] : [];
+        $status = (string) ($body['status'] ?? 'disconnected');
+        $connected = $status === 'ready';
+
+        return [
+            'configured' => true,
+            'connected' => $connected,
+            'status' => $status,
+            'statusLabel' => match ($status) {
+                'ready' => 'Connected',
+                'initializing', 'qr_ready', 'authenticating' => 'Connecting',
+                'failed' => 'Failed',
+                default => 'Disconnected',
+            },
+            'sessionId' => $settings['sessionId'],
+            'phone' => $body['phone'] ?? null,
+            'pushName' => $body['pushName'] ?? null,
+            'message' => $connected
+                ? 'QWA session is connected.'
+                : 'QWA session status: '.$status,
+        ];
+    }
+
+    private function qwaSettings(Organization $organization): array
+    {
+        $qwa = array_replace_recursive(
+            [
+                'enabled' => false,
+                'baseUrl' => 'https://qwa.qodeigence.com',
+                'apiKey' => '',
+                'sessionId' => '',
+            ],
+            $organization->settings['communication_settings']['qwa'] ?? []
+        );
+
+        if (filled($qwa['apiKey'])) {
+            try {
+                $qwa['apiKey'] = Crypt::decryptString($qwa['apiKey']);
+            } catch (Throwable) {
+                // Keep the legacy plaintext value.
+            }
+        }
+
+        return $qwa;
     }
 
     private function noticeBoardPayload(Organization $organization, User $user): array

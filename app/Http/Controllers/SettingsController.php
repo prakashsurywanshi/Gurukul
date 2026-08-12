@@ -10,12 +10,14 @@ use App\Models\User;
 use App\Models\WebsitePage;
 use App\Models\WebsiteSetting;
 use App\Services\KnowledgeBaseService;
+use App\Services\QwaService;
 use App\Services\StaffPermissionService;
 use App\Support\RolePermissionCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -26,7 +28,8 @@ class SettingsController extends Controller
 {
     public function __construct(
         private readonly StaffPermissionService $staffPermissionService,
-        private readonly KnowledgeBaseService $knowledgeBaseService
+        private readonly KnowledgeBaseService $knowledgeBaseService,
+        private readonly QwaService $qwaService
     )
     {
     }
@@ -941,6 +944,9 @@ class SettingsController extends Controller
             );
         }
 
+        $communicationSettings['qwa']['apiKey'] = $this->decryptSecret($communicationSettings['qwa']['apiKey'] ?? '');
+        $communicationSettings['qwa']['webhookSecret'] = $this->decryptSecret($communicationSettings['qwa']['webhookSecret'] ?? '');
+
         return inertia('dashboard/CommunicationSettings', [
             'user' => $user,
             'communicationSettings' => $communicationSettings,
@@ -979,7 +985,29 @@ class SettingsController extends Controller
             'voice.callerId' => ['nullable', 'string', 'max:30'],
             'voice.ringTimeout' => ['nullable', 'integer', 'min:10', 'max:30'],
             'voice.callTimeout' => ['nullable', 'integer', 'min:10', 'max:3600'],
+            'qwa.enabled' => ['required', 'boolean'],
+            'qwa.baseUrl' => ['nullable', 'string', 'max:255'],
+            'qwa.apiKey' => ['nullable', 'string', 'max:1000'],
+            'qwa.sessionId' => ['nullable', 'string', 'max:100'],
+            'qwa.webhookUrl' => ['nullable', 'string', 'max:255'],
+            'qwa.webhookSecret' => ['nullable', 'string', 'max:1000'],
         ]);
+
+        $qwa = $validated['qwa'] ?? [];
+
+        if (filled($qwa['apiKey'] ?? '')) {
+            $qwa['apiKey'] = Crypt::encryptString($qwa['apiKey']);
+        } else {
+            $qwa['apiKey'] = '';
+        }
+
+        if (filled($qwa['webhookSecret'] ?? '')) {
+            $qwa['webhookSecret'] = Crypt::encryptString($qwa['webhookSecret']);
+        } else {
+            $qwa['webhookSecret'] = '';
+        }
+
+        $validated['qwa'] = $qwa;
 
         $organization->update([
             'settings' => [
@@ -994,6 +1022,217 @@ class SettingsController extends Controller
         return redirect()
             ->route('settings.communication')
             ->with('success', 'Communication settings updated successfully.');
+    }
+
+    public function validateQwaConnection(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'baseUrl' => ['required', 'string', 'max:255'],
+            'apiKey' => ['required', 'string', 'max:1000'],
+            'sessionId' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $baseUrl = $validated['baseUrl'];
+        $apiKey = $validated['apiKey'];
+        $sessionId = trim((string) ($validated['sessionId'] ?? ''));
+
+        $keyCheck = $this->qwaService->validateApiKey($baseUrl, $apiKey);
+
+        if (!$keyCheck['success']) {
+            $message = $keyCheck['statusCode'] === 503
+                ? $keyCheck['message']
+                : 'API key is invalid. Check the key and try again.';
+
+            return response()->json([
+                'valid' => false,
+                'apiKeyStatus' => $keyCheck['statusCode'],
+                'sessionStatus' => null,
+                'message' => $message,
+            ]);
+        }
+
+        $sessionStatus = null;
+        $message = 'QWA connection is valid. API key accepted.';
+
+        if ($sessionId !== '') {
+            $sessionCheck = $this->qwaService->sessionStatus($baseUrl, $apiKey, $sessionId);
+
+            if ($sessionCheck['success']) {
+                $status = is_array($sessionCheck['body']) ? ($sessionCheck['body']['status'] ?? 'ready') : 'ready';
+                $sessionStatus = $sessionCheck['statusCode'];
+                $message = 'QWA connection is valid. Session found (status: ' . $status . ').';
+            } else {
+                $sessionStatus = $sessionCheck['statusCode'];
+                $message = 'QWA connection is valid, but the session could not be found.';
+            }
+        }
+
+        return response()->json([
+            'valid' => true,
+            'apiKeyStatus' => $keyCheck['statusCode'],
+            'sessionStatus' => $sessionStatus,
+            'message' => $message,
+        ]);
+    }
+
+    public function qwaSessionStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'baseUrl' => ['required', 'string', 'max:255'],
+            'apiKey' => ['required', 'string', 'max:1000'],
+            'sessionId' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $baseUrl = $validated['baseUrl'];
+        $apiKey = $validated['apiKey'];
+        $sessionId = trim((string) ($validated['sessionId'] ?? ''));
+
+        if ($sessionId === '') {
+            return response()->json([
+                'connected' => false,
+                'status' => 'not_configured',
+                'statusLabel' => 'Not Configured',
+                'phone' => null,
+                'pushName' => null,
+                'lastError' => 'No QWA session ID/name configured.',
+                'message' => 'Enter a QWA session ID/name before checking the status.',
+            ]);
+        }
+
+        $sessionCheck = $this->qwaService->sessionStatus($baseUrl, $apiKey, $sessionId);
+
+        if (!$sessionCheck['success']) {
+            $statusLabel = match ($sessionCheck['statusCode']) {
+                401 => 'Unauthorized',
+                404 => 'Not Found',
+                503 => 'Unreachable',
+                default => 'Error',
+            };
+
+            $message = $sessionCheck['statusCode'] === 503
+                ? $sessionCheck['message']
+                : ($sessionCheck['statusCode'] === 401
+                    ? 'API key is invalid or not authorized for this session.'
+                    : ($sessionCheck['statusCode'] === 404
+                        ? 'QWA session not found. Check the session ID/name.'
+                        : 'Unable to fetch QWA session status.'));
+
+            return response()->json([
+                'connected' => false,
+                'status' => 'error',
+                'statusLabel' => $statusLabel,
+                'phone' => null,
+                'pushName' => null,
+                'lastError' => $message,
+                'message' => $message,
+            ]);
+        }
+
+        $body = is_array($sessionCheck['body']) ? $sessionCheck['body'] : [];
+        $status = (string) ($body['status'] ?? 'disconnected');
+
+        return response()->json([
+            'connected' => $this->qwaIsConnected($status),
+            'status' => $status,
+            'statusLabel' => $this->qwaStatusLabel($status),
+            'phone' => $body['phone'] ?? null,
+            'pushName' => $body['pushName'] ?? null,
+            'lastError' => $body['lastError'] ?? null,
+            'message' => $this->qwaIsConnected($status)
+                ? 'QWA session is connected.'
+                : 'QWA session status: ' . $status,
+        ]);
+    }
+
+    public function qwaStartSession(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'baseUrl' => ['required', 'string', 'max:255'],
+            'apiKey' => ['required', 'string', 'max:1000'],
+            'sessionId' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $baseUrl = $validated['baseUrl'];
+        $apiKey = $validated['apiKey'];
+        $sessionId = trim((string) ($validated['sessionId'] ?? ''));
+
+        if ($sessionId === '') {
+            return response()->json([
+                'success' => false,
+                'status' => 'not_configured',
+                'statusLabel' => 'Not Configured',
+                'qrCode' => null,
+                'phone' => null,
+                'pushName' => null,
+                'lastError' => 'Enter a QWA session ID/name before starting the session.',
+                'message' => 'Enter a QWA session ID/name before starting the session.',
+            ]);
+        }
+
+        $startResult = $this->qwaService->startSession($baseUrl, $apiKey, $sessionId);
+
+        if (!$startResult['success']) {
+            $message = match ($startResult['statusCode']) {
+                503 => $startResult['message'],
+                401 => 'API key is invalid or not authorized for this session.',
+                404 => 'QWA session not found. Create the session first, then check the session ID/name.',
+                default => 'Unable to start the QWA session.',
+            };
+
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'statusLabel' => 'Failed',
+                'qrCode' => null,
+                'phone' => null,
+                'pushName' => null,
+                'lastError' => $message,
+                'message' => $message,
+            ]);
+        }
+
+        $body = is_array($startResult['body']) ? $startResult['body'] : [];
+        $status = (string) ($body['status'] ?? 'initializing');
+        $qrCode = null;
+
+        if (!$this->qwaIsConnected($status)) {
+            $qrResult = $this->qwaService->sessionQr($baseUrl, $apiKey, $sessionId);
+
+            if ($qrResult['success']) {
+                $qrBody = is_array($qrResult['body']) ? $qrResult['body'] : [];
+                $qrCode = $qrBody['qrCode'] ?? null;
+                $status = (string) ($qrBody['status'] ?? $status);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $status,
+            'statusLabel' => $this->qwaStatusLabel($status),
+            'connected' => $this->qwaIsConnected($status),
+            'qrCode' => $qrCode,
+            'phone' => $body['phone'] ?? null,
+            'pushName' => $body['pushName'] ?? null,
+            'lastError' => $body['lastError'] ?? null,
+            'message' => $this->qwaIsConnected($status)
+                ? 'QWA session started and is connected.'
+                : 'QWA session started. Scan the QR code with WhatsApp to connect.',
+        ]);
+    }
+
+    private function qwaIsConnected(string $status): bool
+    {
+        return $status === 'ready';
+    }
+
+    private function qwaStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'ready' => 'Connected',
+            'initializing', 'qr_ready', 'authenticating' => 'Connecting',
+            'failed' => 'Failed',
+            default => 'Disconnected',
+        };
     }
 
     public function rolesPermissions()
@@ -1123,6 +1362,19 @@ class SettingsController extends Controller
         }
     }
 
+    private function decryptSecret(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Throwable) {
+            return $value;
+        }
+    }
+
     private function defaultCommunicationSettings(): array
     {
         return [
@@ -1155,6 +1407,14 @@ class SettingsController extends Controller
                 'callerId' => '',
                 'ringTimeout' => 30,
                 'callTimeout' => 60,
+            ],
+            'qwa' => [
+                'enabled' => false,
+                'baseUrl' => 'https://qwa.qodeigence.com',
+                'apiKey' => '',
+                'sessionId' => '',
+                'webhookUrl' => '',
+                'webhookSecret' => '',
             ],
         ];
     }

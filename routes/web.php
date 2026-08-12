@@ -309,6 +309,11 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::delete('/communication/send-whatsapp/{message}', [CommunicationController::class, 'destroyWhatsapp'])->middleware('staff.permission:Send Whatsapp,delete')->name('communication.send-whatsapp.destroy');
     Route::get('/communication/send-whatsapp/status', [CommunicationController::class, 'whatsappBridgeStatus'])->middleware('staff.permission:Send Whatsapp,view')->name('communication.send-whatsapp.status');
     Route::post('/communication/send-whatsapp/disconnect', [CommunicationController::class, 'disconnectWhatsapp'])->middleware('staff.permission:Send Whatsapp,edit')->name('communication.send-whatsapp.disconnect');
+    Route::get('/communication/send-qwa-whatsapp', [CommunicationController::class, 'sendQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,view')->name('communication.send-qwa-whatsapp');
+    Route::post('/communication/send-qwa-whatsapp', [CommunicationController::class, 'storeQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,add')->name('communication.send-qwa-whatsapp.store');
+    Route::get('/communication/send-qwa-whatsapp/status', [CommunicationController::class, 'qwaWhatsappStatus'])->middleware('staff.permission:Send QWA Whatsapp,view')->name('communication.send-qwa-whatsapp.status');
+    Route::post('/communication/send-qwa-whatsapp/connect', [CommunicationController::class, 'qwaWhatsappConnect'])->middleware('staff.permission:Send QWA Whatsapp,edit')->name('communication.send-qwa-whatsapp.connect');
+    Route::delete('/communication/send-qwa-whatsapp/{message}', [CommunicationController::class, 'destroyQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,delete')->name('communication.send-qwa-whatsapp.destroy');
     Route::get('/communication/download-center', [CommunicationController::class, 'downloadCenter'])->middleware('staff.permission:Download Center,view')->name('communication.download-center');
     Route::post('/communication/download-center/media', [CommunicationController::class, 'storeDownloadCenterMedia'])->middleware('staff.permission:Download Center,add')->name('communication.download-center.media.store');
     Route::post('/communication/download-center/share', [CommunicationController::class, 'storeDownloadCenterShare'])->middleware('staff.permission:Download Center,add')->name('communication.download-center.share.store');
@@ -327,6 +332,9 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::patch('/settings', [SettingsController::class, 'update'])->middleware('staff.permission:General Setting,edit')->name('settings.update');
     Route::get('/settings/communication', [SettingsController::class, 'communicationSettings'])->middleware('staff.permission:Communication Setting,view')->name('settings.communication');
     Route::patch('/settings/communication', [SettingsController::class, 'updateCommunicationSettings'])->middleware('staff.permission:Communication Setting,edit')->name('settings.communication.update');
+    Route::post('/settings/communication/qwa/validate', [SettingsController::class, 'validateQwaConnection'])->middleware('staff.permission:Communication Setting,view')->name('settings.communication.qwa.validate');
+    Route::post('/settings/communication/qwa/status', [SettingsController::class, 'qwaSessionStatus'])->middleware('staff.permission:Communication Setting,view')->name('settings.communication.qwa.status');
+    Route::post('/settings/communication/qwa/start', [SettingsController::class, 'qwaStartSession'])->middleware('staff.permission:Communication Setting,edit')->name('settings.communication.qwa.start');
     Route::get('/settings/roles-permissions', [SettingsController::class, 'rolesPermissions'])->middleware('staff.permission:Roles & Permissions,view')->name('settings.roles-permissions');
     Route::post('/settings/roles', [SettingsController::class, 'storeRole'])->middleware('staff.permission:Roles & Permissions,add')->name('settings.roles.store');
     Route::patch('/settings/roles/{role}', [SettingsController::class, 'updateRole'])->middleware('staff.permission:Roles & Permissions,edit')->name('settings.roles.update');

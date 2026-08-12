@@ -112,6 +112,7 @@ class StaffPermissionService
             'Feedback Management' => '/feedback',
             'Messages' => '/communication',
             'Send Whatsapp' => '/communication/send-whatsapp',
+            'Send QWA Whatsapp' => '/communication/send-qwa-whatsapp',
             'Download Center' => '/communication/download-center',
             'Hostel Management' => '/hostel-management',
             'Hostel Fee Collection' => '/hostel-fee-collection',

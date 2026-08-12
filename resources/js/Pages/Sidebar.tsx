@@ -59,7 +59,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
   const frontOfficeTabs = ['admission-enquiry', 'visitor-register', 'phone-call-log', 'postal-dispatch', 'postal-delivery', 'complains'];
   const examTabs = ['examination', 'hall-ticket', 'print-marksheet'];
   const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
-  const communicationTabs = ['communication', 'send-whatsapp', 'notice-board', 'voice-calls', 'send-emails', 'download-center'];
+  const communicationTabs = ['communication', 'send-whatsapp', 'send-qwa-whatsapp', 'notice-board', 'voice-calls', 'send-emails', 'download-center'];
   const hrTabs = ['staff', 'staff-daily-attendance', 'payroll-management', 'leave-management'];
   const hostelTabs = ['hostel-management', 'hostel-fee-collection', 'my-hostel'];
   const transportTabs = ['transport-management', 'transport-fee-collection'];
@@ -306,6 +306,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
   const communicationMenuItems = [
     { id: 'communication', label: 'Messages', icon: MessageSquare, href: '/communication', roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist'], feature: 'Messages' },
     { id: 'send-whatsapp', label: 'Send Whatsapp', icon: MessageSquare, href: '/communication/send-whatsapp', roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist'], feature: 'Send Whatsapp' },
+    { id: 'send-qwa-whatsapp', label: 'Send QWA Whatsapp', icon: MessageSquare, href: '/communication/send-qwa-whatsapp', roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist'], feature: 'Send QWA Whatsapp' },
     { id: 'notice-board', label: 'Notice Board', icon: Award, href: '/communication/notice-board', roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist', 'student'], feature: 'Notice Board' },
     { id: 'voice-calls', label: 'Voice Calls', icon: Phone, href: '/communication/voice-calls', roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist'], feature: 'Voice Calls' },
     { id: 'send-emails', label: 'Send Emails', icon: Send, href: '/communication/send-emails', roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist'], feature: 'Send Emails' },
