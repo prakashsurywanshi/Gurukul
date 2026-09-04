@@ -22,6 +22,7 @@ class SuperAdminSetting extends Model
         'from_email',
         'reply_to_email',
         'is_active',
+        'queue_worker_status',
     ];
 
     protected $casts = [

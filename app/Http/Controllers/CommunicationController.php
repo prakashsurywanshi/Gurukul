@@ -1082,6 +1082,111 @@ class CommunicationController extends Controller
         ]);
     }
 
+    public function startQueueWorker(): JsonResponse
+    {
+        $this->authorizeQueueWorkerControl();
+
+        SuperAdminSetting::singleton()->forceFill(['queue_worker_status' => 'running'])->save();
+
+        $this->spawnQueueWorker();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Queue worker started. Pending jobs will be processed in the background.',
+            'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+        ]);
+    }
+
+    public function pauseQueueWorker(): JsonResponse
+    {
+        $this->authorizeQueueWorkerControl();
+
+        SuperAdminSetting::singleton()->forceFill(['queue_worker_status' => 'paused'])->save();
+
+        $this->stopQueueWorkerProcesses();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Queue worker paused. Queued jobs will wait until the worker is started again.',
+            'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+        ]);
+    }
+
+    public function stopQueueWorker(): JsonResponse
+    {
+        $this->authorizeQueueWorkerControl();
+
+        SuperAdminSetting::singleton()->forceFill(['queue_worker_status' => 'stopped'])->save();
+
+        $this->stopQueueWorkerProcesses();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Queue worker stopped.',
+            'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+        ]);
+    }
+
+    private function authorizeQueueWorkerControl(): void
+    {
+        $user = Auth::user();
+
+        abort_unless($user && in_array($user->role, ['admin', 'super_admin'], true), 403);
+    }
+
+    private function spawnQueueWorker(): void
+    {
+        if (! $this->isFunctionAvailable('exec') || PHP_OS_FAMILY === 'Windows') {
+            return;
+        }
+
+        $command = sprintf(
+            '%s %s queue:work database --queue=imports,whatsapp,default --stop-when-empty --tries=3 --timeout=120 >> %s 2>&1 &',
+            escapeshellarg(PHP_BINARY),
+            escapeshellarg(base_path('artisan')),
+            escapeshellarg(storage_path('logs/queue-cron.log'))
+        );
+
+        exec($command);
+    }
+
+    private function stopQueueWorkerProcesses(): void
+    {
+        foreach ($this->queueWorkerProcessPids() as $pid) {
+            exec('kill '.((int) $pid));
+        }
+    }
+
+    private function queueWorkerProcessPids(): array
+    {
+        if (! $this->isFunctionAvailable('exec') || PHP_OS_FAMILY === 'Windows') {
+            return [];
+        }
+
+        $output = [];
+        $exitCode = 1;
+        exec('ps -eo pid=,command=', $output, $exitCode);
+
+        if ($exitCode !== 0) {
+            return [];
+        }
+
+        return collect($output)
+            ->map(function (string $line) {
+                if (preg_match('/^\s*(\d+)\s+(.+)$/', $line, $matches) !== 1) {
+                    return null;
+                }
+
+                return ['pid' => (int) $matches[1], 'command' => $matches[2]];
+            })
+            ->filter(fn (?array $entry) => $entry !== null)
+            ->filter(fn (array $entry) => str_contains($entry['command'], 'artisan')
+                && (str_contains($entry['command'], 'queue:work') || str_contains($entry['command'], 'queue:listen')))
+            ->pluck('pid')
+            ->values()
+            ->all();
+    }
+
     public function destroyQwaWhatsapp(Message $message): RedirectResponse
     {
         $user = Auth::user();
@@ -1098,6 +1203,126 @@ class CommunicationController extends Controller
         return redirect()
             ->route('communication.send-qwa-whatsapp')
             ->with('success', 'QWA WhatsApp history entry deleted successfully.');
+    }
+
+    public function resendQwaWhatsapp(Message $message): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        abort_unless((int) $message->organization_id === (int) $organization->id, 404);
+        abort_unless((int) $message->sender_id === (int) $user->id, 404);
+        abort_unless(($message->attachments['channel'] ?? null) === 'qwa_whatsapp', 404);
+
+        $meta = is_array($message->attachments['qwa_whatsapp'] ?? null) ? $message->attachments['qwa_whatsapp'] : [];
+
+        $recipients = collect($meta['recipients'] ?? [])
+            ->filter(fn (array $recipient) => filled($recipient['phone'] ?? null))
+            ->map(fn (array $recipient) => [
+                'name' => $recipient['name'] ?? $recipient['phone'],
+                'phone' => $recipient['phone'],
+            ])
+            ->values()
+            ->all();
+
+        if (empty($recipients)) {
+            $recipients = collect($meta['recipient_numbers'] ?? [])
+                ->filter()
+                ->map(fn (string $phone) => ['name' => $phone, 'phone' => $phone])
+                ->values()
+                ->all();
+        }
+
+        if (empty($recipients)) {
+            return back()->withErrors([
+                'qwa_recipients' => 'No recipients recorded for this QWA WhatsApp message.',
+            ]);
+        }
+
+        $deliveryStatus = $this->qwaDeliveryStatusPayload($organization);
+
+        if (! ($deliveryStatus['configured'] ?? false)) {
+            return back()->withErrors([
+                'qwa_delivery' => 'QWA is not configured. Set up the QWA gateway in Communication Settings first.',
+            ]);
+        }
+
+        if (! ($deliveryStatus['connected'] ?? false)) {
+            return back()->withErrors([
+                'qwa_delivery' => 'QWA is not connected. Start the QWA session and scan the QR code before resending.',
+            ]);
+        }
+
+        $messageType = $meta['message_type'] ?? 'text';
+        $recipientCount = count($recipients);
+        $delayMin = max(1, (int) config('services.whatsapp_bridge.send_delay_min_seconds', 3));
+        $delayMax = max($delayMin, (int) config('services.whatsapp_bridge.send_delay_max_seconds', 6));
+        $delayCursor = 0;
+        $scheduledRecipients = collect($recipients)
+            ->map(function (array $recipient, int $index) use (&$delayCursor, $delayMin, $delayMax) {
+                $delayCursor += $index === 0 ? 0 : random_int($delayMin, $delayMax);
+
+                return [
+                    'name' => $recipient['name'],
+                    'phone' => $recipient['phone'],
+                    'delay_seconds' => $delayCursor,
+                    'scheduled_at' => now()->addSeconds($delayCursor),
+                ];
+            });
+
+        $now = now()->toDateTimeString();
+        $attachments = $message->attachments;
+        $attachments['channel'] = 'qwa_whatsapp';
+        $attachments['qwa_whatsapp'] = array_replace($meta, [
+            'recipient_count' => $recipientCount,
+            'status' => 'queued',
+            'session_id' => $deliveryStatus['sessionId'],
+            'queued_at' => $now,
+            'successful_count' => 0,
+            'failed_count' => 0,
+            'pending_count' => $recipientCount,
+            'delay_min_seconds' => $delayMin,
+            'delay_max_seconds' => $delayMax,
+            'responses' => [],
+            'recipients' => $scheduledRecipients
+                ->map(fn (array $recipient) => [
+                    'name' => $recipient['name'],
+                    'phone' => $recipient['phone'],
+                    'status' => 'pending',
+                    'scheduled_at' => $recipient['scheduled_at']->toDateTimeString(),
+                    'sent_at' => null,
+                    'failed_reason' => null,
+                ])
+                ->all(),
+        ]);
+
+        $message->forceFill(['attachments' => $attachments])->save();
+
+        $messageText = trim((string) $message->subject)."\n\n".trim((string) $message->message);
+        $mediaCaptionForJob = filled($meta['media_caption'] ?? null)
+            ? $meta['media_caption']
+            : (trim((string) $message->message) ?: $message->subject);
+
+        foreach ($scheduledRecipients as $index => $recipient) {
+            SendQwaWhatsappMessageJob::dispatch(
+                $message->id,
+                $organization->id,
+                $index,
+                $recipient['name'],
+                $recipient['phone'],
+                $messageText,
+                $messageType,
+                $meta['media_path'] ?? null,
+                $meta['media_mime'] ?? null,
+                $meta['media_filename'] ?? null,
+                $mediaCaptionForJob,
+            )->onQueue('whatsapp')->delay($recipient['scheduled_at']);
+        }
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('QWA WhatsApp campaign re-queued for %d recipient(s). A queue worker will send messages gradually in the background.', $recipientCount));
     }
 
     public function destroyEmail(EmailLog $emailLog): RedirectResponse

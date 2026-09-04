@@ -1,35 +1,35 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LoginController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\StudentsController;
-use App\Http\Controllers\UsersController;
-use App\Http\Controllers\ClassesController;
-use App\Http\Controllers\FeesController;
-use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\ExamController;
-use App\Http\Controllers\OnlineExamController;
-use App\Http\Controllers\CertificateController;
-use App\Http\Controllers\FeedbackController;
-use App\Http\Controllers\LibraryController;
-use App\Http\Controllers\CommunicationController;
-use App\Http\Controllers\ReportsController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\SubjectsController;
-use App\Http\Controllers\PromoteStudentsController;
-use App\Http\Controllers\FrontOfficeController;
-use App\Http\Controllers\HostelManagementController;
-use App\Http\Controllers\TransportManagementController;
 use App\Http\Controllers\AdmissionInquiryController;
-use App\Http\Controllers\TodoController;
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\ClassesController;
+use App\Http\Controllers\CommunicationController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\FeesController;
+use App\Http\Controllers\FrontOfficeController;
 use App\Http\Controllers\HomeworkController;
+use App\Http\Controllers\HostelManagementController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\OnlineExamController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PromoteStudentsController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\StudentsController;
+use App\Http\Controllers\SubjectsController;
+use App\Http\Controllers\TodoController;
+use App\Http\Controllers\TransportManagementController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\WebsitePageController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return app(SettingsController::class)->publicHome();
@@ -51,7 +51,7 @@ Route::post('/admissions', [AdmissionInquiryController::class, 'store'])->name('
 Route::get('/admissions/verify/{token}', [AdmissionInquiryController::class, 'verify'])
     ->middleware('signed')
     ->name('admissions.verify');
-Route::middleware(['auth', 'organization.subscription'])->group(function () {    
+Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('staff.permission:Dashboard Home,view')->name('dashboard');
     Route::post('/superadmin/organizations', [DashboardController::class, 'storeOrganization'])->name('superadmin.organizations.store');
     Route::patch('/superadmin/organizations/{organization}', [DashboardController::class, 'updateOrganization'])->name('superadmin.organizations.update');
@@ -212,17 +212,17 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::post('/transport-management/routes', [TransportManagementController::class, 'storeRoute'])->middleware('staff.permission:Transport Management,add')->name('transport-management.routes.store');
     Route::put('/transport-management/routes/{id}', [TransportManagementController::class, 'updateRoute'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.routes.update');
     Route::delete('/transport-management/routes/{id}', [TransportManagementController::class, 'deleteRoute'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.routes.destroy');
-    
+
     Route::post('/transport-management/vehicles', [TransportManagementController::class, 'storeVehicle'])->middleware('staff.permission:Transport Management,add')->name('transport-management.vehicles.store');
     Route::put('/transport-management/vehicles/{id}', [TransportManagementController::class, 'updateVehicle'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.vehicles.update');
     Route::delete('/transport-management/vehicles/{id}', [TransportManagementController::class, 'deleteVehicle'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.vehicles.destroy');
-    
+
     Route::post('/transport-management/assignments', [TransportManagementController::class, 'storeAssignment'])->middleware('staff.permission:Transport Management,add')->name('transport-management.assignments.store');
     Route::put('/transport-management/assignments/{id}', [TransportManagementController::class, 'updateAssignment'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.assignments.update');
     Route::delete('/transport-management/assignments/{id}', [TransportManagementController::class, 'deleteAssignment'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.assignments.destroy');
     Route::post('/transport-management/fee-payments/bulk', [TransportManagementController::class, 'collectBulkFeePayment'])->middleware('staff.permission:Transport Fee Collection,add')->name('transport-management.fee-payments.bulk-store');
     Route::post('/transport-management/fee-payments/{feePayment}/revert', [TransportManagementController::class, 'revertFeePayment'])->middleware('staff.permission:Transport Fee Collection,edit')->name('transport-management.fee-payments.revert');
-    
+
     Route::post('/transport-management/trips', [TransportManagementController::class, 'storeTrip'])->middleware('staff.permission:Transport Management,add')->name('transport-management.trips.store');
     Route::put('/transport-management/trips/{id}', [TransportManagementController::class, 'updateTrip'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.update');
     Route::delete('/transport-management/trips/{id}', [TransportManagementController::class, 'deleteTrip'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.trips.destroy');
@@ -313,6 +313,7 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::post('/communication/send-qwa-whatsapp', [CommunicationController::class, 'storeQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,add')->name('communication.send-qwa-whatsapp.store');
     Route::get('/communication/send-qwa-whatsapp/status', [CommunicationController::class, 'qwaWhatsappStatus'])->middleware('staff.permission:Send QWA Whatsapp,view')->name('communication.send-qwa-whatsapp.status');
     Route::post('/communication/send-qwa-whatsapp/connect', [CommunicationController::class, 'qwaWhatsappConnect'])->middleware('staff.permission:Send QWA Whatsapp,edit')->name('communication.send-qwa-whatsapp.connect');
+    Route::post('/communication/send-qwa-whatsapp/{message}/resend', [CommunicationController::class, 'resendQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,add')->name('communication.send-qwa-whatsapp.resend');
     Route::delete('/communication/send-qwa-whatsapp/{message}', [CommunicationController::class, 'destroyQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,delete')->name('communication.send-qwa-whatsapp.destroy');
     Route::get('/communication/download-center', [CommunicationController::class, 'downloadCenter'])->middleware('staff.permission:Download Center,view')->name('communication.download-center');
     Route::post('/communication/download-center/media', [CommunicationController::class, 'storeDownloadCenterMedia'])->middleware('staff.permission:Download Center,add')->name('communication.download-center.media.store');

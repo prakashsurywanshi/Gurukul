@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-cd /home/tejas/Practice/laravel/laravel-gurukul || exit 1
+cd "$(dirname "$0")/.." || exit 1
 
-/usr/bin/php artisan queue:work database \
-  --queue=default,whatsapp \
-  --stop-when-empty \
-  --tries=3 \
-  --timeout=120 \
+/usr/bin/php artisan queue:worker:run \
   >> storage/logs/queue-cron.log 2>&1

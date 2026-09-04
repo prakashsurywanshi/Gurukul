@@ -374,6 +374,19 @@ export default function SendQwaWhatsapp({ user, staffRecords, studentRecords, qw
     });
   };
 
+  const handleResendHistory = (message: SendQwaWhatsappProps['qwaHistory'][number]) => {
+    const count = message.recipientCount ?? message.recipientNumbers.length;
+    const target = count === 1 ? '1 recipient' : `${count} recipients`;
+
+    if (!window.confirm(`Resend this QWA WhatsApp message to ${target}?`)) {
+      return;
+    }
+
+    router.post(`/communication/send-qwa-whatsapp/${message.id}/resend`, {}, {
+      preserveScroll: true,
+    });
+  };
+
   const statusBadgeVariant = qwaStatus.connected ? 'default' : qwaStatus.configured ? 'secondary' : 'secondary';
 
   return (
@@ -779,20 +792,22 @@ export default function SendQwaWhatsapp({ user, staffRecords, studentRecords, qw
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setViewingHistory(message)}>
+                            <div className="flex justify-end gap-1">
+                              <Button type="button" variant="outline" size="icon" title="View" onClick={() => setViewingHistory(message)}>
                                 <Eye className="h-4 w-4" />
-                                View
+                              </Button>
+                              <Button type="button" variant="outline" size="icon" title="Resend" onClick={() => handleResendHistory(message)}>
+                                <RefreshCw className="h-4 w-4" />
                               </Button>
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="sm"
-                                className="gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                size="icon"
+                                title="Delete"
+                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
                                 onClick={() => handleDeleteHistory(message.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
-                                Delete
                               </Button>
                             </div>
                           </TableCell>
