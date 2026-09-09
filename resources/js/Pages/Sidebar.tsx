@@ -114,7 +114,17 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'complains',
     ];
 
-    const examTabs = ['examination', 'hall-ticket', 'print-marksheet', 'report-card', 'datesheets', 'exam-types'];
+    const examTabs = [
+        'examination',
+        'hall-ticket',
+        'print-marksheet',
+        'report-card',
+        'datesheets',
+        'exam-types',
+        'manage-grades',
+        'enter-marks',
+        'exam-schedule-setup',
+    ];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
         'communication',
@@ -855,6 +865,30 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Exam Types',
             icon: ShieldCheck,
             href: '/exam-types',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'manage-grades',
+            label: 'Manage Grades',
+            icon: BookMarked,
+            href: '/grades',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'enter-marks',
+            label: 'Enter Marks',
+            icon: ClipboardList,
+            href: '/exams/marks/entry',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'exam-schedule-setup',
+            label: 'Schedule Setup',
+            icon: CalendarRange,
+            href: '/exam-schedule',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },

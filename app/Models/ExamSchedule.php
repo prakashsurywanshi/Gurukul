@@ -12,6 +12,7 @@ class ExamSchedule extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'exam_id',
         'class_id',
         'subject_id',
