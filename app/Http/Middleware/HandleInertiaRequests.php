@@ -44,6 +44,8 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
                 'timetableConflict' => fn () => $request->session()->get('timetableConflict'),
+                'feeImportResult' => fn () => $request->session()->get('feeImportResult'),
+                'feeCarryForwardResult' => fn () => $request->session()->get('feeCarryForwardResult'),
             ],
             'activeSession' => fn () => $this->resolveActiveSession($request),
             'schoolName' => fn () => $this->resolveSchoolName($request),
@@ -51,7 +53,18 @@ class HandleInertiaRequests extends Middleware
             'subscriptionNotice' => fn () => $this->resolveSubscriptionNotice($request),
             'staffPermissions' => fn () => app(StaffPermissionService::class)->featurePermissionsFor($request->user()),
             'impersonation' => fn () => $this->resolveImpersonation($request),
+            'languageSettings' => fn () => $this->resolveLanguageSettings($request),
         ];
+    }
+
+    private function resolveLanguageSettings(Request $request): array
+    {
+        $organizationId = $this->resolveOrganizationId($request);
+        $organization = $organizationId ? Organization::query()->find($organizationId) : null;
+
+        $locale = $request->attributes->get('locale');
+
+        return app(\App\Services\LanguageService::class)->payload($organization, is_string($locale) ? $locale : null);
     }
 
     private function resolveImpersonation(Request $request): ?array
@@ -131,7 +144,9 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         if (!$user) {
-            return null;
+            $organization = Organization::query()->first();
+
+            return $organization ? (int) $organization->id : null;
         }
 
         $organizationId = $user->organization_id;

@@ -52,6 +52,17 @@ class StudentsController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return Inertia::render('dashboard/students/CreateStudent', [
+            'user' => $user,
+            'classRecords' => $this->getClassRecords($organization),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
@@ -167,7 +178,7 @@ class StudentsController extends Controller
         return Inertia::render('dashboard/students/StudentDetails', [
             'user' => $user,
             'studentId' => (string) $student->id,
-            'student' => $this->serializeStudent($student),
+            'student' => $this->serializeStudent($student, null, true),
             'studentRecords' => $this->buildStudentDetailsRecords($organization, $student),
             'academicHistory' => $this->studentAcademicHistoryService
                 ->getStudentHistory($student)
@@ -327,7 +338,7 @@ class StudentsController extends Controller
                     return null;
                 }
 
-                return $this->serializeStudent($student, $history);
+                return $this->serializeStudent($student, $history, true);
             })
             ->filter()
             ->sortBy([
@@ -367,7 +378,7 @@ class StudentsController extends Controller
             ->with('schoolClass:id,name,section')
             ->orderByDesc('deleted_at')
             ->get()
-            ->map(fn (Student $student) => $this->serializeStudent($student))
+            ->map(fn (Student $student) => $this->serializeStudent($student, null, true))
             ->values();
     }
 
@@ -421,13 +432,13 @@ class StudentsController extends Controller
         $records = $this->getStudentRecords($organization);
 
         if ($student->trashed() && ! $records->contains(fn (array $record) => (string) $record['id'] === (string) $student->id)) {
-            $records->push($this->serializeStudent($student));
+            $records->push($this->serializeStudent($student, null, true));
         }
 
         return $records->values();
     }
 
-    private function serializeStudent(Student $student, ?StudentAcademicHistory $history = null): array
+    private function serializeStudent(Student $student, ?StudentAcademicHistory $history = null, bool $localized = false): array
     {
         $className = $history?->schoolClass?->name ?? $student->schoolClass?->name;
         $sectionName = $history?->schoolClass?->section ?? $student->schoolClass?->section;
@@ -443,7 +454,11 @@ class StudentsController extends Controller
             'session' => $sessionName,
             'admission_no' => $student->admission_no,
             'first_name' => $student->first_name,
+            'middle_name' => $student->middle_name,
             'last_name' => $student->last_name,
+            'middle_name_mr' => $student->middle_name_mr,
+            'first_name_mr' => $student->first_name_mr,
+            'last_name_mr' => $student->last_name_mr,
             'email' => $student->email,
             'phone' => $student->phone,
             'date_of_birth' => optional($student->date_of_birth)->format('Y-m-d'),
@@ -454,34 +469,76 @@ class StudentsController extends Controller
             'roll_number' => $student->roll_number,
             'admission_date' => optional($student->admission_date)->format('Y-m-d'),
             'father_name' => $student->father_name,
+            'father_name_mr' => $student->father_name_mr,
             'father_phone' => $student->father_phone,
             'father_occupation' => $student->father_occupation,
+            'father_occupation_mr' => $student->father_occupation_mr,
             'mother_name' => $student->mother_name,
+            'mother_name_mr' => $student->mother_name_mr,
             'mother_phone' => $student->mother_phone,
             'mother_occupation' => $student->mother_occupation,
+            'mother_occupation_mr' => $student->mother_occupation_mr,
             'address' => $student->current_address,
+            'permanent_address' => $student->permanent_address,
+            'current_address' => $student->current_address,
+            'address_mr' => $student->address_mr,
             'city' => $student->city,
+            'city_mr' => $student->city_mr,
             'state' => $student->state,
+            'state_mr' => $student->state_mr,
             'pincode' => $student->pincode,
             'category' => $student->category,
             'religion' => $student->religion,
+            'religion_mr' => $student->religion_mr,
             'caste' => $student->caste,
+            'caste_mr' => $student->caste_mr,
             'previous_school' => $student->previous_school,
+            'previous_school_mr' => $student->previous_school_mr,
+            'notes_mr' => $student->notes_mr,
             'transport_required' => (bool) $student->transport_required,
             'transport_pickup_point' => $student->transport_pickup_point,
+            'transport_pickup_point_mr' => $student->transport_pickup_point_mr,
             'transport_vehicle' => $student->transport_vehicle,
             'transport_route_details' => $student->transport_route_details ?: $student->transport_route,
+            'transport_route_details_mr' => $student->transport_route_details_mr,
             'hostel_required' => (bool) $student->hostel_required,
             'status' => $student->status,
             'deleted_at' => optional($student->deleted_at)->format('Y-m-d H:i:s'),
         ];
+
+        // For read-only payloads (lists / details) swap human-readable fields
+        // to the organization's regional language when a value has been entered;
+        // edit forms keep the raw English values so they are not polluted.
+        if ($localized) {
+            foreach ([
+                'first_name', 'middle_name', 'last_name',
+                'father_name', 'father_occupation', 'mother_name', 'mother_occupation',
+                'city', 'state', 'religion', 'caste', 'previous_school',
+                'transport_pickup_point',
+            ] as $field) {
+                $data[$field] = $student->localized($field) ?: $student->{$field};
+            }
+
+            // `address` and `transport_route_details` display through accessor
+            // fallbacks in the base payload, so a blank regional/primary column
+            // must not clobber that value.
+            $data['address'] = $student->localized('address') ?: $student->current_address;
+            $data['transport_route_details'] = $student->localized('transport_route_details')
+                ?: ($student->transport_route_details ?: $student->transport_route);
+        }
+
+        return $data;
     }
 
     private function validateStudentPayload(array $payload, Organization $organization, ?Student $student = null, bool $allowCreateClass = false): array
     {
         $validated = validator($payload, [
             'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
+            'middle_name_mr' => ['required', 'string', 'max:255'],
+            'first_name_mr' => ['required', 'string', 'max:255'],
+            'last_name_mr' => ['required', 'string', 'max:255'],
             'email' => [
                 'nullable',
                 'email',
@@ -500,22 +557,38 @@ class StudentsController extends Controller
             'father_name' => ['nullable', 'string', 'max:255'],
             'father_phone' => ['nullable', 'string', 'max:30'],
             'father_occupation' => ['nullable', 'string', 'max:255'],
+            'father_name_mr' => ['nullable', 'string', 'max:255'],
+            'father_occupation_mr' => ['nullable', 'string', 'max:255'],
             'mother_name' => ['nullable', 'string', 'max:255'],
             'mother_phone' => ['nullable', 'string', 'max:30'],
             'mother_occupation' => ['nullable', 'string', 'max:255'],
+            'mother_name_mr' => ['nullable', 'string', 'max:255'],
+            'mother_occupation_mr' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
+            'permanent_address' => ['nullable', 'string'],
+            'current_address' => ['nullable', 'string'],
+            'address_mr' => ['nullable', 'string'],
             'city' => ['nullable', 'string', 'max:255'],
+            'city_mr' => ['nullable', 'string', 'max:255'],
             'state' => ['nullable', 'string', 'max:255'],
+            'state_mr' => ['nullable', 'string', 'max:255'],
             'pincode' => ['nullable', 'string', 'max:20'],
             'category' => ['nullable', 'string', 'max:100'],
             'religion' => ['nullable', 'string', 'max:100'],
+            'religion_mr' => ['nullable', 'string', 'max:100'],
             'caste' => ['nullable', 'string', 'max:100'],
+            'caste_mr' => ['nullable', 'string', 'max:100'],
             'previous_school' => ['nullable', 'string', 'max:255'],
+            'previous_school_mr' => ['nullable', 'string', 'max:255'],
             'transport_required' => ['nullable', 'boolean'],
             'transport_pickup_point' => ['nullable', 'string', 'max:255'],
+            'transport_pickup_point_mr' => ['nullable', 'string', 'max:255'],
             'transport_vehicle' => ['nullable', 'string', 'max:255'],
             'transport_route_details' => ['nullable', 'string'],
+            'transport_route_details_mr' => ['nullable', 'string'],
             'hostel_required' => ['nullable', 'boolean'],
+            'notes' => ['nullable', 'string'],
+            'notes_mr' => ['nullable', 'string'],
             'status' => ['nullable', Rule::in(['active', 'inactive', 'graduated', 'transferred', 'expelled'])],
         ], [
             'email.unique' => 'This email is already registered.',
@@ -557,34 +630,52 @@ class StudentsController extends Controller
             'admission_no' => $admissionNumber,
             'roll_number' => $validated['roll_number'] ?? null,
             'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
             'last_name' => $validated['last_name'],
+            'middle_name_mr' => $validated['middle_name_mr'] ?? null,
+            'first_name_mr' => $validated['first_name_mr'] ?? null,
+            'last_name_mr' => $validated['last_name_mr'] ?? null,
             'date_of_birth' => $validated['date_of_birth'],
             'gender' => $validated['gender'],
             'blood_group' => $validated['blood_group'] ?? null,
             'religion' => $validated['religion'] ?? null,
+            'religion_mr' => $validated['religion_mr'] ?? null,
             'caste' => $validated['caste'] ?? null,
+            'caste_mr' => $validated['caste_mr'] ?? null,
             'category' => $validated['category'] ?? null,
             'email' => $studentEmail,
             'phone' => $validated['phone'] ?? null,
-            'current_address' => $validated['address'] ?? null,
-            'permanent_address' => $validated['address'] ?? null,
+            'current_address' => $validated['current_address'] ?? $validated['permanent_address'] ?? $validated['address'] ?? null,
+            'permanent_address' => $validated['permanent_address'] ?? $validated['address'] ?? null,
+            'address_mr' => $validated['address_mr'] ?? null,
             'city' => $validated['city'] ?? null,
+            'city_mr' => $validated['city_mr'] ?? null,
             'state' => $validated['state'] ?? null,
+            'state_mr' => $validated['state_mr'] ?? null,
             'pincode' => $validated['pincode'] ?? null,
             'father_name' => $validated['father_name'] ?? null,
+            'father_name_mr' => $validated['father_name_mr'] ?? null,
             'father_phone' => $validated['father_phone'] ?? null,
             'father_occupation' => $validated['father_occupation'] ?? null,
+            'father_occupation_mr' => $validated['father_occupation_mr'] ?? null,
             'mother_name' => $validated['mother_name'] ?? null,
+            'mother_name_mr' => $validated['mother_name_mr'] ?? null,
             'mother_phone' => $validated['mother_phone'] ?? null,
             'mother_occupation' => $validated['mother_occupation'] ?? null,
+            'mother_occupation_mr' => $validated['mother_occupation_mr'] ?? null,
             'admission_date' => $validated['admission_date'],
             'previous_school' => $validated['previous_school'] ?? null,
+            'previous_school_mr' => $validated['previous_school_mr'] ?? null,
             'transport_required' => $validated['transport_required'],
             'transport_pickup_point' => $validated['transport_required'] ? ($validated['transport_pickup_point'] ?? null) : null,
+            'transport_pickup_point_mr' => $validated['transport_required'] ? ($validated['transport_pickup_point_mr'] ?? null) : null,
             'transport_vehicle' => $validated['transport_required'] ? ($validated['transport_vehicle'] ?? null) : null,
             'transport_route' => $validated['transport_required'] ? ($validated['transport_route_details'] ?? null) : null,
             'transport_route_details' => $validated['transport_required'] ? ($validated['transport_route_details'] ?? null) : null,
+            'transport_route_details_mr' => $validated['transport_required'] ? ($validated['transport_route_details_mr'] ?? null) : null,
             'hostel_required' => $validated['hostel_required'],
+            'notes' => $validated['notes'] ?? null,
+            'notes_mr' => $validated['notes_mr'] ?? null,
             'status' => $validated['status'] ?? ($student?->status ?? 'active'),
         ];
 

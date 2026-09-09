@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -11,208 +12,224 @@ import { Download, IdCard, Plus, School, UserRound } from 'lucide-react';
 import { mockStudents } from '../../utils/mockData';
 
 interface StudentIdCardManagementProps {
-  user: any;
-  students?: StudentIdCardStudent[];
+    user: any;
+    students?: StudentIdCardStudent[];
 }
 
 interface StudentIdCardStudent {
-  id: string;
-  organization_id?: number | string | null;
-  admission_no?: string | null;
-  roll_number?: string | number | null;
-  first_name: string;
-  last_name: string;
-  class?: string | null;
-  section?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  gender?: string | null;
-  blood_group?: string | null;
-  father_name?: string | null;
-  mother_name?: string | null;
-  address?: string | null;
+    id: string;
+    organization_id?: number | string | null;
+    admission_no?: string | null;
+    roll_number?: string | number | null;
+    first_name: string;
+    first_name_mr?: string | null;
+    last_name: string;
+    last_name_mr?: string | null;
+    class?: string | null;
+    section?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    gender?: string | null;
+    blood_group?: string | null;
+    father_name?: string | null;
+    father_name_mr?: string | null;
+    mother_name?: string | null;
+    mother_name_mr?: string | null;
+    address?: string | null;
+    address_mr?: string | null;
 }
 
 interface GeneratedCard {
-  id: string;
-  studentId: string;
-  studentName: string;
-  studentCardId: string;
-  classLabel: string;
-  templateTitle: string;
-  issuedOn: string;
-  status: 'Generated';
+    id: string;
+    studentId: string;
+    studentName: string;
+    studentCardId: string;
+    classLabel: string;
+    templateTitle: string;
+    issuedOn: string;
+    status: 'Generated';
 }
 
 const buildStudentCardId = (student: any) =>
-  student.admission_no || `STU-${student.class}${student.section}-${student.roll_number || student.id}`;
+    student.admission_no || `STU-${student.class}${student.section}-${student.roll_number || student.id}`;
 
 const buildAdmissionNumber = (student: any) =>
-  student.admission_no || `ADM-${student.class}${student.section}-${student.roll_number || student.id}`;
+    student.admission_no || `ADM-${student.class}${student.section}-${student.roll_number || student.id}`;
 
-const hasClassAndSection = (student: StudentIdCardStudent) =>
-  Boolean(student.class && student.section);
+const hasClassAndSection = (student: StudentIdCardStudent) => Boolean(student.class && student.section);
 
 const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
 export default function StudentIdCardManagement({ user, students = [] }: StudentIdCardManagementProps) {
-  const availableStudents = useMemo(() => {
-    if (user?.organization_id) {
-      return students;
-    }
+    const { t } = useLanguage();
+    const availableStudents = useMemo(() => {
+        if (user?.organization_id) {
+            return students;
+        }
 
-    return mockStudents;
-  }, [students, user?.organization_id]);
+        return mockStudents;
+    }, [students, user?.organization_id]);
 
-  const classOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          availableStudents
-            .map((student) => student.class)
-            .filter((className): className is string => Boolean(className))
-        )
-      ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
-    [availableStudents]
-  );
-
-  const [selectedClass, setSelectedClass] = useState('');
-  const sectionOptions = useMemo(() => {
-    if (!selectedClass) {
-      return [];
-    }
-
-    return Array.from(
-      new Set(
-        availableStudents
-          .filter((student) => student.class === selectedClass && student.section)
-          .map((student) => student.section)
-      )
-    ).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })) as string[];
-  }, [availableStudents, selectedClass]);
-
-  const [selectedSection, setSelectedSection] = useState('');
-  const filteredStudents = useMemo(() => {
-    if (!selectedClass || !selectedSection) {
-      return [];
-    }
-
-    return availableStudents.filter(
-      (student) => hasClassAndSection(student) && student.class === selectedClass && student.section === selectedSection
-    );
-  }, [availableStudents, selectedClass, selectedSection]);
-
-  const [selectedStudentId, setSelectedStudentId] = useState('');
-  const [cardTitle, setCardTitle] = useState('Student ID Card');
-  const [applicableClass, setApplicableClass] = useState('All Classes');
-  const [templateCode, setTemplateCode] = useState('ID-2026-A');
-  const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>(() =>
-    availableStudents.slice(0, 2).map((student, index) => ({
-      id: `generated-${student.id}`,
-      studentId: student.id,
-      studentName: `${student.first_name} ${student.last_name}`,
-      studentCardId: buildStudentCardId(student),
-      classLabel: `${student.class}-${student.section}`,
-      templateTitle: index === 0 ? 'Default ID Card' : 'Senior Wing ID Card',
-      issuedOn: new Date().toISOString().split('T')[0],
-      status: 'Generated',
-    }))
-  );
-
-  useEffect(() => {
-    if (!selectedClass && classOptions[0]) {
-      setSelectedClass(classOptions[0]);
-    }
-  }, [classOptions, selectedClass]);
-
-  useEffect(() => {
-    if (!selectedClass) {
-      setSelectedSection('');
-      setSelectedStudentId('');
-      return;
-    }
-
-    if (!sectionOptions.includes(selectedSection)) {
-      setSelectedSection(sectionOptions[0] ?? '');
-    }
-  }, [sectionOptions, selectedClass, selectedSection]);
-
-  useEffect(() => {
-    if (!selectedSection) {
-      setSelectedStudentId('');
-      return;
-    }
-
-    if (!filteredStudents.some((student) => student.id === selectedStudentId)) {
-      setSelectedStudentId(filteredStudents[0]?.id ?? '');
-    }
-  }, [filteredStudents, selectedSection, selectedStudentId]);
-
-  const selectedStudent =
-    filteredStudents.find((student) => student.id === selectedStudentId) || null;
-
-  const createGeneratedCard = (student: any, idSuffix: string): GeneratedCard => ({
-    id: `${student.id}-${idSuffix}`,
-    studentId: student.id,
-    studentName: `${student.first_name} ${student.last_name}`,
-    studentCardId: buildStudentCardId(student),
-    classLabel: `${student.class}-${student.section}`,
-    templateTitle: cardTitle,
-    issuedOn: new Date().toISOString().split('T')[0],
-    status: 'Generated',
-  });
-
-  const handleGenerateCard = () => {
-    if (!selectedStudent) {
-      return;
-    }
-
-    const generatedCard = createGeneratedCard(selectedStudent, String(Date.now()));
-
-    setGeneratedCards((current) => [generatedCard, ...current]);
-  };
-
-  const handleBulkGenerate = () => {
-    if (filteredStudents.length === 0) {
-      return;
-    }
-
-    const batchTime = Date.now();
-    const bulkCards = filteredStudents.map((student, index) =>
-      createGeneratedCard(student, `${batchTime}-${index}`)
+    const classOptions = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    availableStudents
+                        .map((student) => student.class)
+                        .filter((className): className is string => Boolean(className)),
+                ),
+            ).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+        [availableStudents],
     );
 
-    setGeneratedCards((current) => [...bulkCards, ...current]);
-  };
+    const [selectedClass, setSelectedClass] = useState('');
+    const sectionOptions = useMemo(() => {
+        if (!selectedClass) {
+            return [];
+        }
 
-  const handleDownloadPdf = () => {
-    if (!selectedStudent) {
-      return;
-    }
+        return Array.from(
+            new Set(
+                availableStudents
+                    .filter((student) => student.class === selectedClass && student.section)
+                    .map((student) => student.section),
+            ),
+        ).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })) as string[];
+    }, [availableStudents, selectedClass]);
 
-    const printWindow = window.open('', '_blank', 'width=900,height=700');
-    if (!printWindow) {
-      return;
-    }
+    const [selectedSection, setSelectedSection] = useState('');
+    const filteredStudents = useMemo(() => {
+        if (!selectedClass || !selectedSection) {
+            return [];
+        }
 
-    const studentName = `${selectedStudent.first_name} ${selectedStudent.last_name}`;
-    const studentId = buildStudentCardId(selectedStudent);
-    const admissionNumber = buildAdmissionNumber(selectedStudent);
-    const guardian = selectedStudent.father_name || selectedStudent.mother_name || 'Not available';
-    const phone = selectedStudent.phone || 'N/A';
-    const email = selectedStudent.email || 'student@gurukul.com';
-    const classLabel = `${selectedStudent.class}-${selectedStudent.section}`;
-    const gender = selectedStudent.gender || 'N/A';
-    const bloodGroup = selectedStudent.blood_group || 'N/A';
-    const address = selectedStudent.address || 'Address not available';
+        return availableStudents.filter(
+            (student) =>
+                hasClassAndSection(student) && student.class === selectedClass && student.section === selectedSection,
+        );
+    }, [availableStudents, selectedClass, selectedSection]);
 
-    printWindow.document.write(`
+    const [selectedStudentId, setSelectedStudentId] = useState('');
+    const [cardTitle, setCardTitle] = useState('Student ID Card');
+    const [printLanguage, setPrintLanguage] = useState<'en' | 'mr'>('en');
+    const [applicableClass, setApplicableClass] = useState('All Classes');
+    const [templateCode, setTemplateCode] = useState('ID-2026-A');
+    const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>(() =>
+        availableStudents.slice(0, 2).map((student, index) => ({
+            id: `generated-${student.id}`,
+            studentId: student.id,
+            studentName: `${student.first_name} ${student.last_name}`,
+            studentCardId: buildStudentCardId(student),
+            classLabel: `${student.class}-${student.section}`,
+            templateTitle: index === 0 ? 'Default ID Card' : 'Senior Wing ID Card',
+            issuedOn: new Date().toISOString().split('T')[0],
+            status: 'Generated',
+        })),
+    );
+
+    useEffect(() => {
+        if (!selectedClass && classOptions[0]) {
+            setSelectedClass(classOptions[0]);
+        }
+    }, [classOptions, selectedClass]);
+
+    useEffect(() => {
+        if (!selectedClass) {
+            setSelectedSection('');
+            setSelectedStudentId('');
+            return;
+        }
+
+        if (!sectionOptions.includes(selectedSection)) {
+            setSelectedSection(sectionOptions[0] ?? '');
+        }
+    }, [sectionOptions, selectedClass, selectedSection]);
+
+    useEffect(() => {
+        if (!selectedSection) {
+            setSelectedStudentId('');
+            return;
+        }
+
+        if (!filteredStudents.some((student) => student.id === selectedStudentId)) {
+            setSelectedStudentId(filteredStudents[0]?.id ?? '');
+        }
+    }, [filteredStudents, selectedSection, selectedStudentId]);
+
+    const selectedStudent = filteredStudents.find((student) => student.id === selectedStudentId) || null;
+
+    const createGeneratedCard = (student: any, idSuffix: string): GeneratedCard => ({
+        id: `${student.id}-${idSuffix}`,
+        studentId: student.id,
+        studentName: `${student.first_name} ${student.last_name}`,
+        studentCardId: buildStudentCardId(student),
+        classLabel: `${student.class}-${student.section}`,
+        templateTitle: cardTitle,
+        issuedOn: new Date().toISOString().split('T')[0],
+        status: 'Generated',
+    });
+
+    const handleGenerateCard = () => {
+        if (!selectedStudent) {
+            return;
+        }
+
+        const generatedCard = createGeneratedCard(selectedStudent, String(Date.now()));
+
+        setGeneratedCards((current) => [generatedCard, ...current]);
+    };
+
+    const handleBulkGenerate = () => {
+        if (filteredStudents.length === 0) {
+            return;
+        }
+
+        const batchTime = Date.now();
+        const bulkCards = filteredStudents.map((student, index) =>
+            createGeneratedCard(student, `${batchTime}-${index}`),
+        );
+
+        setGeneratedCards((current) => [...bulkCards, ...current]);
+    };
+
+    const handleDownloadPdf = () => {
+        if (!selectedStudent) {
+            return;
+        }
+
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (!printWindow) {
+            return;
+        }
+
+        const studentName =
+            printLanguage === 'mr' && (selectedStudent.first_name_mr || selectedStudent.last_name_mr)
+                ? `${selectedStudent.first_name_mr || ''} ${selectedStudent.last_name_mr || ''}`.trim()
+                : `${selectedStudent.first_name} ${selectedStudent.last_name}`;
+        const studentId = buildStudentCardId(selectedStudent);
+        const admissionNumber = buildAdmissionNumber(selectedStudent);
+        const guardianName =
+            printLanguage === 'mr' && (selectedStudent.father_name_mr || selectedStudent.mother_name_mr)
+                ? selectedStudent.father_name_mr || selectedStudent.mother_name_mr
+                : selectedStudent.father_name || selectedStudent.mother_name || 'Not available';
+        const guardian = guardianName || 'Not available';
+        const phone = selectedStudent.phone || 'N/A';
+        const email = selectedStudent.email || 'student@gurukul.com';
+        const classLabel = `${selectedStudent.class}-${selectedStudent.section}`;
+        const gender = selectedStudent.gender || 'N/A';
+        const bloodGroup = selectedStudent.blood_group || 'N/A';
+        const address =
+            printLanguage === 'mr' && selectedStudent.address_mr
+                ? selectedStudent.address_mr
+                : selectedStudent.address || 'Address not available';
+
+        printWindow.document.write(`
       <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -393,36 +410,46 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
       </html>
     `);
 
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-  };
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    };
 
-  const handleBulkDownloadPdf = () => {
-    if (filteredStudents.length === 0) {
-      return;
-    }
+    const handleBulkDownloadPdf = () => {
+        if (filteredStudents.length === 0) {
+            return;
+        }
 
-    const printWindow = window.open('', '_blank', 'width=1200,height=800');
-    if (!printWindow) {
-      return;
-    }
+        const printWindow = window.open('', '_blank', 'width=1200,height=800');
+        if (!printWindow) {
+            return;
+        }
 
-    const cardsMarkup = filteredStudents
-      .map((student) => {
-        const studentName = `${student.first_name} ${student.last_name}`;
-        const studentId = buildStudentCardId(student);
-        const admissionNumber = buildAdmissionNumber(student);
-        const guardian = student.father_name || student.mother_name || 'Not available';
-        const phone = student.phone || 'N/A';
-        const email = student.email || 'student@gurukul.com';
-        const classLabel = `${student.class}-${student.section}`;
-        const initial = student.first_name?.charAt(0)?.toUpperCase() || 'S';
-        const gender = student.gender || 'N/A';
-        const bloodGroup = student.blood_group || 'N/A';
-        const address = student.address || 'Address not available';
+        const cardsMarkup = filteredStudents
+            .map((student) => {
+                const studentName =
+                    printLanguage === 'mr' && (student.first_name_mr || student.last_name_mr)
+                        ? `${student.first_name_mr || ''} ${student.last_name_mr || ''}`.trim()
+                        : `${student.first_name} ${student.last_name}`;
+                const studentId = buildStudentCardId(student);
+                const admissionNumber = buildAdmissionNumber(student);
+                const guardianName =
+                    printLanguage === 'mr' && (student.father_name_mr || student.mother_name_mr)
+                        ? student.father_name_mr || student.mother_name_mr
+                        : student.father_name || student.mother_name || 'Not available';
+                const guardian = guardianName || 'Not available';
+                const phone = student.phone || 'N/A';
+                const email = student.email || 'student@gurukul.com';
+                const classLabel = `${student.class}-${student.section}`;
+                const initial = student.first_name?.charAt(0)?.toUpperCase() || 'S';
+                const gender = student.gender || 'N/A';
+                const bloodGroup = student.blood_group || 'N/A';
+                const address =
+                    printLanguage === 'mr' && student.address_mr
+                        ? student.address_mr
+                        : student.address || 'Address not available';
 
-        return `
+                return `
           <div class="card">
             <div class="header">
               <small>Template ${escapeHtml(templateCode)}</small>
@@ -468,10 +495,10 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
             </div>
           </div>
         `;
-      })
-      .join('');
+            })
+            .join('');
 
-    printWindow.document.write(`
+        printWindow.document.write(`
       <!DOCTYPE html>
       <html lang="en">
         <head>
@@ -624,236 +651,315 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
       </html>
     `);
 
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-  };
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    };
 
-  return (
-    <DashboardLayout user={user} activeTab="student-id-card">
-      <div className="space-y-6 p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Student ID Card</h1>
-            <p className="mt-1 text-gray-600">Generate Student ID Card layouts and preview student identity details.</p>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="outline" className="gap-2" onClick={handleBulkGenerate} disabled={filteredStudents.length === 0}>
-              <Plus className="h-4 w-4" />
-              Bulk Generate
-            </Button>
-            <Button variant="outline" className="gap-2" onClick={handleBulkDownloadPdf} disabled={filteredStudents.length === 0}>
-              <Download className="h-4 w-4" />
-              Bulk Download PDF
-            </Button>
-            <Button className="gap-2" onClick={handleGenerateCard} disabled={!selectedStudent}>
-              <Plus className="h-4 w-4" />
-              Generate Student ID Card
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-          <Card>
-            <CardHeader>
-              <CardTitle>ID Card Layout</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Card Title</Label>
-                <Input value={cardTitle} onChange={(event) => setCardTitle(event.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Applicable Class</Label>
-                <Input value={applicableClass} onChange={(event) => setApplicableClass(event.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Template Code</Label>
-                <Input value={templateCode} onChange={(event) => setTemplateCode(event.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Select Class</Label>
-                <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a class" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classOptions.map((className) => (
-                      <SelectItem key={className} value={className}>
-                        {className}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Select Section</Label>
-                <Select
-                  value={selectedSection}
-                  onValueChange={setSelectedSection}
-                  disabled={!selectedClass || sectionOptions.length === 0}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a section" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectionOptions.map((section) => (
-                      <SelectItem key={section} value={section}>
-                        Section {section}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Select Student</Label>
-                <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                  <SelectTrigger disabled={!selectedSection || filteredStudents.length === 0}>
-                    <SelectValue placeholder="Choose a student" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredStudents.map((student) => (
-                      <SelectItem key={student.id} value={student.id}>
-                        {student.first_name} {student.last_name} • {student.class}-{student.section}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-500">
-                  {filteredStudents.length} student{filteredStudents.length === 1 ? '' : 's'} found for the selected class and section.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-blue-100 bg-gradient-to-br from-sky-50 via-white to-blue-50 shadow-sm">
-            <CardHeader>
-              <CardTitle>Student ID Card Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedStudent ? (
-                <div className="overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-lg">
-                  <div className="bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-500 px-5 py-4 text-white">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-blue-100">Template {templateCode}</p>
-                        <h2 className="mt-2 text-xl font-semibold">{cardTitle || 'Student ID Card'}</h2>
-                      </div>
-                      <School className="h-9 w-9 text-blue-100" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 p-5">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-                        <UserRound className="h-10 w-10" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold text-slate-900">
-                          {selectedStudent.first_name} {selectedStudent.last_name}
+    return (
+        <DashboardLayout user={user} activeTab="student-id-card">
+            <div className="space-y-6 p-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('Student ID Card')}</h1>
+                        <p className="mt-1 text-gray-600">
+                            {t('Generate Student ID Card layouts and preview student identity details.')}
                         </p>
-                        <p className="text-sm text-slate-500">{selectedStudent.email || 'student@gurukul.com'}</p>
-                        <Badge className="mt-2 bg-blue-600 text-white hover:bg-blue-600">{applicableClass}</Badge>
-                      </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Student ID</p>
-                        <p className="mt-1 font-semibold text-slate-900">{buildStudentCardId(selectedStudent)}</p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Admission Number</p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          {buildAdmissionNumber(selectedStudent)}
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
-                        <p className="mt-1 font-semibold text-slate-900">
-                          {selectedStudent.class}-{selectedStudent.section}
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Phone</p>
-                        <p className="mt-1 font-semibold text-slate-900">{selectedStudent.phone || 'N/A'}</p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Gender</p>
-                        <p className="mt-1 font-semibold text-slate-900">{selectedStudent.gender || 'N/A'}</p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">Blood Group</p>
-                        <p className="mt-1 font-semibold text-slate-900">{selectedStudent.blood_group || 'N/A'}</p>
-                      </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <div className="flex overflow-hidden rounded-md border border-slate-200">
+                            <button
+                                type="button"
+                                onClick={() => setPrintLanguage('en')}
+                                className={`px-3 py-2 text-sm font-medium transition ${printLanguage === 'en' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
+                            >
+                                {t('English')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPrintLanguage('mr')}
+                                className={`px-3 py-2 text-sm font-medium transition ${printLanguage === 'mr' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
+                            >
+                                मराठी
+                            </button>
+                        </div>
+                        <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={handleBulkGenerate}
+                            disabled={filteredStudents.length === 0}
+                        >
+                            <Plus className="h-4 w-4" />
+                            {t('Bulk Generate')}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={handleBulkDownloadPdf}
+                            disabled={filteredStudents.length === 0}
+                        >
+                            <Download className="h-4 w-4" />
+                            {t('Bulk Download PDF')}
+                        </Button>
+                        <Button className="gap-2" onClick={handleGenerateCard} disabled={!selectedStudent}>
+                            <Plus className="h-4 w-4" />
+                            {t('Generate Student ID Card')}
+                        </Button>
                     </div>
-
-                    <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                      Guardian: {selectedStudent.father_name || selectedStudent.mother_name || 'Not available'}
-                    </div>
-
-                    <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                      Address: {selectedStudent.address || 'Address not available'}
-                    </div>
-
-                    <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
-                      <Download className="h-4 w-4" />
-                      Download as PDF
-                    </Button>
-                  </div>
                 </div>
-              ) : (
-                <div className="py-10 text-center text-gray-500">
-                  <IdCard className="mx-auto mb-3 h-10 w-10 text-gray-400" />
-                  No students available for ID card generation.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Generated Student ID Cards</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Student ID</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Issued On</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {generatedCards.map((card) => (
-                    <TableRow key={card.id}>
-                      <TableCell className="font-medium">{card.studentName}</TableCell>
-                      <TableCell>{card.studentCardId}</TableCell>
-                      <TableCell>{card.classLabel}</TableCell>
-                      <TableCell>{card.templateTitle}</TableCell>
-                      <TableCell>{card.issuedOn}</TableCell>
-                      <TableCell>
-                        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">{card.status}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('ID Card Layout')}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label>{t('Card Title')}</Label>
+                                <Input value={cardTitle} onChange={(event) => setCardTitle(event.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>{t('Applicable Class')}</Label>
+                                <Input
+                                    value={applicableClass}
+                                    onChange={(event) => setApplicableClass(event.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>{t('Template Code')}</Label>
+                                <Input value={templateCode} onChange={(event) => setTemplateCode(event.target.value)} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>{t('Select Class')}</Label>
+                                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('Choose a class')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {classOptions.map((className) => (
+                                            <SelectItem key={className} value={className}>
+                                                {className}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>{t('Select Section')}</Label>
+                                <Select
+                                    value={selectedSection}
+                                    onValueChange={setSelectedSection}
+                                    disabled={!selectedClass || sectionOptions.length === 0}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('Choose a section')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {sectionOptions.map((section) => (
+                                            <SelectItem key={section} value={section}>
+                                                {t('Section')}
+                                                {section}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label>{t('Select Student')}</Label>
+                                <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                                    <SelectTrigger disabled={!selectedSection || filteredStudents.length === 0}>
+                                        <SelectValue placeholder={t('Choose a student')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filteredStudents.map((student) => (
+                                            <SelectItem key={student.id} value={student.id}>
+                                                {student.first_name} {student.last_name} • {student.class}-
+                                                {student.section}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-slate-500">
+                                    {filteredStudents.length}
+                                    {t('student')}
+                                    {filteredStudents.length === 1 ? '' : 's'}
+                                    {t('found for the selected class and section.')}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-blue-100 bg-gradient-to-br from-sky-50 via-white to-blue-50 shadow-sm">
+                        <CardHeader>
+                            <CardTitle>{t('Student ID Card Preview')}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {selectedStudent ? (
+                                <div className="overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-lg">
+                                    <div className="bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-500 px-5 py-4 text-white">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <p className="text-xs uppercase tracking-[0.3em] text-blue-100">
+                                                    {t('Template')}
+                                                    {templateCode}
+                                                </p>
+                                                <h2 className="mt-2 text-xl font-semibold">
+                                                    {cardTitle || t('Student ID Card')}
+                                                </h2>
+                                            </div>
+                                            <School className="h-9 w-9 text-blue-100" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 p-5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                                                <UserRound className="h-10 w-10" />
+                                            </div>
+                                            <div>
+                                                <p className="text-lg font-semibold text-slate-900">
+                                                    {printLanguage === 'mr' &&
+                                                    (selectedStudent.first_name_mr || selectedStudent.last_name_mr)
+                                                        ? `${selectedStudent.first_name_mr || ''} ${selectedStudent.last_name_mr || ''}`.trim()
+                                                        : `${selectedStudent.first_name} ${selectedStudent.last_name}`}
+                                                </p>
+                                                <p className="text-sm text-slate-500">
+                                                    {selectedStudent.email || 'student@gurukul.com'}
+                                                </p>
+                                                <Badge className="mt-2 bg-blue-600 text-white hover:bg-blue-600">
+                                                    {applicableClass}
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                            <div className="rounded-xl bg-slate-50 p-3">
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    {t('Student ID')}
+                                                </p>
+                                                <p className="mt-1 font-semibold text-slate-900">
+                                                    {buildStudentCardId(selectedStudent)}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-xl bg-slate-50 p-3">
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    {t('Admission Number')}
+                                                </p>
+                                                <p className="mt-1 font-semibold text-slate-900">
+                                                    {buildAdmissionNumber(selectedStudent)}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-xl bg-slate-50 p-3">
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    {t('Class')}
+                                                </p>
+                                                <p className="mt-1 font-semibold text-slate-900">
+                                                    {selectedStudent.class}-{selectedStudent.section}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-xl bg-slate-50 p-3">
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    {t('Phone')}
+                                                </p>
+                                                <p className="mt-1 font-semibold text-slate-900">
+                                                    {selectedStudent.phone || t('N/A')}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-xl bg-slate-50 p-3">
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    {t('Gender')}
+                                                </p>
+                                                <p className="mt-1 font-semibold text-slate-900">
+                                                    {selectedStudent.gender || t('N/A')}
+                                                </p>
+                                            </div>
+                                            <div className="rounded-xl bg-slate-50 p-3">
+                                                <p className="text-xs uppercase tracking-wide text-slate-500">
+                                                    {t('Blood Group')}
+                                                </p>
+                                                <p className="mt-1 font-semibold text-slate-900">
+                                                    {selectedStudent.blood_group || t('N/A')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                                            {t('Guardian:')}{' '}
+                                            {printLanguage === 'mr' &&
+                                            (selectedStudent.father_name_mr || selectedStudent.mother_name_mr)
+                                                ? selectedStudent.father_name_mr || selectedStudent.mother_name_mr
+                                                : selectedStudent.father_name ||
+                                                  selectedStudent.mother_name ||
+                                                  t('Not available')}
+                                        </div>
+
+                                        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                                            {t('Address:')}{' '}
+                                            {printLanguage === 'mr' && selectedStudent.address_mr
+                                                ? selectedStudent.address_mr
+                                                : selectedStudent.address || t('Address not available')}
+                                        </div>
+
+                                        <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
+                                            <Download className="h-4 w-4" />
+                                            {t('Download as PDF')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="py-10 text-center text-gray-500">
+                                    <IdCard className="mx-auto mb-3 h-10 w-10 text-gray-400" />
+                                    {t('No students available for ID card generation.')}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t('Generated Student ID Cards')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t('Student')}</TableHead>
+                                        <TableHead>{t('Student ID')}</TableHead>
+                                        <TableHead>{t('Class')}</TableHead>
+                                        <TableHead>{t('Template')}</TableHead>
+                                        <TableHead>{t('Issued On')}</TableHead>
+                                        <TableHead>{t('Status')}</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {generatedCards.map((card) => (
+                                        <TableRow key={card.id}>
+                                            <TableCell className="font-medium">{card.studentName}</TableCell>
+                                            <TableCell>{card.studentCardId}</TableCell>
+                                            <TableCell>{card.classLabel}</TableCell>
+                                            <TableCell>{card.templateTitle}</TableCell>
+                                            <TableCell>{card.issuedOn}</TableCell>
+                                            <TableCell>
+                                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                                                    {t(card.status)}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        {generatedCards.length === 0 && (
+                            <div className="py-10 text-center text-gray-500">
+                                <IdCard className="mx-auto mb-3 h-10 w-10 text-gray-400" />
+                                {t('No Student ID Card generated yet.')}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
-            {generatedCards.length === 0 && (
-              <div className="py-10 text-center text-gray-500">
-                <IdCard className="mx-auto mb-3 h-10 w-10 text-gray-400" />
-                No Student ID Card generated yet.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  );
+        </DashboardLayout>
+    );
 }

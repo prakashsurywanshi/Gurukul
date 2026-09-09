@@ -54,6 +54,7 @@ class StaffPermissionsTest extends TestCase
     {
         $organization = $this->createOrganization();
         app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $academicYear = $this->createAcademicYear($organization);
 
         $teacher = User::factory()->create([
             'organization_id' => $organization->id,
@@ -69,7 +70,7 @@ class StaffPermissionsTest extends TestCase
 
         $class = SchoolClass::query()->create([
             'organization_id' => $organization->id,
-            'academic_year_id' => null,
+            'academic_year_id' => $academicYear->id,
             'name' => '10',
             'section' => 'A',
             'class_teacher_id' => $teacher->id,
@@ -163,6 +164,7 @@ class StaffPermissionsTest extends TestCase
     {
         $organization = $this->createOrganization();
         app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $academicYear = $this->createAcademicYear($organization);
 
         $teacherRole = Role::query()
             ->where('organization_id', $organization->id)
@@ -186,7 +188,7 @@ class StaffPermissionsTest extends TestCase
 
         $class = SchoolClass::query()->create([
             'organization_id' => $organization->id,
-            'academic_year_id' => null,
+            'academic_year_id' => $academicYear->id,
             'name' => '10',
             'section' => 'A',
             'class_teacher_id' => $teacher->id,
@@ -302,7 +304,7 @@ class StaffPermissionsTest extends TestCase
             'organization_id' => $organization->id,
             'student_id' => $ownStudent->id,
             'class_id' => $ownClass->id,
-            'date' => '2026-05-25',
+            'date' => '2026-05-25 00:00:00',
             'status' => 'present',
             'marked_by' => $teacher->id,
         ]);

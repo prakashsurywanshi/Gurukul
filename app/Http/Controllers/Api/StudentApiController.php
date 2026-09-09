@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Support\LanguageCatalog;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Exam;
@@ -407,7 +408,7 @@ class StudentApiController extends Controller
         $homeworkItems = Homework::query()
             ->where('organization_id', $organization->id)
             ->when($classId, fn ($q) => $q->where('class_id', $classId))
-            ->with(['subject:id,name', 'teacher:id,name'])
+            ->with(['subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->orderBy('due_date')
             ->limit(6)
             ->get();
@@ -483,7 +484,7 @@ class StudentApiController extends Controller
                     'items' => $homeworkItems->map(fn ($hw) => [
                         'id' => $hw->id,
                         'title' => $hw->title,
-                        'subject' => $hw->subject?->name ?? 'Subject',
+                        'subject' => $hw->subject?->localized('name') ?? 'Subject',
                         'teacher' => $hw->teacher?->name ?? 'Teacher',
                         'due_date' => $hw->due_date?->format('Y-m-d') ?? 'N/A',
                         'status' => in_array($hw->id, $submittedHomeworkIds, true) ? 'submitted' : 'pending',
@@ -492,8 +493,8 @@ class StudentApiController extends Controller
                 'exams' => [
                     'upcoming' => $upcomingExams->map(fn ($exam) => [
                         'id' => $exam->id,
-                        'title' => $exam->title,
-                        'subject' => $exam->subject,
+                        'title' => $exam->localized('title'),
+                        'subject' => $exam->localized('subject') ?? '',
                         'start_time' => $exam->start_time?->format('Y-m-d h:i A') ?? 'TBA',
                         'end_time' => $exam->end_time?->format('Y-m-d h:i A') ?? 'TBA',
                         'duration' => $exam->duration,
@@ -628,7 +629,7 @@ class StudentApiController extends Controller
 
             $resultGroups[] = [
                 'exam_id' => $exam->id,
-                'name' => $exam->name,
+                'name' => $exam->localized('name'),
                 'publish_status' => $exam->publish_status,
                 'has_results' => $hasResults,
                 'total_marks' => $totalMarks,
@@ -794,7 +795,7 @@ class StudentApiController extends Controller
 
             return [
                 'exam_id' => $exam->id,
-                'name' => $exam->name,
+                'name' => $exam->localized('name'),
                 'publish_status' => $exam->publish_status,
                 'class' => $exam->class_name,
                 'section' => $exam->section,
@@ -807,11 +808,23 @@ class StudentApiController extends Controller
 
     private function formatStudentItem(Student $student): array
     {
+        $lang = $this->resolvedLocale();
+
         return [
             'id' => $student->id,
             'name' => trim($student->first_name . ' ' . ($student->last_name ?? '')),
+            'name_localized' => trim($student->localized('first_name', $lang) . ' ' . $student->localized('last_name', $lang)),
             'first_name' => $student->first_name,
+            'first_name_mr' => $student->first_name_mr,
             'last_name' => $student->last_name,
+            'last_name_mr' => $student->last_name_mr,
+            'father_name' => $student->father_name,
+            'father_name_mr' => $student->father_name_mr,
+            'mother_name' => $student->mother_name,
+            'mother_name_mr' => $student->mother_name_mr,
+            'address_mr' => $student->address_mr,
+            'city_mr' => $student->city_mr,
+            'state_mr' => $student->state_mr,
             'admission_no' => $student->admission_no,
             'roll_number' => $student->roll_number,
             'email' => $student->email,
@@ -828,6 +841,19 @@ class StudentApiController extends Controller
             'status' => $student->status ?? 'active',
             'created_at' => $student->created_at?->toISOString(),
         ];
+    }
+
+    private function resolvedLocale(): ?string
+    {
+        $resolved = request()->attributes->get('locale');
+
+        if (is_string($resolved) && LanguageCatalog::isValidCode($resolved)) {
+            return $resolved;
+        }
+
+        $query = request()->query('lang');
+
+        return is_string($query) && LanguageCatalog::isValidCode($query) ? $query : null;
     }
 
     private function resolveOrganizationFromUser(): ?Organization

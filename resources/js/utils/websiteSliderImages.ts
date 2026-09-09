@@ -1,9 +1,9 @@
 const svgToDataUri = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 
 export const commonWebsiteSliderImages = [
-  {
-    title: 'Campus Boulevard',
-    src: svgToDataUri(`
+    {
+        title: 'Campus Boulevard',
+        src: svgToDataUri(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
         <defs>
           <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -27,10 +27,10 @@ export const commonWebsiteSliderImages = [
         <rect x="1170" y="280" width="150" height="215" rx="18" fill="#0f172a" opacity="0.16"/>
       </svg>
     `),
-  },
-  {
-    title: 'Innovation Studio',
-    src: svgToDataUri(`
+    },
+    {
+        title: 'Innovation Studio',
+        src: svgToDataUri(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
         <defs>
           <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -51,10 +51,10 @@ export const commonWebsiteSliderImages = [
         <rect x="1015" y="415" width="280" height="145" rx="22" fill="#e2e8f0"/>
       </svg>
     `),
-  },
-  {
-    title: 'Library Atrium',
-    src: svgToDataUri(`
+    },
+    {
+        title: 'Library Atrium',
+        src: svgToDataUri(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
         <defs>
           <linearGradient id="atrium" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -73,10 +73,10 @@ export const commonWebsiteSliderImages = [
         <rect x="1190" y="230" width="160" height="280" rx="18" fill="#f8fafc" opacity="0.92"/>
       </svg>
     `),
-  },
-  {
-    title: 'Sports Arena',
-    src: svgToDataUri(`
+    },
+    {
+        title: 'Sports Arena',
+        src: svgToDataUri(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
         <defs>
           <linearGradient id="arena" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -94,8 +94,8 @@ export const commonWebsiteSliderImages = [
         <rect x="660" y="180" width="280" height="220" rx="28" fill="#f8fafc" opacity="0.16"/>
       </svg>
     `),
-  },
+    },
 ];
 
 export const getCommonWebsiteSliderImage = (index: number) =>
-  commonWebsiteSliderImages[index % commonWebsiteSliderImages.length];
+    commonWebsiteSliderImages[index % commonWebsiteSliderImages.length];

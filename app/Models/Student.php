@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\Localizable;
 
     protected $fillable = [
         'organization_id',
@@ -19,8 +19,13 @@ class Student extends Model
         'class_id',
         'admission_no',
         'roll_number',
+        'qr_token',
         'first_name',
+        'middle_name',
         'last_name',
+        'middle_name_mr',
+        'first_name_mr',
+        'last_name_mr',
         'date_of_birth',
         'gender',
         'blood_group',
@@ -43,11 +48,15 @@ class Student extends Model
         'father_email',
         'father_occupation',
         'father_income',
+        'father_name_mr',
+        'father_occupation_mr',
         'mother_name',
         'mother_phone',
         'mother_email',
         'mother_occupation',
         'mother_income',
+        'mother_name_mr',
+        'mother_occupation_mr',
         'guardian_name',
         'guardian_phone',
         'guardian_email',
@@ -78,6 +87,15 @@ class Student extends Model
         'other_documents',
         'status',
         'notes',
+        'address_mr',
+        'city_mr',
+        'state_mr',
+        'religion_mr',
+        'caste_mr',
+        'previous_school_mr',
+        'transport_pickup_point_mr',
+        'transport_route_details_mr',
+        'notes_mr',
     ];
 
     protected $casts = [
@@ -94,9 +112,19 @@ class Student extends Model
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function academicHistories(): HasMany
     {
         return $this->hasMany(StudentAcademicHistory::class);
+    }
+
+    public function issuedCertificates(): HasMany
+    {
+        return $this->hasMany(IssuedCertificate::class);
     }
 
     public function scopeForCurrentSession(Builder $query, int $organizationId): Builder

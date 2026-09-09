@@ -120,10 +120,10 @@ class FeesApiController extends Controller
                 'class_id' => $s->class_id,
                 'class_name' => $s->schoolClass?->name,
                 'section' => $s->schoolClass?->section,
-                'fee_type' => $s->fee_type,
+                'fee_type' => $s->localized('fee_type'),
                 'amount' => (float) $s->amount,
                 'frequency' => $s->frequency,
-                'description' => $s->description ?? '',
+                'description' => $s->localized('description'),
                 'is_compulsory' => (bool) $s->is_compulsory,
                 'status' => $s->status,
             ];
@@ -358,7 +358,7 @@ class FeesApiController extends Controller
             ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'not like', self::HOSTEL_FEE_PREFIX))
             ->with([
                 'student:id,first_name,last_name,admission_no',
-                'feeStructure:id,fee_type',
+                'feeStructure:id,fee_type,fee_type_mr,fee_type_hi',
                 'payments' => fn ($q) => $q->with('collector:id,name')->orderByDesc('payment_date'),
             ])
             ->when($activeAcademicYearId, fn ($q) => $q->where('academic_year_id', $activeAcademicYearId));
@@ -386,7 +386,7 @@ class FeesApiController extends Controller
                 'student_id' => (string) $fee->student_id,
                 'student_name' => $student ? "$student->first_name $student->last_name" : '',
                 'admission_no' => $student?->admission_no,
-                'fee_type' => $fee->feeStructure?->fee_type ?? 'General',
+                'fee_type' => ($fee->feeStructure?->localized('fee_type') ?: 'General'),
                 'amount' => (float) $fee->amount,
                 'discount' => (float) $fee->discount,
                 'fine' => (float) $fee->fine,

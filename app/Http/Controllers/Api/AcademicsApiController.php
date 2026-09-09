@@ -253,7 +253,7 @@ class AcademicsApiController extends Controller
             ->get()
             ->map(fn (Subject $subject) => [
                 'id' => $subject->id,
-                'name' => $subject->name,
+                'name' => $subject->localized('name'),
                 'code' => $subject->code,
                 'type' => $subject->type,
                 'description' => $subject->description,
@@ -290,7 +290,7 @@ class AcademicsApiController extends Controller
             'message' => 'Subject created successfully.',
             'data' => [
                 'id' => $subject->id,
-                'name' => $subject->name,
+                'name' => $subject->localized('name'),
                 'code' => $subject->code,
                 'type' => $subject->type,
                 'description' => $subject->description,
@@ -323,7 +323,7 @@ class AcademicsApiController extends Controller
             'message' => 'Subject updated successfully.',
             'data' => [
                 'id' => $subject->id,
-                'name' => $subject->name,
+                'name' => $subject->localized('name'),
                 'code' => $subject->code,
                 'type' => $subject->type,
                 'description' => $subject->description,
@@ -358,7 +358,7 @@ class AcademicsApiController extends Controller
             ->where('organization_id', $organization->id)
             ->with([
                 'schoolClass:id,name,section,room_number',
-                'subject:id,name,code',
+                'subject:id,name,name_mr,name_hi,code',
                 'teacher:id,name',
             ])
             ->orderBy('day')
@@ -382,7 +382,7 @@ class AcademicsApiController extends Controller
                 'day' => ucfirst($entry->day),
                 'periodId' => (string) ($entry->period_code ?: ''),
                 'periodOrder' => $entry->period_order,
-                'subject' => $entry->subject?->name ?? 'Subject',
+                'subject' => $entry->subject?->localized('name') ?? 'Subject',
                 'subjectId' => $entry->subject_id ? (string) $entry->subject_id : '',
                 'teacherId' => $entry->teacher_id ? (string) $entry->teacher_id : '',
                 'teacherName' => $entry->teacher?->name ?? 'Teacher not assigned',
@@ -485,7 +485,7 @@ class AcademicsApiController extends Controller
             ->where('organization_id', $organization->id)
             ->with([
                 'timetable:id,class_id,subject_id,teacher_id,day,period_code,start_time,end_time,room_number',
-                'subject:id,name',
+                'subject:id,name,name_mr,name_hi',
                 'teacher:id,name',
             ])
             ->orderBy('lesson_date')
@@ -508,7 +508,7 @@ class AcademicsApiController extends Controller
                 'classId' => (string) $plan->class_id,
                 'day' => ucfirst((string) ($plan->timetable?->day ?? '')),
                 'periodId' => (string) ($plan->timetable?->period_code ?? ''),
-                'subject' => (string) ($plan->subject?->name ?? 'Subject'),
+                'subject' => (string) ($plan->subject?->localized('name') ?? 'Subject'),
                 'teacherName' => (string) ($plan->teacher?->name ?? 'Teacher'),
                 'room' => (string) ($plan->timetable?->room_number ?? 'TBD'),
                 'startTime' => substr((string) ($plan->timetable?->start_time ?? ''), 0, 5),
@@ -652,7 +652,7 @@ class AcademicsApiController extends Controller
 
         $query = Homework::query()
             ->where('organization_id', $organization->id)
-            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name', 'submissions.student.schoolClass:id,name,section'])
+            ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name', 'submissions.student.schoolClass:id,name,section'])
             ->latest('assign_date')
             ->latest('id');
 
@@ -671,7 +671,7 @@ class AcademicsApiController extends Controller
                 'classId' => (string) $homework->class_id,
                 'className' => (string) ($homework->schoolClass?->name ?? ''),
                 'section' => (string) ($homework->schoolClass?->section ?? ''),
-                'subjectName' => (string) ($homework->subject?->name ?? ''),
+                'subjectName' => (string) ($homework->subject?->localized('name') ?? ''),
                 'teacherName' => (string) ($homework->teacher?->name ?? ''),
                 'assignDate' => optional($homework->assign_date)->format('Y-m-d') ?? '',
                 'dueDate' => optional($homework->due_date)->format('Y-m-d') ?? '',
@@ -706,7 +706,7 @@ class AcademicsApiController extends Controller
             ->get()
             ->map(fn (Subject $subject) => [
                 'id' => (string) $subject->id,
-                'name' => (string) $subject->name,
+                'name' => (string) $subject->localized('name'),
             ])
             ->all();
 
@@ -747,7 +747,7 @@ class AcademicsApiController extends Controller
             'class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
             'teacher_id' => $user->id,
-            'title' => sprintf('%s Homework - %s', $subject->name, $validated['assign_date']),
+            'title' => sprintf('%s Homework - %s', $subject->localized('name'), $validated['assign_date']),
             'description' => $validated['description'],
             'assign_date' => $validated['assign_date'],
             'due_date' => $validated['due_date'],
@@ -762,7 +762,7 @@ class AcademicsApiController extends Controller
                 'id' => (string) $homework->id,
                 'classId' => (string) $homework->class_id,
                 'className' => $schoolClass->name,
-                'subjectName' => $subject->name,
+                'subjectName' => $subject->localized('name'),
                 'assignDate' => $homework->assign_date->format('Y-m-d'),
                 'dueDate' => $homework->due_date->format('Y-m-d'),
                 'maxMarks' => $homework->max_marks,
@@ -1180,7 +1180,7 @@ class AcademicsApiController extends Controller
             ->get()
             ->map(fn (Subject $subject) => [
                 'id' => (string) $subject->id,
-                'name' => $subject->name,
+                'name' => $subject->localized('name'),
                 'code' => $subject->code,
             ])
             ->all();
@@ -1190,7 +1190,7 @@ class AcademicsApiController extends Controller
     {
         return Timetable::query()
             ->where('organization_id', $organizationId)
-            ->with(['schoolClass:id,name,section,room_number', 'subject:id,name,code', 'teacher:id,name'])
+            ->with(['schoolClass:id,name,section,room_number', 'subject:id,name,name_mr,name_hi,code', 'teacher:id,name'])
             ->orderBy('day')
             ->orderBy('period_order')
             ->get()
@@ -1199,7 +1199,7 @@ class AcademicsApiController extends Controller
                 'classId' => (string) $entry->class_id,
                 'day' => ucfirst($entry->day),
                 'periodId' => (string) ($entry->period_code ?: ''),
-                'subject' => $entry->subject?->name ?? 'Subject',
+                'subject' => $entry->subject?->localized('name') ?? 'Subject',
                 'subjectId' => $entry->subject_id ? (string) $entry->subject_id : '',
                 'teacherId' => $entry->teacher_id ? (string) $entry->teacher_id : '',
                 'teacherName' => $entry->teacher?->name ?? 'Teacher not assigned',
@@ -1284,7 +1284,7 @@ class AcademicsApiController extends Controller
             ->where('class_id', $validated['class_id'])
             ->where('day', $dayLower)
             ->where('period_code', $validated['period_code'])
-            ->with(['subject:id,name', 'teacher:id,name'])
+            ->with(['subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->when($currentEntry, fn ($q) => $q->where('id', '!=', $currentEntry->id))
             ->first();
 
@@ -1292,7 +1292,7 @@ class AcademicsApiController extends Controller
             throw ValidationException::withMessages([
                 'period_code' => sprintf(
                     'This class already has %s with %s scheduled for %s - %s in %s on %s %s.',
-                    $duplicateClassEntry->subject?->name ?? 'a subject',
+                    $duplicateClassEntry->subject?->localized('name') ?? 'a subject',
                     $duplicateClassEntry->teacher?->name ?? 'an assigned teacher',
                     substr((string) $duplicateClassEntry->start_time, 0, 5),
                     substr((string) $duplicateClassEntry->end_time, 0, 5),

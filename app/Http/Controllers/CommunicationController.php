@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\SendQwaWhatsappMessageJob;
+use App\Jobs\SendSmsJob;
 use App\Jobs\SendWhatsappMessageJob;
 use App\Models\DownloadCenterMedia;
 use App\Models\DownloadCenterShare;
@@ -11,6 +12,7 @@ use App\Models\Message;
 use App\Models\MessageRecipient;
 use App\Models\Organization;
 use App\Models\SchoolClass;
+use App\Models\SmsLog;
 use App\Models\Student;
 use App\Models\SuperAdminSetting;
 use App\Models\User;
@@ -18,6 +20,7 @@ use App\Models\VoiceCallLog;
 use App\Services\FirebaseCloudMessagingService;
 use App\Services\QwaService;
 use App\Services\SmartfloService;
+use App\Services\SmsService;
 use App\Services\StaffPermissionService;
 use App\Services\WhatsappBridgeService;
 use Illuminate\Http\JsonResponse;
@@ -47,6 +50,7 @@ class CommunicationController extends Controller
         private readonly FirebaseCloudMessagingService $firebaseCloudMessagingService,
         private readonly WhatsappBridgeService $whatsappBridgeService,
         private readonly QwaService $qwaService,
+        private readonly SmsService $smsService,
     ) {}
 
     public function index()
@@ -123,6 +127,16 @@ class CommunicationController extends Controller
             $successMessage .= sprintf(' Push notification attempted but %d device(s) failed.', $notificationResult['failureCount']);
         } elseif ($notificationResult['attempted']) {
             $successMessage .= ' No registered devices found for push notification.';
+        }
+
+        $smsLog = $this->dispatchSmsForRecipients(
+            $organization,
+            $recipientUsers,
+            $validated['subject'],
+            $validated['content'],
+        );
+        if ($smsLog !== null) {
+            $successMessage .= sprintf(' SMS queued for %d recipient(s).', $smsLog->recipient_count);
         }
 
         return redirect()
@@ -212,9 +226,21 @@ class CommunicationController extends Controller
                 ->all()
         );
 
+        $smsLog = $this->dispatchSmsForRecipients(
+            $organization,
+            $recipientUsers,
+            $validated['title'],
+            $validated['description'],
+        );
+
+        $successMessage = 'Notice published successfully.';
+        if ($smsLog !== null) {
+            $successMessage .= sprintf(' SMS queued for %d recipient(s).', $smsLog->recipient_count);
+        }
+
         return redirect()
             ->route('communication.notice-board')
-            ->with('success', 'Notice published successfully.');
+            ->with('success', $successMessage);
     }
 
     public function updateNotice(Request $request, Message $message): RedirectResponse
@@ -613,6 +639,111 @@ class CommunicationController extends Controller
         return redirect()
             ->route('communication.send-emails')
             ->with('success', sprintf('Email sent successfully to %d recipient(s).', $recipientContacts->count()));
+    }
+
+    public function sendSms()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        return inertia('dashboard/SendSms', [
+            'user' => $user,
+            'staffRecords' => $this->staffVoiceRecords($organization),
+            'studentRecords' => $this->studentVoiceRecords($organization),
+            'smsHistory' => $this->smsHistoryPayload($organization),
+            'smsConfigured' => $this->smsConfigurationStatus($organization),
+        ]);
+    }
+
+    public function storeSms(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'audienceType' => ['required', Rule::in(['staff', 'students', 'class_section'])],
+            'selectedStaffRoles' => ['nullable', 'array'],
+            'selectedStaffRoles.*' => ['string'],
+            'selectedGroups' => ['nullable', 'array'],
+            'selectedGroups.*' => ['string'],
+            'subject' => ['required', 'string', 'max:160'],
+            'content' => ['nullable', 'string', 'max:160'],
+        ]);
+
+        $smsConfiguration = $this->smsConfigurationStatus($organization);
+
+        if (! $smsConfiguration['configured']) {
+            return back()->withErrors([
+                'sms_delivery' => 'SMS is not configured. Enable SMS and provide a valid provider API key in Communication Settings first.',
+            ]);
+        }
+
+        [$recipientContacts, $recipientSummary] = $this->resolveVoiceRecipients($organization, $validated);
+
+        if ($recipientContacts->isEmpty()) {
+            return back()->withErrors([
+                'sms_recipients' => 'No valid phone recipients found for the selected audience.',
+            ]);
+        }
+
+        $recipientPhones = $recipientContacts->pluck('phone')->filter()->unique()->values()->all();
+        $content = trim((string) ($validated['content'] ?? ''));
+
+        $smsLog = SmsLog::query()->create([
+            'organization_id' => $organization->id,
+            'sender_id' => $user->id,
+            'audience_type' => $validated['audienceType'],
+            'recipient_summary' => $recipientSummary,
+            'recipient_count' => count($recipientPhones),
+            'recipient_phones' => $recipientPhones,
+            'recipient_details' => collect($recipientPhones)
+                ->mapWithKeys(fn (string $phone) => [
+                    $phone => [
+                        'phone' => $phone,
+                        'status' => 'queued',
+                        'queued_at' => now()->toDateTimeString(),
+                        'sent_at' => null,
+                        'failed_reason' => null,
+                    ],
+                ])
+                ->all(),
+            'subject' => $validated['subject'],
+            'content' => $content !== '' ? $content : $validated['subject'],
+            'status' => 'queued',
+            'queued_at' => now(),
+            'provider_name' => $smsConfiguration['provider'] ?? null,
+        ]);
+
+        foreach ($recipientPhones as $phone) {
+            SendSmsJob::dispatch(
+                $smsLog->id,
+                $organization->id,
+                $phone,
+            )->onQueue('default');
+        }
+
+        return redirect()
+            ->route('communication.send-sms')
+            ->with('success', sprintf('SMS campaign queued for %d recipient(s). A queue worker will deliver messages in the background.', count($recipientPhones)));
+    }
+
+    public function destroySms(SmsLog $smsLog): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        abort_unless((int) $smsLog->organization_id === (int) $organization->id, 404);
+
+        $smsLog->delete();
+
+        return redirect()
+            ->route('communication.send-sms')
+            ->with('success', 'SMS history entry deleted successfully.');
     }
 
     public function sendWhatsapp()
@@ -1235,23 +1366,29 @@ class CommunicationController extends Controller
         }
 
         if (empty($recipients)) {
-            return back()->withErrors([
-                'qwa_recipients' => 'No recipients recorded for this QWA WhatsApp message.',
-            ]);
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_recipients' => 'No recipients recorded for this QWA WhatsApp message.',
+                ]);
         }
 
         $deliveryStatus = $this->qwaDeliveryStatusPayload($organization);
 
         if (! ($deliveryStatus['configured'] ?? false)) {
-            return back()->withErrors([
-                'qwa_delivery' => 'QWA is not configured. Set up the QWA gateway in Communication Settings first.',
-            ]);
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_delivery' => 'QWA is not configured. Set up the QWA gateway in Communication Settings first.',
+                ]);
         }
 
         if (! ($deliveryStatus['connected'] ?? false)) {
-            return back()->withErrors([
-                'qwa_delivery' => 'QWA is not connected. Start the QWA session and scan the QR code before resending.',
-            ]);
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_delivery' => 'QWA is not connected. Start the QWA session and scan the QR code before resending.',
+                ]);
         }
 
         $messageType = $meta['message_type'] ?? 'text';
@@ -1997,6 +2134,111 @@ class CommunicationController extends Controller
             ])
             ->values()
             ->all();
+    }
+
+    private function smsHistoryPayload(Organization $organization): array
+    {
+        if (! Schema::hasTable('sms_logs')) {
+            return [];
+        }
+
+        return SmsLog::query()
+            ->where('organization_id', $organization->id)
+            ->latest('queued_at')
+            ->latest('id')
+            ->get()
+            ->map(fn (SmsLog $log) => [
+                'id' => (string) $log->id,
+                'to' => $log->recipient_summary,
+                'subject' => $log->subject,
+                'preview' => $log->content,
+                'queuedAt' => optional($log->queued_at)->format('d M Y, h:i A') ?? '',
+                'status' => ucfirst($log->status),
+                'recipientCount' => (int) $log->recipient_count,
+                'recipientPhones' => collect($log->recipient_phones ?? [])->filter()->values()->all(),
+                'providerName' => $log->provider_name ? strtoupper((string) $log->provider_name) : null,
+                'providerReference' => $log->provider_reference,
+                'errorMessage' => $log->error_message,
+                'sentAt' => optional($log->sent_at)->format('d M Y, h:i A') ?? null,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function smsConfigurationStatus(Organization $organization): array
+    {
+        $smsSettings = $this->smsSettings($organization);
+
+        return [
+            'enabled' => (bool) ($smsSettings['enabled'] ?? false),
+            'configured' => $this->smsService->isConfigured($smsSettings),
+            'provider' => $smsSettings['provider'] ?? null,
+            'providerSupported' => $this->smsService->driverFor($smsSettings) !== null,
+        ];
+    }
+
+    private function dispatchSmsForRecipients(Organization $organization, Collection $recipientUsers, string $subject, ?string $content): ?SmsLog
+    {
+        $smsConfiguration = $this->smsConfigurationStatus($organization);
+
+        if (! $smsConfiguration['configured']) {
+            return null;
+        }
+
+        $recipientPhones = $recipientUsers
+            ->pluck('phone')
+            ->filter()
+            ->map(fn (?string $phone) => $this->normalizePhoneNumber($phone))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($recipientPhones === []) {
+            return null;
+        }
+
+        $resolvedContent = trim((string) ($content ?? ''));
+
+        $smsLog = SmsLog::query()->create([
+            'organization_id' => $organization->id,
+            'sender_id' => Auth::user()?->id,
+            'audience_type' => 'community_message',
+            'recipient_summary' => $recipientUsers->pluck('name')->filter()->slice(0, 3)->implode(', ').(($recipientUsers->count() > 3) ? ' + Others' : ''),
+            'recipient_count' => count($recipientPhones),
+            'recipient_phones' => $recipientPhones,
+            'recipient_details' => collect($recipientPhones)
+                ->mapWithKeys(fn (string $phone) => [
+                    $phone => [
+                        'phone' => $phone,
+                        'status' => 'queued',
+                        'queued_at' => now()->toDateTimeString(),
+                        'sent_at' => null,
+                        'failed_reason' => null,
+                    ],
+                ])
+                ->all(),
+            'subject' => $subject,
+            'content' => $resolvedContent !== '' ? $resolvedContent : $subject,
+            'status' => 'queued',
+            'queued_at' => now(),
+            'provider_name' => $smsConfiguration['provider'] ?? null,
+        ]);
+
+        foreach ($recipientPhones as $phone) {
+            SendSmsJob::dispatch(
+                $smsLog->id,
+                $organization->id,
+                $phone,
+            )->onQueue('default');
+        }
+
+        return $smsLog;
+    }
+
+    private function smsSettings(Organization $organization): array
+    {
+        return $organization->settings['communication_settings']['sms'] ?? [];
     }
 
     private function isWhatsappMessage(Message $message): bool

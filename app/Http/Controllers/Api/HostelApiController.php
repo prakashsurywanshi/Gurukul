@@ -631,7 +631,7 @@ class HostelApiController extends Controller
             ->whereHas('feeStructure', fn ($q) => $q->where('fee_type', 'like', 'Hostel Fee%'))
             ->with([
                 'student.schoolClass:id,name,section',
-                'feeStructure:id,fee_type',
+                'feeStructure:id,fee_type,fee_type_mr,fee_type_hi',
                 'payments' => fn ($q) => $q->with('collector:id,name')->orderByDesc('payment_date')->orderByDesc('id'),
             ]);
 
@@ -648,7 +648,7 @@ class HostelApiController extends Controller
                     'class' => $fee->student?->schoolClass?->name ?? '',
                     'section' => $fee->student?->schoolClass?->section ?? '',
                     'hostel_room' => $fee->student?->hostel_room ?? '',
-                    'fee_type' => $fee->feeStructure?->fee_type ?? 'Hostel Fee',
+                    'fee_type' => ($fee->feeStructure?->localized('fee_type') ?: 'Hostel Fee'),
                     'amount' => (float) $fee->amount,
                     'paid_amount' => (float) $fee->paid_amount,
                     'due_amount' => (float) $fee->balance,

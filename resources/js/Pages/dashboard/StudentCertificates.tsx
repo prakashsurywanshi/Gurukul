@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useMemo, useState } from 'react';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
@@ -9,263 +10,287 @@ import { formatDate } from '../ui/utils';
 import { toast } from 'sonner';
 
 interface StudentCertificatesProps {
-  user: any;
-  schoolName: string;
-  studentRecord?: StudentRecord | null;
-  issuedCertificates: IssuedCertificateRecord[];
+    user: any;
+    schoolName: string;
+    studentRecord?: StudentRecord | null;
+    issuedCertificates: IssuedCertificateRecord[];
 }
 
 interface StudentRecord {
-  id: string;
-  admission_no?: string | null;
-  first_name: string;
-  last_name: string;
-  class?: string | null;
-  section?: string | null;
+    id: string;
+    admission_no?: string | null;
+    first_name: string;
+    last_name: string;
+    class?: string | null;
+    section?: string | null;
 }
 
 type TemplatePreset = 'red' | 'blue' | 'yellow' | 'green' | 'orange' | 'all';
 type TextAlign = 'left' | 'center' | 'right';
 
 interface TemplateElement {
-  id: string;
-  kind: 'text' | 'variable';
-  label: string;
-  content: string;
-  x: number;
-  y: number;
-  width: number;
-  fontSize: number;
-  fontFamily: string;
-  fontWeight: 'normal' | 'bold';
-  fontStyle: 'normal' | 'italic';
-  textDecoration: 'none' | 'underline';
-  color: string;
-  align: TextAlign;
+    id: string;
+    kind: 'text' | 'variable';
+    label: string;
+    content: string;
+    x: number;
+    y: number;
+    width: number;
+    fontSize: number;
+    fontFamily: string;
+    fontWeight: 'normal' | 'bold';
+    fontStyle: 'normal' | 'italic';
+    textDecoration: 'none' | 'underline';
+    color: string;
+    align: TextAlign;
 }
 
 interface WatermarkSettings {
-  enabled: boolean;
-  text: string;
-  opacity: number;
-  rotation: number;
-  fontSize: number;
-  color: string;
+    enabled: boolean;
+    text: string;
+    opacity: number;
+    rotation: number;
+    fontSize: number;
+    color: string;
 }
 
 interface CertificateTemplateData {
-  preset: TemplatePreset;
-  elements: TemplateElement[];
-  watermark: WatermarkSettings;
+    preset: TemplatePreset;
+    elements: TemplateElement[];
+    watermark: WatermarkSettings;
 }
 
 interface IssuedCertificateRecord {
-  id: string;
-  certificateNumber: string;
-  templateTitle: string;
-  templateType?: string | null;
-  description?: string | null;
-  studentName: string;
-  admissionNo?: string | null;
-  class?: string | null;
-  section?: string | null;
-  reason?: string | null;
-  issueDate?: string | null;
-  issuedBy?: string | null;
-  issuedByDesignation?: string | null;
-  templateData: CertificateTemplateData;
+    id: string;
+    certificateNumber: string;
+    templateTitle: string;
+    templateType?: string | null;
+    description?: string | null;
+    studentName: string;
+    studentNameMr?: string | null;
+    admissionNo?: string | null;
+    class?: string | null;
+    classMr?: string | null;
+    section?: string | null;
+    sectionMr?: string | null;
+    reason?: string | null;
+    reasonMr?: string | null;
+    issueDate?: string | null;
+    issuedBy?: string | null;
+    issuedByDesignation?: string | null;
+    templateData: CertificateTemplateData;
 }
 
 const VARIABLE_OPTIONS = [
-  { label: 'Student Name', value: '{{student_name}}' },
-  { label: 'Admission Number', value: '{{admission_no}}' },
-  { label: 'Class', value: '{{class}}' },
-  { label: 'Section', value: '{{section}}' },
-  { label: 'Achievement', value: '{{achievement}}' },
-  { label: 'Issue Date', value: '{{issue_date}}' },
-  { label: 'Issued By', value: '{{issued_by}}' },
-  { label: 'School Name', value: '{{school_name}}' },
+    { label: 'Student Name', value: '{{student_name}}' },
+    { label: 'Admission Number', value: '{{admission_no}}' },
+    { label: 'Class', value: '{{class}}' },
+    { label: 'Section', value: '{{section}}' },
+    { label: 'Achievement', value: '{{achievement}}' },
+    { label: 'Issue Date', value: '{{issue_date}}' },
+    { label: 'Issued By', value: '{{issued_by}}' },
+    { label: 'School Name', value: '{{school_name}}' },
 ];
 
 const CERTIFICATE_WIDTH = 820;
 const CERTIFICATE_HEIGHT = 600;
 
 const getPresetTheme = (preset: TemplatePreset) => {
-  switch (preset) {
-    case 'blue':
-      return {
-        borderWidth: '10px',
-        borderStyle: 'double',
-        borderColor: '#1d4ed8',
-        backgroundColor: '#eff6ff',
-        backgroundImage:
-          'linear-gradient(to bottom right, #ffffff, #f0f9ff, #dbeafe), linear-gradient(135deg, rgba(59,130,246,.08), transparent 45%), linear-gradient(315deg, rgba(37,99,235,.06), transparent 40%)',
-        backgroundSize: '100% 100%',
-        boxShadow: 'inset 0 2px 14px rgba(59, 130, 246, 0.10)',
-      };
-    case 'yellow':
-      return {
-        borderWidth: '10px',
-        borderStyle: 'double',
-        borderColor: '#eab308',
-        backgroundColor: '#dbeafe',
-        backgroundImage:
-          'linear-gradient(to bottom right, #dbeafe, #dbeafe, #ffffff), linear-gradient(135deg, rgba(234,179,8,.12), transparent 48%), radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 35%)',
-        backgroundSize: '100% 100%',
-        boxShadow: 'inset 0 2px 14px rgba(234, 179, 8, 0.10)',
-      };
-    case 'green':
-      return {
-        borderWidth: '14px',
-        borderStyle: 'double',
-        borderColor: '#065f46',
-        backgroundColor: '#f8fafc',
-        backgroundImage: 'linear-gradient(90deg, rgba(5,150,105,.05), transparent 20%, rgba(132,204,22,.05) 80%)',
-        backgroundSize: '100% 100%',
-        boxShadow: 'inset 0 2px 14px rgba(5, 150, 105, 0.10)',
-      };
-    case 'orange':
-      return {
-        borderWidth: '10px',
-        borderStyle: 'double',
-        borderColor: '#ea580c',
-        backgroundColor: '#eff6ff',
-        backgroundImage:
-          'linear-gradient(to bottom right, #eff6ff, #dbeafe, #ffffff), radial-gradient(circle at 18px 18px, rgba(234,88,12,.10) 1px, transparent 0)',
-        backgroundSize: '36px 36px',
-        boxShadow: 'inset 0 2px 14px rgba(234, 88, 12, 0.10)',
-      };
-    case 'all':
-      return {
-        borderWidth: '12px',
-        borderStyle: 'double',
-        borderColor: '#a21caf',
-        backgroundColor: '#eff6ff',
-        backgroundImage:
-          'linear-gradient(to bottom right, #fff1f2, #fff7ed, #f0f9ff), linear-gradient(120deg, rgba(239,68,68,.08), rgba(37,99,235,.08), rgba(234,179,8,.08), rgba(34,197,94,.08), rgba(59,130,246,.08))',
-        backgroundSize: '100% 100%',
-        boxShadow: 'inset 0 2px 14px rgba(162, 28, 175, 0.10)',
-      };
-    case 'red':
-    default:
-      return {
-        borderWidth: '10px',
-        borderStyle: 'double',
-        borderColor: '#b91c1c',
-        backgroundColor: '#fff7f7',
-        backgroundImage: 'radial-gradient(circle at 18px 18px, rgba(185,28,28,.09) 1px, transparent 0)',
-        backgroundSize: '36px 36px',
-        boxShadow: 'inset 0 2px 14px rgba(185, 28, 28, 0.10)',
-      };
-  }
+    switch (preset) {
+        case 'blue':
+            return {
+                borderWidth: '10px',
+                borderStyle: 'double',
+                borderColor: '#1d4ed8',
+                backgroundColor: '#eff6ff',
+                backgroundImage:
+                    'linear-gradient(to bottom right, #ffffff, #f0f9ff, #dbeafe), linear-gradient(135deg, rgba(59,130,246,.08), transparent 45%), linear-gradient(315deg, rgba(37,99,235,.06), transparent 40%)',
+                backgroundSize: '100% 100%',
+                boxShadow: 'inset 0 2px 14px rgba(59, 130, 246, 0.10)',
+            };
+        case 'yellow':
+            return {
+                borderWidth: '10px',
+                borderStyle: 'double',
+                borderColor: '#eab308',
+                backgroundColor: '#dbeafe',
+                backgroundImage:
+                    'linear-gradient(to bottom right, #dbeafe, #dbeafe, #ffffff), linear-gradient(135deg, rgba(234,179,8,.12), transparent 48%), radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 35%)',
+                backgroundSize: '100% 100%',
+                boxShadow: 'inset 0 2px 14px rgba(234, 179, 8, 0.10)',
+            };
+        case 'green':
+            return {
+                borderWidth: '14px',
+                borderStyle: 'double',
+                borderColor: '#065f46',
+                backgroundColor: '#f8fafc',
+                backgroundImage:
+                    'linear-gradient(90deg, rgba(5,150,105,.05), transparent 20%, rgba(132,204,22,.05) 80%)',
+                backgroundSize: '100% 100%',
+                boxShadow: 'inset 0 2px 14px rgba(5, 150, 105, 0.10)',
+            };
+        case 'orange':
+            return {
+                borderWidth: '10px',
+                borderStyle: 'double',
+                borderColor: '#ea580c',
+                backgroundColor: '#eff6ff',
+                backgroundImage:
+                    'linear-gradient(to bottom right, #eff6ff, #dbeafe, #ffffff), radial-gradient(circle at 18px 18px, rgba(234,88,12,.10) 1px, transparent 0)',
+                backgroundSize: '36px 36px',
+                boxShadow: 'inset 0 2px 14px rgba(234, 88, 12, 0.10)',
+            };
+        case 'all':
+            return {
+                borderWidth: '12px',
+                borderStyle: 'double',
+                borderColor: '#a21caf',
+                backgroundColor: '#eff6ff',
+                backgroundImage:
+                    'linear-gradient(to bottom right, #fff1f2, #fff7ed, #f0f9ff), linear-gradient(120deg, rgba(239,68,68,.08), rgba(37,99,235,.08), rgba(234,179,8,.08), rgba(34,197,94,.08), rgba(59,130,246,.08))',
+                backgroundSize: '100% 100%',
+                boxShadow: 'inset 0 2px 14px rgba(162, 28, 175, 0.10)',
+            };
+        case 'red':
+        default:
+            return {
+                borderWidth: '10px',
+                borderStyle: 'double',
+                borderColor: '#b91c1c',
+                backgroundColor: '#fff7f7',
+                backgroundImage: 'radial-gradient(circle at 18px 18px, rgba(185,28,28,.09) 1px, transparent 0)',
+                backgroundSize: '36px 36px',
+                boxShadow: 'inset 0 2px 14px rgba(185, 28, 28, 0.10)',
+            };
+    }
 };
 
 const formatIssueDate = (value?: string | null) => {
-  if (!value) return 'N/A';
+    if (!value) return 'N/A';
 
-  return formatDate(value, 'N/A');
+    return formatDate(value, 'N/A');
 };
 
 const getVariableValue = (content: string, values: Record<string, string>) => {
-  const match = VARIABLE_OPTIONS.find((item) => item.value === content);
-  if (!match) return content;
-  return values[content] || content;
+    const match = VARIABLE_OPTIONS.find((item) => item.value === content);
+    if (!match) return content;
+    return values[content] || content;
 };
 
 const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
-export default function StudentCertificates({ user, schoolName, studentRecord, issuedCertificates }: StudentCertificatesProps) {
-  const [selectedCertificate, setSelectedCertificate] = useState<IssuedCertificateRecord | null>(null);
+export default function StudentCertificates({
+    user,
+    schoolName,
+    studentRecord,
+    issuedCertificates,
+}: StudentCertificatesProps) {
+    const { t } = useLanguage();
+    const [selectedCertificate, setSelectedCertificate] = useState<IssuedCertificateRecord | null>(null);
+    const [printLanguage, setPrintLanguage] = useState<'en' | 'mr'>('en');
 
-  const studentName = useMemo(() => {
-    if (!studentRecord) return user?.name || 'Student';
+    const studentName = useMemo(() => {
+        if (!studentRecord) return user?.name || 'Student';
 
-    return [studentRecord.first_name, studentRecord.last_name].filter(Boolean).join(' ');
-  }, [studentRecord, user?.name]);
+        return [studentRecord.first_name, studentRecord.last_name].filter(Boolean).join(' ');
+    }, [studentRecord, user?.name]);
 
-  const getCertificateValues = (certificate: IssuedCertificateRecord) => ({
-    '{{student_name}}': certificate.studentName || studentName,
-    '{{admission_no}}': certificate.admissionNo || studentRecord?.admission_no || '',
-    '{{class}}': certificate.class || studentRecord?.class || '',
-    '{{section}}': certificate.section || studentRecord?.section || '',
-    '{{achievement}}': certificate.reason || certificate.description || 'Certificate issued',
-    '{{issue_date}}': formatIssueDate(certificate.issueDate),
-    '{{issued_by}}': certificate.issuedBy || '',
-    '{{school_name}}': schoolName,
-  });
+    const getCertificateValues = (certificate: IssuedCertificateRecord) => ({
+        '{{student_name}}':
+            printLanguage === 'mr' && (certificate.studentNameMr || certificate.studentName)
+                ? certificate.studentNameMr || certificate.studentName
+                : certificate.studentName || studentName,
+        '{{admission_no}}': certificate.admissionNo || studentRecord?.admission_no || '',
+        '{{class}}':
+            printLanguage === 'mr' && certificate.classMr
+                ? certificate.classMr
+                : certificate.class || studentRecord?.class || '',
+        '{{section}}':
+            printLanguage === 'mr' && certificate.sectionMr
+                ? certificate.sectionMr
+                : certificate.section || studentRecord?.section || '',
+        '{{achievement}}':
+            printLanguage === 'mr' && certificate.reasonMr
+                ? certificate.reasonMr
+                : certificate.reason || certificate.description || 'Certificate issued',
+        '{{issue_date}}': formatIssueDate(certificate.issueDate),
+        '{{issued_by}}': certificate.issuedBy || '',
+        '{{school_name}}': schoolName,
+    });
 
-  const renderCanvas = (certificate: IssuedCertificateRecord) => {
-    const variableValues = getCertificateValues(certificate);
-    const theme = getPresetTheme(certificate.templateData.preset);
+    const renderCanvas = (certificate: IssuedCertificateRecord) => {
+        const variableValues = getCertificateValues(certificate);
+        const theme = getPresetTheme(certificate.templateData.preset);
 
-    return (
-      <div
-        className="relative h-[600px] w-[820px] shrink-0 overflow-hidden rounded-2xl p-8"
-        style={{
-          width: `${CERTIFICATE_WIDTH}px`,
-          height: `${CERTIFICATE_HEIGHT}px`,
-          borderWidth: theme.borderWidth,
-          borderStyle: theme.borderStyle,
-          borderColor: theme.borderColor,
-          backgroundColor: theme.backgroundColor,
-          backgroundImage: theme.backgroundImage,
-          backgroundSize: theme.backgroundSize,
-          boxShadow: theme.boxShadow,
-        }}
-      >
-        {certificate.templateData.watermark.enabled ? (
-          <div
-            className="pointer-events-none absolute inset-0 flex items-center justify-center font-black uppercase tracking-[0.4em]"
-            style={{
-              color: certificate.templateData.watermark.color,
-              opacity: certificate.templateData.watermark.opacity,
-              transform: `rotate(${certificate.templateData.watermark.rotation}deg)`,
-              fontSize: `${certificate.templateData.watermark.fontSize}px`,
-            }}
-          >
-            {certificate.templateData.watermark.text}
-          </div>
-        ) : null}
+        return (
+            <div
+                className="relative h-[600px] w-[820px] shrink-0 overflow-hidden rounded-2xl p-8"
+                style={{
+                    width: `${CERTIFICATE_WIDTH}px`,
+                    height: `${CERTIFICATE_HEIGHT}px`,
+                    borderWidth: theme.borderWidth,
+                    borderStyle: theme.borderStyle,
+                    borderColor: theme.borderColor,
+                    backgroundColor: theme.backgroundColor,
+                    backgroundImage: theme.backgroundImage,
+                    backgroundSize: theme.backgroundSize,
+                    boxShadow: theme.boxShadow,
+                }}
+            >
+                {certificate.templateData.watermark.enabled ? (
+                    <div
+                        className="pointer-events-none absolute inset-0 flex items-center justify-center font-black uppercase tracking-[0.4em]"
+                        style={{
+                            color: certificate.templateData.watermark.color,
+                            opacity: certificate.templateData.watermark.opacity,
+                            transform: `rotate(${certificate.templateData.watermark.rotation}deg)`,
+                            fontSize: `${certificate.templateData.watermark.fontSize}px`,
+                        }}
+                    >
+                        {certificate.templateData.watermark.text}
+                    </div>
+                ) : null}
 
-        {certificate.templateData.elements.map((element) => (
-          <div
-            key={element.id}
-            className="absolute"
-            style={{
-              left: element.x,
-              top: element.y,
-              width: element.width,
-              fontSize: `${element.fontSize}px`,
-              fontFamily: element.fontFamily,
-              fontWeight: element.fontWeight,
-              fontStyle: element.fontStyle,
-              textDecoration: element.textDecoration,
-              color: element.color,
-              textAlign: element.align,
-              lineHeight: 1.25,
-            }}
-          >
-            {getVariableValue(element.content, variableValues)}
-          </div>
-        ))}
-      </div>
-    );
-  };
+                {certificate.templateData.elements.map((element) => (
+                    <div
+                        key={element.id}
+                        className="absolute"
+                        style={{
+                            left: element.x,
+                            top: element.y,
+                            width: element.width,
+                            fontSize: `${element.fontSize}px`,
+                            fontFamily: element.fontFamily,
+                            fontWeight: element.fontWeight,
+                            fontStyle: element.fontStyle,
+                            textDecoration: element.textDecoration,
+                            color: element.color,
+                            textAlign: element.align,
+                            lineHeight: 1.25,
+                        }}
+                    >
+                        {getVariableValue(element.content, variableValues)}
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
-  const handleDownload = (certificate: IssuedCertificateRecord) => {
-    const variableValues = getCertificateValues(certificate);
-    const theme = getPresetTheme(certificate.templateData.preset);
-    const renderedElements = certificate.templateData.elements
-      .map((element) => {
-        const value = getVariableValue(element.content, variableValues);
+    const handleDownload = (certificate: IssuedCertificateRecord) => {
+        const variableValues = getCertificateValues(certificate);
+        const theme = getPresetTheme(certificate.templateData.preset);
+        const renderedElements = certificate.templateData.elements
+            .map((element) => {
+                const value = getVariableValue(element.content, variableValues);
 
-        return `
+                return `
           <div style="
             position:absolute;
             left:${element.x}px;
@@ -281,11 +306,11 @@ export default function StudentCertificates({ user, schoolName, studentRecord, i
             line-height:1.25;
           ">${escapeHtml(value)}</div>
         `;
-      })
-      .join('');
+            })
+            .join('');
 
-    const watermark = certificate.templateData.watermark.enabled
-      ? `
+        const watermark = certificate.templateData.watermark.enabled
+            ? `
         <div style="
           position:absolute;
           inset:0;
@@ -301,15 +326,15 @@ export default function StudentCertificates({ user, schoolName, studentRecord, i
           font-size:${certificate.templateData.watermark.fontSize}px;
         ">${escapeHtml(certificate.templateData.watermark.text)}</div>
       `
-      : '';
+            : '';
 
-    const printWindow = window.open('', '_blank', 'width=1200,height=900');
-    if (!printWindow) {
-      toast.error('Allow pop-ups to download the certificate.');
-      return;
-    }
+        const printWindow = window.open('', '_blank', 'width=1200,height=900');
+        if (!printWindow) {
+            toast.error('Allow pop-ups to download the certificate.');
+            return;
+        }
 
-    printWindow.document.write(`
+        printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -361,137 +386,184 @@ export default function StudentCertificates({ user, schoolName, studentRecord, i
         </body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-  };
+        printWindow.document.close();
+        printWindow.focus();
+    };
 
-  return (
-    <DashboardLayout user={user} activeTab="student-certificates">
-      <div className="space-y-6 p-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">My Certificates</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            View and download the certificates issued to your student account.
-          </p>
-        </div>
-
-        {!studentRecord ? (
-          <Card>
-            <CardContent className="py-12 text-center text-slate-500">
-              Student certificate record not found.
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardContent className="px-4 py-4">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Student</p>
-                  <p className="mt-2 text-xl font-bold text-slate-900">{studentName}</p>
-                  <p className="text-sm text-slate-500">{studentRecord.admission_no || 'No admission no.'}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="px-4 py-4">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Class</p>
-                  <p className="mt-2 text-xl font-bold text-slate-900">
-                    {studentRecord.class ? `${studentRecord.class}` : 'N/A'}
-                    {studentRecord.section ? ` - ${studentRecord.section}` : ''}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="px-4 py-4">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Certificates Issued</p>
-                  <p className="mt-2 text-2xl font-bold text-slate-900">{issuedCertificates.length}</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Issued Certificates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {issuedCertificates.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <Award className="mx-auto mb-4 h-16 w-16 text-slate-300" />
-                    <p className="text-slate-500">No certificates have been issued to you yet.</p>
-                  </div>
-                ) : (
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {issuedCertificates.map((certificate) => (
-                      <Card key={certificate.id} className="border-slate-200">
-                        <CardContent className="space-y-4 p-5">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-lg font-semibold text-slate-900">{certificate.templateTitle}</p>
-                              <p className="text-sm text-slate-500">Certificate No. {certificate.certificateNumber}</p>
-                            </div>
-                            {certificate.templateType ? (
-                              <Badge variant="secondary" className="capitalize">
-                                {certificate.templateType}
-                              </Badge>
-                            ) : null}
-                          </div>
-
-                          <div className="space-y-1 text-sm text-slate-600">
-                            <p>Issued on {formatIssueDate(certificate.issueDate)}</p>
-                            <p>
-                              By {certificate.issuedBy || 'N/A'}
-                              {certificate.issuedByDesignation ? ` (${certificate.issuedByDesignation})` : ''}
-                            </p>
-                            {certificate.reason ? <p>{certificate.reason}</p> : null}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <Button variant="outline" className="gap-2" onClick={() => setSelectedCertificate(certificate)}>
-                              <Eye className="h-4 w-4" />
-                              View Certificate
-                            </Button>
-                            <Button className="gap-2" onClick={() => handleDownload(certificate)}>
-                              <Download className="h-4 w-4" />
-                              Download
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-        <Dialog open={Boolean(selectedCertificate)} onOpenChange={(open) => !open && setSelectedCertificate(null)}>
-          <DialogContent className="max-h-[90vh] max-w-[calc(100vw-2rem)] overflow-y-auto">
-            {selectedCertificate ? (
-              <>
-                <DialogHeader>
-                  <DialogTitle>{selectedCertificate.templateTitle}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="rounded-xl border bg-slate-100 p-4">
-                    <div className="overflow-auto">
-                      <div className="inline-block min-w-max">{renderCanvas(selectedCertificate)}</div>
+    return (
+        <DashboardLayout user={user} activeTab="student-certificates">
+            <div className="space-y-6 p-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">{t('My Certificates')}</h1>
+                        <p className="mt-1 text-sm text-slate-600">
+                            {t('View and download the certificates issued to your student account.')}
+                        </p>
                     </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setSelectedCertificate(null)}>
-                      Close
-                    </Button>
-                    <Button className="gap-2" onClick={() => handleDownload(selectedCertificate)}>
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Button>
-                  </div>
+                    <div className="inline-flex overflow-hidden rounded-lg border border-slate-200">
+                        <button
+                            onClick={() => setPrintLanguage('en')}
+                            className={`px-3 py-2 text-sm font-medium transition ${printLanguage === 'en' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
+                        >
+                            {t('English')}
+                        </button>
+                        <button
+                            onClick={() => setPrintLanguage('mr')}
+                            className={`px-3 py-2 text-sm font-medium transition ${printLanguage === 'mr' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
+                        >
+                            मराठी
+                        </button>
+                    </div>
                 </div>
-              </>
-            ) : null}
-          </DialogContent>
-        </Dialog>
-      </div>
-    </DashboardLayout>
-  );
+
+                {!studentRecord ? (
+                    <Card>
+                        <CardContent className="py-12 text-center text-slate-500">
+                            {t('Student certificate record not found.')}
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <Card>
+                                <CardContent className="px-4 py-4">
+                                    <p className="text-xs uppercase tracking-wide text-slate-500">{t('Student')}</p>
+                                    <p className="mt-2 text-xl font-bold text-slate-900">{studentName}</p>
+                                    <p className="text-sm text-slate-500">
+                                        {studentRecord.admission_no || t('No admission no.')}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="px-4 py-4">
+                                    <p className="text-xs uppercase tracking-wide text-slate-500">{t('Class')}</p>
+                                    <p className="mt-2 text-xl font-bold text-slate-900">
+                                        {studentRecord.class ? `${studentRecord.class}` : t('N/A')}
+                                        {studentRecord.section ? ` - ${studentRecord.section}` : ''}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="px-4 py-4">
+                                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                                        {t('Certificates Issued')}
+                                    </p>
+                                    <p className="mt-2 text-2xl font-bold text-slate-900">
+                                        {issuedCertificates.length}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('Issued Certificates')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                {issuedCertificates.length === 0 ? (
+                                    <div className="py-12 text-center">
+                                        <Award className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+                                        <p className="text-slate-500">
+                                            {t('No certificates have been issued to you yet.')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4 lg:grid-cols-2">
+                                        {issuedCertificates.map((certificate) => (
+                                            <Card key={certificate.id} className="border-slate-200">
+                                                <CardContent className="space-y-4 p-5">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-lg font-semibold text-slate-900">
+                                                                {certificate.templateTitle}
+                                                            </p>
+                                                            <p className="text-sm text-slate-500">
+                                                                {t('Certificate No.')}
+                                                                {certificate.certificateNumber}
+                                                            </p>
+                                                        </div>
+                                                        {certificate.templateType ? (
+                                                            <Badge variant="secondary" className="capitalize">
+                                                                {certificate.templateType}
+                                                            </Badge>
+                                                        ) : null}
+                                                    </div>
+
+                                                    <div className="space-y-1 text-sm text-slate-600">
+                                                        <p>
+                                                            {t('Issued on')}
+                                                            {formatIssueDate(certificate.issueDate)}
+                                                        </p>
+                                                        <p>
+                                                            {t('By')}
+                                                            {certificate.issuedBy || t('N/A')}
+                                                            {certificate.issuedByDesignation
+                                                                ? ` (${certificate.issuedByDesignation})`
+                                                                : ''}
+                                                        </p>
+                                                        {certificate.reason ? <p>{certificate.reason}</p> : null}
+                                                    </div>
+
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            className="gap-2"
+                                                            onClick={() => setSelectedCertificate(certificate)}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                            {t('View Certificate')}
+                                                        </Button>
+                                                        <Button
+                                                            className="gap-2"
+                                                            onClick={() => handleDownload(certificate)}
+                                                        >
+                                                            <Download className="h-4 w-4" />
+                                                            {t('Download')}
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </>
+                )}
+
+                <Dialog
+                    open={Boolean(selectedCertificate)}
+                    onOpenChange={(open) => !open && setSelectedCertificate(null)}
+                >
+                    <DialogContent className="max-h-[90vh] max-w-[calc(100vw-2rem)] overflow-y-auto">
+                        {selectedCertificate ? (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>{selectedCertificate.templateTitle}</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    <div className="rounded-xl border bg-slate-100 p-4">
+                                        <div className="overflow-auto">
+                                            <div className="inline-block min-w-max">
+                                                {renderCanvas(selectedCertificate)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="outline" onClick={() => setSelectedCertificate(null)}>
+                                            {t('Close')}
+                                        </Button>
+                                        <Button className="gap-2" onClick={() => handleDownload(selectedCertificate)}>
+                                            <Download className="h-4 w-4" />
+                                            {t('Download')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : null}
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </DashboardLayout>
+    );
 }

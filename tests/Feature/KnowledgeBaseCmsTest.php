@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Organization;
-use App\Models\SuperAdminSetting;
 use App\Models\User;
+use App\Services\KnowledgeBaseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,8 +25,9 @@ class KnowledgeBaseCmsTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Dashboard')
                 ->where('superAdminView', 'knowledge-base-cms')
-                ->where('knowledgeBaseContent.modules.0.title', 'Admissions')
-                ->where('knowledgeBaseContent.faqs.0.question', 'How do I enroll a student?')
+                ->where('knowledgeBaseContent.title', 'Gurukul Knowledge Base')
+                ->has('knowledgeBaseContent.modules.0')
+                ->has('knowledgeBaseContent.faqs.0')
             );
     }
 
@@ -66,39 +67,36 @@ class KnowledgeBaseCmsTest extends TestCase
             ->patch(route('superadmin.knowledge-base-cms.update'), $payload)
             ->assertRedirect(route('superadmin.knowledge-base-cms'));
 
-        $settings = SuperAdminSetting::query()->first();
+        $content = app(KnowledgeBaseService::class)->content();
 
-        $this->assertNotNull($settings);
-        $this->assertSame('Campus Knowledge Hub', $settings->knowledge_base_content['title']);
-        $this->assertSame('Admissions', $settings->knowledge_base_content['modules'][0]['title']);
-        $this->assertSame('How do I enroll a student?', $settings->knowledge_base_content['faqs'][0]['question']);
+        $this->assertSame('Campus Knowledge Hub', $content['title']);
+        $this->assertSame('Admissions', $content['modules'][0]['title']);
+        $this->assertSame('How do I enroll a student?', $content['faqs'][0]['question']);
     }
 
     public function test_staff_knowledge_base_page_uses_saved_content(): void
     {
-        SuperAdminSetting::query()->create([
-            'knowledge_base_content' => [
-                'title' => 'Campus Knowledge Hub',
-                'subtitle' => 'Operational answers for staff.',
-                'search_placeholder' => 'Search the hub...',
-                'documentation_title' => 'Guides',
-                'documentation_subtitle' => 'Module guides for teams.',
-                'faq_title' => 'Answers',
-                'faq_subtitle' => 'Quick help for common questions.',
-                'modules' => [
-                    [
-                        'id' => 'attendance',
-                        'title' => 'Attendance',
-                        'summary' => 'Daily attendance steps.',
-                        'content' => 'Mark class-wise attendance before submitting the day.',
-                    ],
+        app(KnowledgeBaseService::class)->save([
+            'title' => 'Campus Knowledge Hub',
+            'subtitle' => 'Operational answers for staff.',
+            'search_placeholder' => 'Search the hub...',
+            'documentation_title' => 'Guides',
+            'documentation_subtitle' => 'Module guides for teams.',
+            'faq_title' => 'Answers',
+            'faq_subtitle' => 'Quick help for common questions.',
+            'modules' => [
+                [
+                    'id' => 'attendance',
+                    'title' => 'Attendance',
+                    'summary' => 'Daily attendance steps.',
+                    'content' => 'Mark class-wise attendance before submitting the day.',
                 ],
-                'faqs' => [
-                    [
-                        'id' => 'attendance-timing',
-                        'question' => 'When should attendance be marked?',
-                        'answer' => 'Attendance should be marked during the first active period.',
-                    ],
+            ],
+            'faqs' => [
+                [
+                    'id' => 'attendance-timing',
+                    'question' => 'When should attendance be marked?',
+                    'answer' => 'Attendance should be marked during the first active period.',
                 ],
             ],
         ]);

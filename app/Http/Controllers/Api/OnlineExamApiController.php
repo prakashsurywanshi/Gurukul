@@ -511,8 +511,8 @@ class OnlineExamApiController extends Controller
 
         return [
             'id' => (string) $exam->id,
-            'title' => $exam->title,
-            'subject' => $exam->subject ?? '',
+            'title' => $exam->localized('title'),
+            'subject' => $exam->localized('subject') ?? '',
             'class_name' => $exam->class_name ?? '',
             'section' => $exam->section ?? '',
             'target_class_sections' => $targetClassSections->all(),
@@ -536,8 +536,8 @@ class OnlineExamApiController extends Controller
             'user_id' => $attempt->user_id ? (string) $attempt->user_id : '',
             'student_id' => $attempt->student_id ? (string) $attempt->student_id : null,
             'exam_id' => (string) $attempt->online_exam_id,
-            'exam_title' => $attempt->exam_title,
-            'subject' => $attempt->subject ?? '',
+            'exam_title' => $attempt->onlineExam?->localized('title') ?? $attempt->exam_title,
+            'subject' => $attempt->onlineExam?->localized('subject') ?? $attempt->subject ?? '',
             'class_name' => $attempt->class_name ?? '',
             'section' => $attempt->section ?? '',
             'started_at' => $attempt->started_at?->toIso8601String() ?? '',

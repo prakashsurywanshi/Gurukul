@@ -469,3 +469,18 @@ Route::middleware(['auth:sanctum', 'staff.permission:Roles & Permissions,view'])
     Route::get('/', [RolePermissionApiController::class, 'index']);
     Route::put('/', [RolePermissionApiController::class, 'update'])->middleware('staff.permission:Roles & Permissions,edit');
 });
+
+Route::prefix('biometric')->group(function () {
+    Route::get('/status', [\App\Http\Controllers\Api\BiometricApiController::class, 'status']);
+    Route::post('/attendance', [\App\Http\Controllers\Api\BiometricApiController::class, 'attendance']);
+});
+
+Route::middleware('auth:sanctum')->prefix('parent')->group(function () {
+    Route::get('/kids', [\App\Http\Controllers\Api\ParentApiController::class, 'kids']);
+    Route::get('/tickets', [\App\Http\Controllers\Api\ParentApiController::class, 'tickets']);
+    Route::post('/tickets', [\App\Http\Controllers\Api\ParentApiController::class, 'createTicket']);
+    Route::get('/kids/{student}/fees', [\App\Http\Controllers\Api\ParentApiController::class, 'fees']);
+    Route::get('/kids/{student}/attendance', [\App\Http\Controllers\Api\ParentApiController::class, 'attendance']);
+    Route::get('/kids/{student}/homework', [\App\Http\Controllers\Api\ParentApiController::class, 'homework']);
+    Route::get('/kids/{student}/payments', [\App\Http\Controllers\Api\ParentApiController::class, 'payments']);
+});

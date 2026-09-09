@@ -40,6 +40,29 @@ QGurukul is a full-featured, multi-tenant **School/Education ERP (SaaS)** system
 - **Smartflo** — voice calls
 - **SMTP** — email delivery
 - **dompdf** — PDF generation (marksheets, certificates, ID cards)
+- **Laravel Socialite** — single sign-on with Google, Facebook, and GitHub
+- **AI Assistant** — OpenAI-compatible chat completions (works with local self-hosted providers too)
+- **Laravel Reverb** — realtime chat broadcasting (falls back to smart polling when not running)
+- **Biometric sync API** — device-synced attendance via a shared or per-organization key
+
+## Advanced Features
+
+### Single Sign-On (SSO)
+Google, Facebook, and GitHub login are available on the login page. Enable with `SSO_ENABLED=true` and set the matching `*_CLIENT_ID`, `*_CLIENT_SECRET`, and `*_REDIRECT_URI` env vars (OAuth apps must allow the `/auth/sso/{provider}/callback` URLs). Existing users match by email; first-time SSO users are created on their organization. SSO settings for each provider are managed by Super Admin under **SSO Settings**.
+
+### AI Assistant
+The AI Assistant page answers staff questions with school context and module data. It uses an OpenAI-compatible chat completions endpoint (`AI_MODE=openai`) so any OpenAI-compatible gateway or a local self-hosted model can be configured via `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL`. Super Admin can also override the provider per the **AI Assistant** settings screen.
+
+### Biometric Attendance Sync
+A keyed HTTP API lets biometric devices mark attendance:
+- `GET /api/biometric/status` — public health check
+- `POST /api/biometric/attendance` — requires `X-Biometric-Key` header equal to `BIOMETRIC_SYNC_KEY` (env) or the per-organization key shown in **Biometric Settings**. Devices pass a student `admission_no`, a Unix `timestamp`, and `status` (in/out).
+
+### Realtime Chat
+Direct messaging between staff uses Laravel Reverb for instant delivery. `ChatController::send` broadcasts a `ChatMessageSent` event on a private channel and also sends a Firebase push notification. If a Reverb server (`php artisan reverb:start`) is unavailable, the chat UI automatically falls back to 5-second polling, so messages never get lost.
+
+### Database Backups
+`php artisan backup:run` archives the database to `storage/app/backups`. Admins can restore any backup from the **Automated Backups** screen (admin-only) — the restore command switches back to the dump's driver, re-runs migrations when needed, and logs the operator out.
 
 ## Getting Started
 
@@ -60,3 +83,25 @@ To run the queue worker manually:
 ```bash
 php artisan queue:work database --queue=imports,whatsapp,default --tries=1 --timeout=900
 ```
+
+For realtime chat, start a Reverb server (and a queue worker for scheduled sends):
+
+```bash
+php artisan reverb:start
+```
+
+## Testing
+
+The test suite runs against an in-memory SQLite database:
+
+```bash
+php artisan test
+```
+
+Key suites:
+- `EndToEndPreviewTest` — all twenty module pages render for an seeded admin
+- `ApiContractTest` — identity/auth contract plus every module's HTTP API surface
+- `StaffPermissionsTest` — RBAC enforcement incl. class-scoped teacher access
+- `BiometricFeatureTest`, `ChatRealtimeFeatureTest`, `BackupRestoreFeatureTest` — realtime & sync shell features
+
+Before a release, run the full gates: `php -l` on changed PHP, `npx prettier --write`, `node scripts/validate-i18n.mjs`, `npm run build`, and the full PHPUnit suite.

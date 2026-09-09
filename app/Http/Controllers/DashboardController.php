@@ -607,7 +607,7 @@ class DashboardController extends Controller
                 ->where('organization_id', $organization->id)
                 ->when($activeAcademicYearId, fn ($examQuery) => $examQuery->where('academic_year_id', $activeAcademicYearId)))
             ->whereDate('exam_date', '>=', $today)
-            ->with(['exam:id,name,organization_id', 'subject:id,name', 'schoolClass:id,name,section'])
+            ->with(['exam:id,name,name_mr,name_hi,organization_id', 'subject:id,name,name_mr,name_hi', 'schoolClass:id,name,section'])
             ->orderBy('exam_date')
             ->orderBy('start_time')
             ->limit(4)
@@ -723,7 +723,7 @@ class DashboardController extends Controller
                 'upcoming' => $upcomingExams->map(fn (ExamSchedule $schedule) => [
                     'id' => (string) $schedule->id,
                     'name' => $schedule->exam?->name ?? 'Exam',
-                    'subject' => $schedule->subject?->name ?? 'Subject',
+                    'subject' => $schedule->subject?->localized('name') ?? 'Subject',
                     'className' => $schedule->schoolClass?->name ?? '-',
                     'section' => $schedule->schoolClass?->section ?? '-',
                     'examDate' => optional($schedule->exam_date)->format('Y-m-d') ?? 'N/A',
@@ -813,7 +813,7 @@ class DashboardController extends Controller
         $homeworkItems = Homework::query()
             ->where('organization_id', $organization->id)
             ->when($studentEnrollment?->class_id, fn ($query) => $query->where('class_id', $studentEnrollment->class_id))
-            ->with(['subject:id,name', 'teacher:id,name'])
+            ->with(['subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->orderBy('due_date')
             ->limit(6)
             ->get();
@@ -889,7 +889,7 @@ class DashboardController extends Controller
                 'items' => $homeworkItems->map(fn (Homework $homework) => [
                     'id' => (string) $homework->id,
                     'title' => $homework->title,
-                    'subject' => $homework->subject?->name ?? 'Subject',
+                    'subject' => $homework->subject?->localized('name') ?? 'Subject',
                     'teacher' => $homework->teacher?->name ?? 'Teacher',
                     'dueDate' => optional($homework->due_date)->format('Y-m-d') ?? 'N/A',
                     'status' => in_array($homework->id, $submittedHomeworkIds, true) ? 'submitted' : 'pending',
@@ -898,8 +898,8 @@ class DashboardController extends Controller
             'exams' => [
                 'upcoming' => $upcomingExams->map(fn (OnlineExam $exam) => [
                     'id' => (string) $exam->id,
-                    'title' => $exam->title,
-                    'subject' => $exam->subject,
+                    'title' => $exam->localized('title'),
+                    'subject' => $exam->localized('subject') ?? '',
                     'startTime' => optional($exam->start_time)?->format('Y-m-d h:i A') ?? 'TBA',
                     'endTime' => optional($exam->end_time)?->format('Y-m-d h:i A') ?? 'TBA',
                     'duration' => $exam->duration,

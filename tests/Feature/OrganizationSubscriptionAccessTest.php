@@ -29,7 +29,7 @@ class OrganizationSubscriptionAccessTest extends TestCase
             'email' => 'admin@gurukul.test',
             'password' => 'password',
         ])->assertSessionHasErrors([
-            'email' => 'Your organization subscription expired on ' . now()->subDay()->format('d M Y') . '. Please contact the super admin to renew access.',
+            'email' => 'Your organization subscription expired on ' . now()->subDay()->format('d M Y') . '. Please contact the admin to renew access.',
         ]);
 
         $this->assertGuest();

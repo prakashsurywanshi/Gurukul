@@ -671,8 +671,8 @@ class OnlineExamController extends Controller
 
         return [
             'id' => (string) $exam->id,
-            'title' => $exam->title,
-            'subject' => $exam->subject ?? '',
+            'title' => $exam->localized('title'),
+            'subject' => $exam->localized('subject') ?? '',
             'className' => $exam->class_name ?? '',
             'section' => $exam->section ?? '',
             'targetClassSections' => $targetClassSections->all(),
@@ -696,8 +696,8 @@ class OnlineExamController extends Controller
             'userId' => $attempt->user_id ? (string) $attempt->user_id : '',
             'studentId' => $attempt->student_id ? (string) $attempt->student_id : null,
             'examId' => (string) $attempt->online_exam_id,
-            'examTitle' => $attempt->exam_title,
-            'subject' => $attempt->subject ?? '',
+            'examTitle' => $attempt->onlineExam?->localized('title') ?? $attempt->exam_title,
+            'subject' => $attempt->onlineExam?->localized('subject') ?? $attempt->subject ?? '',
             'className' => $attempt->class_name ?? '',
             'section' => $attempt->section ?? '',
             'startedAt' => $attempt->started_at?->toIso8601String() ?? '',

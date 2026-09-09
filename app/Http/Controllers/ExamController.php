@@ -13,6 +13,7 @@ use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\GradingScaleService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -201,7 +202,7 @@ class ExamController extends Controller
             $marksObtained = (float) $result['marks_obtained'];
             $totalMarks = (float) $examSchedule->max_marks;
 
-            $grade = $this->resolveGrade($marksObtained, $totalMarks);
+            $grade = $this->resolveGrade($marksObtained, $totalMarks, $organization);
 
             ExamResult::query()->updateOrCreate(
                 [
@@ -216,7 +217,7 @@ class ExamController extends Controller
                     'obtained_marks' => $marksObtained,
                     'grade' => $grade,
                     'is_absent' => false,
-                    'remarks' => $examSchedule->subject?->name ? $examSchedule->subject->name . ' | Total: ' . $examSchedule->max_marks : null,
+                    'remarks' => $examSchedule->subject?->localized('name') ? $examSchedule->subject->localized('name') . ' | Total: ' . $examSchedule->max_marks : null,
                     'entered_by' => $user->id,
                 ]
             );
@@ -240,7 +241,7 @@ class ExamController extends Controller
         return Exam::query()
             ->where('organization_id', $organization->id)
             ->with([
-                'schedules.subject:id,name',
+                'schedules.subject:id,name,name_mr,name_hi',
                 'schedules.results.student:id,first_name,last_name,class_id,roll_number',
                 'schedules.schoolClass:id,name,section',
             ])
@@ -251,7 +252,7 @@ class ExamController extends Controller
 
                 return [
                     'groupId' => (string) $exam->id,
-                    'name' => $exam->name,
+                    'name' => $exam->localized('name'),
                     'publishStatus' => $exam->publish_status ?? 'draft',
                     'className' => $examMetadata['className'],
                     'section' => $examMetadata['section'],
@@ -261,7 +262,7 @@ class ExamController extends Controller
                         return [
                             'id' => (string) $schedule->id,
                             'subject_id' => $schedule->subject_id,
-                            'subject' => $schedule->subject?->name ?? 'Subject',
+                            'subject' => $schedule->subject?->localized('name') ?? 'Subject',
                             'class' => $schedule->schoolClass?->name,
                             'section' => $schedule->schoolClass?->section,
                             'exam_date' => optional($schedule->exam_date)->format('Y-m-d'),
@@ -314,7 +315,7 @@ class ExamController extends Controller
             ->with([
                 'schedules' => fn ($query) => $query
                     ->with([
-                        'subject:id,name',
+                        'subject:id,name,name_mr,name_hi',
                         'results' => fn ($resultQuery) => $resultQuery->where('student_id', $student->id),
                         'schoolClass:id,name,section',
                     ])
@@ -339,7 +340,7 @@ class ExamController extends Controller
 
                     return [
                         'id' => (string) $schedule->id,
-                        'subject' => $schedule->subject?->name ?? 'Subject',
+                        'subject' => $schedule->subject?->localized('name') ?? 'Subject',
                         'exam_date' => optional($schedule->exam_date)->format('Y-m-d'),
                         'start_time' => $this->formatTimeForInput($schedule->start_time),
                         'end_time' => $this->formatTimeForInput($schedule->end_time),
@@ -361,7 +362,7 @@ class ExamController extends Controller
 
                 return [
                     'groupId' => (string) $exam->id,
-                    'name' => $exam->name,
+                    'name' => $exam->localized('name'),
                     'publishStatus' => $exam->publish_status ?? 'draft',
                     'className' => $examMetadata['className'],
                     'section' => $examMetadata['section'],
@@ -390,6 +391,8 @@ class ExamController extends Controller
                 'id' => (string) $student->id,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
+                'first_name_mr' => $student->first_name_mr,
+                'last_name_mr' => $student->last_name_mr,
                 'class' => $student->schoolClass?->name,
                 'section' => $student->schoolClass?->section,
                 'roll_number' => $student->roll_number,
@@ -421,7 +424,7 @@ class ExamController extends Controller
             ->get(['id', 'name'])
             ->map(fn (Subject $subject) => [
                 'id' => $subject->id,
-                'name' => $subject->name,
+                'name' => $subject->localized('name'),
             ])
             ->all();
     }
@@ -484,18 +487,11 @@ class ExamController extends Controller
         return Str::of($value)->substr(0, 5)->toString();
     }
 
-    private function resolveGrade(float $marksObtained, float $totalMarks): string
+    private function resolveGrade(float $marksObtained, float $totalMarks, ?Organization $organization = null): string
     {
         $percentage = $totalMarks > 0 ? ($marksObtained / $totalMarks) * 100 : 0;
 
-        if ($percentage >= 90) return 'A+';
-        if ($percentage >= 80) return 'A';
-        if ($percentage >= 70) return 'B+';
-        if ($percentage >= 60) return 'B';
-        if ($percentage >= 50) return 'C+';
-        if ($percentage >= 40) return 'C';
-
-        return 'F';
+        return GradingScaleService::gradeFor($percentage, $organization)['grade'] ?? 'F';
     }
 
     private function resolveOrganizationForUser(User $user): ?Organization

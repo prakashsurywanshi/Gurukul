@@ -1292,13 +1292,13 @@ class HostelManagementController extends Controller
                     ->whereNull('notes')
                     ->orWhere('notes', 'not like', '%' . self::HOSTEL_FEE_DELETED_NOTE . '%');
             })
-            ->with('feeStructure:id,fee_type')
+            ->with('feeStructure:id,fee_type,fee_type_mr,fee_type_hi')
             ->orderByDesc('due_date')
             ->orderByDesc('id')
             ->get()
             ->map(fn (StudentFee $fee) => [
                 'id' => (string) $fee->id,
-                'feeType' => $fee->feeStructure?->fee_type ?? 'Hostel Fee',
+                'feeType' => ($fee->feeStructure?->localized('fee_type') ?: 'Hostel Fee'),
                 'amount' => (float) $fee->amount,
                 'netAmount' => (float) $fee->net_amount,
                 'paidAmount' => (float) $fee->paid_amount,
@@ -1432,7 +1432,7 @@ class HostelManagementController extends Controller
             })
             ->with([
                 'student.schoolClass:id,name,section',
-                'feeStructure:id,fee_type',
+                'feeStructure:id,fee_type,fee_type_mr,fee_type_hi',
                 'payments' => fn ($query) => $query->with('collector:id,name')->orderByDesc('payment_date')->orderByDesc('id'),
             ])
             ->orderByDesc('due_date')
@@ -1449,7 +1449,7 @@ class HostelManagementController extends Controller
                     'class' => $fee->student?->schoolClass?->name ?? '',
                     'section' => $fee->student?->schoolClass?->section ?? '',
                     'hostelRoom' => $fee->student?->hostel_room ?? '',
-                    'feeType' => $fee->feeStructure?->fee_type ?? 'Hostel Fee',
+                    'feeType' => ($fee->feeStructure?->localized('fee_type') ?: 'Hostel Fee'),
                     'amount' => (float) $fee->amount,
                     'paidAmount' => (float) $fee->paid_amount,
                     'dueAmount' => (float) $fee->balance,

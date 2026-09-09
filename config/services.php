@@ -35,6 +35,24 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/sso/google/callback'),
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI', '/auth/sso/facebook/callback'),
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_REDIRECT_URI', '/auth/sso/github/callback'),
+    ],
+
     'firebase' => [
         'project_id' => env('FIREBASE_PROJECT_ID'),
         'credentials' => env('FIREBASE_CREDENTIALS'),
@@ -46,6 +64,11 @@ return [
         'country_code' => env('WHATSAPP_COUNTRY_CODE', '91'),
         'send_delay_min_seconds' => env('WHATSAPP_SEND_DELAY_MIN_SECONDS', 3),
         'send_delay_max_seconds' => env('WHATSAPP_SEND_DELAY_MAX_SECONDS', 6),
+    ],
+
+    'translation' => [
+        'provider' => env('TRANSLATION_PROVIDER', 'google'),
+        'timeout' => env('TRANSLATION_TIMEOUT', 8),
     ],
 
 ];

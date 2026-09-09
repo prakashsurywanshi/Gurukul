@@ -22,7 +22,7 @@ class EnsureOrganizationSubscriptionIsActive
             return $next($request);
         }
 
-        if ($request->session()->get('impersonator_role') === 'super_admin') {
+        if ($request->hasSession() && $request->session()->get('impersonator_role') === 'super_admin') {
             return $next($request);
         }
 
@@ -35,8 +35,11 @@ class EnsureOrganizationSubscriptionIsActive
         $message = $organization->accessRestrictionMessage() ?? 'Your organization account is currently unavailable.';
 
         Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         if ($request->expectsJson()) {
             return response()->json(['message' => $message], 403);

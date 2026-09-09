@@ -293,7 +293,7 @@ class ClassesController extends Controller
 
         $timetable = Timetable::query()
             ->where('organization_id', $organization->id)
-            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name'])
+            ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->findOrFail((int) $validated['timetableEntryId']);
         $this->abortUnlessCanManageLessonPlanForTimetable($user, $timetable);
 
@@ -458,7 +458,7 @@ class ClassesController extends Controller
             ->get()
             ->map(fn (Subject $subject) => [
                 'id' => (string) $subject->id,
-                'name' => $subject->name,
+                'name' => $subject->localized('name'),
                 'code' => $subject->code,
             ])
             ->all();
@@ -471,7 +471,7 @@ class ClassesController extends Controller
             ->when($teacherId, fn ($query) => $query->where('teacher_id', $teacherId))
             ->with([
                 'schoolClass:id,name,section,room_number',
-                'subject:id,name,code',
+                'subject:id,name,name_mr,name_hi,code',
                 'teacher:id,name',
             ])
             ->orderBy('day')
@@ -559,7 +559,7 @@ class ClassesController extends Controller
             ->when($teacherId, fn ($query) => $query->where('teacher_id', $teacherId))
             ->with([
                 'timetable:id,class_id,subject_id,teacher_id,day,period_code,start_time,end_time,room_number',
-                'subject:id,name',
+                'subject:id,name,name_mr,name_hi',
                 'teacher:id,name',
             ])
             ->orderBy('lesson_date')
@@ -656,7 +656,7 @@ class ClassesController extends Controller
             ->where('class_id', $validated['classId'])
             ->where('day', strtolower($validated['day']))
             ->where('period_code', $validated['periodId'])
-            ->with(['subject:id,name', 'teacher:id,name'])
+            ->with(['subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->when($currentEntry, fn ($query) => $query->where('id', '!=', $currentEntry->id))
             ->first();
 

@@ -9,9 +9,14 @@ use App\Models\RolePermission;
 use App\Models\User;
 use App\Models\WebsitePage;
 use App\Models\WebsiteSetting;
+use App\Services\DevanagariTransliterationService;
 use App\Services\KnowledgeBaseService;
+use App\Services\LanguageService;
+use App\Services\OnlinePaymentService;
 use App\Services\QwaService;
+use App\Services\SmsService;
 use App\Services\StaffPermissionService;
+use App\Services\TranslationService;
 use App\Support\RolePermissionCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -29,7 +34,10 @@ class SettingsController extends Controller
     public function __construct(
         private readonly StaffPermissionService $staffPermissionService,
         private readonly KnowledgeBaseService $knowledgeBaseService,
-        private readonly QwaService $qwaService
+        private readonly QwaService $qwaService,
+        private readonly LanguageService $languageService,
+        private readonly TranslationService $translationService,
+        private readonly SmsService $smsService
     )
     {
     }
@@ -73,6 +81,7 @@ class SettingsController extends Controller
             'user' => $user,
             'organization' => $organization,
             'sessionRecords' => $sessionRecords,
+            'languageSettings' => $this->languageService->payload($organization),
         ]);
     }
 
@@ -119,6 +128,26 @@ class SettingsController extends Controller
             'date_format' => $validated['dateFormat'],
         ];
 
+        $languageSettings = \App\Support\LanguageCatalog::normalize($organization->settings['language_settings'] ?? null);
+
+        if ($request->has('dualLanguageEnabled')) {
+            $languageSettings['dual_language_enabled'] = $request->boolean('dualLanguageEnabled');
+        }
+
+        if ($request->has('universalLanguageEnabled')) {
+            $languageSettings['universal_language_enabled'] = $request->boolean('universalLanguageEnabled');
+        }
+
+        if ($request->filled('regionalLanguage')) {
+            $languageSettings['regional_language'] = $request->input('regionalLanguage');
+        }
+
+        if ($request->has('availableUniversalLanguages')) {
+            $languageSettings['available_universal_languages'] = $request->input('availableUniversalLanguages');
+        }
+
+        $settings['language_settings'] = $languageSettings;
+
         $logo = $this->resolveOrganizationLogo($validated['logo'] ?? null, $organization);
 
         $organization->update([
@@ -150,6 +179,51 @@ class SettingsController extends Controller
             ]);
 
         return redirect()->route('settings')->with('success', 'General settings updated successfully.');
+    }
+
+    public function languageSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return inertia('dashboard/LanguageSettings', [
+            'user' => $user,
+            'languageSettings' => $this->languageService->payload($organization),
+        ]);
+    }
+
+    public function updateLanguageSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'dualLanguageEnabled' => ['required', 'boolean'],
+            'regionalLanguage' => ['required', 'alpha', Rule::in(\App\Support\LanguageCatalog::languageCodes())],
+            'universalLanguageEnabled' => ['required', 'boolean'],
+            'availableUniversalLanguages' => ['required', 'array', 'min:1'],
+            'availableUniversalLanguages.*' => ['required', 'alpha', Rule::in(\App\Support\LanguageCatalog::languageCodes())],
+        ]);
+
+        $languageSettings = \App\Support\LanguageCatalog::normalize([
+            'dual_language_enabled' => $validated['dualLanguageEnabled'],
+            'regional_language' => $validated['regionalLanguage'],
+            'universal_language_enabled' => $validated['universalLanguageEnabled'],
+            'available_universal_languages' => $validated['availableUniversalLanguages'],
+        ]);
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'language_settings' => $languageSettings,
+            ],
+        ]);
+
+        return redirect()->route('settings.language')->with('success', 'Language settings updated successfully.');
     }
 
     private function resolveOrganizationLogo(?string $logo, Organization $organization): ?string
@@ -946,6 +1020,7 @@ class SettingsController extends Controller
 
         $communicationSettings['qwa']['apiKey'] = $this->decryptSecret($communicationSettings['qwa']['apiKey'] ?? '');
         $communicationSettings['qwa']['webhookSecret'] = $this->decryptSecret($communicationSettings['qwa']['webhookSecret'] ?? '');
+        $communicationSettings['sms']['apiKey'] = $this->decryptSecret($communicationSettings['sms']['apiKey'] ?? '');
 
         return inertia('dashboard/CommunicationSettings', [
             'user' => $user,
@@ -967,6 +1042,7 @@ class SettingsController extends Controller
             'sms.provider' => ['required', 'string', 'max:255'],
             'sms.senderId' => ['nullable', 'string', 'max:50'],
             'sms.apiKey' => ['nullable', 'string', 'max:500'],
+            'sms.accountSid' => ['nullable', 'string', 'max:255'],
             'email.enabled' => ['required', 'boolean'],
             'email.mailer' => ['required', 'string', 'max:100'],
             'email.host' => ['nullable', 'string', 'max:255'],
@@ -1009,6 +1085,16 @@ class SettingsController extends Controller
 
         $validated['qwa'] = $qwa;
 
+        $sms = $validated['sms'] ?? [];
+
+        if (filled($sms['apiKey'] ?? '')) {
+            $sms['apiKey'] = Crypt::encryptString($sms['apiKey']);
+        } else {
+            $sms['apiKey'] = '';
+        }
+
+        $validated['sms'] = $sms;
+
         $organization->update([
             'settings' => [
                 ...($organization->settings ?? []),
@@ -1022,6 +1108,191 @@ class SettingsController extends Controller
         return redirect()
             ->route('settings.communication')
             ->with('success', 'Communication settings updated successfully.');
+    }
+
+    public function onlinePaymentSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $settings = $this->defaultOnlinePaymentSettings();
+
+        if ($organization) {
+            $settings = array_replace_recursive($settings, $organization->settings['online_payment'] ?? []);
+        }
+
+        $settings['razorpay_key_secret'] = filled($settings['razorpay_key_secret'] ?? '')
+            ? $this->decryptSecret($settings['razorpay_key_secret'])
+            : '';
+
+        return inertia('dashboard/OnlinePaymentSettings', [
+            'user' => $user,
+            'onlinePaymentSettings' => $settings,
+            'gatewayStatus' => [
+                'enabled' => (bool) $settings['enabled'],
+                'razorpayEnabled' => (bool) $settings['razorpay_enabled'],
+                'razorpayConfigured' => (bool) ($settings['razorpay_key_id'] ?? '') && (bool) ($settings['razorpay_key_secret'] ?? ''),
+                'razorpayMode' => $organization ? OnlinePaymentService::razorpayMode($organization) : null,
+                'razorpayAvailable' => $organization ? OnlinePaymentService::isAvailable($organization, 'razorpay') : false,
+                'upiEnabled' => (bool) $settings['upi_enabled'],
+                'upiConfigured' => (bool) ($settings['upi_id'] ?? '') && (bool) ($settings['upi_holder_name'] ?? ''),
+                'upiAvailable' => $organization ? OnlinePaymentService::isAvailable($organization, 'upi') : false,
+            ],
+        ]);
+    }
+
+    public function updateOnlinePaymentSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'razorpay_enabled' => ['required', 'boolean'],
+            'razorpay_key_id' => ['nullable', 'string', 'max:255'],
+            'razorpay_key_secret' => ['nullable', 'string', 'max:500'],
+            'razorpay_currency' => ['nullable', 'string', 'max:10'],
+            'upi_enabled' => ['required', 'boolean'],
+            'upi_id' => ['nullable', 'string', 'max:255'],
+            'upi_holder_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $settings = $validated;
+
+        if (filled($settings['razorpay_key_secret'] ?? '')) {
+            $settings['razorpay_key_secret'] = Crypt::encryptString($settings['razorpay_key_secret']);
+        } else {
+            $settings['razorpay_key_secret'] = '';
+        }
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'online_payment' => array_replace_recursive(
+                    $this->defaultOnlinePaymentSettings(),
+                    $settings
+                ),
+            ],
+        ]);
+
+        return redirect()
+            ->route('settings.online-payments')
+            ->with('success', 'Online payment settings updated successfully.');
+    }
+
+    public function checkOnlinePayments(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No organization is linked to this account.',
+            ], 403);
+        }
+
+        $enabled = (bool) (OnlinePaymentService::settings($organization)['enabled'] ?? false);
+        $razorpay = OnlinePaymentService::isAvailable($organization, 'razorpay');
+        $upi = OnlinePaymentService::isAvailable($organization, 'upi');
+        $razorpayMode = OnlinePaymentService::razorpayMode($organization);
+        $razorpayConfigured = (bool) (OnlinePaymentService::settings($organization)['razorpay_key_id'] ?? '')
+            && (bool) (OnlinePaymentService::settings($organization)['razorpay_key_secret'] ?? '');
+        $upiConfigured = (bool) (OnlinePaymentService::settings($organization)['upi_id'] ?? '')
+            && (bool) (OnlinePaymentService::settings($organization)['upi_holder_name'] ?? '');
+
+        if (! $enabled) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Online payments are currently disabled. Enable them to accept self-service fee payments.',
+                'enabled' => $enabled,
+                'razorpay' => $razorpay,
+                'upi' => $upi,
+                'razorpayMode' => $razorpayConfigured ? $razorpayMode : null,
+                'razorpayConfigured' => $razorpayConfigured,
+                'upiConfigured' => $upiConfigured,
+            ]);
+        }
+
+        $modes = collect()
+            ->push($razorpay ? 'Razorpay' : null)
+            ->push($upi ? 'Static UPI QR' : null)
+            ->filter()
+            ->implode(', ');
+
+        if ($modes === '') {
+            $missing = collect()
+                ->when(! $razorpayConfigured, fn ($collection) => $collection->push('Razorpay Key ID/Secret'))
+                ->when(! $upiConfigured, fn ($collection) => $collection->push('a UPI ID with holder name'))
+                ->values()
+                ->implode(' or ');
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Online payments are enabled but no gateway is configured. Provide '.$missing.'.',
+                'enabled' => $enabled,
+                'razorpay' => $razorpay,
+                'upi' => $upi,
+                'razorpayMode' => $razorpayConfigured ? $razorpayMode : null,
+                'razorpayConfigured' => $razorpayConfigured,
+                'upiConfigured' => $upiConfigured,
+            ]);
+        }
+
+        $modeNote = $razorpayMode === 'test'
+            ? ' Note: Razorpay is running in TEST mode, so payments will use the sandbox and will not reach the bank.'
+            : ($razorpayMode === 'live' ? '' : '');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Online payments are ready. Available modes: '.$modes.'.'.$modeNote,
+            'enabled' => $enabled,
+            'razorpay' => $razorpay,
+            'upi' => $upi,
+            'razorpayMode' => $razorpayConfigured ? $razorpayMode : null,
+            'razorpayConfigured' => $razorpayConfigured,
+            'upiConfigured' => $upiConfigured,
+        ]);
+    }
+
+    public function sendTestSms(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No organization is linked to this account.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'phone' => ['required', 'string', 'max:20'],
+            'message' => ['required', 'string', 'max:160'],
+        ]);
+
+        $smsSettings = $organization->settings['communication_settings']['sms'] ?? [];
+
+        if (! $this->smsService->isConfigured($smsSettings)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'SMS is not configured. Enable SMS and provide a valid provider API key first.',
+            ], 422);
+        }
+
+        $result = $this->smsService->send($smsSettings, $validated['phone'], $validated['message']);
+
+        return response()->json([
+            'success' => $result['success'],
+            'provider' => strtoupper((string) ($result['provider'] ?? 'SMS')),
+            'reference' => $result['reference'] ?? null,
+            'message' => $result['message'],
+        ], $result['success'] ? 200 : 422);
     }
 
     public function validateQwaConnection(Request $request): JsonResponse
@@ -1142,6 +1413,38 @@ class SettingsController extends Controller
                 ? 'QWA session is connected.'
                 : 'QWA session status: ' . $status,
         ]);
+    }
+
+    public function translateText(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'text' => ['required', 'string', 'max:2000'],
+            'target' => ['nullable', 'string', 'max:10'],
+            'source' => ['nullable', 'string', 'max:10'],
+        ]);
+
+        $target = trim((string) ($validated['target'] ?? 'mr'));
+        $source = trim((string) ($validated['source'] ?? 'en'));
+
+        if ($target === $source) {
+            return response()->json(['translated' => $validated['text']]);
+        }
+
+        $translated = $this->translationService->translate($validated['text'], $target, $source);
+
+        return response()->json(['translated' => $translated]);
+    }
+
+    public function transliterateText(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'text' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $transliterated = app(DevanagariTransliterationService::class)
+            ->transliterate($validated['text']);
+
+        return response()->json(['transliterated' => $transliterated]);
     }
 
     public function qwaStartSession(Request $request): JsonResponse
@@ -1383,6 +1686,7 @@ class SettingsController extends Controller
                 'provider' => 'MSG91',
                 'senderId' => 'GURUKL',
                 'apiKey' => '',
+                'accountSid' => '',
             ],
             'email' => [
                 'enabled' => true,
@@ -1417,5 +1721,41 @@ class SettingsController extends Controller
                 'webhookSecret' => '',
             ],
         ];
+    }
+
+    private function defaultOnlinePaymentSettings(): array
+    {
+        return [
+            'enabled' => false,
+            'razorpay_enabled' => true,
+            'razorpay_key_id' => '',
+            'razorpay_key_secret' => '',
+            'razorpay_currency' => 'INR',
+            'upi_enabled' => true,
+            'upi_id' => '',
+            'upi_holder_name' => '',
+        ];
+    }
+
+    public function ssoSettings()
+    {
+        $user = Auth::user();
+
+        $providers = [];
+        foreach (['google', 'facebook', 'github'] as $provider) {
+            $clientId = config("services.{$provider}.client_id");
+            $clientSecret = config("services.{$provider}.client_secret");
+            $providers[] = [
+                'name' => (string) $provider,
+                'configured' => (bool) ($clientId && $clientSecret),
+            ];
+        }
+
+        return inertia('dashboard/SSOSettings', [
+            'user' => $user,
+            'enabled' => (bool) env('SSO_ENABLED', false),
+            'installed' => class_exists(\Laravel\Socialite\Facades\Socialite::class),
+            'providers' => $providers,
+        ]);
     }
 }

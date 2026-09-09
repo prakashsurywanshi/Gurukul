@@ -75,7 +75,7 @@ class HomeworkController extends Controller
             'class_id' => $schoolClass->id,
             'subject_id' => $subject->id,
             'teacher_id' => $user->id,
-            'title' => sprintf('%s Homework - %s', $subject->name, $validated['homeworkDate']),
+            'title' => sprintf('%s Homework - %s', $subject->localized('name'), $validated['homeworkDate']),
             'description' => $validated['description'],
             'assign_date' => $validated['homeworkDate'],
             'due_date' => $validated['submissionDate'],
@@ -246,7 +246,7 @@ class HomeworkController extends Controller
     {
         $query = Homework::query()
             ->where('organization_id', $organization->id)
-            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name', 'submissions.student.schoolClass:id,name,section'])
+            ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name', 'submissions.student.schoolClass:id,name,section'])
             ->latest('assign_date')
             ->latest('id');
 
@@ -266,7 +266,7 @@ class HomeworkController extends Controller
                 'classId' => (string) $homework->class_id,
                 'className' => (string) ($homework->schoolClass?->name ?? ''),
                 'section' => (string) ($homework->schoolClass?->section ?? ''),
-                'subjectName' => (string) ($homework->subject?->name ?? ''),
+                'subjectName' => (string) ($homework->subject?->localized('name') ?? ''),
                 'teacherName' => (string) ($homework->teacher?->name ?? ''),
                 'homeworkDate' => optional($homework->assign_date)->format('Y-m-d') ?? '',
                 'submissionDate' => optional($homework->due_date)->format('Y-m-d') ?? '',
@@ -304,7 +304,7 @@ class HomeworkController extends Controller
             ->whereHas('homework', fn ($query) => $query->where('organization_id', $organization->id))
             ->with([
                 'homework.schoolClass:id,name,section',
-                'homework.subject:id,name',
+                'homework.subject:id,name,name_mr,name_hi',
                 'student.schoolClass:id,name,section',
             ])
             ->latest('submitted_at')
@@ -317,7 +317,7 @@ class HomeworkController extends Controller
                     'studentName' => trim(($submission->student?->first_name ?? '') . ' ' . ($submission->student?->last_name ?? '')),
                     'className' => (string) ($submission->homework?->schoolClass?->name ?? ''),
                     'section' => (string) ($submission->homework?->schoolClass?->section ?? ''),
-                    'subjectName' => (string) ($submission->homework?->subject?->name ?? ''),
+                    'subjectName' => (string) ($submission->homework?->subject?->localized('name') ?? ''),
                     'homeworkDate' => optional($submission->homework?->assign_date)->format('Y-m-d') ?? '',
                     'submissionDate' => optional($submission->homework?->due_date)->format('Y-m-d') ?? '',
                     'submittedAt' => optional($submission->submitted_at)->format('Y-m-d H:i') ?? '',
@@ -362,7 +362,7 @@ class HomeworkController extends Controller
             ->get()
             ->map(fn (Subject $subject) => [
                 'id' => (string) $subject->id,
-                'name' => (string) $subject->name,
+                'name' => (string) $subject->localized('name'),
             ])
             ->all();
     }

@@ -1357,7 +1357,7 @@ class TransportManagementController extends Controller
             ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'like', self::TRANSPORT_FEE_PREFIX . '%'))
             ->with([
                 'student.schoolClass:id,name,section',
-                'feeStructure:id,fee_type',
+                'feeStructure:id,fee_type,fee_type_mr,fee_type_hi',
                 'transportAssignment.route:id,route_name',
                 'transportAssignment.vehicle:id,vehicle_number',
                 'payments' => fn ($query) => $query->with('collector:id,name')->orderByDesc('payment_date')->orderByDesc('id'),
@@ -1384,7 +1384,7 @@ class TransportManagementController extends Controller
                     'vehicleNumber' => $vehicle?->vehicle_number ?? '',
                     'month' => $fee->month ?? '',
                     'year' => (int) $fee->year,
-                    'feeType' => $fee->feeStructure?->fee_type ?? '',
+                    'feeType' => ($fee->feeStructure?->localized('fee_type') ?: ''),
                     'amount' => (float) $fee->amount,
                     'paidAmount' => (float) $fee->paid_amount,
                     'dueAmount' => (float) $fee->balance,

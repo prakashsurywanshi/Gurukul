@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Localizable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CertificateTemplate extends Model
 {
     use HasFactory;
+    use Localizable;
 
     protected $fillable = [
         'organization_id',

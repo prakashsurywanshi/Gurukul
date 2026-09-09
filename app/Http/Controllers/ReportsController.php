@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\AcademicYear;
 use App\Models\ActivityLog;
 use App\Models\AlumniRecord;
@@ -114,7 +115,7 @@ class ReportsController extends Controller
             'generatedAt' => now()->format('d M Y, h:i A'),
         ])->render();
 
-        $pdf = \Barryvdh\DomPDF\PDF::loadHTML($html)
+        $pdf = Pdf::loadHTML($html)
             ->setPaper('a4', 'landscape')
             ->setOption('isRemoteEnabled', true);
 
@@ -237,9 +238,9 @@ class ReportsController extends Controller
                 ])
                     ->when($selectedClass !== 'all', fn ($scheduleQuery) => $scheduleQuery->where('class_id', $selectedClass));
             })
-            ->with('examSchedule.subject:id,name')
+            ->with('examSchedule.subject:id,name,name_mr,name_hi')
             ->get()
-            ->groupBy(fn ($result) => $result->examSchedule?->subject?->name ?? 'Unknown')
+            ->groupBy(fn ($result) => $result->examSchedule?->subject?->localized('name') ?? 'Unknown')
             ->map(fn ($results, $subject) => [
                 'subject' => $subject,
                 'average' => round($results->avg(fn ($result) => (float) $result->obtained_marks), 1),
@@ -454,7 +455,7 @@ class ReportsController extends Controller
             ->when($search !== '', fn ($q) => $q->whereHas('student', fn ($sq) => $sq->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")));
 
         $paginator = (clone $query)
-            ->with(['student.schoolClass:id,name,section', 'feeStructure:id,fee_type'])
+            ->with(['student.schoolClass:id,name,section', 'feeStructure:id,fee_type,fee_type_mr,fee_type_hi'])
             ->orderBy('due_date')
             ->paginate(15, ['*'], 'page', $page);
 
@@ -483,7 +484,7 @@ class ReportsController extends Controller
             'rows' => collect($paginator->items())->map(fn (StudentFee $fee) => [
                 trim(($fee->student?->first_name ?? '') . ' ' . ($fee->student?->last_name ?? '')) ?: '-',
                 $this->classLabel($fee->student?->schoolClass),
-                $fee->feeStructure?->fee_type ?: 'General Fee',
+                ($fee->feeStructure?->localized('fee_type') ?: 'General Fee'),
                 $this->money((float) $fee->net_amount),
                 $this->money((float) $fee->paid_amount),
                 $this->money((float) $fee->balance),
@@ -515,8 +516,8 @@ class ReportsController extends Controller
         $paginator = (clone $query)
             ->with([
                 'student.schoolClass:id,name,section',
-                'examSchedule.subject:id,name',
-                'examSchedule.exam:id,name',
+                'examSchedule.subject:id,name,name_mr,name_hi',
+                'examSchedule.exam:id,name,name_mr,name_hi',
             ])
             ->latest('id')
             ->paginate(15, ['*'], 'page', $page);
@@ -536,7 +537,7 @@ class ReportsController extends Controller
                 $result->examSchedule?->exam?->name ?: 'Exam',
                 trim(($result->student?->first_name ?? '') . ' ' . ($result->student?->last_name ?? '')) ?: '-',
                 $this->classLabel($result->student?->schoolClass),
-                $result->examSchedule?->subject?->name ?: '-',
+                $result->examSchedule?->subject?->localized('name') ?: '-',
                 $result->is_absent ? 'Absent' : ($result->obtained_marks . ' / ' . $result->total_marks),
                 $result->grade ?: '-',
                 $result->is_absent ? 'Absent' : 'Evaluated',
@@ -905,7 +906,7 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
-            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name'])
+            ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass))
             ->when($search !== '', fn ($q) => $q->where('lesson_title', 'like', "%{$search}%")->orWhere('topic', 'like', "%{$search}%"))
             ->latest('lesson_date');
@@ -936,7 +937,7 @@ class ReportsController extends Controller
             'rows' => collect($paginator->items())->map(fn (LessonPlan $plan) => [
                 optional($plan->lesson_date)->format('d M Y') ?: '-',
                 $this->classLabel($plan->schoolClass),
-                $plan->subject?->name ?: '-',
+                $plan->subject?->localized('name') ?: '-',
                 $plan->teacher?->name ?: '-',
                 $plan->lesson_title ?: '-',
                 ucfirst(str_replace('_', ' ', (string) $plan->status)),
@@ -1024,7 +1025,7 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
-            ->with(['schoolClass:id,name,section', 'subject:id,name', 'teacher:id,name', 'submissions'])
+            ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name', 'submissions'])
             ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass))
             ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%"))
             ->latest('assign_date');
@@ -1066,7 +1067,7 @@ class ReportsController extends Controller
             ],
             'rows' => collect($paginator->items())->map(fn (Homework $hw) => [
                 optional($hw->assign_date)->format('d M Y') ?: '-',
-                $hw->subject?->name ?: '-',
+                $hw->subject?->localized('name') ?: '-',
                 $this->classLabel($hw->schoolClass),
                 $hw->teacher?->name ?: '-',
                 (string) $hw->submissions()->count(),

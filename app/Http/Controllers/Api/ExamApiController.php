@@ -191,7 +191,7 @@ class ExamApiController extends Controller
                     'obtained_marks' => $marksObtained,
                     'grade' => $grade,
                     'is_absent' => false,
-                    'remarks' => $examSchedule->subject?->name ? $examSchedule->subject->name . ' | Total: ' . $examSchedule->max_marks : null,
+                    'remarks' => $examSchedule->subject?->localized('name') ? $examSchedule->subject->localized('name') . ' | Total: ' . $examSchedule->max_marks : null,
                     'entered_by' => $user->id,
                 ]
             );
@@ -243,11 +243,11 @@ class ExamApiController extends Controller
                     'class' => $student->schoolClass?->name,
                     'section' => $student->schoolClass?->section,
                     'exam_id' => (string) $exam->id,
-                    'exam_name' => $exam->name,
+                    'exam_name' => $exam->localized('name'),
                     'start_date' => $exam->start_date?->format('Y-m-d'),
                     'end_date' => $exam->end_date?->format('Y-m-d'),
                     'subjects' => $exam->schedules->map(fn ($s) => [
-                        'subject' => $s->subject?->name ?? 'Subject',
+                        'subject' => $s->subject?->localized('name') ?? 'Subject',
                         'exam_date' => $s->exam_date?->format('Y-m-d'),
                         'start_time' => $this->formatTimeForInput($s->start_time),
                         'end_time' => $this->formatTimeForInput($s->end_time),
@@ -275,7 +275,7 @@ class ExamApiController extends Controller
 
         $exams = Exam::where('organization_id', $organization->id)
             ->when($examId, fn ($q) => $q->where('id', $examId))
-            ->with(['schedules' => fn ($q) => $q->with(['subject:id,name', 'results' => fn ($r) => $r->with('student:id,first_name,last_name,admission_no,roll_number,school_class_id')])])
+            ->with(['schedules' => fn ($q) => $q->with(['subject:id,name,name_mr,name_hi', 'results' => fn ($r) => $r->with('student:id,first_name,last_name,admission_no,roll_number,school_class_id')])])
             ->orderByDesc('created_at')
             ->get();
 
@@ -294,7 +294,7 @@ class ExamApiController extends Controller
                 foreach ($exam->schedules as $schedule) {
                     $result = $schedule->results->firstWhere('student_id', $student->id);
                     $subjectResults[] = [
-                        'subject' => $schedule->subject?->name ?? 'Subject',
+                        'subject' => $schedule->subject?->localized('name') ?? 'Subject',
                         'max_marks' => (float) $schedule->max_marks,
                         'obtained_marks' => $result ? (float) $result->obtained_marks : null,
                         'grade' => $result?->grade,
@@ -314,7 +314,7 @@ class ExamApiController extends Controller
                     'class' => $student->schoolClass?->name,
                     'section' => $student->schoolClass?->section,
                     'exam_id' => (string) $exam->id,
-                    'exam_name' => $exam->name,
+                    'exam_name' => $exam->localized('name'),
                     'subjects' => $subjectResults,
                     'total_max_marks' => $totalMax,
                     'total_obtained_marks' => $totalObtained,
@@ -358,7 +358,7 @@ class ExamApiController extends Controller
     private function getExamGroups(Organization $organization): array
     {
         return Exam::where('organization_id', $organization->id)
-            ->with(['schedules.subject:id,name', 'schedules.results.student:id,first_name,last_name,class_id,roll_number', 'schedules.schoolClass:id,name,section'])
+            ->with(['schedules.subject:id,name,name_mr,name_hi', 'schedules.results.student:id,first_name,last_name,class_id,roll_number', 'schedules.schoolClass:id,name,section'])
             ->orderByDesc('created_at')
             ->get()
             ->map(fn (Exam $exam) => $this->serializeExamGroup($exam))
@@ -370,7 +370,7 @@ class ExamApiController extends Controller
         $metadata = $this->decodeExamMetadata($exam);
         return [
             'group_id' => (string) $exam->id,
-            'name' => $exam->name,
+            'name' => $exam->localized('name'),
             'publish_status' => $exam->publish_status ?? 'draft',
             'class_name' => $metadata['className'],
             'section' => $metadata['section'],
@@ -382,7 +382,7 @@ class ExamApiController extends Controller
                 return [
                     'id' => (string) $schedule->id,
                     'subject_id' => $schedule->subject_id,
-                    'subject' => $schedule->subject?->name ?? 'Subject',
+                    'subject' => $schedule->subject?->localized('name') ?? 'Subject',
                     'class' => $schedule->schoolClass?->name,
                     'section' => $schedule->schoolClass?->section,
                     'exam_date' => $schedule->exam_date?->format('Y-m-d'),
@@ -409,7 +409,7 @@ class ExamApiController extends Controller
         if (!$className || !$section) return [];
 
         return Exam::where('organization_id', $organization->id)
-            ->with(['schedules' => fn ($q) => $q->with(['subject:id,name', 'results' => fn ($r) => $r->where('student_id', $student->id), 'schoolClass:id,name,section'])->orderBy('exam_date')->orderBy('start_time')])
+            ->with(['schedules' => fn ($q) => $q->with(['subject:id,name,name_mr,name_hi', 'results' => fn ($r) => $r->where('student_id', $student->id), 'schoolClass:id,name,section'])->orderBy('exam_date')->orderBy('start_time')])
             ->orderByDesc('created_at')
             ->get()
             ->map(function (Exam $exam) use ($className, $section, $student) {
@@ -425,7 +425,7 @@ class ExamApiController extends Controller
 
                     return [
                         'id' => (string) $schedule->id,
-                        'subject' => $schedule->subject?->name ?? 'Subject',
+                        'subject' => $schedule->subject?->localized('name') ?? 'Subject',
                         'exam_date' => $schedule->exam_date?->format('Y-m-d'),
                         'start_time' => $this->formatTimeForInput($schedule->start_time),
                         'end_time' => $this->formatTimeForInput($schedule->end_time),
@@ -444,7 +444,7 @@ class ExamApiController extends Controller
 
                 return [
                     'group_id' => (string) $exam->id,
-                    'name' => $exam->name,
+                    'name' => $exam->localized('name'),
                     'publish_status' => $exam->publish_status ?? 'draft',
                     'class_name' => $metadata['className'],
                     'section' => $metadata['section'],
@@ -492,7 +492,7 @@ class ExamApiController extends Controller
         return Subject::where('organization_id', $organization->id)
             ->orderBy('name')
             ->get(['id', 'name'])
-            ->map(fn (Subject $s) => ['id' => $s->id, 'name' => $s->name])
+            ->map(fn (Subject $s) => ['id' => $s->id, 'name' => $s->localized('name')])
             ->all();
     }
 

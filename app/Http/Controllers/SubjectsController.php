@@ -27,7 +27,7 @@ class SubjectsController extends Controller
                     ->get()
                     ->map(fn (Subject $subject) => [
                         'id' => $subject->id,
-                        'name' => $subject->name,
+                        'name' => $subject->localized('name'),
                         'code' => $subject->code,
                         'type' => $subject->type,
                         'description' => $subject->description,

@@ -129,8 +129,10 @@ class CertificateController extends Controller
             'student_ids' => ['required', 'array', 'min:1'],
             'student_ids.*' => ['required', 'integer'],
             'reason' => ['nullable', 'string', 'max:2000'],
+            'reason_mr' => ['nullable', 'string', 'max:2000'],
             'date' => ['required', 'date'],
             'issued_by' => ['nullable', 'string', 'max:255'],
+            'language' => ['nullable', 'string', 'max:10', Rule::in(['en', 'mr', 'hi'])],
         ]);
 
         $template = CertificateTemplate::query()
@@ -158,11 +160,19 @@ class CertificateController extends Controller
                 'student_id' => $student->id,
                 'certificate_number' => $this->generateCertificateNumber($organization),
                 'student_name' => trim($student->first_name . ' ' . $student->last_name),
+                'student_name_mr' => $this->regionalStudentName($student, 'mr'),
+                'student_name_hi' => $this->regionalStudentName($student, 'hi'),
                 'class' => $student->schoolClass?->name ?? '',
+                'class_mr' => $student->schoolClass?->name ?? '',
+                'class_hi' => $student->schoolClass?->name ?? '',
                 'section' => $student->schoolClass?->section ?? '',
+                'section_mr' => $student->schoolClass?->section ?? '',
+                'section_hi' => $student->schoolClass?->section ?? '',
                 'reason' => $validated['reason'] ?: $template->description ?: 'Certificate issued',
+                'reason_mr' => ($validated['reason_mr'] ?? null) ?: null,
+                'reason_hi' => ($validated['reason_hi'] ?? null) ?: null,
                 'issue_date' => $validated['date'],
-                'issued_by' => $validated['issued_by'] ?: $user->name,
+                'issued_by' => ($validated['issued_by'] ?? null) ?: $user->name,
                 'issued_by_designation' => 'Principal',
                 'created_by' => $user->id,
             ]);
@@ -216,9 +226,9 @@ class CertificateController extends Controller
             ->get()
             ->map(fn (CertificateTemplate $template) => [
                 'id' => (string) $template->id,
-                'title' => $template->title,
+                'title' => $template->localized('title'),
                 'type' => $template->type,
-                'description' => $template->description,
+                'description' => $template->localized('description'),
                 'createdAt' => optional($template->created_at)->format('Y-m-d'),
                 'issuedTo' => $template->issued_certificates_count,
                 'templateData' => $this->normalizeTemplateData($template->design_settings, $organization->name),
@@ -238,7 +248,9 @@ class CertificateController extends Controller
                 'id' => (string) $student->id,
                 'admission_no' => $student->admission_no,
                 'first_name' => $student->first_name,
+                'first_name_mr' => $student->first_name_mr,
                 'last_name' => $student->last_name,
+                'last_name_mr' => $student->last_name_mr,
                 'class' => $student->schoolClass?->name,
                 'section' => $student->schoolClass?->section,
             ])
@@ -259,7 +271,9 @@ class CertificateController extends Controller
                 'admission_no' => $student->admission_no,
                 'roll_number' => $student->roll_number,
                 'first_name' => $student->first_name,
+                'first_name_mr' => $student->first_name_mr,
                 'last_name' => $student->last_name,
+                'last_name_mr' => $student->last_name_mr,
                 'class' => $student->schoolClass?->name,
                 'section' => $student->schoolClass?->section,
                 'email' => $student->email,
@@ -267,8 +281,11 @@ class CertificateController extends Controller
                 'gender' => $student->gender,
                 'blood_group' => $student->blood_group,
                 'father_name' => $student->father_name,
+                'father_name_mr' => $student->father_name_mr,
                 'mother_name' => $student->mother_name,
+                'mother_name_mr' => $student->mother_name_mr,
                 'address' => $student->current_address ?: $student->permanent_address,
+                'address_mr' => $student->address_mr,
             ])
             ->all();
     }
@@ -291,10 +308,14 @@ class CertificateController extends Controller
                 'templateType' => $issuedCertificate->template?->type ?? null,
                 'studentId' => $issuedCertificate->student_id ? (string) $issuedCertificate->student_id : null,
                 'studentName' => $issuedCertificate->student_name,
+                'studentNameMr' => $issuedCertificate->student_name_mr,
                 'admissionNo' => $issuedCertificate->student?->admission_no,
                 'class' => $issuedCertificate->class,
+                'classMr' => $issuedCertificate->class_mr,
                 'section' => $issuedCertificate->section,
+                'sectionMr' => $issuedCertificate->section_mr,
                 'reason' => $issuedCertificate->reason,
+                'reasonMr' => $issuedCertificate->reason_mr,
                 'issueDate' => optional($issuedCertificate->issue_date)->format('Y-m-d'),
                 'issuedBy' => $issuedCertificate->issued_by,
                 'issuedByDesignation' => $issuedCertificate->issued_by_designation,
@@ -323,10 +344,14 @@ class CertificateController extends Controller
                 'templateType' => $issuedCertificate->template?->type ?? null,
                 'description' => $issuedCertificate->template?->description,
                 'studentName' => $issuedCertificate->student_name,
+                'studentNameMr' => $issuedCertificate->student_name_mr,
                 'admissionNo' => $student->admission_no,
                 'class' => $issuedCertificate->class,
+                'classMr' => $issuedCertificate->class_mr,
                 'section' => $issuedCertificate->section,
+                'sectionMr' => $issuedCertificate->section_mr,
                 'reason' => $issuedCertificate->reason,
+                'reasonMr' => $issuedCertificate->reason_mr,
                 'issueDate' => optional($issuedCertificate->issue_date)->format('Y-m-d'),
                 'issuedBy' => $issuedCertificate->issued_by,
                 'issuedByDesignation' => $issuedCertificate->issued_by_designation,
@@ -342,9 +367,21 @@ class CertificateController extends Controller
             'admission_no' => $student->admission_no,
             'first_name' => $student->first_name,
             'last_name' => $student->last_name,
+            'first_name_mr' => $student->first_name_mr,
+            'last_name_mr' => $student->last_name_mr,
             'class' => $student->schoolClass?->name,
             'section' => $student->schoolClass?->section,
         ];
+    }
+
+    private function regionalStudentName(Student $student, string $language = 'mr'): ?string
+    {
+        $suffix = $language === 'hi' ? 'hi' : 'mr';
+        $firstName = $student->{'first_name_'.$suffix} ?? '';
+        $lastName = $student->{'last_name_'.$suffix} ?? '';
+        $regionalName = trim($firstName . ' ' . $lastName);
+
+        return $regionalName !== '' ? $regionalName : null;
     }
 
     private function normalizeTemplateData(?array $templateData, string $schoolName): array
