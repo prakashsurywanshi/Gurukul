@@ -126,6 +126,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'enter-marks',
         'exam-schedule-setup',
         'chapters-topics',
+        'assign-class-teacher',
     ];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
@@ -899,6 +900,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Chapters & Topics',
             icon: FolderTree,
             href: '/chapters-topics',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'assign-class-teacher',
+            label: 'Assign Class Teacher',
+            icon: UserCog,
+            href: '/assign-class-teacher',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },

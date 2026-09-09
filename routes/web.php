@@ -19,6 +19,7 @@ use App\Http\Controllers\ExamMarksController;
 use App\Http\Controllers\ExamScheduleSetupController;
 use App\Http\Controllers\ExamTypeController;
 use App\Http\Controllers\GradeScaleController;
+use App\Http\Controllers\AssignClassTeacherController;
 use App\Http\Controllers\ChapterTopicController;
 use App\Http\Controllers\EventsController;
 use App\Http\Controllers\HelpdeskController;
@@ -317,6 +318,8 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::post('/chapters-topics', [ChapterTopicController::class, 'store'])->middleware('staff.permission:Exam Management,edit')->name('chapters-topics.store');
     Route::put('/chapters-topics/{chapter}', [ChapterTopicController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('chapters-topics.update');
     Route::delete('/chapters-topics/{chapter}', [ChapterTopicController::class, 'destroy'])->middleware('staff.permission:Exam Management,edit')->name('chapters-topics.destroy');
+    Route::get('/assign-class-teacher', [AssignClassTeacherController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('assign-class-teacher');
+    Route::post('/assign-class-teacher', [AssignClassTeacherController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('assign-class-teacher.update');
     Route::post('/exam-types', [ExamTypeController::class, 'store'])->middleware('staff.permission:Exam Management,add')->name('exam-types.store');
     Route::patch('/exam-types/{examType}', [ExamTypeController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('exam-types.update');
     Route::delete('/exam-types/{examType}', [ExamTypeController::class, 'destroy'])->middleware('staff.permission:Exam Management,delete')->name('exam-types.destroy');
