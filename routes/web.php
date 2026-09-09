@@ -19,6 +19,7 @@ use App\Http\Controllers\ExamMarksController;
 use App\Http\Controllers\ExamScheduleSetupController;
 use App\Http\Controllers\ExamTypeController;
 use App\Http\Controllers\GradeScaleController;
+use App\Http\Controllers\ChapterTopicController;
 use App\Http\Controllers\EventsController;
 use App\Http\Controllers\HelpdeskController;
 use App\Http\Controllers\OnlineClassController;
@@ -312,6 +313,10 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::post('/exam-schedule', [ExamScheduleSetupController::class, 'save'])->middleware('staff.permission:Exam Management,edit')->name('exam-schedule.save');
     Route::get('/exams/marks/entry', [ExamMarksController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams.marks.entry');
     Route::post('/exams/marks/save', [ExamMarksController::class, 'save'])->middleware('staff.permission:Exam Management,edit')->name('exams.marks.save');
+    Route::get('/chapters-topics', [ChapterTopicController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('chapters-topics');
+    Route::post('/chapters-topics', [ChapterTopicController::class, 'store'])->middleware('staff.permission:Exam Management,edit')->name('chapters-topics.store');
+    Route::put('/chapters-topics/{chapter}', [ChapterTopicController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('chapters-topics.update');
+    Route::delete('/chapters-topics/{chapter}', [ChapterTopicController::class, 'destroy'])->middleware('staff.permission:Exam Management,edit')->name('chapters-topics.destroy');
     Route::post('/exam-types', [ExamTypeController::class, 'store'])->middleware('staff.permission:Exam Management,add')->name('exam-types.store');
     Route::patch('/exam-types/{examType}', [ExamTypeController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('exam-types.update');
     Route::delete('/exam-types/{examType}', [ExamTypeController::class, 'destroy'])->middleware('staff.permission:Exam Management,delete')->name('exam-types.destroy');

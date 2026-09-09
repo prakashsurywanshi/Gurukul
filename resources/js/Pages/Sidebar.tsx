@@ -58,6 +58,7 @@ import {
     QrCode,
     FileSpreadsheet,
     FolderOpen,
+    FolderTree,
     FileClock,
     HelpCircle,
     LibraryBig,
@@ -124,6 +125,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'manage-grades',
         'enter-marks',
         'exam-schedule-setup',
+        'chapters-topics',
     ];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
@@ -889,6 +891,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Schedule Setup',
             icon: CalendarRange,
             href: '/exam-schedule',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'chapters-topics',
+            label: 'Chapters & Topics',
+            icon: FolderTree,
+            href: '/chapters-topics',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },
