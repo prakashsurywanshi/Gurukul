@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatesheetController;
 use App\Http\Controllers\EbookLibraryController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\ExamTypeController;
 use App\Http\Controllers\EventsController;
 use App\Http\Controllers\HelpdeskController;
 use App\Http\Controllers\OnlineClassController;
@@ -301,6 +302,10 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::get('/exams/hall-ticket', [ExamController::class, 'hallTicket'])->middleware('staff.permission:Hall Ticket,view')->name('exams.hall-ticket');
     Route::get('/exams/print-marksheet', [ExamController::class, 'printMarksheet'])->middleware('staff.permission:Print Marksheet,view')->name('exams.print-marksheet');
     Route::get('/exams/report-card', [ReportCardController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams.report-card');
+    Route::get('/exam-types', [ExamTypeController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exam-types');
+    Route::post('/exam-types', [ExamTypeController::class, 'store'])->middleware('staff.permission:Exam Management,add')->name('exam-types.store');
+    Route::patch('/exam-types/{examType}', [ExamTypeController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('exam-types.update');
+    Route::delete('/exam-types/{examType}', [ExamTypeController::class, 'destroy'])->middleware('staff.permission:Exam Management,delete')->name('exam-types.destroy');
     Route::post('/exams/report-card/grading-scale', [ReportCardController::class, 'saveGradeScale'])->middleware('staff.permission:Exam Management,edit')->name('exams.report-card.grading-scale');
     Route::get('/datesheets', [DatesheetController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('datesheets');
     Route::get('/datesheets/{exam}', [DatesheetController::class, 'show'])->middleware('staff.permission:Exam Management,view')->name('datesheets.show');

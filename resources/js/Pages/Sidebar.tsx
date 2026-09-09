@@ -114,7 +114,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'complains',
     ];
 
-    const examTabs = ['examination', 'hall-ticket', 'print-marksheet', 'report-card', 'datesheets'];
+    const examTabs = ['examination', 'hall-ticket', 'print-marksheet', 'report-card', 'datesheets', 'exam-types'];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
         'communication',
@@ -847,6 +847,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Datesheet',
             icon: CalendarRange,
             href: '/datesheets',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'exam-types',
+            label: 'Exam Types',
+            icon: ShieldCheck,
+            href: '/exam-types',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },
