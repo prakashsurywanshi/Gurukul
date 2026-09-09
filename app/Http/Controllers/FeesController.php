@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\ExpenseEntry;
+use App\Models\FeeAudit;
 use App\Models\FeePayment;
 use App\Models\FeeStructure;
 use App\Models\FeeType;
@@ -14,20 +15,29 @@ use App\Models\Student;
 use App\Models\StudentAcademicHistory;
 use App\Models\StudentFee;
 use App\Models\User;
+use App\Services\AccountTransactionService;
+use App\Services\FeeAuditService;
 use App\Services\StudentAcademicHistoryService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Number;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
+use Throwable;
 
 class FeesController extends Controller
 {
     private const HOSTEL_FEE_PREFIX = 'Hostel Fee%';
     private const TRANSPORT_FEE_PREFIX = 'Transport Fee - %';
 
-    public function __construct(private readonly StudentAcademicHistoryService $studentAcademicHistoryService)
-    {
+    public function __construct(
+        private readonly StudentAcademicHistoryService $studentAcademicHistoryService,
+        private readonly FeeAuditService $feeAuditService,
+        private readonly AccountTransactionService $accountTransactionService
+    ) {
     }
 
     public function index() {
@@ -69,6 +79,7 @@ class FeesController extends Controller
             'feeTypes' => $organization ? $this->getFeeTypes($organization) : [],
             'feeStructures' => $organization ? $this->getFeeStructures($organization) : [],
             'studentFeeRecords' => $organization ? $this->getStudentFeeRecords($organization) : [],
+            'academicSessions' => $organization ? $this->getAcademicSessions($organization) : [],
         ]);
     }
 
@@ -89,6 +100,13 @@ class FeesController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'status' => 'active',
+        ]);
+
+        $this->feeAuditService->log($organization, 'fee_type.created', Auth::user(), [
+            'meta' => [
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+            ],
         ]);
 
         return redirect()->route('fees')->with('success', 'Fee type created successfully.');
@@ -118,6 +136,13 @@ class FeesController extends Controller
             ->where('fee_type', $previousName)
             ->update(['fee_type' => $validated['name']]);
 
+        $this->feeAuditService->log($organization, 'fee_type.updated', Auth::user(), [
+            'meta' => [
+                'previous_name' => $previousName,
+                'name' => $validated['name'],
+            ],
+        ]);
+
         return redirect()->route('fees')->with('success', 'Fee type updated successfully.');
     }
 
@@ -126,7 +151,14 @@ class FeesController extends Controller
         $organization = $this->resolveOrganizationForUser(Auth::user());
         abort_unless($organization && $feeType->organization_id === $organization->id, 403);
 
+        $name = $feeType->name;
         $feeType->delete();
+
+        $this->feeAuditService->log($organization, 'fee_type.deleted', Auth::user(), [
+            'meta' => [
+                'name' => $name,
+            ],
+        ]);
 
         return redirect()->route('fees')->with('success', 'Fee type deleted successfully.');
     }
@@ -179,7 +211,7 @@ class FeesController extends Controller
             'status' => ['required', Rule::in(['received', 'pending'])],
         ]);
 
-        IncomeEntry::query()->create([
+        $incomeEntry = IncomeEntry::query()->create([
             'organization_id' => $organization->id,
             'academic_year_id' => $activeAcademicYearId,
             'title' => $validated['title'],
@@ -192,6 +224,19 @@ class FeesController extends Controller
             'notes' => $validated['notes'] ?? null,
             'status' => $validated['status'],
         ]);
+
+        if ($validated['status'] === 'received') {
+            $account = $this->accountTransactionService->defaultAccount($organization);
+            if ($account) {
+                $this->accountTransactionService->record($organization, $account, 'income', (float) $validated['amount'], [
+                    'description' => $validated['title'].' received from '.$validated['receivedFrom'],
+                    'transaction_date' => $validated['date'],
+                    'reference_type' => IncomeEntry::class,
+                    'reference_id' => $incomeEntry->id,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+        }
 
         return redirect()->route('income-management')->with('success', 'Income entry created successfully.');
     }
@@ -262,7 +307,7 @@ class FeesController extends Controller
         ]);
 
         foreach ($validated['entries'] as $entry) {
-            IncomeEntry::query()->create([
+            $incomeEntry = IncomeEntry::query()->create([
                 'organization_id' => $organization->id,
                 'academic_year_id' => $activeAcademicYearId,
                 'title' => $entry['title'],
@@ -275,6 +320,19 @@ class FeesController extends Controller
                 'notes' => $entry['notes'] ?? null,
                 'status' => $entry['status'],
             ]);
+
+            if ($entry['status'] === 'received') {
+                $account = $this->accountTransactionService->defaultAccount($organization);
+                if ($account) {
+                    $this->accountTransactionService->record($organization, $account, 'income', (float) $entry['amount'], [
+                        'description' => $entry['title'].' received from '.$entry['receivedFrom'],
+                        'transaction_date' => $entry['date'],
+                        'reference_type' => IncomeEntry::class,
+                        'reference_id' => $incomeEntry->id,
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('income-management')->with('success', count($validated['entries']) . ' income entries imported successfully.');
@@ -302,7 +360,7 @@ class FeesController extends Controller
             'status' => ['required', Rule::in(['paid', 'due'])],
         ]);
 
-        ExpenseEntry::query()->create([
+        $expenseEntry = ExpenseEntry::query()->create([
             'organization_id' => $organization->id,
             'academic_year_id' => $activeAcademicYearId,
             'title' => $validated['title'],
@@ -315,6 +373,19 @@ class FeesController extends Controller
             'notes' => $validated['notes'] ?? null,
             'status' => $validated['status'],
         ]);
+
+        if ($validated['status'] === 'paid') {
+            $account = $this->accountTransactionService->defaultAccount($organization);
+            if ($account) {
+                $this->accountTransactionService->record($organization, $account, 'expense', (float) $validated['amount'], [
+                    'description' => $validated['title'].' paid to '.$validated['paidTo'],
+                    'transaction_date' => $validated['date'],
+                    'reference_type' => ExpenseEntry::class,
+                    'reference_id' => $expenseEntry->id,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+        }
 
         return redirect()->route('expense-management')->with('success', 'Expense entry created successfully.');
     }
@@ -385,7 +456,7 @@ class FeesController extends Controller
         ]);
 
         foreach ($validated['entries'] as $entry) {
-            ExpenseEntry::query()->create([
+            $expenseEntry = ExpenseEntry::query()->create([
                 'organization_id' => $organization->id,
                 'academic_year_id' => $activeAcademicYearId,
                 'title' => $entry['title'],
@@ -398,6 +469,19 @@ class FeesController extends Controller
                 'notes' => $entry['notes'] ?? null,
                 'status' => $entry['status'],
             ]);
+
+            if ($entry['status'] === 'paid') {
+                $account = $this->accountTransactionService->defaultAccount($organization);
+                if ($account) {
+                    $this->accountTransactionService->record($organization, $account, 'expense', (float) $entry['amount'], [
+                        'description' => $entry['title'].' paid to '.$entry['paidTo'],
+                        'transaction_date' => $entry['date'],
+                        'reference_type' => ExpenseEntry::class,
+                        'reference_id' => $expenseEntry->id,
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
         }
 
         return redirect()->route('expense-management')->with('success', count($validated['entries']) . ' expense entries imported successfully.');
@@ -440,6 +524,17 @@ class FeesController extends Controller
             'status' => 'active',
         ]);
 
+        $this->feeAuditService->log($organization, 'fee_structure.created', Auth::user(), [
+            'amount' => $validated['amount'],
+            'meta' => [
+                'class' => $schoolClass->name,
+                'section' => $schoolClass->section,
+                'fee_type' => $validated['feeType'],
+                'amount' => $validated['amount'],
+                'frequency' => $validated['frequency'],
+            ],
+        ]);
+
         return redirect()->route('fees')->with('success', 'Fee structure created successfully.');
     }
 
@@ -471,6 +566,18 @@ class FeesController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
+        $this->feeAuditService->log($organization, 'fee_structure.updated', Auth::user(), [
+            'amount' => $validated['amount'],
+            'meta' => [
+                'id' => $feeStructure->id,
+                'class' => $schoolClass->name,
+                'section' => $schoolClass->section,
+                'fee_type' => $validated['feeType'],
+                'amount' => $validated['amount'],
+                'frequency' => $validated['frequency'],
+            ],
+        ]);
+
         return redirect()->route('fees')->with('success', 'Fee structure updated successfully.');
     }
 
@@ -478,6 +585,13 @@ class FeesController extends Controller
     {
         $organization = $this->resolveOrganizationForUser(Auth::user());
         abort_unless($organization && $feeStructure->organization_id === $organization->id, 403);
+
+        $this->feeAuditService->log($organization, 'fee_structure.deleted', Auth::user(), [
+            'meta' => [
+                'fee_type' => $feeStructure->fee_type,
+                'amount' => $feeStructure->amount,
+            ],
+        ]);
 
         $feeStructure->delete();
 
@@ -566,7 +680,283 @@ class FeesController extends Controller
             }
         });
 
+        $this->feeAuditService->log($organization, 'fee.assigned', Auth::user(), [
+            'amount' => $assignedCount * $feeStructure->amount,
+            'meta' => [
+                'count' => $assignedCount,
+                'fee_type' => $feeStructure->fee_type,
+                'amount_per_student' => $feeStructure->amount,
+                'frequency' => $feeStructure->frequency,
+                'month' => $feeStructure->frequency === 'monthly' ? $month : null,
+                'year' => $year,
+                'due_date' => $dueDate,
+            ],
+        ]);
+
         return redirect()->route('fees')->with('success', $assignedCount . ' fee assignment' . ($assignedCount === 1 ? '' : 's') . ' saved successfully.');
+    }
+
+    public function importFees(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $activeAcademicYearId = $this->getActiveAcademicYearId($organization);
+
+        if (!$activeAcademicYearId) {
+            return redirect()->route('fees')->with('error', 'Create and activate an academic session first.');
+        }
+
+        $validated = $request->validate([
+            'entries' => ['required', 'array', 'min:1'],
+            'entries.*.studentIdentifier' => ['required', 'string', 'max:100'],
+            'entries.*.feeType' => ['required', 'string', 'max:255'],
+            'entries.*.month' => ['nullable', 'string', 'max:50'],
+            'entries.*.year' => ['nullable', 'integer', 'min:2000', 'max:2100'],
+            'entries.*.dueDate' => ['required', 'date'],
+            'entries.*.amount' => ['required', 'numeric', 'min:0.01'],
+            'entries.*.discount' => ['nullable', 'numeric', 'min:0'],
+            'entries.*.fine' => ['nullable', 'numeric', 'min:0'],
+            'entries.*.paidAmount' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $imported = 0;
+        $skipped = 0;
+        $failures = [];
+        $totalAmount = 0.0;
+
+        $students = Student::query()
+            ->where('organization_id', $organization->id)
+            ->get(['id', 'class_id', 'admission_no', 'roll_number']);
+
+        foreach ($validated['entries'] as $index => $entry) {
+            $rowNumber = $index + 1;
+            $identifier = trim((string) $entry['studentIdentifier']);
+
+            try {
+                $student = $students->first(
+                    fn (Student $student) => strcasecmp((string) $student->admission_no, $identifier) === 0
+                        || strcasecmp((string) $student->roll_number, $identifier) === 0
+                );
+
+                if (!$student) {
+                    $failures[] = ['row' => $rowNumber, 'reason' => "Student '{$identifier}' not found"];
+
+                    continue;
+                }
+
+                $structure = FeeStructure::query()
+                    ->where('organization_id', $organization->id)
+                    ->where('academic_year_id', $activeAcademicYearId)
+                    ->where('class_id', $student->class_id)
+                    ->where('fee_type', $entry['feeType'])
+                    ->where('status', 'active')
+                    ->first();
+
+                if (!$structure) {
+                    $failures[] = ['row' => $rowNumber, 'reason' => "No active '{$entry['feeType']}' fee structure exists for this student's class and session"];
+
+                    continue;
+                }
+
+                $amount = (float) $entry['amount'];
+                $discount = (float) ($entry['discount'] ?? 0);
+                $fine = (float) ($entry['fine'] ?? 0);
+                $paidAmount = (float) ($entry['paidAmount'] ?? 0);
+                $netAmount = max(0, $amount + $fine - $discount);
+                $balance = max(0, $netAmount - $paidAmount);
+                $month = ($entry['month'] ?? null) ?: null;
+                $year = (int) ($entry['year'] ?? date('Y', strtotime($entry['dueDate'])));
+
+                $exists = StudentFee::query()
+                    ->where('organization_id', $organization->id)
+                    ->where('student_id', $student->id)
+                    ->where('fee_structure_id', $structure->id)
+                    ->where('academic_year_id', $activeAcademicYearId)
+                    ->whereDate('due_date', Carbon::parse($entry['dueDate']))
+                    ->exists();
+
+                if ($exists) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                StudentFee::query()->create([
+                    'organization_id' => $organization->id,
+                    'student_id' => $student->id,
+                    'fee_structure_id' => $structure->id,
+                    'academic_year_id' => $activeAcademicYearId,
+                    'month' => $month,
+                    'year' => $year,
+                    'amount' => $amount,
+                    'discount' => $discount,
+                    'fine' => $fine,
+                    'net_amount' => $netAmount,
+                    'paid_amount' => $paidAmount,
+                    'balance' => $balance,
+                    'due_date' => $entry['dueDate'],
+                    'status' => $balance <= 0 ? 'paid' : ($paidAmount > 0 ? 'partial' : 'pending'),
+                ]);
+
+                $imported++;
+                $totalAmount += $netAmount;
+            } catch (Throwable $e) {
+                $failures[] = ['row' => $rowNumber, 'reason' => 'Unexpected row error: '.$e->getMessage()];
+            }
+        }
+
+        $this->feeAuditService->log($organization, 'fee.imported', $user, [
+            'amount' => $totalAmount,
+            'meta' => [
+                'imported' => $imported,
+                'skipped' => $skipped,
+                'failed' => count($failures),
+            ],
+        ]);
+
+        session()->flash('feeImportResult', [
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'failed' => count($failures),
+            'totalAmount' => round($totalAmount, 2),
+            'failures' => array_slice($failures, 0, 20),
+        ]);
+
+        return redirect()->route('fees')->with(
+            'success',
+            $imported.' fee record'.($imported === 1 ? '' : 's').' imported'.($skipped > 0 ? ', '.$skipped.' skipped' : '').(count($failures) > 0 ? ', '.count($failures).' failed' : '').'.'
+        );
+    }
+
+    public function carryForward(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'fromYearId' => ['required', 'integer'],
+            'toYearId' => ['required', 'integer', 'different:fromYearId'],
+        ]);
+
+        $fromYear = AcademicYear::query()
+            ->where('organization_id', $organization->id)
+            ->find($validated['fromYearId']);
+        $toYear = AcademicYear::query()
+            ->where('organization_id', $organization->id)
+            ->find($validated['toYearId']);
+
+        if (!$fromYear || !$toYear) {
+            return redirect()->route('fees')->with('error', 'Both source and target academic sessions must belong to this school.');
+        }
+
+        $sourceFees = StudentFee::query()
+            ->where('organization_id', $organization->id)
+            ->where('academic_year_id', $fromYear->id)
+            ->where('balance', '>', 0)
+            ->with('feeStructure')
+            ->get();
+
+        if ($sourceFees->isEmpty()) {
+            return redirect()->route('fees')->with('error', 'No outstanding fee balances to carry forward for the selected source session.');
+        }
+
+        $targetStructures = FeeStructure::query()
+            ->where('organization_id', $organization->id)
+            ->where('academic_year_id', $toYear->id)
+            ->where('status', 'active')
+            ->get();
+
+        $carried = 0;
+        $skipped = 0;
+        $totalCarried = 0.0;
+
+        DB::transaction(function () use ($sourceFees, $targetStructures, $organization, $toYear, &$carried, &$skipped, &$totalCarried) {
+            foreach ($sourceFees as $sourceFee) {
+                $targetStructure = $targetStructures->first(
+                    fn (FeeStructure $structure) => $structure->class_id === $sourceFee->feeStructure?->class_id
+                        && strcasecmp($structure->fee_type, (string) $sourceFee->feeStructure?->fee_type) === 0
+                );
+
+                if (!$targetStructure) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $targetStart = $toYear->start_date ? Carbon::parse($toYear->start_date) : now();
+                $dueDate = Carbon::parse($sourceFee->due_date ? $sourceFee->due_date->toDateString() : now()->toDateString())
+                    ->setYear((int) $targetStart->year);
+
+                while ($dueDate->lessThan($targetStart)) {
+                    $dueDate->addYear();
+                }
+
+                $carriedYear = (int) $dueDate->year;
+
+                $exists = StudentFee::query()
+                    ->where('organization_id', $organization->id)
+                    ->where('student_id', $sourceFee->student_id)
+                    ->where('fee_structure_id', $targetStructure->id)
+                    ->where('academic_year_id', $toYear->id)
+                    ->where('month', $sourceFee->month)
+                    ->whereDate('due_date', $dueDate)
+                    ->exists();
+
+                if ($exists) {
+                    $skipped++;
+
+                    continue;
+                }
+
+                $balance = (float) $sourceFee->balance;
+
+                StudentFee::query()->create([
+                    'organization_id' => $organization->id,
+                    'student_id' => $sourceFee->student_id,
+                    'fee_structure_id' => $targetStructure->id,
+                    'academic_year_id' => $toYear->id,
+                    'month' => $sourceFee->month,
+                    'year' => $carriedYear,
+                    'amount' => $balance,
+                    'discount' => 0,
+                    'fine' => 0,
+                    'net_amount' => $balance,
+                    'paid_amount' => 0,
+                    'balance' => $balance,
+                    'due_date' => $dueDate,
+                    'status' => 'pending',
+                ]);
+
+                $carried++;
+                $totalCarried += $balance;
+            }
+        });
+
+        $this->feeAuditService->log($organization, 'fee.carried_forward', $user, [
+            'amount' => round($totalCarried, 2),
+            'meta' => [
+                'from_session' => $fromYear->name,
+                'to_session' => $toYear->name,
+                'carried' => $carried,
+                'skipped' => $skipped,
+            ],
+        ]);
+
+        session()->flash('feeCarryForwardResult', [
+            'carried' => $carried,
+            'skipped' => $skipped,
+            'totalAmount' => round($totalCarried, 2),
+            'fromSession' => $fromYear->name,
+            'toSession' => $toYear->name,
+        ]);
+
+        return redirect()->route('fees')->with(
+            'success',
+            $carried.' fee balance'.($carried === 1 ? '' : 's').' carried forward from '.$fromYear->name.' to '.$toYear->name.'.'
+        );
     }
 
     public function collectPayment(Request $request): RedirectResponse
@@ -598,15 +988,15 @@ class FeesController extends Controller
             return redirect()->route('fees')->with('error', 'Payment amount cannot exceed pending balance.');
         }
 
-        DB::transaction(function () use ($studentFee, $paymentAmount, $validated, $user, $organization) {
-            FeePayment::query()->create([
+        DB::transaction(function () use ($studentFee, $paymentAmount, $validated, $user, $organization, &$feePayment) {
+            $feePayment = FeePayment::query()->create([
                 'organization_id' => $organization->id,
                 'student_fee_id' => $studentFee->id,
                 'student_id' => $studentFee->student_id,
                 'receipt_number' => $this->generateReceiptNumber(),
                 'amount' => $paymentAmount,
                 'payment_method' => $validated['payment_method'],
-                'transaction_id' => $validated['transaction_id'] ?: null,
+                'transaction_id' => $validated['transaction_id'] ?? null,
                 'payment_date' => now()->toDateString(),
                 'collected_by' => $user->id,
                 'status' => 'success',
@@ -621,6 +1011,28 @@ class FeesController extends Controller
                 'status' => $balance <= 0 ? 'paid' : 'partial',
             ]);
         });
+
+        $this->feeAuditService->log($organization, 'payment.collected', Auth::user(), [
+            'amount' => $paymentAmount,
+            'student_id' => $studentFee->student_id,
+            'student_fee_id' => $studentFee->id,
+            'fee_payment_id' => $feePayment->id,
+            'meta' => [
+                'payment_method' => $validated['payment_method'],
+                'transaction_id' => $validated['transaction_id'] ?? null,
+            ],
+        ]);
+
+        $account = $this->accountTransactionService->defaultAccount($organization);
+        if ($account) {
+            $this->accountTransactionService->record($organization, $account, 'fee_payment', $paymentAmount, [
+                'description' => 'Fee payment collected (receipt '.$feePayment->receipt_number.')',
+                'transaction_date' => now()->toDateString(),
+                'reference_type' => FeePayment::class,
+                'reference_id' => $feePayment->id,
+                'created_by' => $user->id,
+            ]);
+        }
 
         return redirect()->route('fees')->with('success', 'Payment collected successfully.');
     }
@@ -667,7 +1079,307 @@ class FeesController extends Controller
             ]);
         });
 
+        $this->feeAuditService->log($organization, 'payment.reverted', Auth::user(), [
+            'amount' => $feePayment->amount,
+            'student_id' => $studentFee->student_id,
+            'student_fee_id' => $studentFee->id,
+            'fee_payment_id' => $feePayment->id,
+            'meta' => [
+                'reason' => $validated['reason'],
+                'reverted_at' => now()->toDateString(),
+            ],
+        ]);
+
         return redirect()->route('fees')->with('success', 'Payment reverted successfully.');
+    }
+
+    public function feeAudit(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return inertia('dashboard/FeeAudit', [
+                'user' => $user,
+                'organization' => null,
+                'auditLogs' => [],
+                'actions' => [],
+            ]);
+        }
+
+        $validated = $request->validate([
+            'action' => ['nullable', 'string', 'max:100'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date'],
+        ]);
+
+        $query = FeeAudit::query()
+            ->where('organization_id', $organization->id)
+            ->with(['user:id,name', 'student:id,first_name,last_name'])
+            ->latest('created_at')
+            ->latest('id');
+
+        if (! empty($validated['action'])) {
+            $query->where('action', $validated['action']);
+        }
+
+        if (! empty($validated['from'])) {
+            $query->whereDate('created_at', '>=', $validated['from']);
+        }
+
+        if (! empty($validated['to'])) {
+            $query->whereDate('created_at', '<=', $validated['to']);
+        }
+
+        $auditLogs = $query->paginate(50)->withQueryString();
+
+        return inertia('dashboard/FeeAudit', [
+            'user' => $user,
+            'organization' => $this->serializeOrganization($organization),
+            'auditLogs' => [
+                'data' => $auditLogs->map(fn (FeeAudit $entry) => [
+                    'id' => (string) $entry->id,
+                    'action' => $entry->action,
+                    'amount' => $entry->amount !== null ? (float) $entry->amount : null,
+                    'userName' => $entry->user?->name ?? 'System',
+                    'studentName' => $entry->student ? trim($entry->student->first_name.' '.$entry->student->last_name) : null,
+                    'meta' => $entry->meta ?? [],
+                    'ipAddress' => $entry->ip_address,
+                    'createdAt' => $entry->created_at?->toIso8601String(),
+                ])->all(),
+                'total' => $auditLogs->total(),
+                'currentPage' => $auditLogs->currentPage(),
+                'lastPage' => $auditLogs->lastPage(),
+                'perPage' => $auditLogs->perPage(),
+            ],
+            'actions' => FeeAudit::query()
+                ->where('organization_id', $organization->id)
+                ->select('action')
+                ->distinct()
+                ->orderBy('action')
+                ->pluck('action')
+                ->values()
+                ->all(),
+            'filters' => $validated,
+        ]);
+    }
+
+    public function challans()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return inertia('dashboard/FeeChallans', [
+            'user' => $user,
+            'organization' => $organization ? $this->serializeOrganization($organization) : null,
+            'students' => $organization ? $this->getStudents($organization) : [],
+            'classRecords' => $organization ? $this->getClassRecords($organization) : [],
+            'studentFeeRecords' => $organization ? $this->getStudentFeeRecords($organization) : [],
+            'sessionName' => $organization ? $this->getActiveSessionName($organization) : null,
+        ]);
+    }
+
+    public function dueSlips()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        $activeAcademicYearId = $organization ? $this->getActiveAcademicYearId($organization) : null;
+
+        $dues = [];
+        if ($organization) {
+            $records = collect($this->getStudentFeeRecordsForAcademicYear($organization, $activeAcademicYearId));
+
+            $dues = $records
+                ->map(function (array $record, $studentId) {
+                    $fees = collect($record['fees']);
+
+                    return [
+                        'student_id' => (string) $studentId,
+                        'total_due' => $fees->sum('due_amount'),
+                        'pending_count' => $fees->filter(fn (array $fee) => (float) $fee['due_amount'] > 0)->count(),
+                    ];
+                })
+                ->filter(fn (array $due) => $due['total_due'] > 0)
+                ->values()
+                ->all();
+        }
+
+        return inertia('dashboard/DueSlips', [
+            'user' => $user,
+            'organization' => $organization ? $this->serializeOrganization($organization) : null,
+            'classRecords' => $organization ? $this->getClassRecords($organization) : [],
+            'sessionName' => $organization ? $this->getActiveSessionName($organization) : null,
+            'students' => $organization ? $this->getStudents($organization) : [],
+            'dues' => $dues,
+        ]);
+    }
+
+    public function printChallan(StudentFee $studentFee)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization && $studentFee->organization_id === $organization->id, 404);
+
+        return response()->view('finance.fee-challan', $this->buildChallanData($studentFee, $organization));
+    }
+
+    public function downloadChallan(StudentFee $studentFee)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization && $studentFee->organization_id === $organization->id, 404);
+
+        $html = view('finance.fee-challan', $this->buildChallanData($studentFee, $organization))->render();
+
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->download('Fee-Challan-' . $studentFee->id . '-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    public function printDueSlip(Student $student)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization && $student->organization_id === $organization->id, 404);
+
+        return response()->view('finance.due-slip', $this->buildDueSlipData($student, $organization));
+    }
+
+    public function downloadDueSlip(Student $student)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization && $student->organization_id === $organization->id, 404);
+
+        $html = view('finance.due-slip', $this->buildDueSlipData($student, $organization))->render();
+
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->download('Fee-Due-Slip-' . $student->id . '-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function serializeOrganization(Organization $organization): array
+    {
+        return [
+            'id' => $organization->id,
+            'name' => $organization->name,
+            'logo' => $organization->logo,
+            'address' => collect([$organization->address, $organization->city, $organization->state, $organization->pincode])
+                ->filter()
+                ->implode(', '),
+            'phone' => $organization->phone,
+            'email' => $organization->email,
+        ];
+    }
+
+    private function buildChallanData(StudentFee $studentFee, Organization $organization): array
+    {
+        $student = $studentFee->student;
+        $schoolClass = $studentFee->feeStructure?->schoolClass ?: $student->schoolClass;
+        $balance = max(0, (float) $studentFee->balance);
+
+        return [
+            'organization' => $this->serializeOrganization($organization),
+            'challan' => [
+                'challan_number' => $this->generateChallanNumber($studentFee),
+                'issued_at' => now()->format('d M Y'),
+                'due_date' => optional($studentFee->due_date)->format('d M Y'),
+                'session' => $studentFee->academicYear?->name,
+                'student' => [
+                    'name' => $this->studentFullName($student),
+                    'admission_no' => $student->admission_no,
+                    'roll_number' => $student->roll_number,
+                    'class' => $schoolClass?->name,
+                    'section' => $schoolClass?->section,
+                ],
+                'fee' => [
+                    'amount' => (float) $studentFee->amount,
+                    'discount' => (float) $studentFee->discount,
+                    'fine' => (float) $studentFee->fine,
+                    'net_amount' => (float) $studentFee->net_amount,
+                    'paid_amount' => (float) $studentFee->paid_amount,
+                    'balance' => $balance,
+                ],
+                'fee_type' => $studentFee->feeStructure?->localized('fee_type') ?: 'General Fee',
+                'frequency' => $studentFee->feeStructure?->frequency ?? '-',
+                'description' => $studentFee->feeStructure?->localized('description'),
+                'amount_words' => $this->amountInWords($balance),
+                'generated_by' => Auth::user()?->name,
+            ],
+        ];
+    }
+
+    private function buildDueSlipData(Student $student, Organization $organization): array
+    {
+        $academicYearId = $this->getActiveAcademicYearId($organization);
+        $records = $this->getStudentFeeRecordsForAcademicYear($organization, $academicYearId);
+        $record = $records[(string) $student->id] ?? ['fees' => [], 'payments' => []];
+
+        $pending = collect($record['fees'])
+            ->filter(fn (array $fee) => (float) $fee['due_amount'] > 0)
+            ->values();
+
+        $totalDue = $pending->sum('due_amount');
+
+        $enrollment = $student;
+        $schoolClass = $enrollment->schoolClass;
+
+        if ($academicYearId) {
+            $history = $this->studentAcademicHistoryService->getSessionEnrollmentForStudent($student, $academicYearId);
+            $schoolClass = $history?->schoolClass ?: $schoolClass;
+        }
+
+        return [
+            'organization' => $this->serializeOrganization($organization),
+            'student' => [
+                'name' => $this->studentFullName($student),
+                'admission_no' => $student->admission_no,
+                'roll_number' => $student->roll_number,
+                'class' => $schoolClass?->name,
+                'section' => $schoolClass?->section,
+                'father_name' => $student->father_name,
+                'phone' => $student->phone,
+            ],
+            'session' => $this->getActiveSessionName($organization),
+            'generated_at' => now()->format('d M Y, h:i A'),
+            'pending_fees' => $pending
+                ->map(fn (array $fee) => [
+                    'fee_type' => $fee['fee_type'],
+                    'description' => '',
+                    'due_date' => $fee['due_date'],
+                    'net_amount' => $fee['total_amount'],
+                    'paid_amount' => $fee['paid_amount'],
+                    'balance' => $fee['due_amount'],
+                ])
+                ->values(),
+            'total_due' => $totalDue,
+            'amount_words' => $this->amountInWords($totalDue),
+        ];
+    }
+
+    private function studentFullName(Student $student): string
+    {
+        return trim(implode(' ', array_filter([$student->first_name, $student->middle_name, $student->last_name])));
+    }
+
+    private function amountInWords(float $amount): string
+    {
+        $amount = max(0, round($amount, 2));
+        $rupees = (int) floor($amount);
+        $paise = (int) round(($amount - $rupees) * 100);
+
+        $rupeesInWords = ucfirst(Number::spell($rupees));
+
+        if ($paise > 0) {
+            return $rupeesInWords . ' Rupees and ' . ucfirst(Number::spell($paise)) . ' Paise Only';
+        }
+
+        return $rupeesInWords . ' Rupees Only';
+    }
+
+    private function generateChallanNumber(StudentFee $studentFee): string
+    {
+        return 'CHLN-' . now()->format('Ymd') . '-' . str_pad((string) $studentFee->id, 5, '0', STR_PAD_LEFT);
     }
 
     private function getStudents(Organization $organization): array
@@ -745,10 +1457,10 @@ class FeesController extends Controller
                 'id' => (string) $structure->id,
                 'class' => $structure->schoolClass?->name,
                 'section' => $structure->schoolClass?->section,
-                'feeType' => $structure->fee_type,
+                'feeType' => $structure->localized('fee_type'),
                 'amount' => (float) $structure->amount,
                 'frequency' => $structure->frequency,
-                'description' => $structure->description ?? '',
+                'description' => $structure->localized('description'),
             ])
             ->all();
     }
@@ -763,8 +1475,8 @@ class FeesController extends Controller
             ->get()
             ->map(fn (FeeType $feeType) => [
                 'id' => (string) $feeType->id,
-                'name' => $feeType->name,
-                'description' => $feeType->description ?? '',
+                'name' => $feeType->localized('name'),
+                'description' => $feeType->localized('description'),
             ])
             ->all();
     }
@@ -798,7 +1510,7 @@ class FeesController extends Controller
             ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'not like', self::HOSTEL_FEE_PREFIX))
             ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'not like', self::TRANSPORT_FEE_PREFIX))
             ->with([
-                'feeStructure:id,fee_type',
+                'feeStructure:id,fee_type,fee_type_mr,fee_type_hi',
                 'payments' => fn ($query) => $query->with('collector:id,name')->orderByDesc('payment_date'),
             ])
             ->get()
@@ -808,7 +1520,7 @@ class FeesController extends Controller
             $serializedFees = $fees->map(function (StudentFee $fee) {
                 return [
                     'id' => (string) $fee->id,
-                    'fee_type' => $fee->feeStructure?->fee_type ?? 'General Fee',
+                    'fee_type' => ($fee->feeStructure?->localized('fee_type') ?: 'General Fee'),
                     'amount' => (float) $fee->amount,
                     'discount' => (float) $fee->discount,
                     'total_amount' => (float) $fee->net_amount,
