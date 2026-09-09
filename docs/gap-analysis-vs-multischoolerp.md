@@ -1,0 +1,108 @@
+# Gap Analysis — QGurukul vs MultiSchoolERP Demo
+
+> Source of truth: live study of `https://demo.multischoolerp.com/` (School Admin panel, 2026).
+> Comparison baseline: current QGurukul web app (Sidebar nav, 80 controllers, 117-table MySQL schema).
+
+## Scope decisions
+
+- **In scope:** Phase 1–4 web modules + custom fields / data validator / admission-form field builder.
+- **Deferred / out of scope:** Flutter mobile apps (Parent/Staff/Driver), live GPS driver tracking, Windows
+  biometric agent, AI analytics (lead scorer, fee-defaulter predictor, student risk, route optimizer,
+  smart alerts). These are platform-scale artifacts tracked separately.
+
+## Methodology
+
+1. Logged into the demo via `/demo-login/schooladmin` (instant School Admin session).
+2. Extracted the complete 191-item navigation (categories: `academics`, `students`, `finance`, `operations`,
+   `engagement`, `admin`).
+3. Cross-checked every item against QGurukul: `resources/js/Pages/Sidebar.tsx`, `app/Http/Controllers`,
+   `database/schema/mysql-schema.sql`, plus keyword scans.
+4. Status legend: **Present** (working equivalent), **Partial** (exists but thinner), **Missing** (no equivalent).
+
+## Headline
+
+- Demo School Admin nav: **191 items** across 7 categories.
+- QGurukul sidebar: ~100 nav surfaces.
+- **~35 module areas entirely missing**, **~25 present-but-thinner**.
+
+## Missing module backlog (plan order)
+
+### Phase 1 — Academics
+
+| Module | Demo items | QGurukul status | Notes |
+|---|---|---|---|
+| TC & Exit | `tc & exit` | Missing | Transfer-certificate / leaving workflow |
+| Datesheet | `datesheet` | Missing | Exam schedule per class/session |
+| Exam ops config | `exam types`, `manage periods`, `chapters & topics`, `assign class teacher`, `assign electives` | Missing/Partial | Periods exist inline in timetables; no dedicated config |
+| Marks & grades | `enter marks`, `manage grades`, `teacher remarks`, `progress cards`, `generate/upload marksheet`, `schedule & marks setup` | Missing/Partial | We print marksheets but lack entry UI & grades config |
+| CBC / competency | `cbc assessments/dashboard/reports`, `strands & outcomes`, `core competencies`, `pathways & tracks`, `cocurricular areas/grades` | Missing | Deferred (larger curriculum redesign) |
+| OSM assessment | `osm evaluate/guide/moderation/reports/sessions` | Missing | Deferred (named assessment framework) |
+
+### Phase 2 — Finance & operations
+
+| Module | Demo items | QGurukul status | Notes |
+|---|---|---|---|
+| Fee structure config | `fee types`, `fee groups`, `fees discount` | Partial | Types exist; no heads/groups; discounts folded into Scholarships |
+| Universal import | `import center` | Partial | Only student/fee importers |
+| Document vault | `document vault` | Missing | Staff/student document storage |
+| Gate passes | `gate passes`, `gate terminal` | Missing | Entry/exit passes |
+| Houses & categories | `student houses`, `student categories` | Missing | `students.category` column exists but no config module |
+| Facilities / campus workers / directory | `facilities`, `campus workers`, `staff directory` | Partial | Departments/designations tables exist, no facility/campus-worker UI |
+| Store ops | `point of sale`, `sales history`, `supplier payments`, `goods receipts` | Partial | Vendors+POs exist; no POS/supplier payments/GRN |
+
+### Phase 3 — HR & engagement
+
+| Module | Demo items | QGurukul status | Notes |
+|---|---|---|---|
+| Leave types config | `leave types`, `approve leave` | Partial | Leave request/balance exists; no leave-type catalogue |
+| Staff loans | `manage staff loans` | Missing | No loan registry/EMI |
+| Staff appraisals | `appraisal criteria/cycles`, `appraisals` | Missing | We have anonymous Teacher Evaluations only |
+| Salary config | `salary templates`, `set salary` | Partial | Payroll page exists; no template/assignment model |
+| Surveys | `survey dashboard`, `all/my surveys`, `survey guide` | Missing | No surveys |
+| Engagement extras | `birthday manager`, `festival greetings` | Missing | |
+| Comms wallet / broadcast | `comms wallet`, `compose broadcast`, `broadcast history` | Missing/Partial | No credit wallet; messaging exists per-channel |
+| Chat moderation | `chat moderation`, `content safety` | Missing | Live chat exists; no moderation |
+
+### Phase 4 — Compliance, reports, security
+
+| Module | Demo items | QGurukul status | Notes |
+|---|---|---|---|
+| Compliance suite | `compliance overview/packs/checklist/calendar` | Missing | |
+| Regulator reports | `cbse disclosure`, `government reports` | Missing | High value for Indian schools |
+| CCTV | `cctv cameras`, `camera wall`, `cctv access log`, `face monitoring`, `search by photo` | Missing | Hardware-agnostic registry + audit log only |
+| QR / attendance | `qr attendance report`, `qr scan audit`, `attendance logs` | Partial | QR present; no scan audit dashboard |
+
+### Custom fields (final)
+
+| Module | Demo items | QGurukul status | Notes |
+|---|---|---|---|
+| Custom fields / data validator / admission form fields | `custom fields`, `data records`, `data validator`, `admission form fields`, `field settings` | Missing | Build on top of all module additions |
+
+## Partial-but-thinner (reference)
+
+| Area | We have | Demo additionally has |
+|---|---|---|
+| Leads | CRUD + status/source | Pipeline board, stages config, lead dashboard, lead scorer |
+| Lesson planning | lesson plans | Approvals, review, coverage reports, settings/guide |
+| PTM | sessions | Attendance & remarks, follow-ups, reports/guide |
+| Website CMS | CMS + pages | Template studio, creatives, testimonials, hero slides, nav builder |
+| Certificates / ID cards | print | Card design studio (appearance templates) |
+| Hostel | management + fees | Room types, student allocation |
+| Inventory | items + stock | Goods receipts, POS |
+| Transport | routes + fees | Live vehicle tracking |
+| Library | books + issue/return | Dedicated category/config dashboards |
+| Biometric | settings | Agent connector, device logs |
+| Reports | report center | Government/compliance reports |
+
+## Implementation convention (every module)
+
+1. **Live deep-compare** — pull the module's demo pages/session; snapshot fields/schema into this doc's
+   per-module section before coding.
+2. Migration (idempotent, sqlite-safe, mirrors demo schema) → Model → Controller/Service →
+   `RolePermissionCatalog` feature → routes behind `staff.permission:<Feature>,<action>` →
+   React page → Sidebar nav + en/mr/hi i18n → feature tests → gates.
+3. Gates: `php -l`, prettier, `validate-i18n` (0 bad), `npm run build`, full `php artisan test`.
+
+## Per-module deep-compare notes
+
+_(filled progressively during implementation)_
