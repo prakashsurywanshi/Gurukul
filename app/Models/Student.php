@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
@@ -86,6 +87,7 @@ class Student extends Model
         'photo',
         'other_documents',
         'status',
+        'enrollment_status',
         'notes',
         'address_mr',
         'city_mr',
@@ -125,6 +127,16 @@ class Student extends Model
     public function issuedCertificates(): HasMany
     {
         return $this->hasMany(IssuedCertificate::class);
+    }
+
+    public function exits(): HasMany
+    {
+        return $this->hasMany(StudentExit::class);
+    }
+
+    public function latestExit(): HasOne
+    {
+        return $this->hasOne(StudentExit::class)->latestOfMany();
     }
 
     public function scopeForCurrentSession(Builder $query, int $organizationId): Builder

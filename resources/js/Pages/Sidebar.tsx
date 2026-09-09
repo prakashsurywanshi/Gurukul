@@ -86,7 +86,13 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
     const activeItemRef = useRef<HTMLButtonElement | null>(null);
     const shouldScrollToActiveRef = useRef(true);
-    const studentTabs = ['search_students', 'online-admission', 'bulk-delete-students', 'alumni-records'];
+    const studentTabs = [
+        'search_students',
+        'online-admission',
+        'bulk-delete-students',
+        'alumni-records',
+        'student-exits',
+    ];
     const academicTabs = [
         'classes',
         'class-time-table',
@@ -702,6 +708,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             href: '/alumni-records',
             roles: ['super_admin', 'admin', 'receptionist', 'teacher'],
             feature: 'Alumni Records',
+        },
+        {
+            id: 'student-exits',
+            label: 'TC & Exit',
+            icon: ClipboardList,
+            href: '/student-exits',
+            roles: ['super_admin', 'admin'],
+            feature: 'TC & Exit',
         },
     ].filter((item) => canAccessItem(item.roles, item.feature));
     const hasStudentMenu = studentMenuItems.length > 0;

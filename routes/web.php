@@ -26,6 +26,7 @@ use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\ScholarshipController;
 use App\Http\Controllers\StaffIdCardController;
+use App\Http\Controllers\StudentExitController;
 use App\Http\Controllers\StudyMaterialController;
 use App\Http\Controllers\SyllabusUnitController;
 use App\Http\Controllers\TallyExportController;
@@ -112,6 +113,10 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::get('/search_students', [StudentsController::class, 'index'])->middleware('staff.permission:Search Students,view')->name('search_students');
     Route::get('/bulk-delete-students', [StudentsController::class, 'bulkDelete'])->middleware('staff.permission:Bulk Delete Students,view')->name('bulk-delete-students');
     Route::get('/alumni-records', [StudentsController::class, 'alumniRecords'])->middleware('staff.permission:Alumni Records,view')->name('alumni-records');
+    Route::get('/student-exits', [StudentExitController::class, 'index'])->middleware('staff.permission:TC & Exit,view')->name('student-exits');
+    Route::post('/student-exits', [StudentExitController::class, 'store'])->middleware('staff.permission:TC & Exit,add')->name('student-exits.store');
+    Route::post('/student-exits/tc-printed', [StudentExitController::class, 'markTcPrinted'])->middleware('staff.permission:TC & Exit,add')->name('student-exits.tc-printed');
+    Route::post('/student-exits/{student}/restore', [StudentExitController::class, 'restore'])->middleware('staff.permission:TC & Exit,edit')->name('student-exits.restore');
     Route::get('/online-admission', [AdmissionInquiryController::class, 'index'])->middleware('staff.permission:Online Admission,view')->name('online-admission');
     Route::post('/online-admission/{admissionInquiry}/enroll', [AdmissionInquiryController::class, 'enroll'])->middleware('staff.permission:Online Admission,add')->name('online-admission.enroll');
     Route::patch('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'update'])->middleware('staff.permission:Online Admission,edit')->name('online-admission.update');
