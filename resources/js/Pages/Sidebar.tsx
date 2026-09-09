@@ -51,6 +51,7 @@ import {
     KeyRound,
     Fingerprint,
     CalendarDays,
+    CalendarRange,
     ShieldAlert,
     HeartPulse,
     Handshake,
@@ -113,7 +114,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'complains',
     ];
 
-    const examTabs = ['examination', 'hall-ticket', 'print-marksheet', 'report-card'];
+    const examTabs = ['examination', 'hall-ticket', 'print-marksheet', 'report-card', 'datesheets'];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
         'communication',
@@ -838,6 +839,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Examination',
             icon: FileText,
             href: '/exams',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'datesheets',
+            label: 'Datesheet',
+            icon: CalendarRange,
+            href: '/datesheets',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },

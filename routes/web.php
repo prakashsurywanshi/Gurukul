@@ -12,6 +12,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatesheetController;
 use App\Http\Controllers\EbookLibraryController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\EventsController;
@@ -301,6 +302,9 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::get('/exams/print-marksheet', [ExamController::class, 'printMarksheet'])->middleware('staff.permission:Print Marksheet,view')->name('exams.print-marksheet');
     Route::get('/exams/report-card', [ReportCardController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams.report-card');
     Route::post('/exams/report-card/grading-scale', [ReportCardController::class, 'saveGradeScale'])->middleware('staff.permission:Exam Management,edit')->name('exams.report-card.grading-scale');
+    Route::get('/datesheets', [DatesheetController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('datesheets');
+    Route::get('/datesheets/{exam}', [DatesheetController::class, 'show'])->middleware('staff.permission:Exam Management,view')->name('datesheets.show');
+    Route::post('/datesheets/{exam}/publish', [DatesheetController::class, 'publish'])->middleware('staff.permission:Exam Management,edit')->name('datesheets.publish');
     Route::get('/offline-exams', [ExamController::class, 'studentOfflineExams'])->name('offline-exams');
     Route::post('/exams', [ExamController::class, 'store'])->middleware('staff.permission:Exam Management,add')->name('exams.store');
     Route::patch('/exams/{exam}', [ExamController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('exams.update');
