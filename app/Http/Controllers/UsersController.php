@@ -11,7 +11,9 @@ use App\Models\Role;
 use App\Models\StaffAttendance;
 use App\Models\StaffPayrollEntry;
 use App\Models\User;
+use App\Services\LeaveBalanceService;
 use App\Services\StaffPermissionService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Collection;
@@ -28,8 +31,10 @@ use Throwable;
 
 class UsersController extends Controller
 {
-    public function __construct(private readonly StaffPermissionService $staffPermissionService)
-    {
+    public function __construct(
+        private readonly StaffPermissionService $staffPermissionService,
+        private readonly LeaveBalanceService $leaveBalanceService
+    ) {
     }
 
     public function index(): Response
@@ -73,16 +78,20 @@ class UsersController extends Controller
         ]);
     }
 
-    public function leaveManagement(): Response
+    public function leaveManagement(Request $request): Response
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
         $roleRecords = $this->roleRecordsForOrganization($organization);
+        $leaveYear = $this->leaveBalanceService->titledYear($request->query('year'));
 
         return Inertia::render('dashboard/StaffLeaveManagement', [
             'user' => $user,
             'staffRecords' => $this->staffRecordsForOrganization($organization, $roleRecords),
             'leaveRequests' => $this->staffLeaveRequestsForOrganization($organization),
+            'leaveBalances' => $organization ? $this->leaveBalanceService->balancesForOrganization($organization, $leaveYear) : collect(),
+            'leaveTypes' => LeaveBalanceService::LEAVE_TYPES,
+            'leaveYear' => $leaveYear,
         ]);
     }
 
@@ -171,6 +180,30 @@ class UsersController extends Controller
         return redirect()->route('staff.payroll-management')->with('success', 'Staff payroll saved successfully.');
     }
 
+    public function printPayslip(StaffPayrollEntry $payrollEntry)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization && $payrollEntry->organization_id === $organization->id, 404);
+
+        return response()->view('payroll.slip', ['slip' => $this->buildPayslipData($payrollEntry, $organization)]);
+    }
+
+    public function downloadPayslip(StaffPayrollEntry $payrollEntry)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization && $payrollEntry->organization_id === $organization->id, 404);
+
+        $html = view('payroll.slip', ['slip' => $this->buildPayslipData($payrollEntry, $organization)])->render();
+
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true);
+
+        $filename = 'Payslip-' . $payrollEntry->id . '-' . optional($payrollEntry->payroll_month)->format('Y-m') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
     public function storeLeaveRequest(Request $request): RedirectResponse
     {
         $user = Auth::user();
@@ -186,6 +219,26 @@ class UsersController extends Controller
 
         $fromDate = Carbon::parse($validated['from_date'])->startOfDay();
         $toDate = Carbon::parse($validated['to_date'])->startOfDay();
+        $requestedDays = $fromDate->diffInDays($toDate) + 1;
+
+        if (!$this->leaveBalanceService->canTake(
+            $organization,
+            (int) $validated['staff_id'],
+            $validated['leave_type'],
+            (int) $fromDate->year,
+            (float) $requestedDays
+        )) {
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    sprintf(
+                        "Insufficient %s leave balance for year %d.",
+                        ucfirst($validated['leave_type']),
+                        $fromDate->year
+                    )
+                );
+        }
 
         LeaveRequest::query()->create([
             'organization_id' => $organization->id,
@@ -194,7 +247,7 @@ class UsersController extends Controller
             'leave_type' => $validated['leave_type'],
             'from_date' => $fromDate->toDateString(),
             'to_date' => $toDate->toDateString(),
-            'total_days' => $fromDate->diffInDays($toDate) + 1,
+            'total_days' => $requestedDays,
             'reason' => $validated['reason'],
             'status' => 'pending',
         ]);
@@ -218,13 +271,34 @@ class UsersController extends Controller
 
         $fromDate = Carbon::parse($validated['from_date'])->startOfDay();
         $toDate = Carbon::parse($validated['to_date'])->startOfDay();
+        $requestedDays = $fromDate->diffInDays($toDate) + 1;
+
+        if (!$this->leaveBalanceService->canTake(
+            $organization,
+            (int) $validated['staff_id'],
+            $validated['leave_type'],
+            (int) $fromDate->year,
+            (float) $requestedDays,
+            $leaveRequest->id
+        )) {
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    sprintf(
+                        "Insufficient %s leave balance for year %d.",
+                        ucfirst($validated['leave_type']),
+                        $fromDate->year
+                    )
+                );
+        }
 
         $leaveRequest->update([
             'user_id' => $validated['staff_id'],
             'leave_type' => $validated['leave_type'],
             'from_date' => $fromDate->toDateString(),
             'to_date' => $toDate->toDateString(),
-            'total_days' => $fromDate->diffInDays($toDate) + 1,
+            'total_days' => $requestedDays,
             'reason' => $validated['reason'],
         ]);
 
@@ -271,6 +345,41 @@ class UsersController extends Controller
         $leaveRequest->delete();
 
         return redirect()->route('staff.leave-management')->with('success', 'Leave request deleted successfully.');
+    }
+
+    public function updateLeaveBalances(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization || !$this->canManageUsers($user)) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'year' => ['required', 'integer', 'min:2000', 'max:2100'],
+            'entries' => ['required', 'array', 'min:1'],
+            'entries.*.staffId' => [
+                'required',
+                Rule::exists('users', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id)),
+            ],
+            'entries.*.leaveType' => ['required', Rule::in(LeaveBalanceService::LEAVE_TYPES)],
+            'entries.*.entitledDays' => ['required', 'numeric', 'min:0', 'max:365'],
+        ]);
+
+        foreach ($validated['entries'] as $entry) {
+            $this->leaveBalanceService->adjust(
+                $organization,
+                (int) $entry['staffId'],
+                $entry['leaveType'],
+                (int) $validated['year'],
+                (float) $entry['entitledDays']
+            );
+        }
+
+        return redirect()
+            ->route('staff.leave-management', ['year' => $validated['year']])
+            ->with('success', 'Leave balances updated successfully.');
     }
 
     public function storeDesignation(Request $request): RedirectResponse
@@ -597,6 +706,7 @@ class UsersController extends Controller
             ->orderByDesc('payroll_month')
             ->get()
             ->map(fn (StaffPayrollEntry $entry) => [
+                'id' => $entry->id,
                 'staff_id' => $entry->user_id,
                 'payroll_month' => optional($entry->payroll_month)->format('Y-m'),
                 'base_pay' => (float) $entry->base_pay,
@@ -605,6 +715,39 @@ class UsersController extends Controller
                 'status' => $entry->status,
             ])
             ->values();
+    }
+
+    private function buildPayslipData(StaffPayrollEntry $entry, Organization $organization): array
+    {
+        $staff = $entry->staff;
+        $gross = (float) $entry->base_pay + (float) $entry->allowance;
+        $net = max(0, $gross - (float) $entry->deduction);
+
+        return [
+            'slip_no' => $entry->id,
+            'month' => optional($entry->payroll_month)->translatedFormat('F Y'),
+            'status' => ucfirst($entry->status),
+            'base_pay' => (float) $entry->base_pay,
+            'allowance' => (float) $entry->allowance,
+            'deduction' => (float) $entry->deduction,
+            'gross_pay' => $gross,
+            'net_pay' => $net,
+            'net_pay_words' => Number::spell((int) round($net)),
+            'generated_at' => now()->format('d M Y, h:i A'),
+            'staff' => [
+                'name' => $staff?->name ?? 'Unknown Staff',
+                'email' => $staff?->email ?? '-',
+                'role' => $staff ? ucwords(str_replace('_', ' ', $staff->role)) : '-',
+                'designation' => $staff?->designation?->name,
+            ],
+            'organization' => [
+                'name' => $organization->name,
+                'address' => $organization->address,
+                'phone' => $organization->phone,
+                'email' => $organization->email,
+                'logo' => $organization->logo,
+            ],
+        ];
     }
 
     private function staffLeaveRequestsForOrganization(?Organization $organization): Collection

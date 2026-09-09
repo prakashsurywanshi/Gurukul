@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
+use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\VerifyNewEmailOtpNotification;
+use App\Services\LeaveBalanceService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,6 +23,10 @@ class ProfileController extends Controller
 {
     private const EMAIL_OTP_CACHE_PREFIX = 'profile_email_otp:';
     private const STAFF_ROLES = ['teacher', 'receptionist', 'accountant', 'librarian'];
+
+    public function __construct(private readonly LeaveBalanceService $leaveBalanceService)
+    {
+    }
 
     public function index()
     {
@@ -52,9 +58,18 @@ class ProfileController extends Controller
 
         abort_unless($this->isStaffUser($user), 403);
 
+        $organization = $user->organization_id
+            ? Organization::query()->find($user->organization_id)
+            : null;
+        $leaveYear = $this->leaveBalanceService->titledYear(null);
+
         return Inertia::render('dashboard/MyLeaves', [
             'user' => $user,
             'leaveRequests' => $this->leaveRequestsForUser($user),
+            'leaveBalances' => $organization
+                ? $this->leaveBalanceService->balancesForStaff($organization, $user->id, $leaveYear)
+                : [],
+            'leaveYear' => $leaveYear,
         ]);
     }
 
@@ -77,6 +92,26 @@ class ProfileController extends Controller
 
         $fromDate = Carbon::parse($validated['from_date'])->startOfDay();
         $toDate = Carbon::parse($validated['to_date'])->startOfDay();
+        $requestedDays = $fromDate->diffInDays($toDate) + 1;
+
+        if (!$this->leaveBalanceService->canTake(
+            Organization::query()->findOrFail($user->organization_id),
+            $user->id,
+            $validated['leave_type'],
+            (int) $fromDate->year,
+            (float) $requestedDays
+        )) {
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    sprintf(
+                        "Insufficient %s leave balance for year %d.",
+                        ucfirst($validated['leave_type']),
+                        $fromDate->year
+                    )
+                );
+        }
 
         LeaveRequest::query()->create([
             'organization_id' => $user->organization_id,
@@ -85,7 +120,7 @@ class ProfileController extends Controller
             'leave_type' => $validated['leave_type'],
             'from_date' => $fromDate->toDateString(),
             'to_date' => $toDate->toDateString(),
-            'total_days' => $fromDate->diffInDays($toDate) + 1,
+            'total_days' => $requestedDays,
             'reason' => $validated['reason'],
             'status' => 'pending',
         ]);
