@@ -27,6 +27,7 @@ import {
     Layers,
     Briefcase,
     UserRound,
+    Upload,
     Target,
     Phone,
     Send,
@@ -144,7 +145,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'download-center',
     ];
 
-    const hrTabs = ['staff', 'staff-daily-attendance', 'payroll-management', 'leave-management'];
+    const hrTabs = ['staff', 'import-center', 'staff-daily-attendance', 'payroll-management', 'leave-management'];
     const hostelTabs = ['hostel-management', 'hostel-fee-collection', 'my-hostel'];
     const transportTabs = ['transport-management', 'transport-fee-collection'];
     const settingTabs = [
@@ -1095,6 +1096,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             icon: UserCog,
             href: '/staff',
             roles: ['admin'],
+            feature: 'User Management',
+        },
+        {
+            id: 'import-center',
+            label: 'Import Center',
+            icon: Upload,
+            href: '/import-center',
+            roles: ['admin', 'super_admin'],
             feature: 'User Management',
         },
         {

@@ -44,6 +44,7 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FeesController;
 use App\Http\Controllers\FeeGroupController;
 use App\Http\Controllers\FeeDiscountController;
+use App\Http\Controllers\ImportCenterController;
 use App\Http\Controllers\FrontOfficeController;
 use App\Http\Controllers\HealthRecordsController;
 use App\Http\Controllers\HomeworkController;
@@ -133,6 +134,9 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::patch('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'update'])->middleware('staff.permission:Online Admission,edit')->name('online-admission.update');
     Route::delete('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'destroy'])->middleware('staff.permission:Online Admission,delete')->name('online-admission.destroy');
     Route::get('/staff', [UsersController::class, 'index'])->middleware('staff.permission:User Management,view')->name('users');
+    Route::get('/import-center', [ImportCenterController::class, 'index'])->middleware('staff.permission:User Management,view')->name('import-center');
+    Route::post('/import-center/staff', [ImportCenterController::class, 'importStaff'])->middleware('staff.permission:User Management,add')->name('import-center.staff');
+    Route::delete('/import-center/imports/{userImport}', [ImportCenterController::class, 'destroyImport'])->middleware('staff.permission:User Management,delete')->name('import-center.imports.destroy');
     Route::get('/staff/daily-attendance', [UsersController::class, 'dailyAttendance'])->middleware('staff.permission:Staff Attendance,view')->name('staff.daily-attendance');
     Route::post('/staff/daily-attendance', [UsersController::class, 'storeDailyAttendance'])->middleware('staff.permission:Staff Attendance,edit')->name('staff.daily-attendance.store');
     Route::get('/staff/payroll-management', [UsersController::class, 'payrollManagement'])->middleware('staff.permission:Payroll Management,view')->name('staff.payroll-management');
