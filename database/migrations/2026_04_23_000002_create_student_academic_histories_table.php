@@ -24,6 +24,10 @@ return new class extends Migration
                 $table->date('effective_date')->nullable();
                 $table->text('notes')->nullable();
                 $table->timestamps();
+
+                $table->unique(['student_id', 'academic_year_id'], 'student_history_unique_session');
+                $table->index(['organization_id', 'academic_year_id'], 'student_hist_org_year_idx');
+                $table->index(['student_id', 'is_current'], 'student_hist_current_idx');
             });
         }
 
@@ -97,6 +101,10 @@ return new class extends Migration
 
     private function ensureIndex(string $table, string $indexName, string $sql): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         $indexExists = DB::table('information_schema.statistics')
             ->where('table_schema', DB::getDatabaseName())
             ->where('table_name', $table)

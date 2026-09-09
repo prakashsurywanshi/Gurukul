@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('menu_order')->default(0)->after('show_in_menu');
             $table->string('status', 20)->default('draft')->after('short_description');
 
+            $table->dropIndex('website_pages_organization_id_is_published_sort_order_index');
             $table->dropColumn('is_published');
         });
     }

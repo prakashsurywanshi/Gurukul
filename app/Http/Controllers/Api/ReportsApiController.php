@@ -20,6 +20,7 @@ use App\Models\HostelAllocation;
 use App\Models\FeePayment;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReportsApiController extends Controller
@@ -157,9 +158,9 @@ class ReportsApiController extends Controller
                 $query->whereYear('exam_date', $selectedYear)
                     ->when($selectedClass !== 'all', fn ($scheduleQuery) => $scheduleQuery->where('class_id', $selectedClass));
             })
-            ->with('examSchedule.subject:id,name')
+            ->with('examSchedule.subject:id,name,name_mr,name_hi')
             ->get()
-            ->groupBy(fn ($result) => $result->examSchedule?->subject?->name ?? 'Unknown')
+            ->groupBy(fn ($result) => $result->examSchedule?->subject?->localized('name') ?? 'Unknown')
             ->map(fn ($results, $subject) => [
                 'subject' => $subject,
                 'average' => round($results->avg(fn ($result) => (float) $result->obtained_marks), 1),
@@ -224,12 +225,12 @@ class ReportsApiController extends Controller
             now()->year - 1,
             now()->year - 2,
         ])
-            ->merge(Attendance::query()->selectRaw('DISTINCT YEAR(date) as year')->pluck('year'))
-            ->merge(FeePayment::query()->selectRaw('DISTINCT YEAR(payment_date) as year')->pluck('year'))
+            ->merge(Attendance::query()->selectRaw('DISTINCT '.$this->yearExpression('date').' as year')->pluck('year'))
+            ->merge(FeePayment::query()->selectRaw('DISTINCT '.$this->yearExpression('payment_date').' as year')->pluck('year'))
             ->merge(
                 ExamResult::query()
                     ->join('exam_schedules', 'exam_results.exam_schedule_id', '=', 'exam_schedules.id')
-                    ->selectRaw('DISTINCT YEAR(exam_schedules.exam_date) as year')
+                    ->selectRaw('DISTINCT '.$this->yearExpression('exam_schedules.exam_date').' as year')
                     ->pluck('year')
             )
             ->filter()
@@ -243,10 +244,19 @@ class ReportsApiController extends Controller
             'label' => (string) $year,
         ]);
     }
+
+    private function yearExpression(string $column): string
+    {
+        $driver = DB::connection()->getDriverName();
+
+        return $driver === 'sqlite'
+            ? "strftime('%Y', {$column})"
+            : "YEAR({$column})";
+    }
     public function overview()
     {
         $totalStudents = Student::count();
-        $totalStaff = User::where('role', 'staff')->count();
+        $totalStaff = User::where('role', '!=', 'super_admin')->count();
         $totalClasses = SchoolClass::count();
         $totalBooks = LibraryBook::count();
         $totalRoutes = TransportRoute::count();
@@ -480,7 +490,7 @@ class ReportsApiController extends Controller
 
     public function staff()
     {
-        $staff = User::where('role', 'staff')->get();
+        $staff = User::where('role', '!=', 'super_admin')->get();
 
         $activeStaff = $staff->where('status', 'active')->count();
         $inactiveStaff = $staff->where('status', 'inactive')->count();
