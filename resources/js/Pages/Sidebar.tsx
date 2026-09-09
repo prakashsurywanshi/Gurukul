@@ -127,6 +127,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'exam-schedule-setup',
         'chapters-topics',
         'assign-class-teacher',
+        'assign-electives',
     ];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
@@ -908,6 +909,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Assign Class Teacher',
             icon: UserCog,
             href: '/assign-class-teacher',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'assign-electives',
+            label: 'Assign Electives',
+            icon: BookOpen,
+            href: '/assign-electives',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },
