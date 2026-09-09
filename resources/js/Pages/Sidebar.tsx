@@ -34,6 +34,7 @@ import {
     BedDouble,
     Trash2,
     Clock3,
+    Clock,
     ShieldCheck,
     BusFront,
     ClipboardPenLine,
@@ -128,6 +129,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'chapters-topics',
         'assign-class-teacher',
         'assign-electives',
+        'time-slots',
     ];
     const certificateTabs = ['certificate', 'marksheet', 'student-id-card', 'student-certificates'];
     const communicationTabs = [
@@ -917,6 +919,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             label: 'Assign Electives',
             icon: BookOpen,
             href: '/assign-electives',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
+            id: 'time-slots',
+            label: 'Manage Periods',
+            icon: Clock,
+            href: '/time-slots',
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Exam Management',
         },
