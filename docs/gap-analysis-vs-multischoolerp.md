@@ -48,7 +48,7 @@
 | Gate passes | `gate passes`, `gate terminal` | Missing | Entry/exit passes |
 | Houses & categories | `student houses`, `student categories` | Missing | `students.category` column exists but no config module |
 | Facilities / campus workers / directory | `facilities`, `campus workers`, `staff directory` | Partial | Departments/designations tables exist, no facility/campus-worker UI |
-| Store ops | `point of sale`, `sales history`, `supplier payments`, `goods receipts` | Partial | Vendors+POs exist; no POS/supplier payments/GRN |
+| Store ops | `point of sale`, `sales history`, `supplier payments`, `goods receipts` | Done | POS + sales history, GRN (stock + ledger), supplier payments in `store-pos`/`store-receipts`/`store-payments` |
 
 ### Phase 3 — HR & engagement
 
