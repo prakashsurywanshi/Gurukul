@@ -31,10 +31,10 @@
 
 | Module | Demo items | QGurukul status | Notes |
 |---|---|---|---|
-| TC & Exit | `tc & exit` | Missing | Transfer-certificate / leaving workflow |
-| Datesheet | `datesheet` | Missing | Exam schedule per class/session |
-| Exam ops config | `exam types`, `manage periods`, `chapters & topics`, `assign class teacher`, `assign electives` | Missing/Partial | Periods exist inline in timetables; no dedicated config |
-| Marks & grades | `enter marks`, `manage grades`, `teacher remarks`, `progress cards`, `generate/upload marksheet`, `schedule & marks setup` | Missing/Partial | We print marksheets but lack entry UI & grades config |
+| TC & Exit | `tc & exit` | Done | Transfer-certificate / leaving workflow (`student-exits`) |
+| Datesheet | `datesheet` | Done | Per-exam datesheet with publish (`datesheets`) |
+| Exam ops config | `exam types`, `manage periods`, `chapters & topics`, `assign class teacher`, `assign electives` | Done | Exam types, chapters & topics, exam schedule setup, class teacher & elective assignment (`exam-types`/`chapters-topics`/`exam-schedule`/`assign-*`) |
+| Marks & grades | `enter marks`, `manage grades`, `teacher remarks`, `progress cards`, `generate/upload marksheet`, `schedule & marks setup` | Done | Marks entry, grade scales, report cards + marksheet generation/print (`exams/marks`, `manage-grades`, `report-card`) |
 | CBC / competency | `cbc assessments/dashboard/reports`, `strands & outcomes`, `core competencies`, `pathways & tracks`, `cocurricular areas/grades` | Missing | Deferred (larger curriculum redesign) |
 | OSM assessment | `osm evaluate/guide/moderation/reports/sessions` | Missing | Deferred (named assessment framework) |
 
@@ -42,12 +42,12 @@
 
 | Module | Demo items | QGurukul status | Notes |
 |---|---|---|---|
-| Fee structure config | `fee types`, `fee groups`, `fees discount` | Partial | Types exist; no heads/groups; discounts folded into Scholarships |
-| Universal import | `import center` | Partial | Only student/fee importers |
-| Document vault | `document vault` | Missing | Staff/student document storage |
-| Gate passes | `gate passes`, `gate terminal` | Missing | Entry/exit passes |
-| Houses & categories | `student houses`, `student categories` | Missing | `students.category` column exists but no config module |
-| Facilities / campus workers / directory | `facilities`, `campus workers`, `staff directory` | Partial | Departments/designations tables exist, no facility/campus-worker UI |
+| Fee structure config | `fee types`, `fee groups`, `fees discount` | Done | Fee types, groups and discounts managed (`fee-groups`, `fee-discounts`) |
+| Universal import | `import center` | Done | Import center with Students/Staff/Fees/Income/Expenses/Library importers (`import-center`) |
+| Document vault | `document vault` | Done | Staff/student document storage (`document-vault`) |
+| Gate passes | `gate passes`, `gate terminal` | Done | Entry/exit passes with used/cancel lifecycle (`gate-passes`) |
+| Houses & categories | `student houses`, `student categories` | Done | House + category config, assignable to students (`houses-categories`) |
+| Facilities / campus workers / directory | `facilities`, `campus workers`, `staff directory` | Done | Facilities registry, campus-worker roster, staff directory (`facilities`/`campus-workers`/`staff-directory`) |
 | Store ops | `point of sale`, `sales history`, `supplier payments`, `goods receipts` | Done | POS + sales history, GRN (stock + ledger), supplier payments in `store-pos`/`store-receipts`/`store-payments` |
 
 ### Phase 3 — HR & engagement
