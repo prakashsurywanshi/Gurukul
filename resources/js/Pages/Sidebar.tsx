@@ -10,6 +10,7 @@ import {
     Book,
     MessageSquare,
     School,
+    Archive,
     GraduationCap,
     UserCog,
     Award,
@@ -143,6 +144,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'send-emails',
         'send-sms',
         'download-center',
+        'document-vault',
     ];
 
     const hrTabs = ['staff', 'import-center', 'staff-daily-attendance', 'payroll-management', 'leave-management'];
@@ -1077,6 +1079,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             icon: Download,
             href: '/communication/download-center',
             roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist', 'student', 'accountant', 'librarian'],
+            feature: 'Download Center',
+        },
+        {
+            id: 'document-vault',
+            label: 'Document Vault',
+            icon: Archive,
+            href: '/document-vault',
+            roles: ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'student'],
             feature: 'Download Center',
         },
         {

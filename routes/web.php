@@ -45,6 +45,7 @@ use App\Http\Controllers\FeesController;
 use App\Http\Controllers\FeeGroupController;
 use App\Http\Controllers\FeeDiscountController;
 use App\Http\Controllers\ImportCenterController;
+use App\Http\Controllers\DocumentVaultController;
 use App\Http\Controllers\FrontOfficeController;
 use App\Http\Controllers\HealthRecordsController;
 use App\Http\Controllers\HomeworkController;
@@ -435,6 +436,10 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::post('/communication/send-qwa-whatsapp/{message}/resend', [CommunicationController::class, 'resendQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,add')->name('communication.send-qwa-whatsapp.resend');
     Route::delete('/communication/send-qwa-whatsapp/{message}', [CommunicationController::class, 'destroyQwaWhatsapp'])->middleware('staff.permission:Send QWA Whatsapp,delete')->name('communication.send-qwa-whatsapp.destroy');
     Route::get('/communication/download-center', [CommunicationController::class, 'downloadCenter'])->middleware('staff.permission:Download Center,view')->name('communication.download-center');
+    Route::get('/document-vault', [DocumentVaultController::class, 'index'])->middleware('staff.permission:Download Center,view')->name('document-vault');
+    Route::post('/document-vault', [DocumentVaultController::class, 'store'])->middleware('staff.permission:Download Center,add')->name('document-vault.store');
+    Route::get('/document-vault/{document}/download', [DocumentVaultController::class, 'download'])->middleware('staff.permission:Download Center,view')->name('document-vault.download');
+    Route::delete('/document-vault/{document}', [DocumentVaultController::class, 'destroy'])->middleware('staff.permission:Download Center,delete')->name('document-vault.destroy');
     Route::post('/communication/download-center/media', [CommunicationController::class, 'storeDownloadCenterMedia'])->middleware('staff.permission:Download Center,add')->name('communication.download-center.media.store');
     Route::post('/communication/download-center/share', [CommunicationController::class, 'storeDownloadCenterShare'])->middleware('staff.permission:Download Center,add')->name('communication.download-center.share.store');
     Route::get('/communication/download-center/shares/{downloadCenterShare}/download', [CommunicationController::class, 'downloadDownloadCenterContent'])->middleware('staff.permission:Download Center,view')->name('communication.download-center.download');
