@@ -294,6 +294,7 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::get('/leads', [LeadController::class, 'index'])->middleware('staff.permission:Admission Leads,view')->name('leads.index');
     Route::post('/leads', [LeadController::class, 'store'])->middleware('staff.permission:Admission Leads,add')->name('leads.store');
     Route::patch('/leads/{lead}', [LeadController::class, 'update'])->middleware('staff.permission:Admission Leads,edit')->name('leads.update');
+    Route::patch('/leads/{lead}/status', [LeadController::class, 'updateStatus'])->middleware('staff.permission:Admission Leads,edit')->name('leads.updateStatus');
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])->middleware('staff.permission:Admission Leads,delete')->name('leads.destroy');
     Route::get('/visitor-register', [FrontOfficeController::class, 'visitorRegister'])->middleware('staff.permission:Visitor Register,view')->name('visitor-register');
     Route::post('/visitor-register', [FrontOfficeController::class, 'storeVisitorRegister'])->middleware('staff.permission:Visitor Register,add')->name('visitor-register.store');

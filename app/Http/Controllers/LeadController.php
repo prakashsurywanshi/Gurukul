@@ -67,6 +67,22 @@ class LeadController extends Controller
         return back()->with('success', 'Lead updated successfully.');
     }
 
+    public function updateStatus(Request $request, Lead $lead): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization && $lead->organization_id === $organization->id, 404);
+
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(Lead::STATUSES)],
+        ]);
+
+        $lead->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Lead stage updated.');
+    }
+
     public function destroy(Lead $lead): RedirectResponse
     {
         $user = Auth::user();

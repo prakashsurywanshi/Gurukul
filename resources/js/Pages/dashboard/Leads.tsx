@@ -1,7 +1,19 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { CalendarClock, Edit, GraduationCap, ListChecks, Phone, Plus, Search, Trash2, UserCheck } from 'lucide-react';
+import {
+    CalendarClock,
+    Edit,
+    GraduationCap,
+    LayoutGrid,
+    List,
+    ListChecks,
+    Phone,
+    Plus,
+    Search,
+    Trash2,
+    UserCheck,
+} from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -115,6 +127,7 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
         search: filters?.search ?? '',
     });
     const [searchQuery, setSearchQuery] = useState(filters?.search ?? '');
+    const [viewMode, setViewMode] = useState<'table' | 'board'>('table');
 
     useEffect(() => {
         if (flash.success) {
@@ -231,6 +244,23 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
         });
     };
 
+    const moveToStage = (lead: LeadRecord, status: string) => {
+        if (status === lead.status) {
+            return;
+        }
+
+        setProcessing(true);
+        router.patch(
+            `/leads/${lead.id}/status`,
+            { status },
+            {
+                preserveScroll: true,
+                onError: () => toast.error('Failed to move lead.'),
+                onFinish: () => setProcessing(false),
+            },
+        );
+    };
+
     return (
         <DashboardLayout user={user} activeTab="leads">
             <div className="min-h-full bg-slate-50 p-6">
@@ -292,9 +322,33 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
                     </div>
 
                     <Card>
-                        <CardHeader>
-                            <CardTitle>{t('Leads')}</CardTitle>
-                            <CardDescription>{t('Manage, filter and convert admission leads.')}</CardDescription>
+                        <CardHeader className="flex-row items-center justify-between space-y-0">
+                            <div>
+                                <CardTitle>{t('Leads')}</CardTitle>
+                                <CardDescription>{t('Manage, filter and convert admission leads.')}</CardDescription>
+                            </div>
+                            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100 p-1">
+                                <Button
+                                    type="button"
+                                    variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    className="gap-1.5 h-7"
+                                    onClick={() => setViewMode('table')}
+                                >
+                                    <List className="h-3.5 w-3.5" />
+                                    {t('List')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={viewMode === 'board' ? 'secondary' : 'ghost'}
+                                    size="sm"
+                                    className="gap-1.5 h-7"
+                                    onClick={() => setViewMode('board')}
+                                >
+                                    <LayoutGrid className="h-3.5 w-3.5" />
+                                    {t('Board')}
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex flex-wrap items-center gap-3">
@@ -364,134 +418,283 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
                                 )}
                             </div>
 
-                            <div className="overflow-hidden rounded-lg border border-slate-200">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>{t('Student')}</TableHead>
-                                            <TableHead>{t('Contact')}</TableHead>
-                                            <TableHead>{t('Source')}</TableHead>
-                                            <TableHead>{t('Class / Year')}</TableHead>
-                                            <TableHead>{t('Priority')}</TableHead>
-                                            <TableHead>{t('Status')}</TableHead>
-                                            <TableHead>{t('Follow-up')}</TableHead>
-                                            <TableHead>{t('Assigned To')}</TableHead>
-                                            <TableHead className="text-right">{t('Actions')}</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {leads.length === 0 ? (
+                            {viewMode === 'table' && (
+                                <div className="overflow-hidden rounded-lg border border-slate-200">
+                                    <Table>
+                                        <TableHeader>
                                             <TableRow>
-                                                <TableCell colSpan={9} className="h-24 text-center text-slate-500">
-                                                    {t('No leads found')}
-                                                </TableCell>
+                                                <TableHead>{t('Student')}</TableHead>
+                                                <TableHead>{t('Contact')}</TableHead>
+                                                <TableHead>{t('Source')}</TableHead>
+                                                <TableHead>{t('Class / Year')}</TableHead>
+                                                <TableHead>{t('Priority')}</TableHead>
+                                                <TableHead>{t('Status')}</TableHead>
+                                                <TableHead>{t('Follow-up')}</TableHead>
+                                                <TableHead>{t('Assigned To')}</TableHead>
+                                                <TableHead className="text-right">{t('Actions')}</TableHead>
                                             </TableRow>
-                                        ) : (
-                                            leads.map((lead) => {
-                                                const isDue =
-                                                    lead.followUpDate &&
-                                                    lead.followUpDate <= today &&
-                                                    !['admitted', 'closed', 'lost'].includes(lead.status);
+                                        </TableHeader>
+                                        <TableBody>
+                                            {leads.length === 0 ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={9} className="h-24 text-center text-slate-500">
+                                                        {t('No leads found')}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : (
+                                                leads.map((lead) => {
+                                                    const isDue =
+                                                        lead.followUpDate &&
+                                                        lead.followUpDate <= today &&
+                                                        !['admitted', 'closed', 'lost'].includes(lead.status);
 
-                                                return (
-                                                    <TableRow key={lead.id}>
-                                                        <TableCell>
-                                                            <div className="font-medium text-slate-900">
-                                                                {lead.studentName}
-                                                            </div>
-                                                            <div className="text-xs text-slate-500">
-                                                                {lead.parentName ?? t('No parent name')}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="flex items-center gap-1 text-sm text-slate-700">
-                                                                <Phone className="h-3.5 w-3.5 text-slate-400" />
-                                                                {lead.phone}
-                                                            </div>
-                                                            {lead.email && (
+                                                    return (
+                                                        <TableRow key={lead.id}>
+                                                            <TableCell>
+                                                                <div className="font-medium text-slate-900">
+                                                                    {lead.studentName}
+                                                                </div>
                                                                 <div className="text-xs text-slate-500">
-                                                                    {lead.email}
+                                                                    {lead.parentName ?? t('No parent name')}
                                                                 </div>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge variant="secondary">
-                                                                {t(sourceLabels[lead.source])}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="text-sm text-slate-700">
-                                                                {lead.interestedClass ?? '-'}
-                                                            </div>
-                                                            <div className="text-xs text-slate-500">
-                                                                {lead.academicYear ?? '-'}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={priorityStyles[lead.priority]}
-                                                            >
-                                                                {t(lead.priority)}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={statusStyles[lead.status]}
-                                                            >
-                                                                {t(lead.status)}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="text-sm text-slate-700">
-                                                                {lead.followUpDate ?? '-'}
-                                                            </div>
-                                                            {isDue && (
-                                                                <div className="flex items-center gap-1 text-xs font-medium text-amber-600">
-                                                                    <CalendarClock className="h-3 w-3" />
-                                                                    {t('Due')}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-1 text-sm text-slate-700">
+                                                                    <Phone className="h-3.5 w-3.5 text-slate-400" />
+                                                                    {lead.phone}
                                                                 </div>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell className="text-sm text-slate-600">
-                                                            {lead.assignedToName ?? '-'}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="flex justify-end gap-2">
-                                                                <Button
-                                                                    type="button"
+                                                                {lead.email && (
+                                                                    <div className="text-xs text-slate-500">
+                                                                        {lead.email}
+                                                                    </div>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge variant="secondary">
+                                                                    {t(sourceLabels[lead.source])}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="text-sm text-slate-700">
+                                                                    {lead.interestedClass ?? '-'}
+                                                                </div>
+                                                                <div className="text-xs text-slate-500">
+                                                                    {lead.academicYear ?? '-'}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge
                                                                     variant="outline"
-                                                                    size="icon"
-                                                                    disabled={processing}
-                                                                    onClick={() => openEditDialog(lead)}
-                                                                    className="h-8 w-8"
-                                                                    title={t('Edit lead')}
-                                                                    aria-label={t('Edit lead')}
+                                                                    className={priorityStyles[lead.priority]}
                                                                 >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    type="button"
+                                                                    {t(lead.priority)}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge
                                                                     variant="outline"
-                                                                    size="icon"
-                                                                    disabled={processing}
-                                                                    onClick={() => deleteLead(lead)}
-                                                                    className="h-8 w-8 border-red-200 text-red-700 hover:border-red-300 hover:text-red-800"
-                                                                    title={t('Delete lead')}
-                                                                    aria-label={t('Delete lead')}
+                                                                    className={statusStyles[lead.status]}
                                                                 >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
+                                                                    {t(lead.status)}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="text-sm text-slate-700">
+                                                                    {lead.followUpDate ?? '-'}
+                                                                </div>
+                                                                {isDue && (
+                                                                    <div className="flex items-center gap-1 text-xs font-medium text-amber-600">
+                                                                        <CalendarClock className="h-3 w-3" />
+                                                                        {t('Due')}
+                                                                    </div>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell className="text-sm text-slate-600">
+                                                                {lead.assignedToName ?? '-'}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex justify-end gap-2">
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        disabled={processing}
+                                                                        onClick={() => openEditDialog(lead)}
+                                                                        className="h-8 w-8"
+                                                                        title={t('Edit lead')}
+                                                                        aria-label={t('Edit lead')}
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        disabled={processing}
+                                                                        onClick={() => deleteLead(lead)}
+                                                                        className="h-8 w-8 border-red-200 text-red-700 hover:border-red-300 hover:text-red-800"
+                                                                        title={t('Delete lead')}
+                                                                        aria-label={t('Delete lead')}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
+
+                            {viewMode === 'board' && (
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                    {statuses.map((status) => {
+                                        const statusLeads = leads.filter((lead) => lead.status === status);
+
+                                        return (
+                                            <div
+                                                key={status}
+                                                className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                                            >
+                                                <div className="mb-3 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className={`inline-block h-2.5 w-2.5 rounded-full ${
+                                                                status === 'admitted'
+                                                                    ? 'bg-emerald-500'
+                                                                    : status === 'lost'
+                                                                      ? 'bg-red-500'
+                                                                      : status === 'new'
+                                                                        ? 'bg-blue-500'
+                                                                        : status === 'contacted'
+                                                                          ? 'bg-amber-500'
+                                                                          : status === 'interested'
+                                                                            ? 'bg-violet-500'
+                                                                            : 'bg-slate-400'
+                                                            }`}
+                                                        />
+                                                        <span className="font-semibold capitalize text-slate-800">
+                                                            {t(status)}
+                                                        </span>
+                                                    </div>
+                                                    <Badge variant="secondary">{statusLeads.length}</Badge>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {statusLeads.length === 0 && (
+                                                        <p className="rounded-lg border border-dashed border-slate-200 px-3 py-6 text-center text-sm text-slate-400">
+                                                            {t('No leads')}
+                                                        </p>
+                                                    )}
+                                                    {statusLeads.map((lead) => {
+                                                        const isDue =
+                                                            lead.followUpDate &&
+                                                            lead.followUpDate <= today &&
+                                                            !['admitted', 'closed', 'lost'].includes(lead.status);
+
+                                                        return (
+                                                            <div
+                                                                key={lead.id}
+                                                                className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm"
+                                                            >
+                                                                <div className="flex items-start justify-between gap-2">
+                                                                    <div className="min-w-0">
+                                                                        <div className="truncate font-medium text-slate-900">
+                                                                            {lead.studentName}
+                                                                        </div>
+                                                                        <div className="truncate text-xs text-slate-500">
+                                                                            {lead.parentName ?? t('No parent name')}
+                                                                        </div>
+                                                                    </div>
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className={priorityStyles[lead.priority]}
+                                                                    >
+                                                                        {t(lead.priority)}
+                                                                    </Badge>
+                                                                </div>
+
+                                                                <div className="mt-2 space-y-1 text-xs text-slate-600">
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Phone className="h-3 w-3 text-slate-400" />
+                                                                        {lead.phone}
+                                                                        {lead.email && (
+                                                                            <span className="truncate text-slate-500">
+                                                                                · {lead.email}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    {(lead.interestedClass || lead.academicYear) && (
+                                                                        <div>
+                                                                            {[lead.interestedClass, lead.academicYear]
+                                                                                .filter(Boolean)
+                                                                                .join(' · ') || '-'}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex items-center gap-2">
+                                                                        {isDue && (
+                                                                            <span className="flex items-center gap-1 font-medium text-amber-600">
+                                                                                <CalendarClock className="h-3 w-3" />
+                                                                                {t('Due')}
+                                                                            </span>
+                                                                        )}
+                                                                        {lead.followUpDate && !isDue && (
+                                                                            <span>{lead.followUpDate}</span>
+                                                                        )}
+                                                                        {lead.assignedToName && (
+                                                                            <span className="truncate text-slate-500">
+                                                                                {t('Assigned to')} {lead.assignedToName}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-2">
+                                                                    <Select
+                                                                        value={lead.status}
+                                                                        onValueChange={(value) =>
+                                                                            moveToStage(lead, value)
+                                                                        }
+                                                                        disabled={processing}
+                                                                    >
+                                                                        <SelectTrigger className="h-7 flex-1 text-xs">
+                                                                            <SelectValue
+                                                                                placeholder={t('Move to stage')}
+                                                                            />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {statuses.map((option) => (
+                                                                                <SelectItem key={option} value={option}>
+                                                                                    {t(option)}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="outline"
+                                                                        size="icon"
+                                                                        disabled={processing}
+                                                                        onClick={() => openEditDialog(lead)}
+                                                                        className="h-7 w-7"
+                                                                        title={t('Edit lead')}
+                                                                        aria-label={t('Edit lead')}
+                                                                    >
+                                                                        <Edit className="h-3.5 w-3.5" />
+                                                                    </Button>
+                                                                </div>
                                                             </div>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

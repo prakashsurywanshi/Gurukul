@@ -82,7 +82,7 @@
 
 | Area | We have | Demo additionally has |
 |---|---|---|
-| Leads | CRUD + status/source | Pipeline board, stages config, lead dashboard, lead scorer |
+| Leads | CRUD + status/source + pipeline board & stage moves | Pipeline stage configuration, lead scorer |
 | Lesson planning | lesson plans | Approvals, review, coverage reports, settings/guide |
 | PTM | sessions | Attendance & remarks, follow-ups, reports/guide |
 | Website CMS | CMS + pages | Template studio, creatives, testimonials, hero slides, nav builder |
