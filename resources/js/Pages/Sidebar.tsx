@@ -31,6 +31,9 @@ import {
     Upload,
     Palette,
     Target,
+    Building2,
+    HardHat,
+    Contact,
     Phone,
     Send,
     Inbox,
@@ -151,7 +154,16 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'document-vault',
     ];
 
-    const hrTabs = ['staff', 'import-center', 'staff-daily-attendance', 'payroll-management', 'leave-management'];
+    const hrTabs = [
+        'staff',
+        'import-center',
+        'staff-daily-attendance',
+        'payroll-management',
+        'leave-management',
+        'facilities',
+        'campus-workers',
+        'staff-directory',
+    ];
     const hostelTabs = ['hostel-management', 'hostel-fee-collection', 'my-hostel'];
     const transportTabs = ['transport-management', 'transport-fee-collection'];
     const settingTabs = [
@@ -1182,6 +1194,30 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             href: '/recruitment',
             roles: ['admin'],
             feature: 'Recruitment & Hiring',
+        },
+        {
+            id: 'campus-workers',
+            label: 'Campus Workers',
+            icon: HardHat,
+            href: '/campus-workers',
+            roles: ['admin'],
+            feature: 'Recruitment & Hiring',
+        },
+        {
+            id: 'facilities',
+            label: 'Facilities',
+            icon: Building2,
+            href: '/facilities',
+            roles: ['admin'],
+            feature: 'Inventory Management',
+        },
+        {
+            id: 'staff-directory',
+            label: 'Staff Directory',
+            icon: Contact,
+            href: '/staff-directory',
+            roles: ['admin'],
+            feature: 'User Management',
         },
     ].filter((item) => canAccessItem(item.roles, item.feature));
     const hasHRMenu = staffMenuItems.length > 0;
