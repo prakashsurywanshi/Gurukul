@@ -92,7 +92,7 @@
 | Transport | routes + fees | Live vehicle tracking |
 | Library | books + issue/return | Dedicated category/config dashboards |
 | Biometric | settings | Agent connector, device logs |
-| Reports | report center | Government/compliance reports |
+| Reports | report center + regulator reports | Government/compliance reports (now done: CBSE disclosure + government/RTE summary page & CSV export) |
 
 ## Implementation convention (every module)
 

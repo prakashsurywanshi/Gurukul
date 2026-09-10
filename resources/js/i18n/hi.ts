@@ -1022,6 +1022,7 @@ const hi = {
     'Expense Register': 'व्यय रजिस्टर',
     Export: 'एक्सपोर्ट करें',
     'Export CSV': 'CSV निर्यात करना',
+    'Export the disclosure and government summary for regulators.': 'नियामकों के लिए प्रकटीकरण और सरकारी सारांश निर्यात करें.',
     'Export PDF': 'पीडीएफ में निर्यात करें',
     'Export to CSV': 'CSV में एक्सपोर्ट करें',
     'Export-ready report tables.': 'एक्सपोर्ट - रेडी रिपोर्ट टेबल।',

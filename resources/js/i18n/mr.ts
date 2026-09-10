@@ -1016,6 +1016,7 @@ const mr = {
     'Expense Register': 'खर्च नोंदणी',
     Export: 'एक्सपोर्ट',
     'Export CSV': 'सीएसव्ही निर्यात करा',
+    'Export the disclosure and government summary for regulators.': 'नियामकांसाठी प्रकटीकरण आणि सरकारी सारांश निर्यात करा.',
     'Export PDF': 'पीडीएफ एक्सपोर्ट करा',
     'Export to CSV': 'सीएसव्हीवर निर्यात करा',
     'Export-ready report tables.': 'निर्यात - तयार अहवाल सारण्या.',

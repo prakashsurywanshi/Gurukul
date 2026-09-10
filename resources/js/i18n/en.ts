@@ -1010,6 +1010,7 @@ const en = {
     'Expense Register': 'Expense Register',
     Export: 'Export',
     'Export CSV': 'Export CSV',
+    'Export the disclosure and government summary for regulators.': 'Export the disclosure and government summary for regulators.',
     'Export PDF': 'Export PDF',
     'Export to CSV': 'Export to CSV',
     'Export-ready report tables.': 'Export-ready report tables.',

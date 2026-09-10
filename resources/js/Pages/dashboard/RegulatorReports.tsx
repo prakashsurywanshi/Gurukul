@@ -1,8 +1,9 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { Building2, CalendarCheck, GraduationCap, Landmark, Users } from 'lucide-react';
+import { Building2, CalendarCheck, Download, GraduationCap, Landmark, Users } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 export type RegulatorReportsProps = {
     school: {
@@ -48,6 +49,17 @@ export default function RegulatorReports({ school, disclosure, government }: Reg
                             {school.email && <span>{school.email}</span>}
                             {school.phone && <span>{school.phone}</span>}
                             {school.website && <span>{school.website}</span>}
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                            <p className="text-sm text-muted-foreground">
+                                {t('Export the disclosure and government summary for regulators.')}
+                            </p>
+                            <a href="/regulator-reports/export">
+                                <Button type="button" size="sm">
+                                    <Download className="mr-1.5 h-4 w-4" />
+                                    {t('Export CSV')}
+                                </Button>
+                            </a>
                         </div>
                     </CardHeader>
                 </Card>

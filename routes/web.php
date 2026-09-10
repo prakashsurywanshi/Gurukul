@@ -233,6 +233,7 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::put('/compliance/items/{item}', [ComplianceController::class, 'updateItem'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.items.update');
     Route::delete('/compliance/items/{item}', [ComplianceController::class, 'destroyItem'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.items.destroy');
     Route::get('/regulator-reports', [RegulatorReportsController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('regulator-reports');
+   Route::get('/regulator-reports/export', [RegulatorReportsController::class, 'exportCsv'])->middleware('staff.permission:Reports & Analytics,view')->name('regulator-reports.export');
     Route::get('/cctv', [CctvController::class, 'index'])->middleware('staff.permission:Biometric Settings,view')->name('cctv');
     Route::post('/cctv', [CctvController::class, 'store'])->middleware('staff.permission:Biometric Settings,edit')->name('cctv.store');
     Route::post('/cctv/{camera}/toggle', [CctvController::class, 'toggle'])->middleware('staff.permission:Biometric Settings,edit')->name('cctv.toggle');
