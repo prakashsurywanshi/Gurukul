@@ -84,7 +84,7 @@
 |---|---|---|
 | Leads | CRUD + status/source + pipeline board & stage moves | Pipeline stage configuration, lead scorer |
 | Lesson planning | lesson plans | Review workflow, coverage reports, settings/guide (approvals added: admin approve/withdraw, approver + timestamp tracked) |
-| PTM | sessions | Attendance & remarks, follow-ups, reports/guide |
+| PTM | sessions + appointments | Reports/guide (attendance/status flow, post-meeting remarks + follow-up tracking added) |
 | Website CMS | CMS + pages | Template studio, creatives, testimonials, hero slides, nav builder |
 | Certificates / ID cards | print | Card design studio (appearance templates) |
 | Hostel | management + fees | Room types, student allocation |

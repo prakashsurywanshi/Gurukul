@@ -678,6 +678,7 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::delete('/ptm/{ptmSession}', [PtmController::class, 'destroySession'])->middleware('staff.permission:PTM,delete')->name('ptm.destroy');
     Route::post('/ptm/{ptmSession}/appointments', [PtmController::class, 'storeAppointment'])->middleware('staff.permission:PTM,add')->name('ptm.appointments.store');
     Route::patch('/ptm/appointments/{ptmAppointment}', [PtmController::class, 'updateAppointment'])->middleware('staff.permission:PTM,edit')->name('ptm.appointments.update');
+   Route::patch('/ptm/appointments/{ptmAppointment}/follow-up', [PtmController::class, 'toggleAppointmentFollowUp'])->middleware('staff.permission:PTM,edit')->name('ptm.appointments.follow-up');
     Route::delete('/ptm/appointments/{ptmAppointment}', [PtmController::class, 'destroyAppointment'])->middleware('staff.permission:PTM,delete')->name('ptm.appointments.destroy');
     Route::get('/website-cms', [SettingsController::class, 'websiteCms'])->middleware('staff.permission:Website CMS,view')->name('website-cms');
     Route::get('/website-cms/editor', [SettingsController::class, 'websiteCmsEditor'])->middleware('staff.permission:Website CMS,edit')->name('website-cms.editor');

@@ -20,8 +20,18 @@ class PtmAppointment extends Model
         'parent_contact',
         'slot_time',
         'notes',
+        'remarks',
+        'follow_up_required',
+        'follow_up_due',
+        'follow_up_completed_at',
         'status',
         'created_by',
+    ];
+
+    protected $casts = [
+        'follow_up_required' => 'boolean',
+        'follow_up_due' => 'date',
+        'follow_up_completed_at' => 'datetime',
     ];
 
     public function session(): BelongsTo

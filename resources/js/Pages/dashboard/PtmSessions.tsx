@@ -6,6 +6,7 @@ import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Checkbox } from '../ui/checkbox';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -18,6 +19,10 @@ interface Appointment {
     parent_name?: string | null;
     parent_contact?: string | null;
     notes?: string | null;
+    remarks?: string | null;
+    follow_up_required?: boolean;
+    follow_up_due?: string | null;
+    follow_up_completed_at?: string | null;
     status: string;
     student?: {
         id: string;
@@ -102,6 +107,9 @@ export default function PtmSessions(pageProps: PtmProps) {
         parent_contact: '',
         slot_time: '',
         notes: '',
+        remarks: '',
+        follow_up_required: false,
+        follow_up_due: '',
         status: 'booked',
     });
 
@@ -178,6 +186,9 @@ export default function PtmSessions(pageProps: PtmProps) {
             parent_contact: '',
             slot_time: '',
             notes: '',
+            remarks: '',
+            follow_up_required: false,
+            follow_up_due: '',
             status: 'booked',
         });
         setShowAppointmentModal(true);
@@ -191,6 +202,9 @@ export default function PtmSessions(pageProps: PtmProps) {
             parent_contact: appointment.parent_contact ?? '',
             slot_time: appointment.slot_time ?? '',
             notes: appointment.notes ?? '',
+            remarks: appointment.remarks ?? '',
+            follow_up_required: appointment.follow_up_required ?? false,
+            follow_up_due: appointment.follow_up_due ?? '',
             status: appointment.status,
         });
         setShowAppointmentModal(true);
@@ -221,6 +235,19 @@ export default function PtmSessions(pageProps: PtmProps) {
             preserveScroll: true,
             onFinish: () => setDeletingId(null),
         });
+    };
+
+    const toggleFollowUp = (appointment: Appointment) => {
+        setDeletingId(appointment.id);
+        const done = !appointment.follow_up_completed_at;
+        router.patch(
+            `/ptm/appointments/${appointment.id}/follow-up`,
+            { done },
+            {
+                preserveScroll: true,
+                onFinish: () => setDeletingId(null),
+            },
+        );
     };
 
     return (
@@ -383,6 +410,7 @@ export default function PtmSessions(pageProps: PtmProps) {
                                                 <TableHead>{t('Parent')}</TableHead>
                                                 <TableHead>{t('Slot')}</TableHead>
                                                 <TableHead>{t('Status')}</TableHead>
+                                                <TableHead>{t('Remarks & Follow-up')}</TableHead>
                                                 {canManage && (
                                                     <TableHead className="text-right">{t('Actions')}</TableHead>
                                                 )}
@@ -431,6 +459,55 @@ export default function PtmSessions(pageProps: PtmProps) {
                                                         >
                                                             {t(i18nAppointmentStatus(appointment.status))}
                                                         </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="max-w-[260px]">
+                                                        {appointment.remarks && (
+                                                            <p className="text-xs text-gray-600 dark:text-gray-300">
+                                                                {appointment.remarks}
+                                                            </p>
+                                                        )}
+                                                        {appointment.follow_up_required && (
+                                                            <div className="mt-1 flex items-center gap-1.5">
+                                                                <Badge
+                                                                    className={
+                                                                        appointment.follow_up_completed_at
+                                                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                                                                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                                                                    }
+                                                                >
+                                                                    {appointment.follow_up_completed_at
+                                                                        ? t('Follow-up completed')
+                                                                        : t('Follow-up required')}
+                                                                </Badge>
+                                                                {appointment.follow_up_due && (
+                                                                    <span className="text-xs text-gray-500">
+                                                                        {t('Follow-up due')}:{' '}
+                                                                        {appointment.follow_up_due}
+                                                                    </span>
+                                                                )}
+                                                                {canManage && (
+                                                                    <Button
+                                                                        type="button"
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        className="h-6 px-1.5 text-xs"
+                                                                        disabled={deletingId === appointment.id}
+                                                                        onClick={() => toggleFollowUp(appointment)}
+                                                                    >
+                                                                        {deletingId === appointment.id ? (
+                                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                                        ) : appointment.follow_up_completed_at ? (
+                                                                            t('Reopen')
+                                                                        ) : (
+                                                                            t('Mark done')
+                                                                        )}
+                                                                    </Button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {!appointment.remarks && !appointment.follow_up_required && (
+                                                            <span className="text-sm text-gray-400">—</span>
+                                                        )}
                                                     </TableCell>
                                                     {canManage && (
                                                         <TableCell className="text-right">
@@ -683,6 +760,41 @@ export default function PtmSessions(pageProps: PtmProps) {
                                     onChange={(e) => setAppointmentForm({ ...appointmentForm, notes: e.target.value })}
                                     rows={2}
                                 />
+                            </div>
+                            <div>
+                                <Label>{t('Remarks')}</Label>
+                                <Textarea
+                                    value={appointmentForm.remarks}
+                                    onChange={(e) =>
+                                        setAppointmentForm({ ...appointmentForm, remarks: e.target.value })
+                                    }
+                                    rows={2}
+                                    placeholder={t('Post-meeting remarks')}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between gap-4">
+                                <Label className="flex items-center gap-2">
+                                    <Checkbox
+                                        checked={appointmentForm.follow_up_required}
+                                        onCheckedChange={(value) =>
+                                            setAppointmentForm({
+                                                ...appointmentForm,
+                                                follow_up_required: value === true,
+                                            })
+                                        }
+                                    />
+                                    {t('Follow-up required')}
+                                </Label>
+                                {appointmentForm.follow_up_required && (
+                                    <Input
+                                        type="date"
+                                        value={appointmentForm.follow_up_due}
+                                        onChange={(e) =>
+                                            setAppointmentForm({ ...appointmentForm, follow_up_due: e.target.value })
+                                        }
+                                        className="w-44"
+                                    />
+                                )}
                             </div>
                             <div className="flex justify-end gap-2 pt-2">
                                 <Button type="button" variant="outline" onClick={() => setShowAppointmentModal(false)}>

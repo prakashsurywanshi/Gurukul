@@ -73,6 +73,10 @@ class PtmController extends Controller
                         'parent_name' => $appointment->parent_name,
                         'parent_contact' => $appointment->parent_contact,
                         'notes' => $appointment->notes,
+                        'remarks' => $appointment->remarks,
+                        'follow_up_required' => $appointment->follow_up_required,
+                        'follow_up_due' => optional($appointment->follow_up_due)->format('Y-m-d'),
+                        'follow_up_completed_at' => optional($appointment->follow_up_completed_at)->format('Y-m-d H:i'),
                         'status' => $appointment->status,
                         'student' => $appointment->student ? [
                             'id' => (string) $appointment->student->id,
@@ -200,6 +204,9 @@ class PtmController extends Controller
             'parent_contact' => $validated['parent_contact'] ?? null,
             'slot_time' => $validated['slot_time'] ?? null,
             'notes' => $validated['notes'] ?? null,
+            'remarks' => $validated['remarks'] ?? null,
+            'follow_up_required' => $validated['follow_up_required'] ?? false,
+            'follow_up_due' => $validated['follow_up_due'] ?? null,
             'status' => $validated['status'],
             'created_by' => $user->id,
         ]);
@@ -221,10 +228,35 @@ class PtmController extends Controller
             'parent_contact' => $validated['parent_contact'] ?? null,
             'slot_time' => $validated['slot_time'] ?? null,
             'notes' => $validated['notes'] ?? null,
+            'remarks' => $validated['remarks'] ?? null,
+            'follow_up_required' => $validated['follow_up_required'] ?? false,
+            'follow_up_due' => $validated['follow_up_due'] ?? null,
             'status' => $validated['status'],
         ]);
 
+        if (!$validated['follow_up_required'] ?? false) {
+            $ptmAppointment->update(['follow_up_completed_at' => null]);
+        }
+
         return redirect()->route('ptm', ['session_id' => $ptmAppointment->ptm_session_id])->with('success', 'Appointment updated successfully.');
+    }
+
+    public function toggleAppointmentFollowUp(Request $request, PtmAppointment $ptmAppointment): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization && $ptmAppointment->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'done' => ['required', 'boolean'],
+        ]);
+
+        $ptmAppointment->update([
+            'follow_up_completed_at' => $validated['done'] ? now() : null,
+        ]);
+
+        return redirect()->route('ptm', ['session_id' => $ptmAppointment->ptm_session_id])->with('success', 'Follow-up updated successfully.');
     }
 
     public function destroyAppointment(PtmAppointment $ptmAppointment): RedirectResponse
@@ -261,6 +293,9 @@ class PtmController extends Controller
             'parent_contact' => ['nullable', 'string', 'max:20'],
             'slot_time' => ['nullable', 'date_format:H:i'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'remarks' => ['nullable', 'string', 'max:2000'],
+            'follow_up_required' => ['sometimes', 'boolean'],
+            'follow_up_due' => ['nullable', 'date'],
             'status' => ['required', Rule::in(self::APPOINTMENT_STATUSES)],
         ];
     }
