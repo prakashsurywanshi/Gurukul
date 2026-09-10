@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Organization;
+use App\Models\QrScanLog;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
@@ -73,7 +74,7 @@ class QrAttendanceController extends Controller
                 $attendanceRecords = Attendance::query()
                     ->where('organization_id', $organization->id)
                     ->where('class_id', $class->id)
-                    ->where('date', $date)
+                    ->whereDate('date', $date)
                     ->get()
                     ->keyBy('student_id');
             }
@@ -111,7 +112,7 @@ class QrAttendanceController extends Controller
         abort_unless($organization, 403);
 
         $validated = $request->validate([
-            'class_id' => ['required', 'integer', 'exists:school_classes,id'],
+            'class_id' => ['required', 'integer', 'exists:classes,id'],
             'date' => ['required', 'date'],
             'entries' => ['required', 'array', 'min:1'],
             'entries.*.student_id' => ['required', 'integer', 'exists:students,id'],
@@ -131,6 +132,8 @@ class QrAttendanceController extends Controller
             ->pluck('id')
             ->all();
 
+        $qrTokens = Student::query()->whereIn('id', $studentIds)->pluck('qr_token', 'id');
+
         foreach ($validated['entries'] as $entry) {
             if (! in_array($entry['student_id'], $validStudentIds, false)) {
                 continue;
@@ -149,6 +152,18 @@ class QrAttendanceController extends Controller
                     'marked_by' => $user->id,
                 ]
             );
+
+            QrScanLog::query()->create([
+                'organization_id' => $organization->id,
+                'student_id' => $entry['student_id'],
+                'scanned_by' => $user->id,
+                'method' => 'qr',
+                'status' => in_array($entry['status'], ['present', 'late'], true) ? 'success' : 'failure',
+                'qr_token' => $qrTokens[$entry['student_id']] ?? null,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'scan_date' => $validated['date'],
+            ]);
         }
 
         return redirect()->route('attendance-qr', [

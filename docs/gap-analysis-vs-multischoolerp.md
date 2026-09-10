@@ -58,19 +58,19 @@
 | Staff loans | `manage staff loans` | Done | Loan registry + EMI tracking/outstanding in `staff/loans` |
 | Staff appraisals | `appraisal criteria/cycles`, `appraisals` | Done | Appraisal cycles + staff appraisals in `staff/appraisals` |
 | Salary config | `salary templates`, `set salary` | Done | Templates with computed gross/net (deductions) + per-staff assignments in `staff/salary-templates` |
-| Surveys | `survey dashboard`, `all/my surveys`, `survey guide` | Missing | No surveys |
-| Engagement extras | `birthday manager`, `festival greetings` | Missing | |
-| Comms wallet / broadcast | `comms wallet`, `compose broadcast`, `broadcast history` | Missing/Partial | No credit wallet; messaging exists per-channel |
-| Chat moderation | `chat moderation`, `content safety` | Missing | Live chat exists; no moderation |
+| Surveys | `survey dashboard`, `all/my surveys`, `survey guide` | Done | Survey manager + response tracking with ratings in `surveys` |
+| Engagement extras | `birthday manager`, `festival greetings` | Done | Auto birthdays from staff profiles + manual registry + greetings in `engagement` |
+| Comms wallet / broadcast | `comms wallet`, `compose broadcast`, `broadcast history` | Done | Per-channel credit wallet (sms/email/whatsapp/push), per-staff allocations, ledger in `comms-wallet` |
+| Chat moderation | `chat moderation`, `content safety` | Done | Chat message queue with approve/hide moderation + flags in `chat-moderation` |
 
 ### Phase 4 — Compliance, reports, security
 
 | Module | Demo items | QGurukul status | Notes |
 |---|---|---|---|
-| Compliance suite | `compliance overview/packs/checklist/calendar` | Missing | |
-| Regulator reports | `cbse disclosure`, `government reports` | Missing | High value for Indian schools |
-| CCTV | `cctv cameras`, `camera wall`, `cctv access log`, `face monitoring`, `search by photo` | Missing | Hardware-agnostic registry + audit log only |
-| QR / attendance | `qr attendance report`, `qr scan audit`, `attendance logs` | Partial | QR present; no scan audit dashboard |
+| Compliance suite | `compliance overview/packs/checklist/calendar` | Done | Pack + checklist tracking with frequencies, due dates, status & completion in `compliance` |
+| Regulator reports | `cbse disclosure`, `government reports` | Done | CBSE disclosure (gender/class splits) + government/RTE aggregates (attendance, staff by role) in `regulator-reports` |
+| CCTV | `cctv cameras`, `camera wall`, `cctv access log`, `face monitoring`, `search by photo` | Partial | Camera registry + tamper-proof access log (view/export/photo search) in `cctv`; face monitoring is hardware-dependent |
+| QR / attendance | `qr attendance report`, `qr scan audit`, `attendance logs` | Now Done | QR attendance writes scan logs (`qr_scan_logs`); scan audit dashboard with success rate & today counts in `qr-scan-audit` |
 
 ### Custom fields (final)
 

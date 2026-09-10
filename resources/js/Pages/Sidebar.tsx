@@ -173,6 +173,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'engagement',
         'comms-wallet',
         'chat-moderation',
+        'compliance',
+        'cctv',
         'facilities',
         'campus-workers',
         'staff-directory',
@@ -207,6 +209,8 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'reports-alumni',
         'reports-activity-log',
         'reports-audit-trail',
+        'regulator-reports',
+        'qr-scan-audit',
     ];
 
     const [studentsOpen, setStudentsOpen] = useState(studentTabs.includes(activeTab));
@@ -1273,6 +1277,22 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Live Chat',
         },
         {
+            id: 'compliance',
+            label: 'Compliance Suite',
+            icon: ShieldCheck,
+            href: '/compliance',
+            roles: ['admin'],
+            feature: 'Reports & Analytics',
+        },
+        {
+            id: 'cctv',
+            label: 'CCTV Camera Registry',
+            icon: Video,
+            href: '/cctv',
+            roles: ['admin'],
+            feature: 'Biometric Settings',
+        },
+        {
             id: 'teacher-evaluations',
             label: 'Teacher Evaluations',
             icon: ClipboardList,
@@ -1598,6 +1618,22 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             href: '/reports?module=audit-trail',
             roles: ['super_admin', 'admin'],
             feature: 'Reports & Analytics',
+        },
+        {
+            id: 'regulator-reports',
+            label: 'Regulator Reports',
+            icon: FileClock,
+            href: '/regulator-reports',
+            roles: ['super_admin', 'admin'],
+            feature: 'Reports & Analytics',
+        },
+        {
+            id: 'qr-scan-audit',
+            label: 'QR Scan Audit',
+            icon: QrCode,
+            href: '/qr-scan-audit',
+            roles: ['super_admin', 'admin'],
+            feature: 'QR Code Attendance',
         },
     ].filter((item) => canAccessItem(item.roles, item.feature));
     const hasReportMenu = reportMenuItems.length > 0;
