@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import { MarathiInput } from '../../../components/regional/MarathiInput';
 import { transliterateText } from '../../../lib/transliterateText';
 import { toast } from 'sonner';
+import AdmissionCustomFields, { AdmissionCustomField } from './AdmissionCustomFields';
 
 interface CreateStudentProps {
     user: any;
@@ -20,9 +21,10 @@ interface CreateStudentProps {
         name: string;
         section: string;
     }[];
+    admissionCustomFields: AdmissionCustomField[];
 }
 
-export default function CreateStudent({ user, classRecords }: CreateStudentProps) {
+export default function CreateStudent({ user, classRecords, admissionCustomFields = [] }: CreateStudentProps) {
     const { t } = useLanguage();
     const { languageSettings } = usePage().props as any;
     const regionalLanguage = languageSettings?.regional_language ?? 'mr';
@@ -62,7 +64,9 @@ export default function CreateStudent({ user, classRecords }: CreateStudentProps
         caste: '',
         previous_school: '',
     });
+    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
     const [generatingAll, setGeneratingAll] = useState(false);
+    const hasCustomFields = admissionCustomFields.length > 0;
 
     const NAME_SYNC_PAIRS: ReadonlyArray<[string, string]> = [
         ['first_name', 'first_name_mr'],
@@ -178,6 +182,7 @@ export default function CreateStudent({ user, classRecords }: CreateStudentProps
             ...formData,
             permanent_address: formData.permanent_address,
             current_address: formData.same_as_permanent ? formData.permanent_address : formData.current_address,
+            custom_fields: customFieldValues,
         };
 
         router.post('/students', payload, {
@@ -271,11 +276,14 @@ export default function CreateStudent({ user, classRecords }: CreateStudentProps
                     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                         <form id="create-student-form" onSubmit={handleSubmit} className="space-y-6">
                             <Tabs defaultValue="personal">
-                                <TabsList className="grid w-full grid-cols-4">
+                                <TabsList className={`grid w-full ${hasCustomFields ? 'grid-cols-5' : 'grid-cols-4'}`}>
                                     <TabsTrigger value="personal">{t('Personal')}</TabsTrigger>
                                     <TabsTrigger value="academic">{t('Academic')}</TabsTrigger>
                                     <TabsTrigger value="parent">{t('Parent')}</TabsTrigger>
                                     <TabsTrigger value="address">{t('Address')}</TabsTrigger>
+                                    {hasCustomFields && (
+                                        <TabsTrigger value="custom">{t('Admission Fields')}</TabsTrigger>
+                                    )}
                                 </TabsList>
 
                                 <TabsContent value="personal" className="space-y-4 mt-4">
@@ -602,6 +610,18 @@ export default function CreateStudent({ user, classRecords }: CreateStudentProps
                                         )}
                                     </div>
                                 </TabsContent>
+
+                                {hasCustomFields && (
+                                    <TabsContent value="custom" className="space-y-4 mt-4">
+                                        <AdmissionCustomFields
+                                            fields={admissionCustomFields}
+                                            values={customFieldValues}
+                                            onChange={(fieldKey, value) =>
+                                                setCustomFieldValues((current) => ({ ...current, [fieldKey]: value }))
+                                            }
+                                        />
+                                    </TabsContent>
+                                )}
                             </Tabs>
                         </form>
                     </div>

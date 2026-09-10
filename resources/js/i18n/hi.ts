@@ -3739,6 +3739,8 @@ const hi = {
     'Temperature': 'तापमान',
     'Timeout (seconds)': 'टाइमआउट (सेकंड)',
     'Close': 'बंद करें',
+    'Admission Fields': 'प्रवेश क्षेत्र',
+    'Select': 'चुनें',
     'Save Settings': 'सेटिंग्स सहेजें',
     'Open Settings and enable the assistant, then configure a provider.': 'सेटिंग्स खोलें और सहायक सक्षम करें, फिर एक प्रदाता कॉन्फ़िगर करें।',
     'AI': 'एआई',

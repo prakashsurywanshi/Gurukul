@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
 use App\Models\CustomFieldDefinition;
 use App\Models\CustomFieldValue;
 use App\Models\Organization;
+use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\StaffPermissionService;
@@ -274,6 +276,258 @@ class CustomFieldsTest extends TestCase
         $receptionist = $this->createUser($organization, 'receptionist');
 
         $this->actingAs($receptionist)->get('/custom-fields')->assertForbidden();
+    }
+
+    public function test_student_admission_form_exposes_admission_custom_fields(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Minibus Route',
+            'field_key' => 'minibus_route',
+            'field_type' => 'select',
+            'options' => ['S1', 'S2', 'S3'],
+            'is_required' => true,
+            'show_in_admission' => true,
+        ]);
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Aadhaar Number',
+            'field_key' => 'aadhaar_number',
+            'field_type' => 'number',
+            'is_required' => false,
+            'show_in_admission' => true,
+        ]);
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Internal Note',
+            'field_key' => 'internal_note',
+            'field_type' => 'text',
+            'is_required' => false,
+            'show_in_admission' => false,
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/students/create')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/students/CreateStudent')
+                ->has('admissionCustomFields', 2)
+                ->where('admissionCustomFields.0.fieldKey', 'minibus_route')
+                ->where('admissionCustomFields.1.fieldKey', 'aadhaar_number')
+            );
+    }
+
+    public function test_student_store_saves_admission_custom_field_values(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        $class = $this->createClass($organization);
+
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Minibus Route',
+            'field_key' => 'minibus_route',
+            'field_type' => 'select',
+            'options' => ['S1', 'S2', 'S3'],
+            'is_required' => true,
+            'show_in_admission' => true,
+        ]);
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Aadhaar Number',
+            'field_key' => 'aadhaar_number',
+            'field_type' => 'number',
+            'is_required' => false,
+            'show_in_admission' => true,
+            'sort_order' => 1,
+        ]);
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Internal Note',
+            'field_key' => 'internal_note',
+            'field_type' => 'text',
+            'show_in_admission' => false,
+        ]);
+
+        $this->actingAs($admin)->post('/students', [
+            'first_name' => 'Ananya',
+            'middle_name' => 'Shrikant',
+            'last_name' => 'Kulkarni',
+            'first_name_mr' => 'अनन्या',
+            'middle_name_mr' => 'श्रीकांत',
+            'last_name_mr' => 'कुलकर्णी',
+            'date_of_birth' => '2013-08-12',
+            'gender' => 'female',
+            'class' => $class->name,
+            'section' => $class->section,
+            'admission_date' => '2026-06-01',
+            'custom_fields' => [
+                'minibus_route' => 'S2',
+                'aadhaar_number' => '123456789012',
+                'internal_note' => 'should be ignored',
+            ],
+        ])->assertRedirect();
+
+        $student = Student::query()->where('organization_id', $organization->id)->first();
+        $this->assertNotNull($student);
+
+        $minibusField = CustomFieldDefinition::query()->where('field_key', 'minibus_route')->first();
+        $aadhaarField = CustomFieldDefinition::query()->where('field_key', 'aadhaar_number')->first();
+        $internalField = CustomFieldDefinition::query()->where('field_key', 'internal_note')->first();
+
+        $this->assertSame('S2', CustomFieldValue::query()->where('field_id', $minibusField->id)->where('entity_id', $student->id)->value('value'));
+        $this->assertSame('123456789012', CustomFieldValue::query()->where('field_id', $aadhaarField->id)->where('entity_id', $student->id)->value('value'));
+        $this->assertNull(CustomFieldValue::query()->where('field_id', $internalField->id)->first());
+    }
+
+    public function test_student_store_validates_required_admission_custom_fields(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        $class = $this->createClass($organization);
+
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Minibus Route',
+            'field_key' => 'minibus_route',
+            'field_type' => 'select',
+            'options' => ['S1', 'S2', 'S3'],
+            'is_required' => true,
+            'show_in_admission' => true,
+        ]);
+
+        $basePayload = [
+            'first_name' => 'Ananya',
+            'middle_name' => 'Shrikant',
+            'last_name' => 'Kulkarni',
+            'first_name_mr' => 'अनन्या',
+            'middle_name_mr' => 'श्रीकांत',
+            'last_name_mr' => 'कुलकर्णी',
+            'date_of_birth' => '2013-08-12',
+            'gender' => 'female',
+            'class' => $class->name,
+            'section' => $class->section,
+            'admission_date' => '2026-06-01',
+        ];
+
+        $this->actingAs($admin)->post('/students', $basePayload)->assertSessionHasErrors('custom_fields.minibus_route');
+        $this->actingAs($admin)->post('/students', $basePayload + [
+            'custom_fields' => ['minibus_route' => 'S9'],
+        ])->assertSessionHasErrors('custom_fields.minibus_route');
+
+        $this->actingAs($admin)->post('/students', $basePayload + [
+            'custom_fields' => ['minibus_route' => 'S3'],
+        ])->assertRedirect();
+
+        $this->assertSame('S3', CustomFieldValue::query()->whereNotNull('value')->whereHas('field', fn ($query) => $query->where('field_key', 'minibus_route'))->value('value'));
+    }
+
+    public function test_student_update_updates_admission_custom_field_values(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        $class = $this->createClass($organization);
+
+        $student = Student::query()->create([
+            'organization_id' => $organization->id,
+            'class_id' => $class->id,
+            'admission_no' => 'ADM-CF-EDIT',
+            'first_name' => 'Rohan',
+            'last_name' => 'Deshmukh',
+            'date_of_birth' => '2012-03-21',
+            'gender' => 'male',
+            'admission_date' => '2026-06-01',
+        ]);
+
+        CustomFieldDefinition::query()->create([
+            'organization_id' => $organization->id,
+            'entity' => 'student',
+            'label' => 'Aadhaar Number',
+            'field_key' => 'aadhaar_number',
+            'field_type' => 'number',
+            'is_required' => false,
+            'show_in_admission' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get("/students/{$student->id}/edit")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/students/EditStudent')
+                ->has('admissionCustomFields', 1)
+                ->where('admissionCustomFieldValues.aadhaar_number', null)
+            );
+
+        $this->actingAs($admin)->patch("/students/{$student->id}", [
+            'first_name' => 'Rohan',
+            'middle_name' => 'Vijay',
+            'last_name' => 'Deshmukh',
+            'first_name_mr' => 'रोहन',
+            'middle_name_mr' => 'विजय',
+            'last_name_mr' => 'देशमुख',
+            'date_of_birth' => '2012-03-21',
+            'gender' => 'male',
+            'class' => $class->name,
+            'section' => $class->section,
+            'admission_date' => '2026-06-01',
+            'custom_fields' => ['aadhaar_number' => '987654321098'],
+        ])->assertRedirect();
+
+        $field = CustomFieldDefinition::query()->where('field_key', 'aadhaar_number')->first();
+        $this->assertSame('987654321098', CustomFieldValue::query()->where('field_id', $field->id)->where('entity_id', $student->id)->value('value'));
+
+        $this->actingAs($admin)->patch("/students/{$student->id}", [
+            'first_name' => 'Rohan',
+            'middle_name' => 'Vijay',
+            'last_name' => 'Deshmukh',
+            'first_name_mr' => 'रोहन',
+            'middle_name_mr' => 'विजय',
+            'last_name_mr' => 'देशमुख',
+            'date_of_birth' => '2012-03-21',
+            'gender' => 'male',
+            'class' => $class->name,
+            'section' => $class->section,
+            'admission_date' => '2026-06-01',
+            'custom_fields' => ['aadhaar_number' => ''],
+        ])->assertRedirect();
+
+        $this->assertNull(CustomFieldValue::query()->where('field_id', $field->id)->where('entity_id', $student->id)->value('value'));
+    }
+
+    private function createClass(Organization $organization): SchoolClass
+    {
+        $year = AcademicYear::query()->create([
+            'organization_id' => $organization->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-04-01',
+            'end_date' => '2027-03-31',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        return SchoolClass::query()->create([
+            'organization_id' => $organization->id,
+            'academic_year_id' => $year->id,
+            'name' => '10',
+            'section' => 'A',
+            'room_number' => '101',
+            'capacity' => 30,
+            'status' => 'active',
+        ]);
     }
 
     private function createOrganization(): Organization

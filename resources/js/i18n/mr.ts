@@ -3713,6 +3713,8 @@ const mr = {
     'Temperature': 'तापमान',
     'Timeout (seconds)': 'टाइमआउट (सेकंद)',
     'Close': 'बंद करा',
+    'Admission Fields': 'प्रवेश क्षेत्रे',
+    'Select': 'निवडा',
     'Save Settings': 'सेटिंग्ज जतन करा',
     'Open Settings and enable the assistant, then configure a provider.': 'सेटिंग्ज उघडा आणि सहाय्यक सक्षम करा, नंतर प्रदाता कॉन्फिगर करा.',
     'AI': 'एआय',

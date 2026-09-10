@@ -12,6 +12,7 @@ import { MarathiInput } from '../../../components/regional/MarathiInput';
 import { transliterateText } from '../../../lib/transliterateText';
 import { getCsrfToken } from '../../../lib/csrf';
 import { toast } from 'sonner';
+import AdmissionCustomFields, { AdmissionCustomField } from './AdmissionCustomFields';
 
 interface EditStudentProps {
     user: any;
@@ -22,6 +23,8 @@ interface EditStudentProps {
         name: string;
         section: string;
     }[];
+    admissionCustomFields: AdmissionCustomField[];
+    admissionCustomFieldValues: Record<string, string>;
 }
 
 const emptyForm = {
@@ -75,7 +78,14 @@ const emptyForm = {
     status: 'active',
 };
 
-export default function EditStudent({ user, studentId, student, classRecords }: EditStudentProps) {
+export default function EditStudent({
+    user,
+    studentId,
+    student,
+    classRecords,
+    admissionCustomFields = [],
+    admissionCustomFieldValues = {},
+}: EditStudentProps) {
     const { t } = useLanguage();
     const { languageSettings } = usePage().props as any;
     const dualLanguageEnabled = Boolean(languageSettings?.dual_language_enabled);
@@ -83,6 +93,7 @@ export default function EditStudent({ user, studentId, student, classRecords }: 
     const regionalLanguageLabel =
         regionalLanguage === 'mr' ? t('Marathi') : regionalLanguage === 'hi' ? t('Hindi') : t('Regional');
     const [formData, setFormData] = useState(emptyForm);
+    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>(admissionCustomFieldValues);
     const [loading, setLoading] = useState(true);
     const [translating, setTranslating] = useState<string | null>(null);
     const [generatingAll, setGeneratingAll] = useState(false);
@@ -275,6 +286,7 @@ export default function EditStudent({ user, studentId, student, classRecords }: 
         router.patch(`/students/${studentId}`, {
             ...formData,
             admission_no: originalAdmissionNo,
+            custom_fields: customFieldValues,
         });
     };
 
@@ -695,6 +707,25 @@ export default function EditStudent({ user, studentId, student, classRecords }: 
                                 {dualLanguageEnabled && renderMarathiRow('Caste', 'caste', 'caste_mr')}
                             </CardContent>
                         </Card>
+
+                        {admissionCustomFields.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-xl font-semibold text-slate-900">
+                                        {t('Admission Fields')}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <AdmissionCustomFields
+                                        fields={admissionCustomFields}
+                                        values={customFieldValues}
+                                        onChange={(fieldKey, value) =>
+                                            setCustomFieldValues((current) => ({ ...current, [fieldKey]: value }))
+                                        }
+                                    />
+                                </CardContent>
+                            </Card>
+                        )}
                     </form>
                 </div>
             </div>

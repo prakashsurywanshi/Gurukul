@@ -6,6 +6,8 @@ use App\Jobs\ImportStudentsJob;
 use App\Mail\StudentWelcomeCredentialsMail;
 use App\Models\AcademicYear;
 use App\Models\AlumniRecord;
+use App\Models\CustomFieldDefinition;
+use App\Models\CustomFieldValue;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -60,6 +62,7 @@ class StudentsController extends Controller
         return Inertia::render('dashboard/students/CreateStudent', [
             'user' => $user,
             'classRecords' => $this->getClassRecords($organization),
+            'admissionCustomFields' => $this->getAdmissionCustomFields($organization),
         ]);
     }
 
@@ -73,10 +76,12 @@ class StudentsController extends Controller
         }
 
         $validated = $this->validateStudentPayload($request->all(), $organization);
+        $customFieldValues = $this->validateAdmissionCustomFieldValues($organization, $request->input('custom_fields', []));
         $credentialsEmailWarning = null;
 
         try {
             $student = Student::query()->create($this->buildStudentAttributes($validated, $organization));
+            $this->syncAdmissionCustomFieldValues($student, $organization, $customFieldValues);
             $credentialsEmailWarning = $this->syncStudentUser($student, $organization);
             $this->studentAcademicHistoryService->syncCurrentRecord($student->fresh('schoolClass'), 'admission', 'Created from student management.');
         } catch (QueryException $exception) {
@@ -213,6 +218,8 @@ class StudentsController extends Controller
             'studentId' => (string) $student->id,
             'student' => $this->serializeStudent($student),
             'classRecords' => $this->getClassRecords($organization),
+            'admissionCustomFields' => $this->getAdmissionCustomFields($organization),
+            'admissionCustomFieldValues' => $this->getStudentCustomFieldValues($student),
         ]);
     }
 
@@ -225,9 +232,11 @@ class StudentsController extends Controller
         $this->ensureStudentBelongsToOrganization($student, $organization->id);
 
         $validated = $this->validateStudentPayload($request->all(), $organization, $student);
+        $customFieldValues = $this->validateAdmissionCustomFieldValues($organization, $request->input('custom_fields', []));
 
         $student->update($this->buildStudentAttributes($validated, $organization, $student));
         $freshStudent = $student->fresh('schoolClass');
+        $this->syncAdmissionCustomFieldValues($freshStudent, $organization, $customFieldValues);
         $this->syncStudentUser($freshStudent, $organization);
         $this->studentAcademicHistoryService->syncCurrentRecord($freshStudent, 'updated', 'Student academic assignment updated from edit form.');
 
@@ -612,6 +621,145 @@ class StudentsController extends Controller
         $validated['hostel_required'] = filter_var($validated['hostel_required'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         return $validated;
+    }
+
+    private function getAdmissionCustomFields(Organization $organization): array
+    {
+        if ($organization === null) {
+            return [];
+        }
+
+        return CustomFieldDefinition::query()
+            ->where('organization_id', $organization->id)
+            ->where('entity', 'student')
+            ->where('is_active', true)
+            ->where('show_in_admission', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (CustomFieldDefinition $field) => [
+                'id' => $field->id,
+                'label' => $field->label,
+                'fieldKey' => $field->field_key,
+                'fieldType' => $field->field_type,
+                'options' => $field->options ?? [],
+                'isRequired' => $field->is_required,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function getStudentCustomFieldValues(Student $student): array
+    {
+        $definitions = CustomFieldDefinition::query()
+            ->where('organization_id', $student->organization_id)
+            ->where('entity', 'student')
+            ->where('is_active', true)
+            ->where('show_in_admission', true)
+            ->get(['id', 'field_key']);
+
+        if ($definitions->isEmpty()) {
+            return [];
+        }
+
+        $valuesByField = CustomFieldValue::query()
+            ->where('organization_id', $student->organization_id)
+            ->where('entity', 'student')
+            ->where('entity_id', $student->id)
+            ->whereIn('field_id', $definitions->pluck('id')->all())
+            ->pluck('value', 'field_id');
+
+        return $definitions
+            ->mapWithKeys(fn (CustomFieldDefinition $field) => [$field->field_key => $valuesByField->get($field->id)])
+            ->all();
+    }
+
+    private function validateAdmissionCustomFieldValues(Organization $organization, array $submitted): array
+    {
+        $fields = CustomFieldDefinition::query()
+            ->where('organization_id', $organization->id)
+            ->where('entity', 'student')
+            ->where('is_active', true)
+            ->where('show_in_admission', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $errors = [];
+        $normalized = [];
+
+        foreach ($fields as $field) {
+            $input = $submitted[$field->field_key] ?? null;
+            $input = is_array($input) ? null : $input;
+
+            if ($field->is_required && blank($input)) {
+                $errors['custom_fields.'.$field->field_key] = 'The '.$field->label.' field is required.';
+            }
+
+            if (filled($input) && ! $this->customFieldValueIsValid($field, $input)) {
+                $errors['custom_fields.'.$field->field_key] = 'The '.$field->label.' field is invalid.';
+            }
+
+            $normalized[$field->field_key] = filled($input) ? $this->normalizeCustomFieldValue($field, $input) : null;
+        }
+
+        if ($errors) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        return $normalized;
+    }
+
+    private function customFieldValueIsValid(CustomFieldDefinition $field, string $input): bool
+    {
+        return match ($field->field_type) {
+            'number' => is_numeric($input),
+            'date' => (bool) strtotime($input),
+            'select' => in_array($input, $field->options ?? [], true),
+            default => true,
+        };
+    }
+
+    private function normalizeCustomFieldValue(CustomFieldDefinition $field, string $input): string
+    {
+        return match ($field->field_type) {
+            'number' => (string) ((float) $input),
+            'date' => date('Y-m-d', strtotime($input)),
+            default => $input,
+        };
+    }
+
+    private function syncAdmissionCustomFieldValues(Student $student, Organization $organization, array $values): void
+    {
+        if ($values === []) {
+            return;
+        }
+
+        $definitions = CustomFieldDefinition::query()
+            ->where('organization_id', $organization->id)
+            ->where('entity', 'student')
+            ->where('is_active', true)
+            ->where('show_in_admission', true)
+            ->get()
+            ->keyBy('field_key');
+
+        foreach ($values as $fieldKey => $value) {
+            $field = $definitions->get($fieldKey);
+
+            if (! $field) {
+                continue;
+            }
+
+            CustomFieldValue::query()->updateOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'entity' => 'student',
+                    'entity_id' => $student->id,
+                    'field_id' => $field->id,
+                ],
+                ['value' => $value]
+            );
+        }
     }
 
     private function buildStudentAttributes(array $validated, Organization $organization, ?Student $student = null): array

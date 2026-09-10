@@ -3719,6 +3719,8 @@ const en = {
     'Temperature': 'Temperature',
     'Timeout (seconds)': 'Timeout (seconds)',
     'Close': 'Close',
+    'Admission Fields': 'Admission Fields',
+    'Select': 'Select',
     'Save Settings': 'Save Settings',
     'Open Settings and enable the assistant, then configure a provider.': 'Open Settings and enable the assistant, then configure a provider.',
     'AI': 'AI',
