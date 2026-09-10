@@ -188,6 +188,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'online-payment-settings',
         'roles-permissions',
         'sessions',
+        'custom-fields',
     ];
     const websiteCmsTabs = ['website-cms', 'pages-builder'];
     const reportTabs = [
@@ -1451,6 +1452,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             icon: Database,
             href: '/backups',
             roles: ['super_admin', 'admin'],
+            feature: 'General Setting',
+        },
+        {
+            id: 'custom-fields',
+            label: 'Custom Fields',
+            icon: ClipboardList,
+            href: '/custom-fields',
+            roles: ['admin'],
             feature: 'General Setting',
         },
         {

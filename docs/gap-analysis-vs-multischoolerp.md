@@ -76,7 +76,7 @@
 
 | Module | Demo items | QGurukul status | Notes |
 |---|---|---|---|
-| Custom fields / data validator / admission form fields | `custom fields`, `data records`, `data validator`, `admission form fields`, `field settings` | Missing | Build on top of all module additions |
+| Custom fields / data validator / admission form fields | `custom fields`, `data records`, `data validator`, `admission form fields`, `field settings` | Partial | Custom field definitions (text/textarea/number/date/dropdown) for students & staff, per-record data entry + completion/required validator in `custom-fields`; admission-form binding flag present, UI binding deferred |
 
 ## Partial-but-thinner (reference)
 
