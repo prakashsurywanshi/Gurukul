@@ -54,10 +54,10 @@
 
 | Module | Demo items | QGurukul status | Notes |
 |---|---|---|---|
-| Leave types config | `leave types`, `approve leave` | Partial | Leave request/balance exists; no leave-type catalogue |
-| Staff loans | `manage staff loans` | Missing | No loan registry/EMI |
-| Staff appraisals | `appraisal criteria/cycles`, `appraisals` | Missing | We have anonymous Teacher Evaluations only |
-| Salary config | `salary templates`, `set salary` | Partial | Payroll page exists; no template/assignment model |
+| Leave types config | `leave types`, `approve leave` | Done | Leave-type catalogue (`staff/leave-types`) on top of existing leave flows |
+| Staff loans | `manage staff loans` | Done | Loan registry + EMI tracking/outstanding in `staff/loans` |
+| Staff appraisals | `appraisal criteria/cycles`, `appraisals` | Done | Appraisal cycles + staff appraisals in `staff/appraisals` |
+| Salary config | `salary templates`, `set salary` | Done | Templates with computed gross/net (deductions) + per-staff assignments in `staff/salary-templates` |
 | Surveys | `survey dashboard`, `all/my surveys`, `survey guide` | Missing | No surveys |
 | Engagement extras | `birthday manager`, `festival greetings` | Missing | |
 | Comms wallet / broadcast | `comms wallet`, `compose broadcast`, `broadcast history` | Missing/Partial | No credit wallet; messaging exists per-channel |
