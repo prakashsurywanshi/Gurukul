@@ -29,6 +29,7 @@ import {
     Briefcase,
     UserRound,
     Upload,
+    Palette,
     Target,
     Phone,
     Send,
@@ -99,6 +100,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'bulk-delete-students',
         'alumni-records',
         'student-exits',
+        'houses-categories',
     ];
     const academicTabs = [
         'classes',
@@ -753,6 +755,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             href: '/student-exits',
             roles: ['super_admin', 'admin'],
             feature: 'TC & Exit',
+        },
+        {
+            id: 'houses-categories',
+            label: 'Houses & Categories',
+            icon: Palette,
+            href: '/houses-categories',
+            roles: ['super_admin', 'admin'],
+            feature: 'Search Students',
         },
     ].filter((item) => canAccessItem(item.roles, item.feature));
     const hasStudentMenu = studentMenuItems.length > 0;

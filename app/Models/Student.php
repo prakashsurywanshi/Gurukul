@@ -34,6 +34,7 @@ class Student extends Model
         'religion',
         'caste',
         'category',
+        'house',
         'mother_tongue',
         'aadhar_number',
         'profile_photo',
