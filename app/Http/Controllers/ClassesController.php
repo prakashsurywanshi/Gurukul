@@ -356,6 +356,34 @@ class ClassesController extends Controller
         return redirect()->route('lesson-plan')->with('success', 'Lesson plan deleted successfully.');
     }
 
+    public function approveLessonPlan(Request $request, LessonPlan $lessonPlan): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization && $lessonPlan->organization_id === $organization->id, 403);
+        $this->abortUnlessCanApproveLessonPlans($user);
+
+        $validated = $request->validate([
+            'approved' => ['required', 'boolean'],
+        ]);
+
+        if (filter_var($validated['approved'], FILTER_VALIDATE_BOOLEAN)) {
+            $lessonPlan->update([
+                'approved_by' => $user->id,
+                'approved_at' => now(),
+            ]);
+
+            return redirect()->route('lesson-plan')->with('success', 'Lesson plan approved.');
+        }
+
+        $lessonPlan->update([
+            'approved_by' => null,
+            'approved_at' => null,
+        ]);
+
+        return redirect()->route('lesson-plan')->with('success', 'Lesson plan approval withdrawn.');
+    }
+
     private function resolveOrganizationForUser(User $user): ?Organization
     {
         if ($user->organization_id) {
@@ -561,6 +589,7 @@ class ClassesController extends Controller
                 'timetable:id,class_id,subject_id,teacher_id,day,period_code,start_time,end_time,room_number',
                 'subject:id,name,name_mr,name_hi',
                 'teacher:id,name',
+                'approver:id,name',
             ])
             ->orderBy('lesson_date')
             ->orderBy('id')
@@ -580,6 +609,9 @@ class ClassesController extends Controller
                 'lessonTitle' => $plan->lesson_title,
                 'topic' => $plan->topic,
                 'status' => $plan->status,
+                'approvedBy' => $plan->approved_by ? (string) $plan->approved_by : null,
+                'approvedByName' => $plan->approver?->name,
+                'approvedAt' => optional($plan->approved_at)->format('Y-m-d H:i'),
             ])
             ->values()
             ->all();
@@ -620,6 +652,11 @@ class ClassesController extends Controller
         }
 
         abort_unless($user->role === 'teacher' && $lessonPlan->teacher_id === $user->id, 403);
+    }
+
+    private function abortUnlessCanApproveLessonPlans(User $user): void
+    {
+        abort_unless(in_array($user->role, ['admin', 'super_admin'], true), 403);
     }
 
     private function validateTimetablePayload(Request $request, Organization $organization, ?Timetable $currentEntry): array

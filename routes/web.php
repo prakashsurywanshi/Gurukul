@@ -271,6 +271,7 @@ Route::middleware(['auth', 'organization.subscription'])->group(function () {
     Route::post('/lesson-plan', [ClassesController::class, 'storeLessonPlan'])->middleware('staff.permission:Lesson Plan,add')->name('lesson-plan.store');
     Route::patch('/lesson-plan/{lessonPlan}', [ClassesController::class, 'updateLessonPlan'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.update');
     Route::delete('/lesson-plan/{lessonPlan}', [ClassesController::class, 'destroyLessonPlan'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.destroy');
+    Route::patch('/lesson-plan/{lessonPlan}/approve', [ClassesController::class, 'approveLessonPlan'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.approve');
     Route::get('/homework', [HomeworkController::class, 'index'])->middleware('staff.permission:Homework,view')->name('homework');
     Route::post('/homework', [HomeworkController::class, 'store'])->middleware('staff.permission:Homework,add')->name('homework.store');
     Route::delete('/homework/{homework}', [HomeworkController::class, 'destroy'])->middleware('staff.permission:Homework,delete')->name('homework.destroy');

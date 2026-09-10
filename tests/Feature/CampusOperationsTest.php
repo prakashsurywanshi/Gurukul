@@ -169,6 +169,7 @@ class CampusOperationsTest extends TestCase
         app(StaffPermissionService::class)->ensureRolesExist($organization);
 
         $admin = $this->createUser($organization, 'admin');
+        $admin->forceFill(['name' => 'Amrish Patel'])->save();
         $department = Department::query()->create(['organization_id' => $organization->id, 'name' => 'Science']);
         $designation = Designation::query()->create(['organization_id' => $organization->id, 'name' => 'PGT']);
 

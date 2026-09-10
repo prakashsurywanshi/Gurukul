@@ -83,7 +83,7 @@
 | Area | We have | Demo additionally has |
 |---|---|---|
 | Leads | CRUD + status/source + pipeline board & stage moves | Pipeline stage configuration, lead scorer |
-| Lesson planning | lesson plans | Approvals, review, coverage reports, settings/guide |
+| Lesson planning | lesson plans | Review workflow, coverage reports, settings/guide (approvals added: admin approve/withdraw, approver + timestamp tracked) |
 | PTM | sessions | Attendance & remarks, follow-ups, reports/guide |
 | Website CMS | CMS + pages | Template studio, creatives, testimonials, hero slides, nav builder |
 | Certificates / ID cards | print | Card design studio (appearance templates) |

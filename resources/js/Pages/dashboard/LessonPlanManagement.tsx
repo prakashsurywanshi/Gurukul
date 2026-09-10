@@ -1,7 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { BadgeCheck, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
@@ -63,6 +63,9 @@ type LessonPlanEntry = {
     lessonTitle: string;
     topic: string;
     status: LessonPlanStatus;
+    approvedBy: string | null;
+    approvedByName: string | null;
+    approvedAt: string | null;
 };
 
 type StudentLessonRecord = {
@@ -99,6 +102,7 @@ export default function LessonPlanManagement({
     }>();
     const isStudentView = user?.role === 'student';
     const isTeacherScopedView = user?.role === 'teacher';
+    const isAdminView = user?.role === 'admin' || user?.role === 'super_admin';
     const currentTeacherId = String(user?.id ?? '');
     const [planningMode, setPlanningMode] = useState<'class' | 'teacher'>('class');
     const [selectedClassId, setSelectedClassId] = useState(studentRecord?.classId || classes[0]?.id || '');
@@ -361,6 +365,19 @@ export default function LessonPlanManagement({
         });
     };
 
+    const handleApprovePlan = (plan: LessonPlanEntry, approved: boolean) => {
+        router.patch(
+            `/lesson-plan/${plan.id}/approve`,
+            { approved },
+            {
+                preserveScroll: true,
+                onError: () => {
+                    toast.error('Failed to update lesson plan approval');
+                },
+            },
+        );
+    };
+
     const canCreatePlan = filteredTimetableEntries.length > 0;
 
     return (
@@ -604,8 +621,53 @@ export default function LessonPlanManagement({
                                                                                     {t('Date:')}
                                                                                     {latestPlan.lessonDate}
                                                                                 </p>
+                                                                                {latestPlan.approvedBy ? (
+                                                                                    <p className="flex items-center gap-1 text-xs font-medium text-emerald-700">
+                                                                                        <BadgeCheck className="h-3.5 w-3.5" />
+                                                                                        {t('Approved')}
+                                                                                        {latestPlan.approvedByName
+                                                                                            ? ` · ${latestPlan.approvedByName}`
+                                                                                            : ''}
+                                                                                    </p>
+                                                                                ) : null}
                                                                                 {!isStudentView ? (
                                                                                     <div className="flex gap-2">
+                                                                                        {isAdminView ? (
+                                                                                            latestPlan.approvedBy ? (
+                                                                                                <Button
+                                                                                                    type="button"
+                                                                                                    size="sm"
+                                                                                                    variant="outline"
+                                                                                                    onClick={() =>
+                                                                                                        handleApprovePlan(
+                                                                                                            latestPlan,
+                                                                                                            false,
+                                                                                                        )
+                                                                                                    }
+                                                                                                >
+                                                                                                    <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
+                                                                                                    {t(
+                                                                                                        'Withdraw Approval',
+                                                                                                    )}
+                                                                                                </Button>
+                                                                                            ) : (
+                                                                                                <Button
+                                                                                                    type="button"
+                                                                                                    size="sm"
+                                                                                                    variant="outline"
+                                                                                                    className="text-emerald-700"
+                                                                                                    onClick={() =>
+                                                                                                        handleApprovePlan(
+                                                                                                            latestPlan,
+                                                                                                            true,
+                                                                                                        )
+                                                                                                    }
+                                                                                                >
+                                                                                                    <BadgeCheck className="mr-1.5 h-3.5 w-3.5" />
+                                                                                                    {t('Approve')}
+                                                                                                </Button>
+                                                                                            )
+                                                                                        ) : null}
                                                                                         <Button
                                                                                             type="button"
                                                                                             size="icon"
@@ -706,6 +768,9 @@ export default function LessonPlanManagement({
                                                 <th className="border border-slate-200 bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-700">
                                                     {t('Status')}
                                                 </th>
+                                                <th className="border border-slate-200 bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-700">
+                                                    {t('Approval')}
+                                                </th>
                                                 {!isStudentView ? (
                                                     <th className="border border-slate-200 bg-slate-100 px-4 py-3 text-left text-sm font-semibold text-slate-700">
                                                         {t('Actions')}
@@ -746,6 +811,46 @@ export default function LessonPlanManagement({
                                                         >
                                                             {plan.status.replace('_', ' ')}
                                                         </Badge>
+                                                    </td>
+                                                    <td className="border border-slate-200 bg-white px-4 py-3 text-sm">
+                                                        {plan.approvedBy ? (
+                                                            <div className="flex items-center gap-1 text-emerald-700">
+                                                                <BadgeCheck className="h-3.5 w-3.5" />
+                                                                <span>
+                                                                    {t('Approved')}
+                                                                    {plan.approvedByName
+                                                                        ? ` · ${plan.approvedByName}`
+                                                                        : ''}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-slate-400">
+                                                                {t('Pending approval')}
+                                                            </span>
+                                                        )}
+                                                        {isAdminView ? (
+                                                            plan.approvedBy ? (
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="mt-1 h-6 text-xs"
+                                                                    onClick={() => handleApprovePlan(plan, false)}
+                                                                >
+                                                                    {t('Withdraw')}
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    type="button"
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="mt-1 h-6 text-xs text-emerald-700"
+                                                                    onClick={() => handleApprovePlan(plan, true)}
+                                                                >
+                                                                    {t('Approve')}
+                                                                </Button>
+                                                            )
+                                                        ) : null}
                                                     </td>
                                                     {!isStudentView ? (
                                                         <td className="border border-slate-200 bg-white px-4 py-3 text-sm">

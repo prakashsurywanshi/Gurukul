@@ -23,10 +23,13 @@ class LessonPlan extends Model
         'remarks',
         'created_by',
         'updated_by',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
         'lesson_date' => 'date',
+        'approved_at' => 'datetime',
     ];
 
     public function organization(): BelongsTo
@@ -52,5 +55,10 @@ class LessonPlan extends Model
     public function teacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }
