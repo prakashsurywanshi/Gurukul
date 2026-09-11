@@ -83,7 +83,7 @@ export default function DocumentVault({
             params.search = search.trim();
         }
 
-        if (categoryFilter) {
+        if (categoryFilter && categoryFilter !== 'all') {
             params.category = categoryFilter;
         }
 
@@ -206,7 +206,7 @@ export default function DocumentVault({
                                             <SelectValue placeholder={t('All categories')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">{t('All categories')}</SelectItem>
+                                            <SelectItem value="all">{t('All categories')}</SelectItem>
                                             {categories.map((item) => (
                                                 <SelectItem key={item} value={item}>
                                                     {item}

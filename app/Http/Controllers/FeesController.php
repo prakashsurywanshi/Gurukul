@@ -598,6 +598,22 @@ class FeesController extends Controller
         return redirect()->route('fees')->with('success', 'Fee structure deleted successfully.');
     }
 
+    public function assignFeesPage()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        $activeAcademicYearId = $organization ? $this->getActiveAcademicYearId($organization) : null;
+
+        return inertia('dashboard/AssignFees', [
+            'user' => $user,
+            'students' => $organization ? $this->getStudents($organization) : [],
+            'classRecords' => $organization ? $this->getClassRecords($organization) : [],
+            'feeStructures' => $organization ? $this->getFeeStructures($organization) : [],
+            'studentFeeRecords' => $organization ? $this->getStudentFeeRecords($organization) : [],
+            'academicSessions' => $organization ? $this->getAcademicSessions($organization) : [],
+        ]);
+    }
+
     public function assignFees(Request $request): RedirectResponse
     {
         $organization = $this->resolveOrganizationForUser(Auth::user());

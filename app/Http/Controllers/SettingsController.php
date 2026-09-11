@@ -582,7 +582,7 @@ class SettingsController extends Controller
         ]);
     }
 
-    private function publicWebsiteContent(?Organization $organization): ?array
+    public function publicWebsiteContent(?Organization $organization): ?array
     {
         if (! $organization) {
             return null;

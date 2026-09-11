@@ -21,6 +21,7 @@ class GoodsReceiptController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -60,6 +61,7 @@ class GoodsReceiptController extends Controller
             ]);
 
         return Inertia::render('dashboard/GoodsReceipts', [
+            'user' => $user,
             'receipts' => $receipts,
             'itemOptions' => $items,
             'supplierOptions' => InventorySupplier::query()->where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name']),

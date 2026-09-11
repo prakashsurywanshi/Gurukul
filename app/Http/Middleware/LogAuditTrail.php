@@ -54,6 +54,7 @@ class LogAuditTrail
             'action' => $action,
             'model_type' => $modelType,
             'model_id' => $modelId,
+            'module' => $module,
             'description' => $this->buildDescription($action, $modelType, $modelId, $request->path()),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),

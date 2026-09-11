@@ -27,13 +27,14 @@ type LeaveTypeRow = {
 };
 
 type Props = {
+    user: any;
     types: LeaveTypeRow[];
     summary: { activeCount: number };
 };
 
 const PALETTE = ['#ef4444', '#f97316', '#f59e0b', '#22c55e', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'];
 
-export default function LeaveTypes({ types, summary }: Props) {
+export default function LeaveTypes({ user, types, summary }: Props) {
     const { t } = useLanguage();
     const [editing, setEditing] = useState<LeaveTypeRow | null>(null);
     const [name, setName] = useState('');
@@ -120,7 +121,7 @@ export default function LeaveTypes({ types, summary }: Props) {
     };
 
     return (
-        <DashboardLayout pageTitle={t('Leave Types')}>
+        <DashboardLayout user={user} pageTitle={t('Leave Types')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader>

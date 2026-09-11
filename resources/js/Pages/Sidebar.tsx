@@ -13,6 +13,7 @@ import {
     Archive,
     GraduationCap,
     UserCog,
+    UserCheck,
     Award,
     BarChart3,
     Settings,
@@ -20,19 +21,27 @@ import {
     ChevronDown,
     ChevronRight,
     BadgePercent,
+    BookMarked,
     BookOpen,
     BookOpenCheck,
     ArrowUpCircle,
     ArrowDownCircle,
+    Tags,
+    Tag,
     Landmark,
     Layers,
     Briefcase,
     UserRound,
     Upload,
+    FilePlus2,
     Palette,
     Target,
     Building2,
     HardHat,
+    Compass,
+    Rocket,
+    History,
+    ShieldAlert,
     Contact,
     Phone,
     Send,
@@ -49,6 +58,7 @@ import {
     Download,
     CalendarX,
     ClipboardList,
+    Gauge,
     UserPlus,
     ShoppingCart,
     ShoppingBag,
@@ -58,6 +68,15 @@ import {
     Database,
     DoorOpen,
     Bot,
+    Blocks,
+    Warehouse,
+    ListChecks,
+    ScanText,
+    LayoutTemplate,
+    Shapes,
+    PanelsTopLeft,
+    ScanFace,
+    Network,
     Languages,
     CreditCard,
     KeyRound,
@@ -66,7 +85,6 @@ import {
     Fingerprint,
     CalendarDays,
     CalendarRange,
-    ShieldAlert,
     HeartPulse,
     Handshake,
     QrCode,
@@ -75,6 +93,7 @@ import {
     FolderTree,
     FileClock,
     HelpCircle,
+    Image,
     LibraryBig,
     LifeBuoy,
     MessageCircle,
@@ -93,10 +112,11 @@ interface SidebarProps {
 
 export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const [organization, setOrganization] = useState<any>(null);
-    const { schoolName, schoolLogo, staffPermissions } = usePage<{
+    const { schoolName, schoolLogo, staffPermissions, modules } = usePage<{
         schoolName?: string | null;
         schoolLogo?: string | null;
         staffPermissions?: Record<string, Record<string, boolean>>;
+        modules?: Record<string, boolean>;
     }>().props;
     const { t } = useLanguage();
     const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
@@ -107,7 +127,9 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'online-admission',
         'bulk-delete-students',
         'alumni-records',
+        'parents',
         'student-exits',
+        'students-recycle-bin',
         'houses-categories',
     ];
     const academicTabs = [
@@ -118,6 +140,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'homework',
         'subjects',
         'promote-students',
+        'cocurricular',
     ];
 
     const frontOfficeTabs = [
@@ -189,8 +212,9 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         'roles-permissions',
         'sessions',
         'custom-fields',
+        'admission-settings',
     ];
-    const websiteCmsTabs = ['website-cms', 'pages-builder'];
+    const websiteCmsTabs = ['website-cms', 'pages-builder', 'cbse-disclosure'];
     const reportTabs = [
         'reports',
         'reports-overview',
@@ -322,9 +346,13 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         return Boolean(staffPermissions?.[feature]?.view);
     };
 
-    const canAccessItem = (roles: string[], feature: string) => {
+    const canAccessItem = (roles: string[], feature: string, module?: string) => {
         if (user.role === 'super_admin') {
             return roles.includes('super_admin');
+        }
+
+        if (module && modules?.[module] === false) {
+            return false;
         }
 
         if (['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user.role)) {
@@ -359,6 +387,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     'parent',
                 ],
 
+                feature: 'Dashboard Home',
+            },
+            {
+                id: 'explore',
+                label: 'ERP Navigator',
+                icon: Compass,
+                href: '/explore',
+                roles: ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian'],
                 feature: 'Dashboard Home',
             },
             {
@@ -435,6 +471,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 id: 'fee-challans',
                 label: 'Fee Challans',
                 icon: FileText,
+                href: '/fees/challans',
+                roles: ['super_admin', 'admin', 'accountant'],
+                feature: 'Fees Management',
+            },
+            {
+                id: 'assign-fees',
+                label: 'Assign Fees',
+                icon: UserCheck,
+                href: '/assign-fees',
                 roles: ['super_admin', 'admin', 'accountant'],
                 feature: 'Fees Management',
             },
@@ -442,6 +487,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 id: 'due-slips',
                 label: 'Due Slips',
                 icon: FileText,
+                href: '/fees/due-slips',
                 roles: ['super_admin', 'admin', 'accountant'],
                 feature: 'Fees Management',
             },
@@ -449,6 +495,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 id: 'fee-audit',
                 label: 'Fee Audit',
                 icon: FileClock,
+                href: '/fees/audit',
                 roles: ['super_admin', 'admin', 'accountant'],
                 feature: 'Fees Management',
             },
@@ -495,11 +542,60 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Expense Management',
             },
             {
+                id: 'income-heads',
+                label: 'Income Heads',
+                icon: Tags,
+                href: '/accounts/income-heads',
+                roles: ['super_admin', 'admin', 'accountant'],
+                feature: 'Income Management',
+            },
+            {
+                id: 'expense-heads',
+                label: 'Expense Heads',
+                icon: Tag,
+                href: '/accounts/expense-heads',
+                roles: ['super_admin', 'admin', 'accountant'],
+                feature: 'Expense Management',
+            },
+            {
                 id: 'bank-accounts',
                 label: 'Bank Accounts',
                 icon: Landmark,
                 roles: ['super_admin', 'admin', 'accountant'],
                 feature: 'Bank Accounts',
+            },
+            {
+                id: 'subscription',
+                label: 'Subscription',
+                icon: Rocket,
+                href: '/subscription',
+                roles: ['super_admin', 'admin'],
+                feature: 'Subscription Management',
+            },
+            {
+                id: 'payment-history',
+                label: 'Subscription History',
+                icon: History,
+                href: '/payment-history',
+                roles: ['super_admin', 'admin'],
+                feature: 'Subscription Management',
+            },
+            {
+                id: 'nsfw',
+                label: 'Content Safety',
+                icon: ShieldAlert,
+                href: '/nsfw',
+                roles: ['super_admin', 'admin'],
+                feature: 'Content Safety',
+            },
+            {
+                id: 'assets',
+                label: 'Assets',
+                icon: Warehouse,
+                href: '/assets',
+                roles: ['super_admin', 'admin'],
+                feature: 'Asset Management',
+                module: 'assets',
             },
             {
                 id: 'hr-menu',
@@ -662,6 +758,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Vendors & Purchase Orders',
             },
             {
+                id: 'apps-center',
+                label: 'Apps Center',
+                icon: PanelsTopLeft,
+                href: '/apps',
+                roles: ['super_admin', 'admin'],
+                feature: 'Apps Center',
+                module: 'apps-center',
+            },
+            {
                 id: 'reports',
                 label: 'Reports Center',
                 icon: BarChart3,
@@ -766,7 +871,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 return hasReportMenu;
             }
 
-            return canAccessItem(item.roles, item.feature);
+            return canAccessItem(item.roles, item.feature, (item as { module?: string }).module);
         });
     };
     const studentMenuItems = [
@@ -811,6 +916,22 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'TC & Exit',
         },
         {
+            id: 'students-recycle-bin',
+            label: 'Students Recycle Bin',
+            icon: Trash2,
+            href: '/students-recycle-bin',
+            roles: ['super_admin', 'admin'],
+            feature: 'Search Students',
+        },
+        {
+            id: 'parents',
+            label: 'Parents & Guardians',
+            icon: Users,
+            href: '/parents',
+            roles: ['super_admin', 'admin', 'teacher', 'receptionist'],
+            feature: 'Search Students',
+        },
+        {
             id: 'houses-categories',
             label: 'Houses & Categories',
             icon: Palette,
@@ -818,7 +939,16 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin'],
             feature: 'Search Students',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+        {
+            id: 'face-search',
+            label: 'Face Search',
+            icon: ScanFace,
+            href: '/face-search',
+            roles: ['super_admin', 'admin'],
+            feature: 'Search Students',
+            module: 'face-search',
+        },
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasStudentMenu = studentMenuItems.length > 0;
     const academicMenuItems = [
         {
@@ -879,7 +1009,59 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['admin'],
             feature: 'Promote Students',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+        {
+            id: 'assessment',
+            label: 'Assessment',
+            icon: ListChecks,
+            href: '/assessment',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Assessment',
+            module: 'assessment',
+        },
+        {
+            id: 'digital-evaluation',
+            label: 'Digital Evaluation',
+            icon: ScanText,
+            href: '/digital-evaluation',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Digital Evaluation',
+            module: 'digital-evaluation',
+        },
+        {
+            id: 'report-card-setups',
+            label: 'Report Card Setups',
+            icon: LayoutTemplate,
+            href: '/report-card-setups',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Report Card Setups',
+            module: 'report-cards',
+        },
+        {
+            id: 'cbc',
+            label: 'CBC',
+            icon: Shapes,
+            href: '/cbc',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'CBC',
+            module: 'cbc',
+        },
+        {
+            id: 'osm',
+            label: 'OSM',
+            icon: ClipboardList,
+            href: '/osm',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Assessment',
+        },
+        {
+            id: 'cocurricular',
+            label: 'Co-Curricular',
+            icon: Award,
+            href: '/cocurricular',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Assessment',
+        },
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasAcademicMenu = academicMenuItems.length > 0;
     const frontOfficeMenuItems = [
         {
@@ -938,7 +1120,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['admin', 'teacher', 'receptionist', 'accountant', 'librarian'],
             feature: 'Complains',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasFrontOfficeMenu = frontOfficeMenuItems.length > 0;
     const examMenuItems = [
         {
@@ -1045,7 +1227,47 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Report Card',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+        {
+            id: 'hpc-dashboard',
+            label: 'HPC Dashboard',
+            icon: Gauge,
+            href: '/hpc/dashboard',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'HPC Progress Cards',
+        },
+        {
+            id: 'hpc-activities',
+            label: 'HPC Activities',
+            icon: ClipboardList,
+            href: '/hpc/activities',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'HPC Progress Cards',
+        },
+        {
+            id: 'hpc-cards',
+            label: 'Progress Cards',
+            icon: LayoutTemplate,
+            href: '/hpc/cards',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'HPC Progress Cards',
+        },
+        {
+            id: 'hpc-frameworks',
+            label: 'HPC Frameworks',
+            icon: Layers,
+            href: '/hpc/frameworks',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'HPC Progress Cards',
+        },
+        {
+            id: 'hpc-card-appearance',
+            label: 'Card Appearance',
+            icon: Palette,
+            href: '/hpc/card-appearance',
+            roles: ['super_admin', 'admin'],
+            feature: 'HPC Progress Cards',
+        },
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasExamMenu = examMenuItems.length > 0;
     const certificateMenuItems = [
         {
@@ -1073,6 +1295,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Marksheet Management',
         },
         {
+            id: 'marksheet-upload',
+            label: 'Marksheet Upload',
+            icon: Upload,
+            href: '/marksheet/upload-list',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Marksheet Management',
+        },
+        {
             id: 'student-id-card',
             label: 'Student ID Card',
             icon: UserRound,
@@ -1080,7 +1310,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Student ID Card Management',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasCertificateMenu = certificateMenuItems.length > 0;
     const communicationMenuItems = [
         {
@@ -1163,6 +1393,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Download Center',
         },
         {
+            id: 'image-gallery',
+            label: 'Image Gallery',
+            icon: Image,
+            href: '/gallery',
+            roles: ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'student'],
+            feature: 'Image Gallery',
+        },
+        {
             id: 'chat',
             label: 'Live Chat',
             icon: MessageCircle,
@@ -1170,7 +1408,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'student'],
             feature: 'Live Chat',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasCommunicationMenu = communicationMenuItems.length > 0;
     const staffMenuItems = [
         {
@@ -1179,6 +1417,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             icon: UserCog,
             href: '/staff',
             roles: ['admin'],
+            feature: 'User Management',
+        },
+        {
+            id: 'hr-dashboard',
+            label: 'HR Dashboard',
+            icon: BarChart3,
+            href: '/hr-dashboard',
+            roles: ['admin', 'super_admin'],
             feature: 'User Management',
         },
         {
@@ -1341,7 +1587,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['admin'],
             feature: 'User Management',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasHRMenu = staffMenuItems.length > 0;
     const hostelMenuItems = [
         {
@@ -1360,7 +1606,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['admin'],
             feature: 'Hostel Fee Collection',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasHostelMenu = hostelMenuItems.length > 0;
     const transportMenuItems = [
         {
@@ -1379,7 +1625,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['admin', 'receptionist'],
             feature: 'Transport Fee Collection',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasTransportMenu = transportMenuItems.length > 0;
     const settingsMenuItems = [
         {
@@ -1431,6 +1677,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Biometric Settings',
         },
         {
+            id: 'biometric-devices',
+            label: 'Biometric Devices',
+            icon: ScanFace,
+            href: '/biometric-devices',
+            roles: ['super_admin', 'admin'],
+            feature: 'Biometric Settings',
+        },
+        {
             id: 'roles-permissions',
             label: 'Roles & Permissions',
             icon: ShieldCheck,
@@ -1463,6 +1717,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'General Setting',
         },
         {
+            id: 'admission-settings',
+            label: 'Admission Settings',
+            icon: FilePlus2,
+            href: '/admission-settings',
+            roles: ['admin'],
+            feature: 'General Setting',
+        },
+        {
             id: 'ai-assistant',
             label: 'AI Assistant',
             icon: Bot,
@@ -1470,7 +1732,33 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin'],
             feature: 'AI Assistant',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+        {
+            id: 'module-management',
+            label: 'Module Management',
+            icon: Blocks,
+            href: '/module-management',
+            roles: ['admin'],
+            feature: 'Module Management',
+        },
+        {
+            id: 'dashboard-themes',
+            label: 'Dashboard Themes',
+            icon: Palette,
+            href: '/settings/themes',
+            roles: ['admin'],
+            feature: 'General Setting',
+            module: 'dashboard-themes',
+        },
+        {
+            id: 'branch-admin',
+            label: 'Branch Admin',
+            icon: Network,
+            href: '/branch-admin',
+            roles: ['super_admin'],
+            feature: 'Branch Admin',
+            module: 'branch-admin',
+        },
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasSettingsMenu = settingsMenuItems.length > 0;
     const websiteCmsMenuItems = [
         {
@@ -1489,7 +1777,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['admin'],
             feature: 'Website Pages',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+        {
+            id: 'cbse-disclosure',
+            label: 'CBSE Disclosure',
+            icon: BookOpenCheck,
+            href: '/website-cms/cbse-disclosure',
+            roles: ['admin'],
+            feature: 'Website CMS',
+        },
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasWebsiteCmsMenu = websiteCmsMenuItems.length > 0;
     const reportMenuItems = [
         {
@@ -1624,9 +1920,10 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             id: 'reports-audit-trail',
             label: 'Audit Trail',
             icon: ShieldCheck,
-            href: '/reports?module=audit-trail',
+            href: '/audit-trail',
             roles: ['super_admin', 'admin'],
-            feature: 'Reports & Analytics',
+            feature: 'Audit Trail',
+            module: 'audit-trail',
         },
         {
             id: 'regulator-reports',
@@ -1644,7 +1941,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin'],
             feature: 'QR Code Attendance',
         },
-    ].filter((item) => canAccessItem(item.roles, item.feature));
+    ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasReportMenu = reportMenuItems.length > 0;
     const menuItems = getMenuItems();
 

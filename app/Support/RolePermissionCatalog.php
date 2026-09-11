@@ -61,6 +61,7 @@ class RolePermissionCatalog
             ['module' => 'Exams', 'feature' => 'Hall Ticket'],
             ['module' => 'Exams', 'feature' => 'Print Marksheet'],
             ['module' => 'Exams', 'feature' => 'Report Card'],
+            ['module' => 'Exams', 'feature' => 'HPC Progress Cards'],
             ['module' => 'Exams', 'feature' => 'Online Exams'],
             ['module' => 'Communication', 'feature' => 'Feedback Management'],
             ['module' => 'Certificates', 'feature' => 'Certificate Management'],
@@ -76,6 +77,7 @@ class RolePermissionCatalog
             ['module' => 'Communication', 'feature' => 'Voice Calls'],
             ['module' => 'Communication', 'feature' => 'Send Emails'],
             ['module' => 'Communication', 'feature' => 'Send SMS'],
+            ['module' => 'Communication', 'feature' => 'Image Gallery'],
             ['module' => 'Communication', 'feature' => 'Download Center'],
             ['module' => 'Transport', 'feature' => 'Transport Management'],
             ['module' => 'Transport', 'feature' => 'Transport Fee Collection'],
@@ -85,8 +87,18 @@ class RolePermissionCatalog
             ['module' => 'Student Information', 'feature' => 'PTM'],
             ['module' => 'Student Information', 'feature' => 'TC & Exit'],
             ['module' => 'Reports', 'feature' => 'Reports & Analytics'],
+            ['module' => 'Reports', 'feature' => 'Audit Trail'],
+            ['module' => 'Assets', 'feature' => 'Asset Management'],
+            ['module' => 'Academics', 'feature' => 'Assessment'],
+            ['module' => 'Academics', 'feature' => 'Digital Evaluation'],
+            ['module' => 'Academics', 'feature' => 'Report Card Setups'],
+            ['module' => 'Academics', 'feature' => 'CBC'],
+            ['module' => 'AI & Apps', 'feature' => 'Apps Center'],
+            ['module' => 'System', 'feature' => 'Branch Admin'],
             ['module' => 'Knowledge Base', 'feature' => 'Knowledge Base'],
             ['module' => 'Settings', 'feature' => 'General Setting'],
+            ['module' => 'Settings', 'feature' => 'Subscription Management'],
+            ['module' => 'Settings', 'feature' => 'Content Safety'],
             ['module' => 'Settings', 'feature' => 'Communication Setting'],
             ['module' => 'Settings', 'feature' => 'Online Payment Setting'],
             ['module' => 'Settings', 'feature' => 'Roles & Permissions'],
@@ -141,6 +153,19 @@ class RolePermissionCatalog
         return collect(self::features())
             ->keyBy('feature')
             ->all();
+    }
+
+    public static function defaultViewForRole(string $slug, string $feature): bool
+    {
+        $name = self::staffRoles()[$slug] ?? null;
+
+        if (!$name) {
+            return false;
+        }
+
+        $defaults = self::defaults();
+
+        return (bool) ($defaults[$name][$feature]['view'] ?? false);
     }
 
     public static function emptyPermissions(): array
@@ -212,6 +237,7 @@ class RolePermissionCatalog
                 'Hall Ticket' => self::featurePermissions(true, true, true, true),
                 'Print Marksheet' => self::featurePermissions(true, true, true, true),
                 'Report Card' => self::featurePermissions(true, true, true, true),
+                'HPC Progress Cards' => self::featurePermissions(true, true, true, true),
                 'Online Exams' => self::featurePermissions(true, true, true, true),
                 'Feedback Management' => self::featurePermissions(true, true, true, true),
                 'Certificate Management' => self::featurePermissions(true, true, true, true),
@@ -229,6 +255,7 @@ class RolePermissionCatalog
                 'Send Emails' => self::featurePermissions(true, true, true, true),
                 'Send SMS' => self::featurePermissions(true, true, true, true),
                 'Download Center' => self::featurePermissions(true, true, true, true),
+                'Image Gallery' => self::featurePermissions(true, true, true, true),
                 'Transport Management' => self::featurePermissions(true, true, true, true),
                 'Transport Fee Collection' => self::featurePermissions(true, true, true, true),
                 'Events Calendar' => self::featurePermissions(true, true, true, true),
@@ -237,8 +264,17 @@ class RolePermissionCatalog
                 'PTM' => self::featurePermissions(true, true, true, true),
                 'TC & Exit' => self::featurePermissions(true, true, true, true),
                 'Reports & Analytics' => self::featurePermissions(true),
+                'Audit Trail' => self::featurePermissions(true),
+                'Asset Management' => self::featurePermissions(true, true, true, true),
+                'Assessment' => self::featurePermissions(true, true, true, true),
+                'Digital Evaluation' => self::featurePermissions(true, true, true, true),
+                'Report Card Setups' => self::featurePermissions(true, true, true, true),
+                'CBC' => self::featurePermissions(true, true, true, true),
+                'Apps Center' => self::featurePermissions(true, true),
                 'Knowledge Base' => self::featurePermissions(true),
                 'General Setting' => self::featurePermissions(true, false, true),
+                'Subscription Management' => self::featurePermissions(true),
+                'Content Safety' => self::featurePermissions(true, true, true, true),
                 'Communication Setting' => self::featurePermissions(true, false, true),
                 'Online Payment Setting' => self::featurePermissions(true, false, true),
                 'Roles & Permissions' => self::featurePermissions(true, false, true),
@@ -246,6 +282,7 @@ class RolePermissionCatalog
                 'SSO Settings' => self::featurePermissions(true, false, true),
                 'Biometric Settings' => self::featurePermissions(true, false, true),
                 'AI Assistant' => self::featurePermissions(true, false, true),
+                'Module Management' => self::featurePermissions(true, false, true),
                 'Website CMS' => self::featurePermissions(true, true, true, true),
                 'Website Pages' => self::featurePermissions(true, true, true, true),
                 'Profile' => self::featurePermissions(true, false, true),
@@ -300,7 +337,12 @@ class RolePermissionCatalog
                 'Hall Ticket' => self::featurePermissions(true),
                 'Print Marksheet' => self::featurePermissions(true),
                 'Report Card' => self::featurePermissions(true, true),
+                'HPC Progress Cards' => self::featurePermissions(true, true),
                 'Online Exams' => self::featurePermissions(true, true, true),
+                'Assessment' => self::featurePermissions(true, true, true, true),
+                'Digital Evaluation' => self::featurePermissions(true, true, true, true),
+                'Report Card Setups' => self::featurePermissions(true),
+                'CBC' => self::featurePermissions(true, true, true, true),
                 'Feedback Management' => self::featurePermissions(false),
                 'Certificate Management' => self::featurePermissions(true, true, true),
                 'Marksheet Management' => self::featurePermissions(true, true, true),
@@ -315,6 +357,7 @@ class RolePermissionCatalog
                 'Send Emails' => self::featurePermissions(true, true),
                 'Send SMS' => self::featurePermissions(true, true),
                 'Download Center' => self::featurePermissions(true, true, true),
+                'Image Gallery' => self::featurePermissions(true, true, true),
                 'Transport Management' => self::featurePermissions(false),
                 'Transport Fee Collection' => self::featurePermissions(false),
                 'Events Calendar' => self::featurePermissions(true, true, true),
@@ -325,6 +368,8 @@ class RolePermissionCatalog
                 'Reports & Analytics' => self::featurePermissions(false),
                 'Knowledge Base' => self::featurePermissions(false),
                 'General Setting' => self::featurePermissions(false),
+                'Subscription Management' => self::featurePermissions(false),
+                'Content Safety' => self::featurePermissions(false),
                 'Communication Setting' => self::featurePermissions(false),
                 'Online Payment Setting' => self::featurePermissions(false),
                 'Roles & Permissions' => self::featurePermissions(false),
@@ -379,6 +424,7 @@ class RolePermissionCatalog
                 'Hall Ticket' => self::featurePermissions(false),
                 'Print Marksheet' => self::featurePermissions(false),
                 'Report Card' => self::featurePermissions(false),
+                'HPC Progress Cards' => self::featurePermissions(false),
                 'Online Exams' => self::featurePermissions(false),
                 'Feedback Management' => self::featurePermissions(false),
                 'Certificate Management' => self::featurePermissions(false),
@@ -393,6 +439,7 @@ class RolePermissionCatalog
                 'Send Emails' => self::featurePermissions(true, true),
                 'Send SMS' => self::featurePermissions(true, true),
                 'Download Center' => self::featurePermissions(true, true, true),
+                'Image Gallery' => self::featurePermissions(true, true, true),
                 'Transport Management' => self::featurePermissions(true, true, true, true),
                 'Transport Fee Collection' => self::featurePermissions(true, true, true, true),
                 'Events Calendar' => self::featurePermissions(true, true, true),
@@ -403,6 +450,8 @@ class RolePermissionCatalog
                 'Reports & Analytics' => self::featurePermissions(false),
                 'Knowledge Base' => self::featurePermissions(false),
                 'General Setting' => self::featurePermissions(false),
+                'Subscription Management' => self::featurePermissions(false),
+                'Content Safety' => self::featurePermissions(false),
                 'Communication Setting' => self::featurePermissions(false),
                 'Online Payment Setting' => self::featurePermissions(false),
                 'Roles & Permissions' => self::featurePermissions(false),
@@ -456,6 +505,7 @@ class RolePermissionCatalog
                 'Hall Ticket' => self::featurePermissions(false),
                 'Print Marksheet' => self::featurePermissions(false),
                 'Report Card' => self::featurePermissions(false),
+                'HPC Progress Cards' => self::featurePermissions(false),
                 'Online Exams' => self::featurePermissions(false),
                 'Feedback Management' => self::featurePermissions(false),
                 'Certificate Management' => self::featurePermissions(false),
@@ -481,6 +531,8 @@ class RolePermissionCatalog
                 'Reports & Analytics' => self::featurePermissions(true),
                 'Knowledge Base' => self::featurePermissions(false),
                 'General Setting' => self::featurePermissions(false),
+                'Subscription Management' => self::featurePermissions(false),
+                'Content Safety' => self::featurePermissions(false),
                 'Communication Setting' => self::featurePermissions(false),
                 'Online Payment Setting' => self::featurePermissions(false),
                 'Roles & Permissions' => self::featurePermissions(false),
@@ -532,6 +584,7 @@ class RolePermissionCatalog
                 'Hall Ticket' => self::featurePermissions(false),
                 'Print Marksheet' => self::featurePermissions(false),
                 'Report Card' => self::featurePermissions(false),
+                'HPC Progress Cards' => self::featurePermissions(false),
                 'Online Exams' => self::featurePermissions(false),
                 'Feedback Management' => self::featurePermissions(false),
                 'Certificate Management' => self::featurePermissions(false),
@@ -548,6 +601,7 @@ class RolePermissionCatalog
                 'Send Emails' => self::featurePermissions(false),
                 'Send SMS' => self::featurePermissions(false),
                 'Download Center' => self::featurePermissions(true),
+                'Image Gallery' => self::featurePermissions(true),
                 'Transport Management' => self::featurePermissions(false),
                 'Transport Fee Collection' => self::featurePermissions(false),
                 'Events Calendar' => self::featurePermissions(false),
@@ -558,6 +612,8 @@ class RolePermissionCatalog
                 'Reports & Analytics' => self::featurePermissions(false),
                 'Knowledge Base' => self::featurePermissions(false),
                 'General Setting' => self::featurePermissions(false),
+                'Subscription Management' => self::featurePermissions(false),
+                'Content Safety' => self::featurePermissions(false),
                 'Communication Setting' => self::featurePermissions(false),
                 'Online Payment Setting' => self::featurePermissions(false),
                 'Roles & Permissions' => self::featurePermissions(false),

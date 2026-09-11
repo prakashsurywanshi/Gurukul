@@ -17,6 +17,7 @@ class HousesCategoriesController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
 
@@ -43,6 +44,7 @@ class HousesCategoriesController extends Controller
             ]);
 
         return Inertia::render('dashboard/HousesCategories', [
+            'user' => $user,
             'houses' => $houses,
             'categories' => $categories,
         ]);

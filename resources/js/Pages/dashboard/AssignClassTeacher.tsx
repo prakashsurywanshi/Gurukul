@@ -40,7 +40,10 @@ export default function AssignClassTeacher({
     const flash = (usePage().props as any).flash ?? {};
     const [assignments, setAssignments] = useState<Record<number, string>>(() =>
         Object.fromEntries(
-            classes.map((schoolClass) => [schoolClass.id, schoolClass.teacherId ? String(schoolClass.teacherId) : '']),
+            classes.map((schoolClass) => [
+                schoolClass.id,
+                schoolClass.teacherId ? String(schoolClass.teacherId) : 'none',
+            ]),
         ),
     );
     const [processing, setProcessing] = useState<number | null>(null);
@@ -50,7 +53,7 @@ export default function AssignClassTeacher({
             Object.fromEntries(
                 classes.map((schoolClass) => [
                     schoolClass.id,
-                    schoolClass.teacherId ? String(schoolClass.teacherId) : '',
+                    schoolClass.teacherId ? String(schoolClass.teacherId) : 'none',
                 ]),
             ),
         );
@@ -72,7 +75,10 @@ export default function AssignClassTeacher({
             '/assign-class-teacher',
             {
                 class_id: schoolClass.id,
-                teacher_id: assignments[schoolClass.id] ? Number(assignments[schoolClass.id]) : null,
+                teacher_id:
+                    !assignments[schoolClass.id] || assignments[schoolClass.id] === 'none'
+                        ? null
+                        : Number(assignments[schoolClass.id]),
             },
             {
                 preserveScroll: true,
@@ -151,7 +157,7 @@ export default function AssignClassTeacher({
                                                     </TableCell>
                                                     <TableCell>
                                                         <Select
-                                                            value={assignments[schoolClass.id] ?? ''}
+                                                            value={assignments[schoolClass.id] ?? 'none'}
                                                             onValueChange={(value) =>
                                                                 setAssignments((current) => ({
                                                                     ...current,
@@ -163,7 +169,7 @@ export default function AssignClassTeacher({
                                                                 <SelectValue placeholder={t('Select teacher')} />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem key="none" value="">
+                                                                <SelectItem key="none" value="none">
                                                                     {t('No teacher')}
                                                                 </SelectItem>
                                                                 {teachers.map((teacher) => (

@@ -38,6 +38,7 @@ class CampusWorkerController extends Controller
             ->get(['id', 'name']);
 
         return Inertia::render('dashboard/CampusWorkers', [
+            'user' => $user,
             'workers' => $workers,
             'departmentOptions' => $departmentOptions,
         ]);

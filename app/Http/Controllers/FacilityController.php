@@ -30,6 +30,7 @@ class FacilityController extends Controller
             ]);
 
         return Inertia::render('dashboard/Facilities', [
+            'user' => $user,
             'facilities' => $facilities,
         ]);
     }

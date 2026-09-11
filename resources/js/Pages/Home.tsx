@@ -30,7 +30,7 @@ interface HomeProps {
 }
 
 export default function Home({ websiteContent, user, publishedPages, menuPages }: HomeProps) {
-    const { locale } = useLanguage();
+    const { locale, t } = useLanguage();
     const cmsContent = useMemo(() => localizeWebsiteContent(websiteContent, locale), [websiteContent, locale]);
     const pages = publishedPages ?? [];
     const navPages = menuPages ?? pages;

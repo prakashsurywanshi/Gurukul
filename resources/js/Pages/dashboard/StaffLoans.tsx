@@ -32,12 +32,13 @@ type LoanRow = {
 };
 
 type Props = {
+    user: any;
     loans: LoanRow[];
     staffOptions: StaffOption[];
     summary: { openLoans: number; outstandingTotal: number; emisCollected: number };
 };
 
-export default function StaffLoans({ loans, staffOptions, summary }: Props) {
+export default function StaffLoans({ user, loans, staffOptions, summary }: Props) {
     const { t } = useLanguage();
     const [staffUserId, setStaffUserId] = useState('');
     const [reason, setReason] = useState('');
@@ -116,7 +117,7 @@ export default function StaffLoans({ loans, staffOptions, summary }: Props) {
     };
 
     return (
-        <DashboardLayout pageTitle={t('Staff Loans')}>
+        <DashboardLayout user={user} pageTitle={t('Staff Loans')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

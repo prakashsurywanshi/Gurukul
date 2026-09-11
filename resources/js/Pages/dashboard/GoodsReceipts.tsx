@@ -37,6 +37,7 @@ type ReceiptRecord = {
 };
 
 type Props = {
+    user: any;
     receipts: ReceiptRecord[];
     itemOptions: ItemOption[];
     supplierOptions: SupplierOption[];
@@ -44,7 +45,7 @@ type Props = {
     summary: { receiptsCount: number; monthTotal: number };
 };
 
-export default function GoodsReceipts({ receipts, itemOptions, supplierOptions, orderOptions, summary }: Props) {
+export default function GoodsReceipts({ user, receipts, itemOptions, supplierOptions, orderOptions, summary }: Props) {
     const { t } = useLanguage();
     const [supplierId, setSupplierId] = useState<string>('');
     const [orderId, setOrderId] = useState<string>('');
@@ -116,7 +117,7 @@ export default function GoodsReceipts({ receipts, itemOptions, supplierOptions, 
     };
 
     return (
-        <DashboardLayout pageTitle={t('Goods Receipts')}>
+        <DashboardLayout user={user} pageTitle={t('Goods Receipts')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

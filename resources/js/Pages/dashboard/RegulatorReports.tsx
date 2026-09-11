@@ -6,6 +6,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
 export type RegulatorReportsProps = {
+    user: any;
     school: {
         name: string;
         email: string | null;
@@ -31,11 +32,11 @@ export type RegulatorReportsProps = {
     };
 };
 
-export default function RegulatorReports({ school, disclosure, government }: RegulatorReportsProps) {
+export default function RegulatorReports({ user, school, disclosure, government }: RegulatorReportsProps) {
     const { t } = useLanguage();
 
     return (
-        <DashboardLayout pageTitle={t('Regulator Reports')}>
+        <DashboardLayout user={user} pageTitle={t('Regulator Reports')}>
             <div className="space-y-6">
                 <Card>
                     <CardHeader>

@@ -24,6 +24,7 @@ class RegulatorReportsController extends Controller
         $data = $this->reportData($organization);
 
         return Inertia::render('dashboard/RegulatorReports', [
+            'user' => $user,
             'school' => $data['school'],
             'disclosure' => $data['disclosure'],
             'government' => $data['government'],

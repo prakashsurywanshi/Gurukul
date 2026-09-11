@@ -27,6 +27,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 use Throwable;
 
 class StudentsController extends Controller
@@ -253,10 +254,67 @@ class StudentsController extends Controller
         abort_unless($organization, 403);
         $this->ensureStudentBelongsToOrganization($student, $organization->id);
 
+        $student->delete();
+        $this->deleteStudentUser($student);
+
+        return redirect()->route('students')->with('success', 'Student moved to the recycle bin. Restore from Students Recycle Bin if deleted by mistake.');
+    }
+
+    public function recycleBin(Request $request): Response
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $students = Student::onlyTrashed()
+            ->with('schoolClass')
+            ->where('organization_id', $organization->id)
+            ->orderByDesc('deleted_at')
+            ->get()
+            ->map(function (Student $student) {
+                return [
+                    ...$this->serializeStudent($student),
+                    'deleted_at' => optional($student->deleted_at)->format('Y-m-d H:i'),
+                ];
+            })
+            ->values();
+
+        return Inertia::render('dashboard/students/RecycleBin', [
+            'user' => $user,
+            'students' => $students,
+            'classRecords' => $this->getClassRecords($organization),
+        ]);
+    }
+
+    public function restoreTrashed(Request $request, string $studentId): RedirectResponse
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $student = Student::onlyTrashed()->find($studentId);
+        abort_unless($student, 404);
+        abort_unless($student->organization_id === $organization->id, 404);
+
+        $student->restore();
+
+        return back()->with('success', 'Student restored successfully.');
+    }
+
+    public function destroyTrashed(Request $request, string $studentId): RedirectResponse
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $student = Student::onlyTrashed()->find($studentId);
+        abort_unless($student, 404);
+        abort_unless($student->organization_id === $organization->id, 404);
+
         $student->forceDelete();
         $this->deleteStudentUser($student);
 
-        return redirect()->route('students')->with('success', 'Student deleted permanently.');
+        return back()->with('success', 'Student permanently deleted.');
     }
 
     public function bulkDestroy(Request $request): RedirectResponse

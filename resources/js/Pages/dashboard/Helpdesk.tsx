@@ -360,9 +360,9 @@ export default function Helpdesk(pageProps: HelpdeskProps) {
                                                 <div>
                                                     <Label>{t('Assign to')}</Label>
                                                     <Select
-                                                        value=""
+                                                        value="none"
                                                         onValueChange={(v) =>
-                                                            v &&
+                                                            v !== 'none' &&
                                                             updateTicket(ticket, {
                                                                 status: ticket.status,
                                                                 priority: ticket.priority || 'medium',
@@ -374,7 +374,7 @@ export default function Helpdesk(pageProps: HelpdeskProps) {
                                                             <SelectValue placeholder={t('Unassigned')} />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="">{t('Unassigned')}</SelectItem>
+                                                            <SelectItem value="none">{t('Unassigned')}</SelectItem>
                                                             {staffMembers.map((staff) => (
                                                                 <SelectItem key={staff.id} value={staff.id}>
                                                                     {staff.label}

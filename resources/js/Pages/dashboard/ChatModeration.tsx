@@ -26,11 +26,12 @@ type ModerationRow = {
 };
 
 export type ChatModerationProps = {
+    user: any;
     messages: ModerationRow[];
     summary: { flagged: number; hidden: number; reviewed: number; contentSafe: number };
 };
 
-export default function ChatModeration({ messages, summary }: ChatModerationProps) {
+export default function ChatModeration({ user, messages, summary }: ChatModerationProps) {
     const { t } = useLanguage();
     const [filter, setFilter] = useState<'all' | 'flagged' | 'hidden'>('all');
     const [reasons, setReasons] = useState<Record<number, string>>({});
@@ -70,7 +71,7 @@ export default function ChatModeration({ messages, summary }: ChatModerationProp
     };
 
     return (
-        <DashboardLayout pageTitle={t('Chat Moderation')}>
+        <DashboardLayout user={user} pageTitle={t('Chat Moderation')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-4">
                     <Card>

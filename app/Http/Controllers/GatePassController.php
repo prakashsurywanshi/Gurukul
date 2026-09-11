@@ -51,11 +51,11 @@ class GatePassController extends Controller
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->limit(300)
-            ->get(['id', 'first_name', 'last_name', 'registration_number'])
+            ->get(['id', 'first_name', 'last_name', 'roll_number'])
             ->map(fn (Student $student) => [
                 'id' => $student->id,
                 'name' => trim($student->first_name.' '.$student->last_name),
-                'roll' => $student->registration_number,
+                'roll' => $student->roll_number,
             ])
             ->values();
 

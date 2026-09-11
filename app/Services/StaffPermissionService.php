@@ -27,6 +27,7 @@ class StaffPermissionService
         'Messages' => ['view'],
         'Notice Board' => ['view'],
         'Download Center' => ['view'],
+        'Image Gallery' => ['view'],
         'Complains' => ['view', 'add'],
         'Profile' => ['view'],
         'Edit Profile' => ['view', 'edit'],
@@ -175,7 +176,7 @@ class StaffPermissionService
             ->first();
 
         if (!$permission) {
-            return $user->role === 'admin' && in_array($feature, self::ADMIN_SAFE_FEATURES, true);
+            return RolePermissionCatalog::defaultViewForRole($role->slug, $feature);
         }
 
         $allowed = match ($action) {

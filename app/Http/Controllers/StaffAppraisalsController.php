@@ -17,6 +17,7 @@ class StaffAppraisalsController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -57,6 +58,7 @@ class StaffAppraisalsController extends Controller
             ]);
 
         return Inertia::render('dashboard/StaffAppraisals', [
+            'user' => $user,
             'cycles' => $cycles,
             'appraisals' => $appraisals,
             'staffOptions' => $this->staffOptions($organization),

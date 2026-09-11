@@ -53,6 +53,47 @@ class Organization extends Model
         return $this->hasMany(Student::class);
     }
 
+    /**
+     * Whether a feature module is enabled for this organization.
+     * Modules absent from the features map default to enabled, preserving
+     * existing behaviour until explicitly disabled via Module Management.
+     */
+    public function moduleEnabled(string $module): bool
+    {
+        if (!\App\Support\ModuleRegistry::isKnown($module)) {
+            return true;
+        }
+
+        $features = is_array($this->features) ? $this->features : [];
+
+        return (bool) (data_get($features, "$module.enabled", true));
+    }
+
+    /**
+     * @return array<string, bool> module key => enabled flag for every known module
+     */
+    public function moduleFlags(): array
+    {
+        $flags = [];
+
+        foreach (\App\Support\ModuleRegistry::keys() as $module) {
+            $flags[$module] = $this->moduleEnabled($module);
+        }
+
+        return $flags;
+    }
+
+    public function setModuleEnabled(string $module, bool $enabled): void
+    {
+        if (!\App\Support\ModuleRegistry::isKnown($module)) {
+            return;
+        }
+
+        $features = is_array($this->features) ? $this->features : [];
+        $features[$module] = ['enabled' => $enabled];
+        $this->features = $features;
+    }
+
     public function selectedSessionName(): ?string
     {
         $configuredSession = data_get($this->settings, 'session');

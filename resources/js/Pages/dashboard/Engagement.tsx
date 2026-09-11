@@ -34,6 +34,7 @@ type GreetingRow = {
 };
 
 export type EngagementProps = {
+    user: any;
     birthdaysThisMonth: number;
     birthdaysToday: BirthdayRow[];
     upcomingBirthdays: BirthdayRow[];
@@ -41,6 +42,7 @@ export type EngagementProps = {
 };
 
 export default function Engagement({
+    user,
     birthdaysThisMonth,
     birthdaysToday,
     upcomingBirthdays,
@@ -120,7 +122,7 @@ export default function Engagement({
     };
 
     return (
-        <DashboardLayout pageTitle={t('Engagement')}>
+        <DashboardLayout user={user} pageTitle={t('Engagement')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

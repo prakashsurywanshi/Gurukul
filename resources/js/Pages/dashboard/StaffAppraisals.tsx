@@ -39,13 +39,14 @@ type AppraisalRow = {
 };
 
 type Props = {
+    user: any;
     cycles: CycleRow[];
     appraisals: AppraisalRow[];
     staffOptions: StaffOption[];
     summary: { activeCycles: number; completed: number; avgScore: number | null };
 };
 
-export default function StaffAppraisals({ cycles, appraisals, staffOptions, summary }: Props) {
+export default function StaffAppraisals({ user, cycles, appraisals, staffOptions, summary }: Props) {
     const { t } = useLanguage();
     const [cycleName, setCycleName] = useState('');
     const [startsOn, setStartsOn] = useState('');
@@ -156,7 +157,7 @@ export default function StaffAppraisals({ cycles, appraisals, staffOptions, summ
     };
 
     return (
-        <DashboardLayout pageTitle={t('Staff Appraisals')}>
+        <DashboardLayout user={user} pageTitle={t('Staff Appraisals')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

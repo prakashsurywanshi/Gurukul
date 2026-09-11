@@ -15,6 +15,7 @@ class LeaveTypesController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -37,6 +38,7 @@ class LeaveTypesController extends Controller
             ]);
 
         return Inertia::render('dashboard/LeaveTypes', [
+            'user' => $user,
             'types' => $types,
             'summary' => [
                 'activeCount' => $types->filter(fn ($type) => $type['status'] === 'active')->count(),

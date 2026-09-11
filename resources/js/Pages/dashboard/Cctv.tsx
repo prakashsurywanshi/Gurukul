@@ -35,6 +35,7 @@ export type CctvLogRow = {
 };
 
 export type CctvProps = {
+    user: any;
     cameras: CctvCameraRow[];
     logs: CctvLogRow[];
     summary: { cameras: number; active: number; views: number; exports: number };
@@ -42,7 +43,7 @@ export type CctvProps = {
 
 const CAMERA_TYPES = ['indoor', 'outdoor', 'gate', 'classroom', 'corridor'] as const;
 
-export default function Cctv({ cameras, logs, summary }: CctvProps) {
+export default function Cctv({ user, cameras, logs, summary }: CctvProps) {
     const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
@@ -121,7 +122,7 @@ export default function Cctv({ cameras, logs, summary }: CctvProps) {
     };
 
     return (
-        <DashboardLayout pageTitle={t('CCTV Camera Registry')}>
+        <DashboardLayout user={user} pageTitle={t('CCTV Camera Registry')}>
             <div className="space-y-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="grid gap-3 sm:grid-cols-4">

@@ -71,13 +71,14 @@ type SaleRecord = {
 };
 
 type Props = {
+    user: any;
     catalog: CatalogItem[];
     sales: SaleRecord[];
     filters: { search: string; from: string | null; to: string | null };
     summary: { today: number; total: number; salesCount: number; lowStock: number };
 };
 
-export default function PointOfSale({ catalog, sales, filters, summary }: Props) {
+export default function PointOfSale({ user, catalog, sales, filters, summary }: Props) {
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState('pos');
     const [lines, setLines] = useState<SaleItemRow[]>([]);
@@ -187,7 +188,7 @@ export default function PointOfSale({ catalog, sales, filters, summary }: Props)
     ];
 
     return (
-        <DashboardLayout pageTitle={t('Point of Sale')}>
+        <DashboardLayout user={user} pageTitle={t('Point of Sale')}>
             <div className="space-y-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>

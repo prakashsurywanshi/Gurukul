@@ -37,6 +37,7 @@ export type CustomFieldRecord = {
 };
 
 export type CustomFieldsProps = {
+    user: any;
     definitions: { entity: string; fields: CustomFieldRow[] }[];
     records: { entity: string; records: CustomFieldRecord[]; totalFields: number; requiredFields: number }[];
     summary: {
@@ -56,7 +57,7 @@ const FIELD_TYPES = [
     { value: 'select', label: 'Dropdown' },
 ];
 
-export default function CustomFields({ definitions, records, summary }: CustomFieldsProps) {
+export default function CustomFields({ user, definitions, records, summary }: CustomFieldsProps) {
     const { t } = useLanguage();
     const [tab, setTab] = useState<'fields' | 'records'>('fields');
     const [entityFilter, setEntityFilter] = useState<string>('student');
@@ -186,7 +187,7 @@ export default function CustomFields({ definitions, records, summary }: CustomFi
     };
 
     return (
-        <DashboardLayout pageTitle={t('Custom Fields & Data Records')}>
+        <DashboardLayout user={user} pageTitle={t('Custom Fields & Data Records')}>
             <div className="space-y-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="grid gap-3 sm:grid-cols-4">

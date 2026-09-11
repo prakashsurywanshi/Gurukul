@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { toast } from 'sonner';
 
 export type CommsWalletProps = {
+    user: any;
     balances: { type: string; balance: number }[];
     perStaff: { staffName: string; staffRole: string; walletType: string; balance: number }[];
     ledger: {
@@ -40,7 +41,7 @@ function formatCredits(value: number): string {
     return `${formatted} ${value === 1 ? 'credit' : 'credits'}`;
 }
 
-export default function CommsWallet({ balances, perStaff, ledger, staffOptions, summary }: CommsWalletProps) {
+export default function CommsWallet({ user, balances, perStaff, ledger, staffOptions, summary }: CommsWalletProps) {
     const { t } = useLanguage();
 
     const [walletType, setWalletType] = useState('whatsapp');
@@ -106,7 +107,7 @@ export default function CommsWallet({ balances, perStaff, ledger, staffOptions, 
     };
 
     return (
-        <DashboardLayout pageTitle={t('Comms Wallet')}>
+        <DashboardLayout user={user} pageTitle={t('Comms Wallet')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

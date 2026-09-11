@@ -889,7 +889,7 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
                                     onValueChange={(value) =>
                                         setFormData((current) => ({
                                             ...current,
-                                            assigned_to: value,
+                                            assigned_to: value === 'none' ? '' : value,
                                         }))
                                     }
                                 >
@@ -897,7 +897,7 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
                                         <SelectValue placeholder={t('Unassigned')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">{t('Unassigned')}</SelectItem>
+                                        <SelectItem value="none">{t('Unassigned')}</SelectItem>
                                         {staffMembers.map((staff) => (
                                             <SelectItem key={staff.id} value={String(staff.id)}>
                                                 {staff.name}

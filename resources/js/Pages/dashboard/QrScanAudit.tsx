@@ -22,6 +22,7 @@ export type QrScanAuditLog = {
 };
 
 export type QrScanAuditProps = {
+    user: any;
     logs: QrScanAuditLog[];
     date: string;
     summary: {
@@ -33,7 +34,7 @@ export type QrScanAuditProps = {
     };
 };
 
-export default function QrScanAudit({ logs, date, summary }: QrScanAuditProps) {
+export default function QrScanAudit({ user, logs, date, summary }: QrScanAuditProps) {
     const { t } = useLanguage();
     const [filter, setFilter] = useState<'all' | 'success' | 'failure'>('all');
 
@@ -55,7 +56,7 @@ export default function QrScanAudit({ logs, date, summary }: QrScanAuditProps) {
     };
 
     return (
-        <DashboardLayout pageTitle={t('QR Scan Audit')}>
+        <DashboardLayout user={user} pageTitle={t('QR Scan Audit')}>
             <div className="space-y-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="grid gap-3 sm:grid-cols-5">

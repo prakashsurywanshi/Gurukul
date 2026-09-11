@@ -54,6 +54,7 @@ class SurveysController extends Controller
         $visible = $surveys->filter(fn ($survey) => $survey['status'] === 'active')->values();
 
         return Inertia::render('dashboard/Surveys', [
+            'user' => $user,
             'surveys' => $surveys,
             'myResponses' => $user ? $this->myResponseIds($organization, $user) : [],
             'summary' => [

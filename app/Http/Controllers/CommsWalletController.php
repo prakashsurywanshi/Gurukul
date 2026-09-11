@@ -73,6 +73,7 @@ class CommsWalletController extends Controller
             ]);
 
         return Inertia::render('dashboard/CommsWallet', [
+            'user' => $user,
             'balances' => $balances,
             'perStaff' => $perStaff,
             'ledger' => $ledger,

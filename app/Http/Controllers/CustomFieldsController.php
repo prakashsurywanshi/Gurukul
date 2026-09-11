@@ -107,6 +107,7 @@ class CustomFieldsController extends Controller
         $staffRecords = $records->firstWhere('entity', 'staff');
 
         return Inertia::render('dashboard/CustomFields', [
+            'user' => $user,
             'definitions' => $entityDefinitions,
             'records' => $records,
             'summary' => [

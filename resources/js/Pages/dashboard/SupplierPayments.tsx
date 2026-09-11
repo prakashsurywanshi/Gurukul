@@ -31,12 +31,13 @@ type SupplierRow = {
 };
 
 type Props = {
+    user: any;
     payments: PaymentRecord[];
     suppliers: SupplierRow[];
     summary: { totalPaid: number; monthPaid: number; paymentsCount: number };
 };
 
-export default function SupplierPayments({ payments, suppliers, summary }: Props) {
+export default function SupplierPayments({ user, payments, suppliers, summary }: Props) {
     const { t } = useLanguage();
     const [supplierId, setSupplierId] = useState('');
     const [amount, setAmount] = useState('');
@@ -87,7 +88,7 @@ export default function SupplierPayments({ payments, suppliers, summary }: Props
     };
 
     return (
-        <DashboardLayout pageTitle={t('Supplier Payments')}>
+        <DashboardLayout user={user} pageTitle={t('Supplier Payments')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

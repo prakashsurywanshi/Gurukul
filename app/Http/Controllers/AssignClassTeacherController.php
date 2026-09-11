@@ -39,7 +39,7 @@ class AssignClassTeacherController extends Controller
                     'roomNumber' => $schoolClass->room_number,
                     'studentsCount' => $schoolClass->studentAcademicHistories()->count(),
                     'teacherId' => $teacher?->id,
-                    'teacherName' => $teacher ? trim($teacher->first_name . ' ' . ($teacher->last_name ?? '')) : null,
+                    'teacherName' => $teacher ? $teacher->name : null,
                 ];
             })
             ->values()
@@ -100,11 +100,11 @@ class AssignClassTeacherController extends Controller
             ->where('organization_id', $organization->id)
             ->where('role', 'teacher')
             ->where('status', 'active')
-            ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name'])
+            ->orderBy('name')
+            ->get(['id', 'name'])
             ->map(fn (User $teacher) => [
                 'id' => $teacher->id,
-                'name' => trim($teacher->first_name . ' ' . ($teacher->last_name ?? '')),
+                'name' => trim($teacher->name),
             ])
             ->values()
             ->all();

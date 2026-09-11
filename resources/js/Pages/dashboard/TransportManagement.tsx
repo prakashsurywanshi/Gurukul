@@ -1390,10 +1390,224 @@ export default function TransportManagement({
 
                     <Tabs defaultValue="vehicles">
                         <TabsList>
+                            <TabsTrigger value="live">{t('Live')}</TabsTrigger>
                             <TabsTrigger value="vehicles">{t('Vehicles')}</TabsTrigger>
+                            <TabsTrigger value="drivers">{t('Drivers')}</TabsTrigger>
                             <TabsTrigger value="assignments">{t('Assignments')}</TabsTrigger>
                             <TabsTrigger value="journeys">{t('Journeys')}</TabsTrigger>
                         </TabsList>
+
+                        <TabsContent value="live" className="space-y-6">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <p className="text-sm text-slate-500">{t('Running Trips')}</p>
+                                        <p className="mt-1 text-2xl font-bold text-emerald-600">
+                                            {trips.filter((trip) => trip.tripStatus === 'running').length}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <p className="text-sm text-slate-500">{t('Scheduled Today')}</p>
+                                        <p className="mt-1 text-2xl font-bold">
+                                            {trips.filter((trip) => trip.tripStatus !== 'cancelled').length}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <p className="text-sm text-slate-500">{t('Delayed')}</p>
+                                        <p className="mt-1 text-2xl font-bold text-amber-600">
+                                            {trips.filter((trip) => trip.tripStatus === 'delayed').length}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <p className="text-sm text-slate-500">{t('Completed')}</p>
+                                        <p className="mt-1 text-2xl font-bold text-sky-600">
+                                            {trips.filter((trip) => trip.tripStatus === 'completed').length}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            {trips.filter((trip) => trip.tripStatus !== 'cancelled').length === 0 ? (
+                                <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-slate-400 dark:bg-slate-800">
+                                    {t('No live or scheduled trips. Plan journeys to see live status here.')}
+                                </p>
+                            ) : (
+                                <Card>
+                                    <CardContent className="p-0">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>{t('Vehicle')}</TableHead>
+                                                    <TableHead>{t('Route')}</TableHead>
+                                                    <TableHead>{t('Driver')}</TableHead>
+                                                    <TableHead>{t('Trip Time')}</TableHead>
+                                                    <TableHead>{t('Stops')}</TableHead>
+                                                    <TableHead>{t('Status')}</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {trips
+                                                    .filter((trip) => trip.tripStatus !== 'cancelled')
+                                                    .map((trip) => (
+                                                        <TableRow key={trip.id}>
+                                                            <TableCell className="text-sm font-medium">
+                                                                {vehicles.find((v) => v.id === trip.vehicleId)
+                                                                    ?.vehicleNumber ?? trip.vehicleId}
+                                                            </TableCell>
+                                                            <TableCell className="text-sm">
+                                                                {routes.find((r) => r.id === trip.routeId)?.name ??
+                                                                    trip.routeId}
+                                                            </TableCell>
+                                                            <TableCell className="text-sm">
+                                                                {trip.driverName ||
+                                                                    routes.find((r) => r.id === trip.routeId)
+                                                                        ?.driverName ||
+                                                                    '—'}
+                                                                {trip.driverName ||
+                                                                routes.find((r) => r.id === trip.routeId)
+                                                                    ?.driverName ? (
+                                                                    <span className="block text-xs text-slate-400">
+                                                                        {
+                                                                            routes.find((r) => r.id === trip.routeId)
+                                                                                ?.driverPhone
+                                                                        }
+                                                                    </span>
+                                                                ) : null}
+                                                            </TableCell>
+                                                            <TableCell className="text-sm">
+                                                                {trip.departureTime}
+                                                            </TableCell>
+                                                            <TableCell className="text-sm">
+                                                                {trip.stopUpdates?.length ?? 0} /{' '}
+                                                                {(trip.pickupPoints?.length ?? 0) + 1}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge
+                                                                    className={tripStatusTone[trip.tripStatus] ?? ''}
+                                                                >
+                                                                    {tripStatusTone[trip.tripStatus]
+                                                                        ? trip.tripStatus.charAt(0).toUpperCase() +
+                                                                          trip.tripStatus.slice(1)
+                                                                        : trip.tripStatus}
+                                                                </Badge>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="drivers" className="space-y-6">
+                            {(() => {
+                                const driverMap = new Map<
+                                    string,
+                                    { name: string; phone: string; vehicles: string[]; routes: string[] }
+                                >();
+                                routes.forEach((route) => {
+                                    if (!route.driverName) return;
+                                    const key = `${route.driverName}|${route.driverPhone}`;
+                                    const entry = driverMap.get(key) ?? {
+                                        name: route.driverName,
+                                        phone: route.driverPhone,
+                                        vehicles: [],
+                                        routes: [],
+                                    };
+                                    entry.routes.push(route.name);
+                                    driverMap.set(key, entry);
+                                });
+                                vehicles.forEach((vehicle) => {
+                                    if (!vehicle.assignedDriver) return;
+                                    const key = `${vehicle.assignedDriver}|${vehicle.driverPhone}`;
+                                    const entry = driverMap.get(key) ?? {
+                                        name: vehicle.assignedDriver,
+                                        phone: vehicle.driverPhone,
+                                        vehicles: [],
+                                        routes: [],
+                                    };
+                                    if (!entry.vehicles.includes(vehicle.vehicleNumber))
+                                        entry.vehicles.push(vehicle.vehicleNumber);
+                                    driverMap.set(key, entry);
+                                });
+                                const drivers = Array.from(driverMap.values());
+                                return (
+                                    <>
+                                        <div className="grid gap-3 sm:grid-cols-3">
+                                            <Card>
+                                                <CardContent className="p-4">
+                                                    <p className="text-sm text-slate-500">{t('Active Drivers')}</p>
+                                                    <p className="mt-1 text-2xl font-bold">{drivers.length}</p>
+                                                </CardContent>
+                                            </Card>
+                                            <Card>
+                                                <CardContent className="p-4">
+                                                    <p className="text-sm text-slate-500">{t('Covers Routes')}</p>
+                                                    <p className="mt-1 text-2xl font-bold">
+                                                        {routes.filter((r) => r.driverName).length}
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                            <Card>
+                                                <CardContent className="p-4">
+                                                    <p className="text-sm text-slate-500">{t('Assignee Vehicles')}</p>
+                                                    <p className="mt-1 text-2xl font-bold">
+                                                        {vehicles.filter((v) => v.assignedDriver).length}
+                                                    </p>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                        {drivers.length === 0 ? (
+                                            <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-slate-400 dark:bg-slate-800">
+                                                {t(
+                                                    'No drivers assigned yet. Add a driver to a route or vehicle first.',
+                                                )}
+                                            </p>
+                                        ) : (
+                                            <Card>
+                                                <CardContent className="p-0">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead>{t('Driver')}</TableHead>
+                                                                <TableHead>{t('Contact')}</TableHead>
+                                                                <TableHead>{t('Assigned Routes')}</TableHead>
+                                                                <TableHead>{t('Vehicles')}</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {drivers.map((driver) => (
+                                                                <TableRow key={driver.name}>
+                                                                    <TableCell className="text-sm font-medium">
+                                                                        {driver.name}
+                                                                    </TableCell>
+                                                                    <TableCell className="text-sm">
+                                                                        {driver.phone || '—'}
+                                                                    </TableCell>
+                                                                    <TableCell className="text-sm">
+                                                                        {driver.routes.join(', ') || '—'}
+                                                                    </TableCell>
+                                                                    <TableCell className="text-sm">
+                                                                        {driver.vehicles.join(', ') || '—'}
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </CardContent>
+                                            </Card>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </TabsContent>
 
                         <TabsContent value="vehicles" className="space-y-6">
                             <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">

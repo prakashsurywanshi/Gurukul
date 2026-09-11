@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'organization.subscription' => EnsureOrganizationSubscriptionIsActive::class,
             'staff.permission' => EnsureStaffPermission::class,
+            'module.enabled' => \App\Http\Middleware\EnsureModuleEnabled::class,
             'audit.trail' => \App\Http\Middleware\LogAuditTrail::class,
             'set.locale' => SetLocale::class,
         ]);

@@ -16,6 +16,7 @@ class SupplierPaymentController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -48,6 +49,7 @@ class SupplierPaymentController extends Controller
             ]);
 
         return Inertia::render('dashboard/SupplierPayments', [
+            'user' => $user,
             'payments' => $payments,
             'suppliers' => $suppliers,
             'summary' => [

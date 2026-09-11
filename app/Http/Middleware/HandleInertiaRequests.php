@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\StaffPermissionService;
+use App\Support\ModuleRegistry;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -52,9 +53,34 @@ class HandleInertiaRequests extends Middleware
             'schoolLogo' => fn () => $this->resolveSchoolLogo($request),
             'subscriptionNotice' => fn () => $this->resolveSubscriptionNotice($request),
             'staffPermissions' => fn () => app(StaffPermissionService::class)->featurePermissionsFor($request->user()),
+            'modules' => fn () => $this->resolveModules($request),
             'impersonation' => fn () => $this->resolveImpersonation($request),
             'languageSettings' => fn () => $this->resolveLanguageSettings($request),
         ];
+    }
+
+    private function resolveModules(Request $request): array
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return [];
+        }
+
+        $organizationId = $this->resolveOrganizationId($request);
+        $organization = $organizationId ? Organization::query()->find($organizationId) : null;
+
+        if (!$organization) {
+            return [];
+        }
+
+        $flags = [];
+
+        foreach (ModuleRegistry::keys() as $key) {
+            $flags[$key] = $organization->moduleEnabled($key);
+        }
+
+        return $flags;
     }
 
     private function resolveLanguageSettings(Request $request): array

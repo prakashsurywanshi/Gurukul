@@ -13,6 +13,7 @@ class AuditTrail extends Model
         'action',
         'model_type',
         'model_id',
+        'module',
         'description',
         'old_values',
         'new_values',

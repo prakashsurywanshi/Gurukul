@@ -16,6 +16,7 @@ class EngagementController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -60,6 +61,7 @@ class EngagementController extends Controller
         $today = sprintf('%02d-%02d', $thisMonth, (int) now()->day);
 
         return Inertia::render('dashboard/Engagement', [
+            'user' => $user,
             'birthdaysThisMonth' => $birthdays->filter(fn ($birthday) => $birthday['month'] === $thisMonth)->count(),
             'birthdaysToday' => $birthdays->filter(fn ($birthday) => sprintf('%02d-%02d', $birthday['month'], $birthday['day']) === $today)->values(),
             'upcomingBirthdays' => $upcoming,

@@ -17,6 +17,7 @@ class SalaryTemplatesController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -56,6 +57,7 @@ class SalaryTemplatesController extends Controller
             ]);
 
         return Inertia::render('dashboard/SalaryTemplates', [
+            'user' => $user,
             'templates' => $templates,
             'assignments' => $assignments,
             'staffOptions' => $this->staffOptions($organization),

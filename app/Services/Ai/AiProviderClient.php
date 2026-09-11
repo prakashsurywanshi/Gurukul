@@ -67,4 +67,51 @@ class AiProviderClient
 
         return trim((string) $content);
     }
+
+    public function completeVision(string $system, string $user, string $imageDataUrl): string
+    {
+        if ($this->mode === 'local') {
+            return 'Vision is not available in local mode. Configure an OpenAI-compatible AI provider to enable facial detection previews.';
+        }
+
+        if (empty($this->apiKey)) {
+            throw new RuntimeException('AI provider is not configured. Set AI_API_KEY or configure the AI settings.');
+        }
+
+        $payload = [
+            'model' => $this->model,
+            'messages' => [
+                ['role' => 'system', 'content' => $system],
+                [
+                    'role' => 'user',
+                    'content' => [
+                        ['type' => 'text', 'text' => $user],
+                        ['type' => 'image_url', 'image_url' => ['url' => $imageDataUrl]],
+                    ],
+                ],
+            ],
+            'temperature' => $this->temperature,
+            'max_tokens' => 900,
+        ];
+
+        $request = Http::acceptJson()->timeout($this->timeout);
+
+        if ($this->apiKey) {
+            $request = $request->withToken($this->apiKey);
+        }
+
+        $response = $request->post($this->baseUrl . '/chat/completions', $payload);
+
+        if ($response->failed()) {
+            throw new RuntimeException('AI vision request failed with status ' . $response->status() . '.');
+        }
+
+        $content = data_get($response->json(), 'choices.0.message.content');
+
+        if (!$content) {
+            throw new RuntimeException('AI provider returned an empty vision completion.');
+        }
+
+        return trim((string) $content);
+    }
 }

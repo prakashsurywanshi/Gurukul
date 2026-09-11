@@ -16,6 +16,7 @@ class StaffDirectoryController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
 
@@ -67,6 +68,7 @@ class StaffDirectoryController extends Controller
         ]);
 
         return Inertia::render('dashboard/StaffDirectory', [
+            'user' => $user,
             'staff' => $staff,
             'filters' => [
                 'search' => (string) $request->query('search'),

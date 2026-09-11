@@ -37,6 +37,7 @@ type AssignmentRow = {
 };
 
 type Props = {
+    user: any;
     templates: TemplateRow[];
     assignments: AssignmentRow[];
     staffOptions: StaffOption[];
@@ -45,7 +46,7 @@ type Props = {
 
 const EMPTY_DEDUCTION = { name: '', amount: '0' };
 
-export default function SalaryTemplates({ templates, assignments, staffOptions, summary }: Props) {
+export default function SalaryTemplates({ user, templates, assignments, staffOptions, summary }: Props) {
     const { t } = useLanguage();
     const [editing, setEditing] = useState<TemplateRow | null>(null);
     const [name, setName] = useState('');
@@ -169,7 +170,7 @@ export default function SalaryTemplates({ templates, assignments, staffOptions, 
     };
 
     return (
-        <DashboardLayout pageTitle={t('Salary Templates')}>
+        <DashboardLayout user={user} pageTitle={t('Salary Templates')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

@@ -19,6 +19,7 @@ class StorePosController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
         $this->abortUnlessAdmin($request->user());
@@ -65,6 +66,7 @@ class StorePosController extends Controller
         $totals = PosSale::query()->where('organization_id', $organization->id)->get();
 
         return Inertia::render('dashboard/PointOfSale', [
+            'user' => $user,
             'catalog' => $catalog,
             'sales' => $sales,
             'filters' => [

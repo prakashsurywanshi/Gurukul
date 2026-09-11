@@ -92,11 +92,11 @@ export default function GatePasses({
     const applyFilters = () => {
         const params: Record<string, string> = {};
 
-        if (statusFilter) {
+        if (statusFilter && statusFilter !== 'all') {
             params.status = statusFilter;
         }
 
-        if (passTypeFilter) {
+        if (passTypeFilter && passTypeFilter !== 'all') {
             params.pass_type = passTypeFilter;
         }
 
@@ -274,7 +274,7 @@ export default function GatePasses({
                                         <SelectValue placeholder={t('All types')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">{t('All types')}</SelectItem>
+                                        <SelectItem value="all">{t('All types')}</SelectItem>
                                         <SelectItem value="entry">{t('Entry')}</SelectItem>
                                         <SelectItem value="exit">{t('Exit')}</SelectItem>
                                     </SelectContent>
@@ -290,7 +290,7 @@ export default function GatePasses({
                                         <SelectValue placeholder={t('All statuses')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">{t('All statuses')}</SelectItem>
+                                        <SelectItem value="all">{t('All statuses')}</SelectItem>
                                         <SelectItem value="open">{t('Open')}</SelectItem>
                                         <SelectItem value="closed">{t('Closed')}</SelectItem>
                                         <SelectItem value="cancelled">{t('Cancelled')}</SelectItem>

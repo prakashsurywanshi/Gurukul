@@ -58,6 +58,7 @@ class CctvController extends Controller
             ->values();
 
         return Inertia::render('dashboard/Cctv', [
+            'user' => $user,
             'cameras' => $cameras,
             'logs' => $logs,
             'summary' => [

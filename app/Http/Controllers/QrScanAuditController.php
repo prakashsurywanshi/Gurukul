@@ -67,6 +67,7 @@ class QrScanAuditController extends Controller
         $successRate = $totalScans > 0 ? round((QrScanLog::query()->where('organization_id', $organization->id)->where('status', 'success')->count() / $totalScans) * 100) : 0;
 
         return Inertia::render('dashboard/QrScanAudit', [
+            'user' => $user,
             'logs' => $logs,
             'date' => $date,
             'summary' => [

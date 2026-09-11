@@ -821,6 +821,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function DocumentToolbar({ onFormat }: { onFormat: (action: FormatAction) => void }) {
+    const { t } = useLanguage();
     const actions: Array<{ action: FormatAction; label: string }> = [
         { action: 'h1', label: 'H1' },
         { action: 'h2', label: 'H2' },

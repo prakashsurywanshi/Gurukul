@@ -28,6 +28,7 @@ type SurveyRow = {
 };
 
 export type SurveysProps = {
+    user: any;
     surveys: SurveyRow[];
     myResponses: number[];
     summary: { activeSurveys: number; totalResponses: number; mySurveys: number };
@@ -36,7 +37,7 @@ export type SurveysProps = {
 
 const QUESTION_TYPES = { rating: 'Rating (1-5)', choice: 'Choice', yesno: 'Yes / No', text: 'Text Answer' };
 
-export default function Surveys({ surveys, myResponses, summary, canManage }: SurveysProps) {
+export default function Surveys({ user, surveys, myResponses, summary, canManage }: SurveysProps) {
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
     const [responseSurvey, setResponseSurvey] = useState<SurveyRow | null>(null);
@@ -158,7 +159,7 @@ export default function Surveys({ surveys, myResponses, summary, canManage }: Su
     };
 
     return (
-        <DashboardLayout pageTitle={t('Surveys')}>
+        <DashboardLayout user={user} pageTitle={t('Surveys')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

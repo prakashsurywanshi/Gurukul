@@ -1,6 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import {
     ArrowDownCircle,
     ArrowUpCircle,
@@ -113,11 +113,11 @@ export default function BankAccounts({
     const [transactionFromFilter, setTransactionFromFilter] = useState(filters.from ?? '');
     const [transactionToFilter, setTransactionToFilter] = useState(filters.to ?? '');
 
+    const flash = (usePage().props as any)?.flash ?? {};
     useEffect(() => {
-        const flash = (usePage().props as any)?.flash ?? {};
         if (flash.success) toast.success(flash.success);
         if (flash.error) toast.error(flash.error);
-    }, []);
+    }, [flash.success, flash.error]);
 
     const formatCurrency = (amount: number) =>
         new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
