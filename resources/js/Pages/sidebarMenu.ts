@@ -1125,7 +1125,14 @@ export const sidebarConfig: {
         label: 'Hostel',
         icon: BedDouble,
         navMode: 'href-or-id',
-        tabs: ['my-hostel', 'hostel-dashboard', 'hostel-management', 'hostel-fee-collection'],
+        tabs: [
+            'my-hostel',
+            'hostel-dashboard',
+            'hostel-management',
+            'hostel-room-types',
+            'hostel-allocations',
+            'hostel-fee-collection',
+        ],
         items: [
             {
                 id: 'my-hostel',
@@ -1149,6 +1156,22 @@ export const sidebarConfig: {
                 icon: BedDouble,
                 href: '/hostel-management',
                 roles: ['admin'],
+                feature: 'Hostel Management',
+            },
+            {
+                id: 'hostel-room-types',
+                label: 'Room Types',
+                icon: BedDouble,
+                href: '/hostel/room-types',
+                roles: ['super_admin', 'admin'],
+                feature: 'Hostel Management',
+            },
+            {
+                id: 'hostel-allocations',
+                label: 'Student Allocation',
+                icon: BedDouble,
+                href: '/hostel/allocations',
+                roles: ['super_admin', 'admin'],
                 feature: 'Hostel Management',
             },
             {

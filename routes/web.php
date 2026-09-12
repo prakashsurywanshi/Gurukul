@@ -487,6 +487,13 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/hostel-management/fee-payments', [HostelManagementController::class, 'collectFeePayment'])->middleware('staff.permission:Hostel Fee Collection,add')->name('hostel-management.fee-payments.store');
     Route::post('/hostel-management/fee-payments/{feePayment}/revert', [HostelManagementController::class, 'revertFeePayment'])->middleware('staff.permission:Hostel Fee Collection,edit')->name('hostel-management.fee-payments.revert');
     Route::delete('/hostel-management/fees/{studentFee}', [HostelManagementController::class, 'destroyFeeRecord'])->middleware('staff.permission:Hostel Fee Collection,delete')->name('hostel-management.fees.destroy');
+    Route::get('/hostel/room-types', [HostelManagementController::class, 'roomTypes'])->middleware('staff.permission:Hostel Management,view')->name('hostel.room-types');
+    Route::post('/hostel/room-types', [HostelManagementController::class, 'storeRoomType'])->middleware('staff.permission:Hostel Management,add')->name('hostel.room-types.store');
+    Route::patch('/hostel/room-types/{hostelRoomType}', [HostelManagementController::class, 'updateRoomType'])->middleware('staff.permission:Hostel Management,edit')->name('hostel.room-types.update');
+    Route::delete('/hostel/room-types/{hostelRoomType}', [HostelManagementController::class, 'destroyRoomType'])->middleware('staff.permission:Hostel Management,delete')->name('hostel.room-types.destroy');
+    Route::get('/hostel/allocations', [HostelManagementController::class, 'studentAllocation'])->middleware('staff.permission:Hostel Management,view')->name('hostel.allocations');
+    Route::post('/hostel/allocations', [HostelManagementController::class, 'allocateStudent'])->middleware('staff.permission:Hostel Management,add')->name('hostel.allocations.store');
+    Route::post('/hostel/allocations/{hostelAllocation}/release', [HostelManagementController::class, 'releaseAllocation'])->middleware('staff.permission:Hostel Management,edit')->name('hostel.allocations.release');
     Route::get('/transport-management', [TransportManagementController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('transport-management');
     Route::get('/transport-fee-collection', [TransportManagementController::class, 'feeCollection'])->middleware('staff.permission:Transport Fee Collection,view')->name('transport-fee-collection');
     Route::post('/transport-management/routes', [TransportManagementController::class, 'storeRoute'])->middleware('staff.permission:Transport Management,add')->name('transport-management.routes.store');

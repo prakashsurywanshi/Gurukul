@@ -9,6 +9,7 @@ use App\Models\HostelFeeStructure;
 use App\Models\HostelLostFoundItem;
 use App\Models\HostelNotice;
 use App\Models\HostelRoom;
+use App\Models\HostelRoomType;
 use App\Models\AcademicYear;
 use App\Models\ComplaintEntry;
 use App\Models\FeePayment;
@@ -57,6 +58,237 @@ class HostelManagementController extends Controller
             'hostelNotices' => $organization ? $this->getHostelNotices($organization) : [],
             'lostFoundItems' => $organization ? $this->getHostelLostFoundItems($organization) : [],
         ]);
+    }
+
+    public function roomTypes()
+    {
+        $organization = $this->requireOrganization();
+
+        $systemNames = array_column(HostelRoomType::SYSTEM_DEFAULTS, 'name');
+
+        $roomTypes = HostelRoomType::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (HostelRoomType $type) => [
+                'id' => (string) $type->id,
+                'name' => $type->name,
+                'label' => $type->label,
+                'capacity' => (int) $type->default_capacity,
+                'fee' => (float) $type->default_fee,
+                'status' => (bool) $type->status,
+            ])
+            ->all();
+
+        $usage = HostelRoom::query()
+            ->whereHas('hostel', fn ($query) => $query->where('organization_id', $organization->id))
+            ->selectRaw('room_type, count(*) as total')
+            ->groupBy('room_type')
+            ->pluck('total', 'room_type')
+            ->all();
+
+        return inertia('dashboard/HostelRoomTypes', [
+            'user' => Auth::user(),
+            'organization' => [
+                'name' => $organization->name,
+                'address' => $organization->address,
+                'phone' => $organization->phone,
+                'email' => $organization->email,
+            ],
+            'systemNames' => $systemNames,
+            'defaults' => HostelRoomType::SYSTEM_DEFAULTS,
+            'roomTypes' => $roomTypes,
+            'usage' => $usage,
+        ]);
+    }
+
+    public function storeRoomType(Request $request): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/'],
+            'label' => ['nullable', 'string', 'max:255'],
+            'capacity' => ['nullable', 'integer', 'min:1', 'max:255'],
+            'fee' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $systemNames = array_column(HostelRoomType::SYSTEM_DEFAULTS, 'name');
+
+        $exists = in_array($validated['name'], $systemNames, true) || HostelRoomType::query()
+            ->where('organization_id', $organization->id)
+            ->where('name', $validated['name'])
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['name' => 'A room type with this name already exists.'])->onlyInput('name');
+        }
+
+        HostelRoomType::query()->create([
+            'organization_id' => $organization->id,
+            'name' => $validated['name'],
+            'label' => $validated['label'] ?: null,
+            'default_capacity' => $validated['capacity'] ?? 2,
+            'default_fee' => $validated['fee'] ?? 0,
+            'status' => true,
+        ]);
+
+        return back()->with('success', 'Room type added.');
+    }
+
+    public function updateRoomType(Request $request, HostelRoomType $hostelRoomType): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+        abort_unless((int) $hostelRoomType->organization_id === $organization->id && ! $hostelRoomType->is_system, 403);
+
+        $validated = $request->validate([
+            'label' => ['nullable', 'string', 'max:255'],
+            'capacity' => ['nullable', 'integer', 'min:1', 'max:255'],
+            'fee' => ['nullable', 'numeric', 'min:0'],
+            'status' => ['nullable', 'boolean'],
+        ]);
+
+        $hostelRoomType->update([
+            'label' => $validated['label'] ?? $hostelRoomType->label,
+            'default_capacity' => $validated['capacity'] ?? $hostelRoomType->default_capacity,
+            'default_fee' => array_key_exists('fee', $validated) ? $validated['fee'] : $hostelRoomType->default_fee,
+            'status' => array_key_exists('status', $validated) ? (bool) $validated['status'] : $hostelRoomType->status,
+        ]);
+
+        return back()->with('success', 'Room type updated.');
+    }
+
+    public function destroyRoomType(HostelRoomType $hostelRoomType): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+        abort_unless((int) $hostelRoomType->organization_id === $organization->id && ! $hostelRoomType->is_system, 403);
+
+        $hostelRoomType->delete();
+
+        return back()->with('success', 'Room type deleted.');
+    }
+
+    public function studentAllocation()
+    {
+        $organization = $this->requireOrganization();
+        $user = Auth::user();
+
+        $allocations = HostelAllocation::query()
+            ->where('status', 'active')
+            ->whereHas('hostel', fn ($query) => $query->where('organization_id', $organization->id))
+            ->with(['student.schoolClass:id,name,section', 'hostel:id,name', 'room:id,room_number,floor', 'bed:id,bed_number'])
+            ->orderByDesc('allocation_date')
+            ->get();
+
+        $allocatedStudentIds = $allocations
+            ->map(fn (HostelAllocation $allocation) => (string) $allocation->student_id)
+            ->unique()
+            ->values()
+            ->all();
+
+        return inertia('dashboard/HostelAllocations', [
+            'user' => $user,
+            'allocations' => $allocations->map(function (HostelAllocation $allocation) {
+                $student = $allocation->student;
+
+                return [
+                    'id' => (string) $allocation->id,
+                    'studentId' => (string) $allocation->student_id,
+                    'studentName' => $student ? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) : '—',
+                    'admissionNo' => $student?->admission_no,
+                    'class' => $student?->schoolClass?->name,
+                    'section' => $student?->schoolClass?->section,
+                    'hostelName' => $allocation->hostel?->name ?? '—',
+                    'roomNumber' => $allocation->room?->room_number ?? '—',
+                    'floor' => $allocation->room?->floor,
+                    'bedNumber' => $allocation->bed?->bed_number,
+                    'allocationDate' => optional($allocation->allocation_date)->format('Y-m-d'),
+                    'remarks' => $allocation->remarks,
+                ];
+            })->all(),
+            'allocatedStudentIds' => $allocatedStudentIds,
+            'students' => collect($this->getStudents($organization))
+                ->map(fn (array $student) => [
+                    'id' => $student['id'],
+                    'name' => trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')),
+                    'admissionNo' => $student['admission_no'],
+                    'class' => $student['class'],
+                    'section' => $student['section'],
+                ])
+                ->values()
+                ->all(),
+            'hostels' => collect($this->getHostels($organization))
+                ->map(fn (array $hostel) => ['id' => $hostel['id'], 'name' => $hostel['name']])
+                ->values()
+                ->all(),
+            'rooms' => collect($this->getRooms($organization))
+                ->map(fn (array $room) => [
+                    'id' => $room['id'],
+                    'hostelId' => $room['hostelId'],
+                    'roomNumber' => $room['roomNumber'],
+                    'floor' => $room['floor'],
+                    'roomType' => $room['roomType'],
+                    'capacity' => $room['capacity'],
+                    'occupied' => $room['occupied'],
+                    'status' => $room['status'],
+                ])
+                ->values()
+                ->all(),
+            'beds' => collect($this->getBeds($organization))
+                ->map(fn (array $bed) => [
+                    'id' => $bed['id'],
+                    'roomId' => $bed['roomId'],
+                    'bedNumber' => $bed['bedNumber'],
+                    'status' => $bed['status'],
+                    'assignedStudentId' => $bed['assignedStudentId'],
+                ])
+                ->values()
+                ->all(),
+        ]);
+    }
+
+    public function allocateStudent(Request $request): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+
+        $validated = $request->validate([
+            'studentId' => ['required', 'integer'],
+            'hostelId' => ['required', 'integer'],
+            'roomId' => ['required', 'integer'],
+            'bedId' => ['required', 'integer'],
+            'allocationDate' => ['nullable', 'date'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $bed = HostelBed::query()
+            ->where('id', $validated['bedId'])
+            ->where('room_id', $validated['roomId'])
+            ->where('hostel_id', $validated['hostelId'])
+            ->whereHas('hostel', fn ($query) => $query->where('organization_id', $organization->id))
+            ->firstOrFail();
+
+        $student = Student::query()
+            ->forCurrentSession($organization->id)
+            ->findOrFail($validated['studentId']);
+
+        if ($bed->status === 'occupied') {
+            return back()->withErrors(['bedId' => 'The selected bed is already occupied.']);
+        }
+
+        $this->syncBedAllocation($bed, $student->id, $validated['remarks'] ?? null, $validated['allocationDate'] ?? null);
+
+        return back()->with('success', 'Student allocated successfully.');
+    }
+
+    public function releaseAllocation(HostelAllocation $hostelAllocation): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+        abort_unless($hostelAllocation->hostel && $hostelAllocation->hostel->organization_id === $organization->id, 403);
+
+        $this->vacateAllocation($hostelAllocation);
+
+        return back()->with('success', 'Allocation released.');
     }
 
     public function feeCollection(Request $request)
@@ -572,7 +804,7 @@ class HostelManagementController extends Controller
             'hostelId' => ['required', 'integer'],
             'roomNumber' => ['required', 'string', 'max:255'],
             'floor' => ['nullable', 'string', 'max:255'],
-            'roomType' => ['required', Rule::in(['single', 'double', 'triple', 'dormitory'])],
+            'roomType' => ['required', Rule::in(HostelRoomType::resolvedNames($organization->id))],
             'capacity' => ['required', 'integer', 'min:1'],
             'monthlyFee' => ['nullable', 'numeric', 'min:0'],
             'status' => ['required', Rule::in(['available', 'full', 'maintenance'])],
@@ -607,7 +839,7 @@ class HostelManagementController extends Controller
             'hostelId' => ['required', 'integer'],
             'roomNumber' => ['required', 'string', 'max:255'],
             'floor' => ['nullable', 'string', 'max:255'],
-            'roomType' => ['required', Rule::in(['single', 'double', 'triple', 'dormitory'])],
+            'roomType' => ['required', Rule::in(HostelRoomType::resolvedNames($organization->id))],
             'capacity' => ['required', 'integer', 'min:1'],
             'monthlyFee' => ['nullable', 'numeric', 'min:0'],
             'status' => ['required', Rule::in(['available', 'full', 'maintenance'])],
@@ -902,7 +1134,7 @@ class HostelManagementController extends Controller
         return $validated;
     }
 
-    private function syncBedAllocation(HostelBed $bed, ?int $studentId, ?string $remarks = null): void
+    private function syncBedAllocation(HostelBed $bed, ?int $studentId, ?string $remarks = null, ?string $allocationDate = null): void
     {
         $existingActiveAllocations = HostelAllocation::query()
             ->where('bed_id', $bed->id)
@@ -946,7 +1178,7 @@ class HostelManagementController extends Controller
                 'hostel_id' => $bed->hostel_id,
                 'room_id' => $bed->room_id,
                 'bed_id' => $bed->id,
-                'allocation_date' => now()->toDateString(),
+                'allocation_date' => $allocationDate ?: now()->toDateString(),
                 'status' => 'active',
                 'remarks' => $remarks,
             ]);
