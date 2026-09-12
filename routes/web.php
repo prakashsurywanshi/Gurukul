@@ -272,6 +272,10 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::put('/staff/loans/{staffLoan}', [StaffLoansController::class, 'update'])->middleware('staff.permission:Payroll Management,edit')->name('staff.loans.update');
     Route::delete('/staff/loans/{staffLoan}', [StaffLoansController::class, 'destroy'])->middleware('staff.permission:Payroll Management,delete')->name('staff.loans.destroy');
     Route::get('/staff/appraisals', [StaffAppraisalsController::class, 'index'])->middleware('staff.permission:Teacher Evaluations,view')->name('staff.appraisals');
+    Route::get('/staff/appraisal-criteria', [StaffAppraisalsController::class, 'criteria'])->middleware('staff.permission:Teacher Evaluations,view')->name('staff.appraisal-criteria');
+    Route::post('/staff/appraisal-criteria', [StaffAppraisalsController::class, 'storeCriterion'])->middleware('staff.permission:Teacher Evaluations,add')->name('staff.appraisal-criteria.store');
+    Route::put('/staff/appraisal-criteria/{appraisalCriterion}', [StaffAppraisalsController::class, 'updateCriterion'])->middleware('staff.permission:Teacher Evaluations,edit')->name('staff.appraisal-criteria.update');
+    Route::delete('/staff/appraisal-criteria/{appraisalCriterion}', [StaffAppraisalsController::class, 'destroyCriterion'])->middleware('staff.permission:Teacher Evaluations,delete')->name('staff.appraisal-criteria.destroy');
     Route::post('/staff/appraisals/cycles', [StaffAppraisalsController::class, 'storeCycle'])->middleware('staff.permission:Teacher Evaluations,add')->name('staff.appraisals.cycles.store');
     Route::post('/staff/appraisals', [StaffAppraisalsController::class, 'storeAppraisal'])->middleware('staff.permission:Teacher Evaluations,add')->name('staff.appraisals.store');
     Route::put('/staff/appraisals/{staffAppraisal}', [StaffAppraisalsController::class, 'updateAppraisal'])->middleware('staff.permission:Teacher Evaluations,edit')->name('staff.appraisals.update');

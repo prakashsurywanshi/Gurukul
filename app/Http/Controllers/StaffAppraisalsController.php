@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppraisalCriteria;
 use App\Models\AppraisalCycle;
 use App\Models\Organization;
 use App\Models\StaffAppraisal;
@@ -119,6 +120,80 @@ class StaffAppraisalsController extends Controller
         $appraisalCycle->delete();
 
         return back()->with('success', 'Appraisal cycle deleted.');
+    }
+
+    public function criteria(Request $request): Response
+    {
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($request->user());
+
+        $criteria = AppraisalCriteria::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('weight')
+            ->orderBy('title')
+            ->get()
+            ->map(fn (AppraisalCriteria $criterion) => [
+                'id' => $criterion->id,
+                'title' => $criterion->title,
+                'description' => $criterion->description,
+                'weight' => $criterion->weight,
+                'status' => $criterion->status,
+            ]);
+
+        return Inertia::render('dashboard/AppraisalCriteria', [
+            'user' => $request->user(),
+            'criteria' => $criteria,
+        ]);
+    }
+
+    public function storeCriterion(Request $request): RedirectResponse
+    {
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($request->user());
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'weight' => ['required', 'integer', 'min:1', 'max:5'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        AppraisalCriteria::query()->create($validated + ['organization_id' => $organization->id]);
+
+        return back()->with('success', 'Appraisal criterion added.');
+    }
+
+    public function updateCriterion(Request $request, AppraisalCriteria $appraisalCriterion): RedirectResponse
+    {
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($request->user());
+        abort_unless($appraisalCriterion->organization_id === $organization->id, 404);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'weight' => ['required', 'integer', 'min:1', 'max:5'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        $appraisalCriterion->update($validated);
+
+        return back()->with('success', 'Appraisal criterion updated.');
+    }
+
+    public function destroyCriterion(Request $request, AppraisalCriteria $appraisalCriterion): RedirectResponse
+    {
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($request->user());
+        abort_unless($appraisalCriterion->organization_id === $organization->id, 404);
+
+        $appraisalCriterion->delete();
+
+        return back()->with('success', 'Appraisal criterion removed.');
     }
 
     public function storeAppraisal(Request $request): RedirectResponse

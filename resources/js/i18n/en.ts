@@ -4512,5 +4512,25 @@ const en = {
         'Use carried forward for lessons that spilled into the next period.',
     'Write clear questions': 'Write clear questions',
     'Write the plan': 'Write the plan',
+    'Add Criterion': 'Add Criterion',
+    'Appraisal Criteria': 'Appraisal Criteria',
+    'Criteria list': 'Criteria list',
+    'Criteria used when rating staff performance in appraisal cycles.':
+        'Criteria used when rating staff performance in appraisal cycles.',
+    'Criterion descriptions with a weight that reflects its importance.':
+        'Criterion descriptions with a weight that reflects its importance.',
+    'Delete this criterion?': 'Delete this criterion?',
+    'Edit Criterion': 'Edit Criterion',
+    'Enter a title for the criterion.': 'Enter a title for the criterion.',
+    'Failed to add criterion.': 'Failed to add criterion.',
+    'Failed to delete criterion.': 'Failed to delete criterion.',
+    'Failed to update criterion.': 'Failed to update criterion.',
+    'Give the criterion a short title, description and an importance weight.':
+        'Give the criterion a short title, description and an importance weight.',
+    'No criteria added yet.': 'No criteria added yet.',
+    'Optional description of what this criterion covers': 'Optional description of what this criterion covers',
+    Weight: 'Weight',
+    'Weight 1 is lowest importance, 5 is highest.': 'Weight 1 is lowest importance, 5 is highest.',
+    'e.g. Classroom Management': 'e.g. Classroom Management',
 };
 export default en;

@@ -4503,5 +4503,25 @@ const mr = {
         'पुढील पिरियडमध्ये गेलेल्या पाठांसाठी पुढे न्या वापरा.',
     'Write clear questions': 'स्पष्ट प्रश्न लिहा',
     'Write the plan': 'योजना लिहा',
+    'Add Criterion': 'निकष जोडा',
+    'Appraisal Criteria': 'मूल्यांकन निकष',
+    'Criteria list': 'निकष यादी',
+    'Criteria used when rating staff performance in appraisal cycles.':
+        'मूल्यांकन चक्रांमध्ये कर्मचारी कामगिरी मोजताना वापरले जाणारे निकष.',
+    'Criterion descriptions with a weight that reflects its importance.':
+        'निकषाचे वर्णन त्याच्या महत्त्वाचे प्रतिबिंबित करणाऱ्या वजनासह.',
+    'Delete this criterion?': 'हा निकष हटवायचा?',
+    'Edit Criterion': 'निकष संपादित करा',
+    'Enter a title for the criterion.': 'निकषासाठी शीर्षक प्रविष्ट करा.',
+    'Failed to add criterion.': 'निकष जोडण्यात अयशस्वी.',
+    'Failed to delete criterion.': 'निकष हटवण्यात अयशस्वी.',
+    'Failed to update criterion.': 'निकष अद्ययावत करण्यात अयशस्वी.',
+    'Give the criterion a short title, description and an importance weight.':
+        'निकषाला छोटे शीर्षक, वर्णन आणि महत्त्वाचे वजन द्या.',
+    'No criteria added yet.': 'अद्याप कोणताही निकष जोडलेला नाही.',
+    'Optional description of what this criterion covers': 'हा निकष काय समाविष्ट करतो याचे वैकल्पिक वर्णन',
+    Weight: 'वजन',
+    'Weight 1 is lowest importance, 5 is highest.': 'वजन 1 सर्वात कमी महत्त्वाचे, 5 सर्वात जास्त.',
+    'e.g. Classroom Management': 'उदा., वर्ग व्यवस्थापन',
 };
 export default mr;

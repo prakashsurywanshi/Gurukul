@@ -4530,5 +4530,25 @@ const hi = {
         'उन पाठों के लिए आगे बढ़ाएँ का उपयोग करें जो अगले पीरियड तक चले गए।',
     'Write clear questions': 'स्पष्ट प्रश्न लिखें',
     'Write the plan': 'योजना लिखें',
+    'Add Criterion': 'मानदंड जोड़ें',
+    'Appraisal Criteria': 'मूल्यांकन मानदंड',
+    'Criteria list': 'मानदंड सूची',
+    'Criteria used when rating staff performance in appraisal cycles.':
+        'मूल्यांकन चक्रों में कर्मचारी प्रदर्शन का आकलन करते समय उपयोग किए जाने वाले मानदंड।',
+    'Criterion descriptions with a weight that reflects its importance.':
+        'मानदंड विवरण उसके महत्व को दर्शाने वाले भार (weight) के साथ।',
+    'Delete this criterion?': 'क्या यह मानदंड हटाएँ?',
+    'Edit Criterion': 'मानदंड संपादित करें',
+    'Enter a title for the criterion.': 'मानदंड के लिए शीर्षक दर्ज करें।',
+    'Failed to add criterion.': 'मानदंड जोड़ने में विफल।',
+    'Failed to delete criterion.': 'मानदंड हटाने में विफल।',
+    'Failed to update criterion.': 'मानदंड अपडेट करने में विफल।',
+    'Give the criterion a short title, description and an importance weight.':
+        'मानदंड को एक संक्षिप्त शीर्षक, विवरण और महत्व भार दें।',
+    'No criteria added yet.': 'अभी तक कोई मानदंड नहीं जोड़ा गया।',
+    'Optional description of what this criterion covers': 'यह मानदंड क्या शामिल करता है, इसका वैकल्पिक विवरण',
+    Weight: 'भार',
+    'Weight 1 is lowest importance, 5 is highest.': 'भार 1 सबसे कम महत्व का है, 5 सबसे अधिक।',
+    'e.g. Classroom Management': 'जैसे, कक्षा प्रबंधन',
 };
 export default hi;
