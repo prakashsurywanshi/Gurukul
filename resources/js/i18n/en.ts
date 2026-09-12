@@ -4584,5 +4584,26 @@ const en = {
     'Core Competencies': 'Core Competencies',
     'Pathways & Tracks': 'Pathways & Tracks',
     'Birthday Manager': 'Birthday Manager',
+    'Assign Subjects': 'Assign Subjects',
+    'Behavior Records': 'Behavior Records',
+    'Assign subjects to a class and set the teacher for each subject.':
+        'Assign subjects to a class and set the teacher for each subject.',
+    'Choose a class to assign its subjects.': 'Choose a class to assign its subjects.',
+    'Select a class to start assigning subjects.': 'Select a class to start assigning subjects.',
+    'All subjects are already assigned to this class.': 'All subjects are already assigned to this class.',
+    'No teacher': 'No teacher',
+    'No subjects assigned to this class yet.': 'No subjects assigned to this class yet.',
+    'Failed to save subject assignments.': 'Failed to save subject assignments.',
+    'Record and track student behavior records and the actions taken.':
+        'Record and track student behavior records and the actions taken.',
+    'Add Record': 'Add Record',
+    'No behavior records found.': 'No behavior records found.',
+    'Behavior Title': 'Behavior Title',
+    'Behavior Record': 'Behavior Record',
+    'Add Behavior Record': 'Add Behavior Record',
+    'Delete this behavior record?': 'Delete this behavior record?',
+    'e.g. Helping a classmate with assignments': 'e.g. Helping a classmate with assignments',
+    'e.g. Positive reinforcement discussed with class teacher.':
+        'e.g. Positive reinforcement discussed with class teacher.',
 };
 export default en;

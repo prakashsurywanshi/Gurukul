@@ -4602,5 +4602,26 @@ const hi = {
     'Core Competencies': 'मूल दक्षताएँ',
     'Pathways & Tracks': 'मार्ग और ट्रैक',
     'Birthday Manager': 'जन्मदिन प्रबंधक',
+    'Assign Subjects': 'विषय निर्धारित करें',
+    'Behavior Records': 'व्यवहार रिकॉर्ड',
+    'Assign subjects to a class and set the teacher for each subject.':
+        'कक्षा को विषय निर्धारित करें और प्रत्येक विषय के लिए शिक्षक चुनें।',
+    'Choose a class to assign its subjects.': 'विषय निर्धारित करने के लिए कक्षा चुनें।',
+    'Select a class to start assigning subjects.': 'विषय निर्धारित करना शुरू करने के लिए कक्षा चुनें।',
+    'All subjects are already assigned to this class.': 'सभी विषय पहले ही इस कक्षा को निर्धारित हैं।',
+    'No teacher': 'कोई शिक्षक नहीं',
+    'No subjects assigned to this class yet.': 'अभी इस कक्षा को कोई विषय निर्धारित नहीं है।',
+    'Failed to save subject assignments.': 'विषय निर्धारण सहेजने में विफल।',
+    'Record and track student behavior records and the actions taken.':
+        'छात्र व्यवहार रिकॉर्ड और किए गए कार्यों को दर्ज व ट्रैक करें।',
+    'Add Record': 'रिकॉर्ड जोड़ें',
+    'No behavior records found.': 'कोई व्यवहार रिकॉर्ड नहीं मिला।',
+    'Behavior Title': 'व्यवहार शीर्षक',
+    'Behavior Record': 'व्यवहार रिकॉर्ड',
+    'Add Behavior Record': 'व्यवहार रिकॉर्ड जोड़ें',
+    'Delete this behavior record?': 'क्या यह व्यवहार रिकॉर्ड हटाएँ?',
+    'e.g. Helping a classmate with assignments': 'जैसे, सहपाठी को असाइनमेंट में मदद करना',
+    'e.g. Positive reinforcement discussed with class teacher.':
+        'जैसे, कक्षा शिक्षक के साथ सकारात्मक प्रोत्साहन पर चर्चा।',
 };
 export default hi;

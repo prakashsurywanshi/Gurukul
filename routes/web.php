@@ -3,6 +3,8 @@
 use App\Http\Controllers\AdmissionInquiryController;
 use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AssignSubjectsController;
+use App\Http\Controllers\BehaviorRecordsController;
 use App\Http\Controllers\AccountHeadController;
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\AutoTimetableController;
@@ -559,6 +561,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/assign-class-teacher', [AssignClassTeacherController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('assign-class-teacher.update');
     Route::get('/assign-electives', [AssignElectivesController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('assign-electives');
     Route::post('/assign-electives', [AssignElectivesController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('assign-electives.update');
+    Route::get('/assign-subjects', [AssignSubjectsController::class, 'index'])->middleware('staff.permission:Subjects,view')->name('assign-subjects');
+    Route::post('/assign-subjects', [AssignSubjectsController::class, 'update'])->middleware('staff.permission:Subjects,edit')->name('assign-subjects.update');
     Route::get('/time-slots', [TimeSlotsController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('time-slots');
     Route::post('/time-slots', [TimeSlotsController::class, 'store'])->middleware('staff.permission:Exam Management,edit')->name('time-slots.store');
     Route::post('/time-slots/reorder', [TimeSlotsController::class, 'reorder'])->middleware('staff.permission:Exam Management,edit')->name('time-slots.reorder');
@@ -778,6 +782,10 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::post('/discipline', [IncidentsController::class, 'store'])->middleware('staff.permission:Discipline,add')->name('discipline.store');
     Route::patch('/discipline/{incident}', [IncidentsController::class, 'update'])->middleware('staff.permission:Discipline,edit')->name('discipline.update');
     Route::delete('/discipline/{incident}', [IncidentsController::class, 'destroy'])->middleware('staff.permission:Discipline,delete')->name('discipline.destroy');
+    Route::get('/student-behavior', [BehaviorRecordsController::class, 'index'])->middleware('staff.permission:Discipline,view')->name('student-behavior');
+    Route::post('/student-behavior', [BehaviorRecordsController::class, 'store'])->middleware('staff.permission:Discipline,add')->name('student-behavior.store');
+    Route::patch('/student-behavior/{incident}', [BehaviorRecordsController::class, 'update'])->middleware('staff.permission:Discipline,edit')->name('student-behavior.update');
+    Route::delete('/student-behavior/{incident}', [BehaviorRecordsController::class, 'destroy'])->middleware('staff.permission:Discipline,delete')->name('student-behavior.destroy');
     Route::get('/student-health', [HealthRecordsController::class, 'index'])->middleware('staff.permission:Student Health,view')->name('student-health');
     Route::post('/student-health', [HealthRecordsController::class, 'store'])->middleware('staff.permission:Student Health,add')->name('student-health.store');
     Route::patch('/student-health/{healthRecord}', [HealthRecordsController::class, 'update'])->middleware('staff.permission:Student Health,edit')->name('student-health.update');

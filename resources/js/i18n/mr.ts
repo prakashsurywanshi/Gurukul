@@ -4573,5 +4573,26 @@ const mr = {
     'Core Competencies': 'मुख्य क्षमता',
     'Pathways & Tracks': 'पथ आणि ट्रॅक',
     'Birthday Manager': 'वाढदिवस व्यवस्थापक',
+    'Assign Subjects': 'विषय नियुक्त करा',
+    'Behavior Records': 'वर्तणूक नोंदी',
+    'Assign subjects to a class and set the teacher for each subject.':
+        'वर्गास विषय नियुक्त करा आणि प्रत्येक विषयासाठी शिक्षक निवडा.',
+    'Choose a class to assign its subjects.': 'विषय नियुक्त करण्यासाठी वर्ग निवडा.',
+    'Select a class to start assigning subjects.': 'विषय नियुक्त करण्यास सुरुवात करण्यासाठी वर्ग निवडा.',
+    'All subjects are already assigned to this class.': 'सर्व विषय आधीच या वर्गास नियुक्त आहेत.',
+    'No teacher': 'शिक्षक नाही',
+    'No subjects assigned to this class yet.': 'अद्याप या वर्गास कोणतेही विषय नियुक्त नाहीत.',
+    'Failed to save subject assignments.': 'विषय नियुक्ती जतन करण्यात अयशस्वी.',
+    'Record and track student behavior records and the actions taken.':
+        'विद्यार्थी वर्तणूक नोंदी आणि घेतलेल्या कृती नोंदवा व ट्रॅक करा.',
+    'Add Record': 'नोंद जोडा',
+    'No behavior records found.': 'कोणत्याही वर्तणूक नोंदी आढळल्या नाहीत.',
+    'Behavior Title': 'वर्तणूक शीर्षक',
+    'Behavior Record': 'वर्तणूक नोंद',
+    'Add Behavior Record': 'वर्तणूक नोंद जोडा',
+    'Delete this behavior record?': 'ही वर्तणूक नोंद हटवायची?',
+    'e.g. Helping a classmate with assignments': 'उदा., सहाध्यायाला असाइनमेंटमध्ये मदत करणे',
+    'e.g. Positive reinforcement discussed with class teacher.':
+        'उदा., वर्ग शिक्षकांसोबत सकारात्मक प्रोत्साहनावर चर्चा.',
 };
 export default mr;
