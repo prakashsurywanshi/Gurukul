@@ -117,7 +117,7 @@ export default function StaffLoans({ user, loans, staffOptions, summary }: Props
     };
 
     return (
-        <DashboardLayout user={user} pageTitle={t('Staff Loans')}>
+        <DashboardLayout user={user} pageTitle={t('Manage Staff Loans')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

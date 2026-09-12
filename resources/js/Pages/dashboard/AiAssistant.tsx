@@ -128,7 +128,7 @@ export default function AiAssistant(pageProps: AiAssistantProps) {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                                {t('AI Assistant')}
+                                {t('AI Chatbot')}
                             </h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {t('Ask questions about your school data.')}

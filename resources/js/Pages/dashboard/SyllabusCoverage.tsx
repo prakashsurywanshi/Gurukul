@@ -158,7 +158,7 @@ export default function SyllabusCoverage(pageProps: SyllabusCoverageProps) {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            {t('Syllabus Coverage')}
+                            {t('Manage Syllabus')}
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {t('Track unit-by-unit progress against the curriculum for every term.')}

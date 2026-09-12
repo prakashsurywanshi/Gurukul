@@ -157,7 +157,7 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
     };
 
     return (
-        <DashboardLayout user={user} pageTitle={t('Staff Appraisals')}>
+        <DashboardLayout user={user} pageTitle={t('Appraisals')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

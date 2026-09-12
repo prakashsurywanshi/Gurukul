@@ -183,7 +183,7 @@ export default function EventsCalendar(pageProps: EventsProps) {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            {t('Events Calendar')}
+                            {t('Events & Holidays')}
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {t('Plan and manage school holidays, exams, events and meetings.')}

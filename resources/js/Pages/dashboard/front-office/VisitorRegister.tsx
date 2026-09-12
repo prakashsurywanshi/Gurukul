@@ -202,7 +202,7 @@ export default function VisitorRegister({ user, entries, tableReady }: VisitorRe
                 <div className="mx-auto max-w-7xl space-y-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900">{t('Visitor Register')}</h1>
+                            <h1 className="text-3xl font-bold text-slate-900">{t('Visitor Book')}</h1>
                             <p className="mt-1 text-sm text-slate-600">
                                 {t('Record, monitor, and update front desk visitor movements throughout the day.')}
                             </p>

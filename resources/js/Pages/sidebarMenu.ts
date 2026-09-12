@@ -351,7 +351,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'study-materials',
-                label: 'Study Materials',
+                label: 'Manage Resources',
                 icon: FolderOpen,
                 roles: ['super_admin', 'admin', 'teacher', 'student'],
                 feature: 'Study Materials',
@@ -382,7 +382,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'online-classes',
-                label: 'Online Classes',
+                label: 'Manage Live Classes',
                 icon: Video,
                 roles: ['super_admin', 'admin', 'teacher', 'student'],
                 feature: 'Live Online Classes',
@@ -398,7 +398,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'syllabus',
-                label: 'Syllabus Coverage',
+                label: 'Manage Syllabus',
                 icon: BookOpenCheck,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Syllabus Coverage',
@@ -489,7 +489,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'students-recycle-bin',
-                label: 'Students Recycle Bin',
+                label: 'Deleted Students',
                 icon: Trash2,
                 href: '/students-recycle-bin',
                 roles: ['super_admin', 'admin'],
@@ -589,7 +589,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'due-slips',
-                label: 'Due Slips',
+                label: 'Generate Due Slip',
                 icon: FileText,
                 href: '/fees/due-slips',
                 roles: ['super_admin', 'admin', 'accountant'],
@@ -597,7 +597,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'fee-audit',
-                label: 'Fee Audit',
+                label: 'Fee Data Audit',
                 icon: FileClock,
                 href: '/fees/audit',
                 roles: ['super_admin', 'admin', 'accountant'],
@@ -765,7 +765,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'settings',
-                label: 'General Setting',
+                label: 'School Settings',
                 icon: Settings,
                 href: '/settings',
                 roles: ['admin'],
@@ -805,7 +805,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'online-payment-settings',
-                label: 'Online Payments',
+                label: 'Payment Gateway',
                 icon: CreditCard,
                 href: '/settings/online-payments',
                 roles: ['admin'],
@@ -821,7 +821,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'hr-settings',
-                label: 'HR / Payroll Settings',
+                label: 'HR Settings',
                 icon: Settings2,
                 href: '/settings/hr',
                 roles: ['admin'],
@@ -837,7 +837,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'automated-backups',
-                label: 'Database Backups',
+                label: 'Backup Management',
                 icon: Database,
                 href: '/backups',
                 roles: ['super_admin', 'admin'],
@@ -861,7 +861,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'ai-assistant',
-                label: 'AI Assistant',
+                label: 'AI Chatbot',
                 icon: Bot,
                 href: '/ai-assistant',
                 roles: ['super_admin', 'admin'],
@@ -869,7 +869,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'module-management',
-                label: 'Module Management',
+                label: 'Module Settings',
                 icon: Blocks,
                 href: '/module-management',
                 roles: ['admin'],
@@ -938,7 +938,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'assets',
-                label: 'Assets',
+                label: 'Asset Register',
                 icon: Warehouse,
                 href: '/assets',
                 roles: ['super_admin', 'admin'],
@@ -1008,7 +1008,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'examination',
-                label: 'Examination',
+                label: 'Manage Offline Exams',
                 icon: FileText,
                 href: '/exams',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -1048,7 +1048,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'exam-schedule-setup',
-                label: 'Schedule Setup',
+                label: 'Schedule & Marks Setup',
                 icon: CalendarRange,
                 href: '/exam-schedule',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -1097,7 +1097,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'feedback',
-                label: 'Feedback',
+                label: 'Feedback Triage',
                 icon: ClipboardPenLine,
                 roles: ['admin', 'student'],
                 feature: 'Feedback Management',
@@ -1112,7 +1112,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'surveys',
-                label: 'Surveys',
+                label: 'All Surveys',
                 icon: ClipboardPenLine,
                 href: '/surveys',
                 roles: ['admin'],
@@ -1152,7 +1152,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'hostel-management',
-                label: 'Manage Hostel',
+                label: 'Manage Rooms',
                 icon: BedDouble,
                 href: '/hostel-management',
                 roles: ['admin'],
@@ -1218,14 +1218,14 @@ export const sidebarConfig: {
             },
             {
                 id: 'admission-enquiry',
-                label: 'Admission Enquiry',
+                label: 'Admission Enquiries',
                 icon: UserRound,
                 roles: ['admin', 'receptionist'],
                 feature: 'Admission Enquiry',
             },
             {
                 id: 'visitor-register',
-                label: 'Visitor Register',
+                label: 'Visitor Book',
                 icon: Briefcase,
                 roles: ['admin', 'receptionist'],
                 feature: 'Visitor Register',
@@ -1277,7 +1277,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'events-calendar',
-                label: 'Events Calendar',
+                label: 'Events & Holidays',
                 icon: CalendarDays,
                 href: '/events',
                 roles: ['super_admin', 'admin', 'teacher', 'receptionist'],
@@ -1317,7 +1317,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'compliance',
-                label: 'Compliance Suite',
+                label: 'Compliance Overview',
                 icon: ShieldCheck,
                 href: '/compliance',
                 roles: ['admin'],
@@ -1358,7 +1358,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'ptm',
-                label: 'Parent-Teacher Meeting',
+                label: 'PTM Schedule Meetings',
                 icon: Handshake,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'PTM',
@@ -1414,7 +1414,7 @@ export const sidebarConfig: {
     },
     {
         id: 'inventory',
-        label: 'Inventory',
+        label: 'Item List',
         icon: Package,
         navMode: 'href-or-id',
         tabs: ['inventory-dashboard', 'inventory', 'purchase-orders', 'store-pos', 'store-receipts', 'store-payments'],
@@ -1429,14 +1429,14 @@ export const sidebarConfig: {
             },
             {
                 id: 'inventory',
-                label: 'Inventory',
+                label: 'Item List',
                 icon: Boxes,
                 roles: ['super_admin', 'admin', 'accountant', 'librarian', 'receptionist'],
                 feature: 'Inventory Management',
             },
             {
                 id: 'purchase-orders',
-                label: 'Vendors & Orders',
+                label: 'Purchase Orders',
                 icon: ShoppingCart,
                 href: '/purchase-orders',
                 roles: ['super_admin', 'admin', 'accountant'],
@@ -1597,7 +1597,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'staff-loans',
-                label: 'Staff Loans',
+                label: 'Manage Staff Loans',
                 icon: HandCoins,
                 href: '/staff/loans',
                 roles: ['admin'],
@@ -1605,7 +1605,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'staff-appraisals',
-                label: 'Staff Appraisals',
+                label: 'Appraisals',
                 icon: ClipboardList,
                 href: '/staff/appraisals',
                 roles: ['admin'],
@@ -1673,7 +1673,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'classes',
-                label: 'Class / Section',
+                label: 'Classes',
                 icon: School,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Class / Section',
@@ -1718,7 +1718,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'lesson-plan',
-                label: 'Lesson Plan',
+                label: 'Lesson Plans',
                 icon: BookOpen,
                 roles: ['super_admin', 'admin', 'teacher', 'student'],
                 feature: 'Lesson Plan',
@@ -1756,7 +1756,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'cocurricular',
-                label: 'Co-Curricular',
+                label: 'Cocurricular Areas',
                 icon: Award,
                 href: '/cocurricular',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -1806,7 +1806,7 @@ export const sidebarConfig: {
     },
     {
         id: 'assessment',
-        label: 'Assessment',
+        label: 'Assessments',
         icon: ClipboardList,
         navMode: 'href-or-id',
         tabs: ['assessment-dashboard', 'assessment', 'digital-evaluation', 'teacher-evaluations'],
@@ -1821,7 +1821,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'assessment',
-                label: 'Assessment',
+                label: 'Assessments',
                 icon: ListChecks,
                 href: '/assessment',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -1891,7 +1891,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'osm',
-                label: 'OSM',
+                label: 'OSM Sessions',
                 icon: ClipboardList,
                 href: '/osm',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -1989,7 +1989,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'certificate',
-                label: 'Certificate',
+                label: 'Certificate Templates',
                 icon: Award,
                 href: '/certificates',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -2013,7 +2013,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'marksheet-upload',
-                label: 'Marksheet Upload',
+                label: 'Upload Marksheet',
                 icon: Upload,
                 href: '/marksheet/upload-list',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -2021,7 +2021,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'generate-document',
-                label: 'Generate Documents',
+                label: 'Certificates & Documents',
                 icon: Printer,
                 href: '/documents/generate',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -2038,7 +2038,7 @@ export const sidebarConfig: {
         items: [
             {
                 id: 'student-id-card',
-                label: 'Student ID Card',
+                label: 'Student ID Cards',
                 icon: UserRound,
                 href: '/certificates/student-id-card',
                 roles: ['super_admin', 'admin', 'teacher'],
@@ -2046,7 +2046,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'staff-id-cards',
-                label: 'Staff ID Cards',
+                label: 'Staff ID Card',
                 icon: CreditCard,
                 href: '/staff/id-cards',
                 roles: ['admin'],
@@ -2073,14 +2073,14 @@ export const sidebarConfig: {
     },
     {
         id: 'cctv',
-        label: 'CCTV',
+        label: 'Camera Wall',
         icon: Camera,
         navMode: 'href-or-id',
         tabs: ['cctv'],
         items: [
             {
                 id: 'cctv',
-                label: 'CCTV',
+                label: 'Camera Wall',
                 icon: Video,
                 href: '/cctv',
                 roles: ['admin'],
@@ -2288,7 +2288,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'reports-inventory',
-                label: 'Inventory',
+                label: 'Item List',
                 icon: Boxes,
                 href: '/reports?module=inventory',
                 roles: ['super_admin', 'admin'],
@@ -2312,7 +2312,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'reports-lesson-plan',
-                label: 'Lesson Plan',
+                label: 'Lesson Plans',
                 icon: BookOpen,
                 href: '/reports?module=lesson-plan',
                 roles: ['super_admin', 'admin'],

@@ -386,7 +386,7 @@ export default function LessonPlanManagement({
                 <div className="mx-auto max-w-7xl space-y-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900">{t('Lesson Plan')}</h1>
+                            <h1 className="text-3xl font-bold text-slate-900">{t('Lesson Plans')}</h1>
                             <p className="mt-1 text-sm text-slate-600">
                                 {isStudentView
                                     ? t(

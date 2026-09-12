@@ -220,7 +220,7 @@ export default function AdmissionEnquiry({ user, inquiries, tableReady, classOpt
                 <div className="mx-auto max-w-7xl space-y-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900">{t('Admission Enquiry')}</h1>
+                            <h1 className="text-3xl font-bold text-slate-900">{t('Admission Enquiries')}</h1>
                             <p className="mt-1 text-sm text-slate-600">
                                 {t(
                                     'Capture manual front office admission enquiries separately from online admissions and enrollments.',

@@ -157,7 +157,7 @@ export default function EnterReportCardRemarks({
             <div className="min-h-full bg-slate-50 p-6">
                 <div className="space-y-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900">{t('Enter Report Card Remarks')}</h1>
+                        <h1 className="text-3xl font-bold text-slate-900">{t('Teacher Remarks')}</h1>
                         <p className="mt-1 text-sm text-slate-600">
                             {t('Personalized qualitative feedback printed at the bottom of report cards.')}
                         </p>

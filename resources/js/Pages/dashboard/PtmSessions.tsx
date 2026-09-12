@@ -256,7 +256,7 @@ export default function PtmSessions(pageProps: PtmProps) {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            {t('Parent-Teacher Meeting')}
+                            {t('PTM Schedule Meetings')}
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {t('Schedule parent-teacher meetings and manage appointment slots for each session.')}

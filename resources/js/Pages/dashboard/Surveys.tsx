@@ -159,7 +159,7 @@ export default function Surveys({ user, surveys, myResponses, summary, canManage
     };
 
     return (
-        <DashboardLayout user={user} pageTitle={t('Surveys')}>
+        <DashboardLayout user={user} pageTitle={t('All Surveys')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>
@@ -327,7 +327,7 @@ export default function Surveys({ user, surveys, myResponses, summary, canManage
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle>{t('Surveys')}</CardTitle>
+                            <CardTitle>{t('All Surveys')}</CardTitle>
                             <Select value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'my')}>
                                 <SelectTrigger className="w-36">
                                     <SelectValue />

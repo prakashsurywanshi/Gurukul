@@ -196,7 +196,7 @@ export default function GenerateDocument({
                 <div className="space-y-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900">{t('Generate Documents')}</h1>
+                            <h1 className="text-3xl font-bold text-slate-900">{t('Certificates & Documents')}</h1>
                             <p className="mt-1 text-sm text-slate-600">
                                 {t('Print certificates id cards for your students')}
                             </p>
@@ -372,7 +372,7 @@ export default function GenerateDocument({
                                             <RadioGroupItem value="certificate" id="layout-certificate" />
                                             <Label htmlFor="layout-certificate" className="flex items-center gap-1">
                                                 <FileText className="h-4 w-4" />
-                                                {t('Certificate')}
+                                                {t('Certificate Templates')}
                                             </Label>
                                         </div>
                                     </RadioGroup>

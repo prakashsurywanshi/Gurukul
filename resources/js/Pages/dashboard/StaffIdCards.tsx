@@ -242,7 +242,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            {t('Staff ID Cards')}
+                            {t('Staff ID Card')}
                         </h1>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {t('Generate and print identity cards for your staff.')}

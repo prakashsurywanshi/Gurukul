@@ -96,7 +96,7 @@ export default function HrSettings(pageProps: HrSettingsProps) {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                                {t('HR / Payroll Settings')}
+                                {t('HR Settings')}
                             </h1>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {t('Working days, weekly offs and holiday configuration.')}

@@ -153,7 +153,7 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold text-slate-900 dark:text-[var(--foreground)]">
-                                {t('General Setting')}
+                                {t('School Settings')}
                             </h1>
                             <p className="mt-1 text-sm text-slate-600 dark:text-[var(--muted-foreground)]">
                                 {t(
@@ -359,7 +359,7 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                     <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
                         <CardHeader>
                             <CardTitle className="text-slate-900 dark:text-[var(--foreground)]">
-                                {t('General Setting')}
+                                {t('School Settings')}
                             </CardTitle>
                             <CardDescription>
                                 {t('Keep your organization settings in a simple editable form.')}

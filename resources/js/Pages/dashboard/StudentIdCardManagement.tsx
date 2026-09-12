@@ -661,7 +661,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
             <div className="space-y-6 p-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{t('Student ID Card')}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('Student ID Cards')}</h1>
                         <p className="mt-1 text-gray-600">
                             {t('Generate Student ID Card layouts and preview student identity details.')}
                         </p>

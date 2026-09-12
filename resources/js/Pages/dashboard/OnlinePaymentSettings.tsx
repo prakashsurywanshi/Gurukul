@@ -161,7 +161,7 @@ export default function OnlinePaymentSettings({
             <div className="space-y-6 p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900">{t('Online Payments')}</h2>
+                        <h2 className="text-2xl font-bold text-slate-900">{t('Payment Gateway')}</h2>
                         <p className="text-sm text-slate-500">
                             {t('Configure Razorpay gateway and static UPI QR payments for fee collection.')}
                         </p>
@@ -227,7 +227,7 @@ export default function OnlinePaymentSettings({
                             <div className="grid gap-3 md:grid-cols-3">
                                 <div className="rounded-xl border border-slate-200 p-4">
                                     <div className="flex items-center justify-between">
-                                        <p className="text-sm font-medium text-slate-900">{t('Online Payments')}</p>
+                                        <p className="text-sm font-medium text-slate-900">{t('Payment Gateway')}</p>
                                         {gatewayStatus?.enabled ? (
                                             <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
                                                 {t('Enabled')}
@@ -436,7 +436,7 @@ export default function OnlinePaymentSettings({
                                             <div className="rounded-xl border border-slate-200 p-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-sm font-medium text-slate-900">
-                                                        {t('Online Payments')}
+                                                        {t('Payment Gateway')}
                                                     </p>
                                                     {testResult.enabled ? (
                                                         <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
