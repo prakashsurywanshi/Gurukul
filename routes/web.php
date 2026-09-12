@@ -17,7 +17,12 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\CocurricularController;
 use App\Http\Controllers\ComplianceController;
-use App\Http\Controllers\ComplianceProfileController;
+use App\Http\Controllers\ComplianceProfileController;use App\Http\Controllers\TransportDriversController;
+use App\Http\Controllers\NotificationSettingsController;
+use App\Http\Controllers\LiveClassSettingsController;
+use App\Http\Controllers\BookCategoriesController;
+use App\Http\Controllers\CardDesignController;
+
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AdmissionSettingsController;
 use App\Http\Controllers\CustomFieldsController;
@@ -252,6 +257,12 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/store/supplier-payments', [SupplierPaymentController::class, 'index'])->middleware('staff.permission:Vendors & Purchase Orders,view')->name('store.supplier-payments');
     Route::post('/store/supplier-payments', [SupplierPaymentController::class, 'store'])->middleware('staff.permission:Vendors & Purchase Orders,add')->name('store.supplier-payments.store');
     Route::delete('/store/supplier-payments/{supplierPayment}', [SupplierPaymentController::class, 'destroy'])->middleware('staff.permission:Vendors & Purchase Orders,delete')->name('store.supplier-payments.destroy');
+    Route::get('/library/categories', [BookCategoriesController::class, 'index'])->middleware('staff.permission:Library Management,view')->name('library.categories');
+    Route::get('/id-cards/designs', [CardDesignController::class, 'index'])->middleware('staff.permission:Student ID Card Management,view')->name('card-designs');
+    Route::patch('/id-cards/designs', [CardDesignController::class, 'update'])->middleware('staff.permission:Student ID Card Management,edit')->name('card-designs.update');
+    Route::get('/transport/drivers', [TransportDriversController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('transport-drivers');
+    Route::get('/settings/notification', [NotificationSettingsController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('notification-settings');
+    Route::patch('/settings/notification', [NotificationSettingsController::class, 'update'])->middleware('staff.permission:General Setting,edit')->name('notification-settings.update');
     Route::get('/online-admission', [AdmissionInquiryController::class, 'index'])->middleware('staff.permission:Online Admission,view')->name('online-admission');
     Route::post('/online-admission/{admissionInquiry}/enroll', [AdmissionInquiryController::class, 'enroll'])->middleware('staff.permission:Online Admission,add')->name('online-admission.enroll');
     Route::patch('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'update'])->middleware('staff.permission:Online Admission,edit')->name('online-admission.update');
@@ -814,6 +825,8 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::patch('/online-classes/{onlineClass}', [OnlineClassController::class, 'update'])->middleware('staff.permission:Live Online Classes,edit')->name('online-classes.update');
     Route::patch('/online-classes/{onlineClass}/status', [OnlineClassController::class, 'setStatus'])->middleware('staff.permission:Live Online Classes,edit')->name('online-classes.status');
     Route::delete('/online-classes/{onlineClass}', [OnlineClassController::class, 'destroy'])->middleware('staff.permission:Live Online Classes,delete')->name('online-classes.destroy');
+    Route::get('/live-classes/settings', [LiveClassSettingsController::class, 'index'])->middleware('staff.permission:Live Online Classes,view')->name('live-classes.settings');
+    Route::patch('/live-classes/settings', [LiveClassSettingsController::class, 'update'])->middleware('staff.permission:Live Online Classes,edit')->name('live-classes.settings.update');
     Route::get('/syllabus', [SyllabusUnitController::class, 'index'])->middleware('staff.permission:Syllabus Coverage,view')->name('syllabus');
     Route::post('/syllabus', [SyllabusUnitController::class, 'store'])->middleware('staff.permission:Syllabus Coverage,add')->name('syllabus.store');
     Route::patch('/syllabus/{syllabusUnit}', [SyllabusUnitController::class, 'update'])->middleware('staff.permission:Syllabus Coverage,edit')->name('syllabus.update');

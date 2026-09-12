@@ -1,4 +1,6 @@
 // AUTO-CONFIGURED sidebar menu for QGurukul (reference topology).
+// Preserves all item ids/hrefs/roles/feature/module gates. Labels adopt
+// reference-schooladmin labels where the page exists there.
 import {
     Archive,
     ArrowDownCircle,
@@ -101,6 +103,7 @@ import {
     Printer,
     QrCode,
     RadioTower,
+    Receipt,
     RefreshCcw,
     Rocket,
     ScanFace,
@@ -615,13 +618,21 @@ export const sidebarConfig: {
         label: 'Live Classes',
         icon: Video,
         navMode: 'href-or-id',
-        tabs: ['online-classes'],
+        tabs: ['online-classes', 'live-class-settings'],
         items: [
             {
                 id: 'online-classes',
                 label: 'Manage Live Classes',
                 icon: Video,
                 roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'Live Online Classes',
+            },
+            {
+                id: 'live-class-settings',
+                label: 'Live Class Settings',
+                icon: Settings2,
+                href: '/live-classes/settings',
+                roles: ['super_admin', 'admin'],
                 feature: 'Live Online Classes',
             },
         ],
@@ -1081,6 +1092,7 @@ export const sidebarConfig: {
             'module-management',
             'dashboard-themes',
             'branch-admin',
+            'notification-settings',
         ],
         items: [
             {
@@ -1236,6 +1248,15 @@ export const sidebarConfig: {
                 roles: ['super_admin'],
                 feature: 'Branch Admin',
                 module: 'branch-admin',
+            },
+            {
+                id: 'notification-settings',
+                label: 'Notification Settings',
+                icon: BellRing,
+                href: '/settings/notification',
+                roles: ['admin'],
+                feature: 'General Setting',
+                module: 'notification-settings',
             },
         ],
     },
@@ -1951,7 +1972,7 @@ export const sidebarConfig: {
         label: 'Library',
         icon: Library,
         navMode: 'href-or-id',
-        tabs: ['library-dashboard', 'library', 'e-library', 'library-circulation'],
+        tabs: ['library-dashboard', 'library', 'e-library', 'library-circulation', 'book-categories'],
         items: [
             {
                 id: 'library-dashboard',
@@ -1985,6 +2006,14 @@ export const sidebarConfig: {
                 roles: ['super_admin', 'admin', 'librarian'],
                 feature: 'Library Management',
             },
+            {
+                id: 'book-categories',
+                label: 'Book Categories',
+                icon: Layers,
+                href: '/library/categories',
+                roles: ['super_admin', 'admin', 'librarian', 'teacher'],
+                feature: 'Library Management',
+            },
         ],
     },
     {
@@ -2003,6 +2032,7 @@ export const sidebarConfig: {
             'store-pos',
             'store-receipts',
             'store-payments',
+            'sales-history',
         ],
         items: [
             {
@@ -2082,6 +2112,14 @@ export const sidebarConfig: {
                 label: 'Supplier Payments',
                 icon: Wallet,
                 href: '/store/supplier-payments',
+                roles: ['super_admin', 'admin'],
+                feature: 'Vendors & Purchase Orders',
+            },
+            {
+                id: 'sales-history',
+                label: 'Sales History',
+                icon: Receipt,
+                href: '/store/pos',
                 roles: ['super_admin', 'admin'],
                 feature: 'Vendors & Purchase Orders',
             },
@@ -2653,7 +2691,7 @@ export const sidebarConfig: {
         label: 'OSM Module',
         icon: Network,
         navMode: 'href-or-id',
-        tabs: ['osm-dashboard', 'osm', 'osm-evaluate', 'osm-reports', 'osm-guide'],
+        tabs: ['osm-dashboard', 'osm', 'osm-evaluate', 'osm-reports', 'osm-guide', 'osm-moderation'],
         items: [
             {
                 id: 'osm-dashboard',
@@ -2692,6 +2730,14 @@ export const sidebarConfig: {
                 label: 'OSM Guide',
                 icon: BookOpenCheck,
                 href: '/osm?tab=guide',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'Assessment',
+            },
+            {
+                id: 'osm-moderation',
+                label: 'OSM Moderation',
+                icon: ShieldCheck,
+                href: '/osm?tab=moderation',
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Assessment',
             },
@@ -2832,7 +2878,7 @@ export const sidebarConfig: {
         label: 'ID Cards',
         icon: IdCard,
         navMode: 'href-or-id',
-        tabs: ['student-id-card', 'staff-id-cards'],
+        tabs: ['student-id-card', 'staff-id-cards', 'card-designs'],
         items: [
             {
                 id: 'student-id-card',
@@ -2849,6 +2895,14 @@ export const sidebarConfig: {
                 href: '/staff/id-cards',
                 roles: ['admin'],
                 feature: 'Staff ID Cards',
+            },
+            {
+                id: 'card-designs',
+                label: 'Card Designs',
+                icon: Palette,
+                href: '/id-cards/designs',
+                roles: ['super_admin', 'admin'],
+                feature: 'Student ID Card Management',
             },
         ],
     },
@@ -2990,6 +3044,7 @@ export const sidebarConfig: {
             'transport-fee-collection',
             'transport-live',
             'transport-live-ops',
+            'transport-drivers',
         ],
         items: [
             {
@@ -3038,6 +3093,14 @@ export const sidebarConfig: {
                 icon: RadioTower,
                 href: '/transport-management/live',
                 roles: ['admin', 'receptionist'],
+                feature: 'Transport Management',
+            },
+            {
+                id: 'transport-drivers',
+                label: 'Drivers',
+                icon: UserCog,
+                href: '/transport/drivers',
+                roles: ['admin'],
                 feature: 'Transport Management',
             },
             {
