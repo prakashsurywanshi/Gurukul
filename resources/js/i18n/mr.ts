@@ -1017,6 +1017,8 @@ const mr = {
     'Fee Structure': 'फी संरचना',
     'Fee Structures': 'फी स्ट्रक्चर्स',
     'Fee Structures by Class & Section': 'वर्ग व विभागानुसार फी संरचना',
+    'Collect Fees': 'शुल्क वसुली',
+    'Search Due Fees': 'थकीत शुल्क शोधा',
     'Fee Summary': 'शुल्काचा सारांश',
     'Fee Type': 'शुल्क प्रकार',
     'Fee Type Management': 'शुल्क प्रकार व्यवस्थापन',

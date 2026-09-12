@@ -18,6 +18,9 @@ const EXCLUDED = {
         'apps center', // platform-scale admin feature
         'logout', // top-bar action, not a sidebar menu item
     ]),
+    accountant: new Set([
+        'logout', // top-bar action, not a sidebar menu item (same rationale as teacher)
+    ]),
 };
 
 const refPath = `docs/reference/sidebar_${role}.json`;

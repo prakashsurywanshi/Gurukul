@@ -1013,6 +1013,8 @@ const en = {
     'Fee Structure': 'Fee Structure',
     'Fee Structures': 'Fee Structures',
     'Fee Structures by Class & Section': 'Fee Structures by Class & Section',
+    'Collect Fees': 'Collect Fees',
+    'Search Due Fees': 'Search Due Fees',
     'Fee Summary': 'Fee Summary',
     'Fee Type': 'Fee Type',
     'Fee Type Management': 'Fee Type Management',

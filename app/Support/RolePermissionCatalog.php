@@ -159,7 +159,7 @@ class RolePermissionCatalog
     {
         $name = self::staffRoles()[$slug] ?? null;
 
-        if (!$name) {
+        if (! $name) {
             return false;
         }
 
@@ -483,7 +483,7 @@ class RolePermissionCatalog
                 'Subjects' => self::featurePermissions(false),
                 'Promote Students' => self::featurePermissions(false),
                 'Admission Enquiry' => self::featurePermissions(false),
-                'Admission Leads' => self::featurePermissions(false),
+                'Admission Leads' => self::featurePermissions(true, false, false, false),
                 'Visitor Register' => self::featurePermissions(false),
                 'Phone Call Log' => self::featurePermissions(false),
                 'Postal Dispatch' => self::featurePermissions(false),

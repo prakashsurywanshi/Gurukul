@@ -112,6 +112,10 @@ export default function FeeManagement({
             feeCarryForwardResult?: FeeCarryForwardResult;
         };
     }>();
+    const urlTab = new URLSearchParams(page.url.split('?')[1] ?? '').get('tab');
+    const [activeTab, setActiveTab] = useState<string>(() =>
+        urlTab && ['overview', 'fee-types', 'structures', 'collection'].includes(urlTab) ? urlTab : 'overview',
+    );
     const flash = page.props.flash ?? {};
     const feeImportResult = flash.feeImportResult;
     const feeCarryForwardResult = flash.feeCarryForwardResult;
@@ -1649,7 +1653,7 @@ ADM-1002, Tuition Fee, 2026-08-10, 5000, 2000, August, 2026`}
                     </div>
                 </div>
 
-                <Tabs defaultValue="overview" className="space-y-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="overview">{t('Overview')}</TabsTrigger>
                         <TabsTrigger value="fee-types">{t('Fee Types')}</TabsTrigger>

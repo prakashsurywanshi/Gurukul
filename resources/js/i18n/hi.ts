@@ -1023,6 +1023,8 @@ const hi = {
     'Fee Structure': 'शुल्क संरचना',
     'Fee Structures': 'शुल्क संरचनाएँ',
     'Fee Structures by Class & Section': 'कक्षा एवं अनुभाग के अनुसार शुल्क संरचनाएँ',
+    'Collect Fees': 'शुल्क संग्रह',
+    'Search Due Fees': 'बकाया शुल्क खोजें',
     'Fee Summary': 'शुल्क सारांश',
     'Fee Type': 'शुल्क प्रकार',
     'Fee Type Management': 'शुल्क प्रकार प्रबंधन',
