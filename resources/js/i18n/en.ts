@@ -4365,5 +4365,51 @@ const en = {
     'No rooms with free capacity': 'No rooms with free capacity',
     'No available beds': 'No available beds',
     'Optional notes': 'Optional notes',
+    'PTM Dashboard': 'PTM Dashboard',
+    'PTM Guide': 'PTM Guide',
+    'PTM Reports': 'PTM Reports',
+    'How to plan, run and follow up on parent-teacher meetings.':
+        'How to plan, run and follow up on parent-teacher meetings.',
+    'Run a great parent-teacher meeting': 'Run a great parent-teacher meeting',
+    'A short walkthrough of the steps from scheduling to follow-up.':
+        'A short walkthrough of the steps from scheduling to follow-up.',
+    Step: 'Step',
+    'Plan the meeting': 'Plan the meeting',
+    'Schedule a parent-teacher meeting with a clear date, time and location so parents can plan ahead.':
+        'Schedule a parent-teacher meeting with a clear date, time and location so parents can plan ahead.',
+    'Invite parents and book slots': 'Invite parents and book slots',
+    'Let parents choose a convenient slot for each student. Confirm the meeting details and keep the schedule visible.':
+        'Let parents choose a convenient slot for each student. Confirm the meeting details and keep the schedule visible.',
+    'Record attendance': 'Record attendance',
+    'Mark each appointment as Checked-in, Completed or Absent as parents arrive, so the meeting record is accurate.':
+        'Mark each appointment as Checked-in, Completed or Absent as parents arrive, so the meeting record is accurate.',
+    'Add remarks': 'Add remarks',
+    'Note key discussion points, strengths and areas of improvement after each conversation for future reference.':
+        'Note key discussion points, strengths and areas of improvement after each conversation for future reference.',
+    'Follow up': 'Follow up',
+    'Mark appointments that need follow-up and set a due date. Complete follow-ups once the action is done.':
+        'Mark appointments that need follow-up and set a due date. Complete follow-ups once the action is done.',
+    Tips: 'Tips',
+    'Share the meeting schedule early so parents can pick their preferred slots.':
+        'Share the meeting schedule early so parents can pick their preferred slots.',
+    'Keep remarks constructive - note both strengths and areas to improve.':
+        'Keep remarks constructive - note both strengths and areas to improve.',
+    'Use the follow-up list to track actions promised during the meeting.':
+        'Use the follow-up list to track actions promised during the meeting.',
+    'Review PTM reports after the meeting to measure attendance and engagement.':
+        'Review PTM reports after the meeting to measure attendance and engagement.',
+    'Attendance, remarks and follow-up summary across all parent-teacher meetings.':
+        'Attendance, remarks and follow-up summary across all parent-teacher meetings.',
+    'Scheduled Meetings': 'Scheduled Meetings',
+    'Completed Meetings': 'Completed Meetings',
+    Appointments: 'Appointments',
+    'Attendance Rate': 'Attendance Rate',
+    'Remarks Recorded': 'Remarks Recorded',
+    'Pending Follow-ups': 'Pending Follow-ups',
+    'Meeting-wise Summary': 'Meeting-wise Summary',
+    'Per-meeting breakdown of attendance, remarks and pending follow-ups.':
+        'Per-meeting breakdown of attendance, remarks and pending follow-ups.',
+    'Follow-ups': 'Follow-ups',
+    'No meetings recorded yet.': 'No meetings recorded yet.',
 };
 export default en;

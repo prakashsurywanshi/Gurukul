@@ -876,6 +876,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/osm/evaluate', [OsmController::class, 'storeEvaluation'])->middleware('staff.permission:Assessment,add')->name('osm.evaluate');
     Route::post('/osm/moderation/{evaluation}', [OsmController::class, 'moderate'])->middleware('staff.permission:Assessment,edit')->name('osm.moderation');
     Route::get('/ptm', [PtmController::class, 'index'])->middleware('staff.permission:PTM,view')->name('ptm');
+    Route::get('/ptm/guide', [PtmController::class, 'guide'])->middleware('staff.permission:PTM,view')->name('ptm.guide');
+    Route::get('/ptm/reports', [PtmController::class, 'reports'])->middleware('staff.permission:PTM,view')->name('ptm.reports');
     Route::post('/ptm', [PtmController::class, 'storeSession'])->middleware('staff.permission:PTM,add')->name('ptm.store');
     Route::patch('/ptm/{ptmSession}', [PtmController::class, 'updateSession'])->middleware('staff.permission:PTM,edit')->name('ptm.update');
     Route::delete('/ptm/{ptmSession}', [PtmController::class, 'destroySession'])->middleware('staff.permission:PTM,delete')->name('ptm.destroy');

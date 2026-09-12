@@ -114,6 +114,78 @@ class PtmController extends Controller
         ]);
     }
 
+    public function guide()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        return inertia('dashboard/PtmGuide', ['user' => $user]);
+    }
+
+    public function reports(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $sessions = PtmSession::query()
+            ->where('organization_id', $organization->id)
+            ->with('appointments:id,ptm_session_id,remarks,follow_up_required,follow_up_completed_at,status')
+            ->orderByDesc('date')
+            ->limit(200)
+            ->get();
+
+        $appointments = $sessions->flatMap(fn (PtmSession $session) => $session->appointments);
+
+        $present = $appointments->whereIn('status', ['checked_in', 'completed'])->count();
+        $absent = $appointments->where('status', 'absent')->count();
+        $pendingFollowUps = $appointments
+            ->filter(fn (PtmAppointment $appointment) => $appointment->follow_up_required && $appointment->follow_up_completed_at === null)
+            ->count();
+
+        $sessionRows = $sessions->map(function (PtmSession $session) {
+            $apps = $session->appointments;
+            $present = $apps->whereIn('status', ['checked_in', 'completed'])->count();
+            $absent = $apps->where('status', 'absent')->count();
+            $remarks = $apps->filter(fn (PtmAppointment $appointment) => $appointment->remarks !== null && $appointment->remarks !== '')->count();
+            $followUps = $apps->filter(fn (PtmAppointment $appointment) => $appointment->follow_up_required && $appointment->follow_up_completed_at === null)->count();
+
+            return [
+                'id' => (string) $session->id,
+                'title' => $session->localized('title'),
+                'date' => $session->date->format('Y-m-d'),
+                'start_time' => $session->start_time,
+                'status' => $session->status,
+                'total' => $apps->count(),
+                'present' => $present,
+                'absent' => $absent,
+                'remarks' => $remarks,
+                'followUps' => $followUps,
+            ];
+        })->values()->all();
+
+        $totalAppointments = $appointments->count();
+        $attendanceRate = $totalAppointments > 0 ? round((100 * $present) / $totalAppointments) : 0;
+
+        return inertia('dashboard/PtmReports', [
+            'user' => $user,
+            'summary' => [
+                'sessions' => (int) $sessions->count(),
+                'completedSessions' => (int) $sessions->where('status', 'completed')->count(),
+                'appointments' => (int) $totalAppointments,
+                'present' => $present,
+                'absent' => $absent,
+                'attendanceRate' => $attendanceRate,
+                'remarks' => (int) $appointments->filter(fn (PtmAppointment $appointment) => $appointment->remarks !== null && $appointment->remarks !== '')->count(),
+                'pendingFollowUps' => $pendingFollowUps,
+            ],
+            'sessions' => $sessionRows,
+        ]);
+    }
+
     public function storeSession(Request $request): RedirectResponse
     {
         $user = Auth::user();

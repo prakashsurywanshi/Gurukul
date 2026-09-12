@@ -4356,5 +4356,51 @@ const mr = {
     'No rooms with free capacity': 'रिकाम्या क्षमतेची खोली नाही',
     'No available beds': 'उपलब्ध बेड नाही',
     'Optional notes': 'पर्यायी नोट्स',
+    'PTM Dashboard': 'पीटीएम डॅशबोर्ड',
+    'PTM Guide': 'पीटीएम मार्गदर्शक',
+    'PTM Reports': 'पीटीएम अहवाल',
+    'How to plan, run and follow up on parent-teacher meetings.':
+        'पालक-शिक्षक बैठकांचे नियोजन, आयोजन आणि फॉलो-अप कसे करावे.',
+    'Run a great parent-teacher meeting': 'उत्तम पालक-शिक्षक बैठक घ्या',
+    'A short walkthrough of the steps from scheduling to follow-up.':
+        'वेळापत्रकापासून फॉलो-अपपर्यंतच्या पायऱ्यांचा थोडक्यात परिचय.',
+    Step: 'पायरी',
+    'Plan the meeting': 'बैठकीचे नियोजन करा',
+    'Schedule a parent-teacher meeting with a clear date, time and location so parents can plan ahead.':
+        'स्पष्ट तारीख, वेळ आणि ठिकाणासह बैठक निश्चित करा जेणेकरून पालक आधीच नियोजन करू शकतील.',
+    'Invite parents and book slots': 'पालकांना आमंत्रित करा आणि स्लॉट बुक करा',
+    'Let parents choose a convenient slot for each student. Confirm the meeting details and keep the schedule visible.':
+        'प्रत्येक विद्यार्थ्यासाठी पालकांना सोयीचा स्लॉट निवडू द्या. बैठकीचे तपशील पुष्टी करा आणि वेळापत्रक दृश्यमान ठेवा.',
+    'Record attendance': 'उपस्थिती नोंदवा',
+    'Mark each appointment as Checked-in, Completed or Absent as parents arrive, so the meeting record is accurate.':
+        'पालक आल्यावर प्रत्येक अपॉइंटमेंट उपस्थित, पूर्ण किंवा अनुपस्थित म्हणून चिन्हांकित करा, जेणेकरून बैठकीची नोंद अचूक राहील.',
+    'Add remarks': 'शेरा जोडा',
+    'Note key discussion points, strengths and areas of improvement after each conversation for future reference.':
+        'भविष्यातील संदर्भासाठी प्रत्येक संभाषणानंतर मुख्य चर्चा मुद्दे, सामर्थ्य आणि सुधारणा क्षेत्रे नोंदवा.',
+    'Follow up': 'फॉलो-अप करा',
+    'Mark appointments that need follow-up and set a due date. Complete follow-ups once the action is done.':
+        'फॉलो-अप आवश्यक असलेले अपॉइंटमेंट चिन्हांकित करा आणि तारीख निश्चित करा. कृती पूर्ण झाल्यावर फॉलो-अप पूर्ण करा.',
+    Tips: 'टिप्स',
+    'Share the meeting schedule early so parents can pick their preferred slots.':
+        'बैठकीचे वेळापत्रक लवकर सामायिक करा जेणेकरून पालक त्यांचे आवडते स्लॉट निवडू शकतील.',
+    'Keep remarks constructive - note both strengths and areas to improve.':
+        'शेरे रचनात्मक ठेवा - सामर्थ्य आणि सुधारणा क्षेत्रे दोन्ही नोंदवा.',
+    'Use the follow-up list to track actions promised during the meeting.':
+        'बैठकीदरम्यान वचन दिलेल्या कृतींचा मागोवा घेण्यासाठी फॉलो-अप यादी वापरा.',
+    'Review PTM reports after the meeting to measure attendance and engagement.':
+        'उपस्थिती आणि सहभाग मोजण्यासाठी बैठकीनंतर पीटीएम अहवालांचे पुनरावलोकन करा.',
+    'Attendance, remarks and follow-up summary across all parent-teacher meetings.':
+        'सर्व पालक-शिक्षक बैठकांमधील उपस्थिती, शेरे आणि फॉलो-अपचा सारांश.',
+    'Scheduled Meetings': 'नियोजित बैठका',
+    'Completed Meetings': 'पूर्ण बैठका',
+    Appointments: 'अपॉइंटमेंट',
+    'Attendance Rate': 'उपस्थिती दर',
+    'Remarks Recorded': 'नोंदवलेले शेरे',
+    'Pending Follow-ups': 'प्रलंबित फॉलो-अप',
+    'Meeting-wise Summary': 'बैठकीनिहाय सारांश',
+    'Per-meeting breakdown of attendance, remarks and pending follow-ups.':
+        'उपस्थिती, शेरे आणि प्रलंबित फॉलो-अपचे प्रति-बैठक तपशील.',
+    'Follow-ups': 'फॉलो-अप',
+    'No meetings recorded yet.': 'अद्याप कोणतीही बैठक नोंदवलेली नाही.',
 };
 export default mr;

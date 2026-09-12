@@ -1346,7 +1346,7 @@ export const sidebarConfig: {
         label: 'PTM Meetings',
         icon: Handshake,
         navMode: 'href-or-id',
-        tabs: ['ptm-dashboard', 'ptm'],
+        tabs: ['ptm-dashboard', 'ptm', 'ptm-guide', 'ptm-reports'],
         items: [
             {
                 id: 'ptm-dashboard',
@@ -1360,6 +1360,22 @@ export const sidebarConfig: {
                 id: 'ptm',
                 label: 'Parent-Teacher Meeting',
                 icon: Handshake,
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'PTM',
+            },
+            {
+                id: 'ptm-guide',
+                label: 'PTM Guide',
+                icon: Handshake,
+                href: '/ptm/guide',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'PTM',
+            },
+            {
+                id: 'ptm-reports',
+                label: 'PTM Reports',
+                icon: Handshake,
+                href: '/ptm/reports',
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'PTM',
             },
