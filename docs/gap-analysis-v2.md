@@ -47,6 +47,15 @@
 |---|---|---|
 | 7.1 | Demo parity QA sweep | **Done** — all delivered module routes re-verified against live demo (200s, paths match); i18n validate 0 bad keys across en/mr/hi; full suite 368 passed (2659 assertions); `npm run build` green; prettier clean. |
 
+## S0–S1 — Sidebar placement & role-surface parity (Sept 2026)
+
+| # | Item | Notes |
+|---|---|---|
+| S0 | Nav placement vs demo groups | **Done (commit `cd8597e`)** — re-pointed 6 items into demo-matching groups (agent-logs→Biometric Devices, creatives→Engagement, all-transactions→Finance & Fees, data-validator+inspections→Compliance & Governance, classwork-logbook→Study Center); rewrote AgentLogs→biometric device logs; new Sections page (`/sections`, Class / Section); 3 permission corrections; i18n keys; 410 tests pass. |
+| S1a | Parent multi-child dashboard switcher | **Done (commit `a76d496`)** — `/dashboard` resolves all children linked to the portal account (`user_id`/`email` or guardian `father/mother/guardian_email`), serves `?student=` selection, renders demo-style "Viewing: {child}" selector; parent-of-twins scenario covered by `ParentChildDashboardTest` (4 tests). |
+| S1b | Teacher role surface vs `sidebar_teacher.json` | **Verdict: core parity complete** — `scripts/verify-roles-surface.mjs teacher`: 14/58 exact-label matches; residual 44 decompose into (a) S3 RENAME label phrasing (My Profile/Apply Leave/My Timetable/Student List…) and (b) S2 scope: staff-loans & complaints & apps-center visibility for teacher, Leads suite, PTM guide/remarks/follow-ups/reports, Lesson Planner review/coverage/reports/guide, OSM/assessment guides. |
+| S1c | Accountant role surface vs `sidebar_accountant.json` | **Verdict: superset, core parity complete** — our accountant nav is a superset of the demo's (extras are fine); missing 12 decompose into S3 RENAME (My Profile/Apply Leave/Collect Fees/Search Due Fees/Fee Types label) + S2 scope (staff-loans visibility, Leads suite). Fee Types functionality already embedded in the `/fees` module. |
+
 ## Deferred (documented, not implemented)
 
 - Transport live GPS driver tracking (hardware-dependent; documented in repo, not in scope).
