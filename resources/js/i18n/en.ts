@@ -4446,5 +4446,71 @@ const en = {
     'Backup Management': 'Backup Management',
     'All Devices': 'All Devices',
     'No meetings recorded yet.': 'No meetings recorded yet.',
+    'Auto Carry Forward': 'Auto Carry Forward',
+    'Auto-send Birthdays': 'Auto-send Birthdays',
+    'Auto-send Greetings': 'Auto-send Greetings',
+    'Auto-send Settings': 'Auto-send Settings',
+    'Automate birthday wishes and festival greetings to the school community.':
+        'Automate birthday wishes and festival greetings to the school community.',
+    Birthdays: 'Birthdays',
+    'A short walkthrough of the steps from planning to acting on the results.':
+        'A short walkthrough of the steps from planning to acting on the results.',
+    'A short walkthrough of the steps from writing a plan to getting it approved.':
+        'A short walkthrough of the steps from writing a plan to getting it approved.',
+    'Announce the survey before sharing it so respondents expect it.':
+        'Announce the survey before sharing it so respondents expect it.',
+    'Check syllabus coverage each month to stay on track for the year.':
+        'Check syllabus coverage each month to stay on track for the year.',
+    'Choose a topic': 'Choose a topic',
+    'Close the survey on time and publish a short summary of the results.':
+        'Close the survey on time and publish a short summary of the results.',
+    'Default Duration (minutes)': 'Default Duration (minutes)',
+    'Default behaviour applied when teachers create lesson plans.':
+        'Default behaviour applied when teachers create lesson plans.',
+    'Delivery Channel': 'Delivery Channel',
+    'Festival Greetings': 'Festival Greetings',
+    'How lesson plans are written, approved and carried forward.':
+        'How lesson plans are written, approved and carried forward.',
+    'How to create, share and act on surveys for the school community.':
+        'How to create, share and act on surveys for the school community.',
+    'How to write, track and approve lesson plans for every period.':
+        'How to write, track and approve lesson plans for every period.',
+    'Keep lesson titles short so the plan list stays readable.':
+        'Keep lesson titles short so the plan list stays readable.',
+    'Lesson Plan Defaults': 'Lesson Plan Defaults',
+    'Lesson Planner Guide': 'Lesson Planner Guide',
+    'Lesson Planner Settings': 'Lesson Planner Settings',
+    'Lesson plans must be approved by an admin before they count as final.':
+        'Lesson plans must be approved by an admin before they count as final.',
+    'Notification Time': 'Notification Time',
+    'Pick the period': 'Pick the period',
+    'Plan engaging lessons': 'Plan engaging lessons',
+    'Plans not taught on the scheduled day are automatically carried forward.':
+        'Plans not taught on the scheduled day are automatically carried forward.',
+    'Require Approval': 'Require Approval',
+    'Review for approval': 'Review for approval',
+    'Review the results': 'Review the results',
+    'Run better surveys': 'Run better surveys',
+    'Send Days Ahead': 'Send Days Ahead',
+    'Send a birthday message on the morning of each upcoming birthday.':
+        'Send a birthday message on the morning of each upcoming birthday.',
+    'Send automatic birthday wishes recorded in the engagement list.':
+        'Send automatic birthday wishes recorded in the engagement list.',
+    'Send festival greetings automatically before the festival date.':
+        'Send festival greetings automatically before the festival date.',
+    'Send scheduled greetings ahead of each saved festival.': 'Send scheduled greetings ahead of each saved festival.',
+    'Set the audience and dates': 'Set the audience and dates',
+    'Set the status': 'Set the status',
+    'Share the survey': 'Share the survey',
+    'Short surveys get more responses - keep them under ten questions.':
+        'Short surveys get more responses - keep them under ten questions.',
+    'Survey Guide': 'Survey Guide',
+    'The channel used to deliver automated messages.': 'The channel used to deliver automated messages.',
+    'Track coverage': 'Track coverage',
+    'Update the status as soon as the lesson is taught.': 'Update the status as soon as the lesson is taught.',
+    'Use carried forward for lessons that spilled into the next period.':
+        'Use carried forward for lessons that spilled into the next period.',
+    'Write clear questions': 'Write clear questions',
+    'Write the plan': 'Write the plan',
 };
 export default en;

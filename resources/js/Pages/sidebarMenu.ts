@@ -394,7 +394,7 @@ export const sidebarConfig: {
         label: 'Lesson Planner',
         icon: BookOpen,
         navMode: 'href-or-id',
-        tabs: ['syllabus'],
+        tabs: ['syllabus', 'lesson-plan-guide', 'lesson-plan-settings'],
         items: [
             {
                 id: 'syllabus',
@@ -402,6 +402,22 @@ export const sidebarConfig: {
                 icon: BookOpenCheck,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Syllabus Coverage',
+            },
+            {
+                id: 'lesson-plan-guide',
+                label: 'Lesson Planner Guide',
+                icon: BookOpenCheck,
+                href: '/lesson-plan/guide',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'Lesson Plan',
+            },
+            {
+                id: 'lesson-plan-settings',
+                label: 'Lesson Planner Settings',
+                icon: Settings,
+                href: '/lesson-plan/settings',
+                roles: ['admin'],
+                feature: 'Lesson Plan',
             },
         ],
     },
@@ -1093,7 +1109,7 @@ export const sidebarConfig: {
         label: 'Surveys & Feedback',
         icon: ThumbsUp,
         navMode: 'href-or-id',
-        tabs: ['feedback', 'survey-dashboard', 'surveys'],
+        tabs: ['feedback', 'survey-dashboard', 'surveys', 'survey-guide'],
         items: [
             {
                 id: 'feedback',
@@ -1115,6 +1131,14 @@ export const sidebarConfig: {
                 label: 'All Surveys',
                 icon: ClipboardPenLine,
                 href: '/surveys',
+                roles: ['admin'],
+                feature: 'Feedback Management',
+            },
+            {
+                id: 'survey-guide',
+                label: 'Survey Guide',
+                icon: Send,
+                href: '/survey/guide',
                 roles: ['admin'],
                 feature: 'Feedback Management',
             },
@@ -1273,7 +1297,7 @@ export const sidebarConfig: {
         label: 'Engagement',
         icon: Heart,
         navMode: 'href-or-id',
-        tabs: ['events-calendar', 'engagement', 'creatives'],
+        tabs: ['events-calendar', 'engagement', 'creatives', 'auto-send-settings'],
         items: [
             {
                 id: 'events-calendar',
@@ -1296,6 +1320,14 @@ export const sidebarConfig: {
                 label: 'Creatives',
                 icon: Palette,
                 href: '/creatives',
+                roles: ['admin'],
+                feature: 'Events Calendar',
+            },
+            {
+                id: 'auto-send-settings',
+                label: 'Auto-send Settings',
+                icon: Send,
+                href: '/engagement/auto-send-settings',
                 roles: ['admin'],
                 feature: 'Events Calendar',
             },

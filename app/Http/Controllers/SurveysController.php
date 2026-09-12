@@ -66,6 +66,14 @@ class SurveysController extends Controller
         ]);
     }
 
+    public function guide(Request $request): Response
+    {
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+
+        return Inertia::render('dashboard/SurveyGuide', ['user' => $request->user()]);
+    }
+
     public function storeSurvey(Request $request): RedirectResponse
     {
         $organization = $this->resolveOrganizationForUser($request->user());

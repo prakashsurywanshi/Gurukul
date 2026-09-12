@@ -137,6 +137,60 @@ class EngagementController extends Controller
         return back()->with('success', 'Greeting removed.');
     }
 
+    public function autoSendSettings(Request $request): Response
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($user);
+
+        $settings = array_replace_recursive(
+            $this->defaultAutoSendSettings(),
+            $organization->settings['engagement_auto_send'] ?? []
+        );
+
+        return Inertia::render('dashboard/AutoSendSettings', [
+            'user' => $user,
+            'autoSendSettings' => $settings,
+        ]);
+    }
+
+    public function updateAutoSendSettings(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($user);
+
+        $validated = $request->validate([
+            'auto_send_birthdays' => ['required', 'boolean'],
+            'auto_send_greetings' => ['required', 'boolean'],
+            'birthday_notification_time' => ['required', 'string', 'size:5'],
+            'greeting_days_ahead' => ['required', 'integer', 'min:0', 'max:30'],
+            'channel' => ['required', Rule::in(['sms', 'email', 'whatsapp'])],
+        ]);
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'engagement_auto_send' => $validated,
+            ],
+        ]);
+
+        return back()->with('success', 'Auto-send settings updated.');
+    }
+
+    private function defaultAutoSendSettings(): array
+    {
+        return [
+            'auto_send_birthdays' => false,
+            'auto_send_greetings' => false,
+            'birthday_notification_time' => '09:00',
+            'greeting_days_ahead' => 3,
+            'channel' => 'sms',
+        ];
+    }
+
     private function abortUnlessAdmin(User $user): void
     {
         abort_unless(in_array($user->role, ['admin', 'super_admin'], true), 403);

@@ -319,6 +319,66 @@ class ClassesController extends Controller
         ]);
     }
 
+    public function guide()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        return inertia('dashboard/LessonPlannerGuide', ['user' => $user]);
+    }
+
+    public function lessonPlannerSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $settings = array_replace_recursive(
+            $this->defaultLessonPlannerSettings(),
+            $organization->settings['lesson_planner_settings'] ?? []
+        );
+
+        return inertia('dashboard/LessonPlannerSettings', [
+            'user' => $user,
+            'lessonPlannerSettings' => $settings,
+        ]);
+    }
+
+    public function updateLessonPlannerSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'default_duration' => ['required', 'integer', 'min:5', 'max:180'],
+            'require_approval' => ['required', 'boolean'],
+            'auto_carry_forward' => ['required', 'boolean'],
+        ]);
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'lesson_planner_settings' => $validated,
+            ],
+        ]);
+
+        return redirect()
+            ->route('lesson-plan.settings')
+            ->with('success', 'Lesson planner settings updated.');
+    }
+
+    private function defaultLessonPlannerSettings(): array
+    {
+        return [
+            'default_duration' => 40,
+            'require_approval' => true,
+            'auto_carry_forward' => true,
+        ];
+    }
+
     public function storeLessonPlan(Request $request): RedirectResponse
     {
         $user = Auth::user();

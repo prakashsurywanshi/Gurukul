@@ -283,11 +283,14 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/staff/salary-templates/assign', [SalaryTemplatesController::class, 'storeAssignment'])->middleware('staff.permission:Payroll Management,add')->name('staff.salary-templates.assign');
     Route::delete('/staff/salary-templates/assign/{staffSalary}', [SalaryTemplatesController::class, 'destroyAssignment'])->middleware('staff.permission:Payroll Management,delete')->name('staff.salary-templates.assign.destroy');
     Route::get('/surveys', [SurveysController::class, 'index'])->middleware('staff.permission:Feedback Management,view')->name('surveys');
+    Route::get('/survey/guide', [SurveysController::class, 'guide'])->middleware('staff.permission:Feedback Management,view')->name('surveys.guide');
     Route::post('/surveys', [SurveysController::class, 'storeSurvey'])->middleware('staff.permission:Feedback Management,add')->name('surveys.store');
     Route::put('/surveys/{survey}', [SurveysController::class, 'updateSurvey'])->middleware('staff.permission:Feedback Management,edit')->name('surveys.update');
     Route::delete('/surveys/{survey}', [SurveysController::class, 'destroySurvey'])->middleware('staff.permission:Feedback Management,delete')->name('surveys.destroy');
     Route::post('/surveys/respond', [SurveysController::class, 'storeResponse'])->middleware('staff.permission:Feedback Management,add')->name('surveys.respond');
     Route::get('/engagement', [EngagementController::class, 'index'])->middleware('staff.permission:Events Calendar,view')->name('engagement');
+    Route::get('/engagement/auto-send-settings', [EngagementController::class, 'autoSendSettings'])->middleware('staff.permission:Events Calendar,view')->name('engagement.auto-send');
+    Route::patch('/engagement/auto-send-settings', [EngagementController::class, 'updateAutoSendSettings'])->middleware('staff.permission:Events Calendar,edit')->name('engagement.auto-send.update');
     Route::post('/engagement/birthdays', [EngagementController::class, 'storeBirthday'])->middleware('staff.permission:Events Calendar,add')->name('engagement.birthdays.store');
     Route::delete('/engagement/birthdays/{engagementBirthday}', [EngagementController::class, 'destroyBirthday'])->middleware('staff.permission:Events Calendar,delete')->name('engagement.birthdays.destroy');
     Route::post('/engagement/greetings', [EngagementController::class, 'storeGreeting'])->middleware('staff.permission:Events Calendar,add')->name('engagement.greetings.store');
@@ -342,6 +345,9 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::delete('/class-time-table/{timetable}', [ClassesController::class, 'destroyTimeTableEntry'])->middleware('staff.permission:Class Time Table,delete')->name('class-time-table.destroy');
     Route::get('/teacher-time-table', [ClassesController::class, 'teacherTimeTable'])->middleware('staff.permission:Teachers Time Table,view')->name('teacher-time-table');
     Route::get('/lesson-plan', [ClassesController::class, 'lessonPlan'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan');
+    Route::get('/lesson-plan/guide', [ClassesController::class, 'guide'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan.guide');
+    Route::get('/lesson-plan/settings', [ClassesController::class, 'lessonPlannerSettings'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan.settings');
+    Route::patch('/lesson-plan/settings', [ClassesController::class, 'updateLessonPlannerSettings'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.settings.update');
     Route::post('/lesson-plan', [ClassesController::class, 'storeLessonPlan'])->middleware('staff.permission:Lesson Plan,add')->name('lesson-plan.store');
     Route::patch('/lesson-plan/{lessonPlan}', [ClassesController::class, 'updateLessonPlan'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.update');
     Route::delete('/lesson-plan/{lessonPlan}', [ClassesController::class, 'destroyLessonPlan'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.destroy');

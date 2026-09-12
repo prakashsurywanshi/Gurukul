@@ -4437,5 +4437,71 @@ const mr = {
     'Backup Management': 'बॅकअप व्यवस्थापन',
     'All Devices': 'सर्व डिव्हाइस',
     'No meetings recorded yet.': 'अद्याप कोणतीही बैठक नोंदवलेली नाही.',
+    'Auto Carry Forward': 'आपोआप पुढे न्या',
+    'Auto-send Birthdays': 'वाढदिवस आपोआप पाठवा',
+    'Auto-send Greetings': 'शुभेच्छा आपोआप पाठवा',
+    'Auto-send Settings': 'आपोआप पाठविण्याच्या सेटिंग्ज',
+    'Automate birthday wishes and festival greetings to the school community.':
+        'शाळेच्या समुदायाला वाढदिवसाच्या शुभेच्छा आणि सणांच्या शुभेच्छा आपोआप पाठवा.',
+    Birthdays: 'वाढदिवस',
+    'A short walkthrough of the steps from planning to acting on the results.':
+        'नियोजनापासून निकालांवर कारवाईपर्यंतच्या पायऱ्यांचे संक्षिप्त वर्णन.',
+    'A short walkthrough of the steps from writing a plan to getting it approved.':
+        'पाठ योजना लिहिण्यापासून मंजुरीपर्यंतच्या पायऱ्यांचे संक्षिप्त वर्णन.',
+    'Announce the survey before sharing it so respondents expect it.':
+        'सर्वेक्षण सामायिक करण्यापूर्वी त्याची घोषणा करा, जेणेकरून उत्तरदात्यांना माहिती होईल.',
+    'Check syllabus coverage each month to stay on track for the year.':
+        'वर्षभर मार्गावर राहण्यासाठी दर महिन्याला अभ्यासक्रम कव्हरेज तपासा.',
+    'Choose a topic': 'विषय निवडा',
+    'Close the survey on time and publish a short summary of the results.':
+        'सर्वेक्षण वेळेवर बंद करा आणि निकालांचा संक्षिप्त सारांश प्रकाशित करा.',
+    'Default Duration (minutes)': 'डीफॉल्ट कालावधी (मिनिटे)',
+    'Default behaviour applied when teachers create lesson plans.':
+        'शिक्षक पाठ योजना तयार करताना लागू होणारे डीफॉल्ट वर्तन.',
+    'Delivery Channel': 'वितरण चॅनेल',
+    'Festival Greetings': 'सणांच्या शुभेच्छा',
+    'How lesson plans are written, approved and carried forward.':
+        'पाठ योजना कशा लिहिल्या, मंजूर केल्या आणि पुढे नेल्या जातात.',
+    'How to create, share and act on surveys for the school community.':
+        'शाळेच्या समुदायासाठी सर्वेक्षण कसे तयार करावे, सामायिक करावे आणि कारवाई करावी.',
+    'How to write, track and approve lesson plans for every period.':
+        'प्रत्येक पिरियडसाठी पाठ योजना कशा लिहाव्या, ट्रॅक कराव्या आणि मंजूर कराव्या.',
+    'Keep lesson titles short so the plan list stays readable.':
+        'पाठ शीर्षके लहान ठेवा जेणेकरून योजना यादी वाचनीय राहील.',
+    'Lesson Plan Defaults': 'पाठ योजना डीफॉल्ट',
+    'Lesson Planner Guide': 'पाठ नियोजन मार्गदर्शक',
+    'Lesson Planner Settings': 'पाठ नियोजन सेटिंग्ज',
+    'Lesson plans must be approved by an admin before they count as final.':
+        'पाठ योजना अंतिम मानण्यापूर्वी प्रशासकाने मंजूर करणे आवश्यक आहे.',
+    'Notification Time': 'सूचना वेळ',
+    'Pick the period': 'पिरियड निवडा',
+    'Plan engaging lessons': 'आकर्षक पाठांचे नियोजन करा',
+    'Plans not taught on the scheduled day are automatically carried forward.':
+        'नियोजित दिवशी न शिकवलेल्या योजना आपोआप पुढे नेल्या जातात.',
+    'Require Approval': 'मंजुरी आवश्यक',
+    'Review for approval': 'मंजुरीसाठी पुनरावलोकन',
+    'Review the results': 'निकालांचे पुनरावलोकन करा',
+    'Run better surveys': 'चांगले सर्वेक्षण करा',
+    'Send Days Ahead': 'किती दिवस आधी पाठवा',
+    'Send a birthday message on the morning of each upcoming birthday.':
+        'प्रत्येक येणाऱ्या वाढदिवसाच्या सकाळी वाढदिवस संदेश पाठवा.',
+    'Send automatic birthday wishes recorded in the engagement list.':
+        'सहभाग यादीत नोंदवलेल्या वाढदिवसाच्या शुभेच्छा आपोआप पाठवा.',
+    'Send festival greetings automatically before the festival date.':
+        'सणाच्या तारखेपूर्वी सणांच्या शुभेच्छा आपोआप पाठवा.',
+    'Send scheduled greetings ahead of each saved festival.': 'प्रत्येक जतन केलेल्या सणापूर्वी नियोजित शुभेच्छा पाठवा.',
+    'Set the audience and dates': 'लक्ष्य गट आणि तारखा निश्चित करा',
+    'Set the status': 'स्थिती निश्चित करा',
+    'Share the survey': 'सर्वेक्षण सामायिक करा',
+    'Short surveys get more responses - keep them under ten questions.':
+        'लहान सर्वेक्षणांना जास्त प्रतिसाद मिळतात - दहा प्रश्नांपेक्षा कमी ठेवा.',
+    'Survey Guide': 'सर्वेक्षण मार्गदर्शक',
+    'The channel used to deliver automated messages.': 'स्वयंचलित संदेश पाठवण्यासाठी वापरले जाणारे चॅनेल.',
+    'Track coverage': 'कव्हरेज ट्रॅक करा',
+    'Update the status as soon as the lesson is taught.': 'पाठ शिकवताच स्थिती अद्ययावत करा.',
+    'Use carried forward for lessons that spilled into the next period.':
+        'पुढील पिरियडमध्ये गेलेल्या पाठांसाठी पुढे न्या वापरा.',
+    'Write clear questions': 'स्पष्ट प्रश्न लिहा',
+    'Write the plan': 'योजना लिहा',
 };
 export default mr;
