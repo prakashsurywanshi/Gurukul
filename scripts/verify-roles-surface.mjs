@@ -7,6 +7,19 @@ if (!role) {
     process.exit(1);
 }
 
+// Reference items intentionally not surfaced for a role, with the reason in
+// docs/gap-analysis-v2.md (Deferred / Deliberately-excluded rows).
+const EXCLUDED = {
+    teacher: new Set([
+        'live class settings', // no dedicated settings page for live classes in our surface
+        'complaints', // teacher default permission off by design (403)
+        'manage online exams', // covered by Exam parity; keep teacher to offline exams
+        'homework assignments', // parent-ref parity (S3): Homework shared with parent portal
+        'apps center', // platform-scale admin feature
+        'logout', // top-bar action, not a sidebar menu item
+    ]),
+};
+
 const refPath = `docs/reference/sidebar_${role}.json`;
 const ref = JSON.parse(await readFile(refPath, 'utf8'));
 
@@ -29,14 +42,22 @@ const normalize = (s = '') =>
         .trim();
 
 const visible = [];
-function walkItems(items) {
-    for (const item of items) {
-        const itemVisible = item.roles === undefined || item.roles.includes(role);
-        if (itemVisible) visible.push(normalize(item.label));
-        if (item.items?.length && itemVisible) walkItems(item.items);
+function walkGroup(group) {
+    const visibleItems = [];
+    function walkItems(items) {
+        for (const item of items) {
+            const itemVisible = item.roles === undefined || item.roles.includes(role);
+            if (itemVisible) {
+                visibleItems.push(normalize(item.label));
+                if (item.items?.length) walkItems(item.items);
+            }
+        }
     }
+    if (group.items) walkItems(group.items);
+    if (visibleItems.length && group.label) visible.push(normalize(group.label));
+    visible.push(...visibleItems);
 }
-for (const group of config) walkItems(group.items);
+for (const group of config) walkGroup(group);
 
 const refLabels = [];
 function walkRef(nodes) {
@@ -47,12 +68,21 @@ function walkRef(nodes) {
 }
 walkRef(ref);
 
+const omitted = EXCLUDED[role] ?? new Set();
 const oursSet = new Set(visible);
-const missing = [...new Set(refLabels.filter((x) => x && !oursSet.has(x)))];
+const missing = [...new Set(refLabels.filter((x) => x && !oursSet.has(x) && !omitted.has(x)))];
+const excluded = [...new Set(refLabels.filter((x) => x && !oursSet.has(x) && omitted.has(x)))];
 const extra = [...new Set([...oursSet].filter((x) => x && !new Set(refLabels).has(x)))];
 
 console.log(`role=${role} refItems=${new Set(refLabels).size} ourVisible=${oursSet.size}`);
-console.log(`  matched=${new Set(refLabels.filter((x) => oursSet.has(x))).size} missing=${missing.length} extra=${extra.length}`);
+console.log(
+    `  matched=${new Set(refLabels.filter((x) => oursSet.has(x))).size} ` +
+        `excluded=${excluded.length} missing=${missing.length} extra=${extra.length}`,
+);
+if (excluded.length) {
+    console.log('\n[excluded] reference items intentionally not surfaced (documented):');
+    console.log(JSON.stringify(excluded, null, 1));
+}
 if (missing.length) {
     console.log('\n[missing] reference items not surfaced for this role:');
     console.log(JSON.stringify(missing, null, 1));

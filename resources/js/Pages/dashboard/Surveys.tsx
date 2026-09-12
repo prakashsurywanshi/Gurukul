@@ -33,11 +33,12 @@ export type SurveysProps = {
     myResponses: number[];
     summary: { activeSurveys: number; totalResponses: number; mySurveys: number };
     canManage: boolean;
+    mineMode?: boolean;
 };
 
 const QUESTION_TYPES = { rating: 'Rating (1-5)', choice: 'Choice', yesno: 'Yes / No', text: 'Text Answer' };
 
-export default function Surveys({ user, surveys, myResponses, summary, canManage }: SurveysProps) {
+export default function Surveys({ user, surveys, myResponses, summary, canManage, mineMode = false }: SurveysProps) {
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
     const [responseSurvey, setResponseSurvey] = useState<SurveyRow | null>(null);
@@ -159,7 +160,7 @@ export default function Surveys({ user, surveys, myResponses, summary, canManage
     };
 
     return (
-        <DashboardLayout user={user} pageTitle={t('All Surveys')}>
+        <DashboardLayout user={user} pageTitle={t(mineMode ? 'My Surveys' : 'All Surveys')}>
             <div className="space-y-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>

@@ -346,6 +346,56 @@ class ClassesController extends Controller
         ]);
     }
 
+    public function lessonPlanReview()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $teacherId = $user->role === 'teacher' ? $user->id : null;
+
+        return inertia('dashboard/LessonPlanReview', [
+            'user' => $user,
+            'entries' => $this->getLessonPlanEntries($organization->id, $teacherId),
+        ]);
+    }
+
+    public function lessonPlanReports()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $teacherId = $user->role === 'teacher' ? $user->id : null;
+        $entries = $this->getLessonPlanEntries($organization->id, $teacherId);
+
+        $byStatus = [];
+        $byTeacher = [];
+        $bySubject = [];
+        $byClass = [];
+
+        foreach ($entries as $entry) {
+            $byStatus[$entry['status']] = ($byStatus[$entry['status']] ?? 0) + 1;
+            $byTeacher[$entry['teacherName']] = ($byTeacher[$entry['teacherName']] ?? 0) + 1;
+            $bySubject[$entry['subject']] = ($bySubject[$entry['subject']] ?? 0) + 1;
+            $byClass[$entry['classId']] = ($byClass[$entry['classId']] ?? 0) + 1;
+        }
+
+        return inertia('dashboard/LessonPlanReports', [
+            'user' => $user,
+            'entries' => $entries,
+            'summary' => [
+                'total' => count($entries),
+                'byStatus' => $byStatus,
+                'byTeacher' => $byTeacher,
+                'bySubject' => $bySubject,
+                'byClass' => $byClass,
+            ],
+        ]);
+    }
+
     public function updateLessonPlannerSettings(Request $request): RedirectResponse
     {
         $user = Auth::user();

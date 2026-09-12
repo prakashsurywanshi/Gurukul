@@ -268,6 +268,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::put('/staff/leave-types/{leaveType}', [LeaveTypesController::class, 'update'])->middleware('staff.permission:Leave Management,edit')->name('staff.leave-types.update');
     Route::delete('/staff/leave-types/{leaveType}', [LeaveTypesController::class, 'destroy'])->middleware('staff.permission:Leave Management,delete')->name('staff.leave-types.destroy');
     Route::get('/staff/loans', [StaffLoansController::class, 'index'])->middleware('staff.permission:Payroll Management,view')->name('staff.loans');
+    Route::get('/staff/loans/mine', [StaffLoansController::class, 'mine'])->middleware('staff.permission:Profile,view')->name('staff.loans.mine');
     Route::post('/staff/loans', [StaffLoansController::class, 'store'])->middleware('staff.permission:Payroll Management,add')->name('staff.loans.store');
     Route::put('/staff/loans/{staffLoan}', [StaffLoansController::class, 'update'])->middleware('staff.permission:Payroll Management,edit')->name('staff.loans.update');
     Route::delete('/staff/loans/{staffLoan}', [StaffLoansController::class, 'destroy'])->middleware('staff.permission:Payroll Management,delete')->name('staff.loans.destroy');
@@ -287,6 +288,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/staff/salary-templates/assign', [SalaryTemplatesController::class, 'storeAssignment'])->middleware('staff.permission:Payroll Management,add')->name('staff.salary-templates.assign');
     Route::delete('/staff/salary-templates/assign/{staffSalary}', [SalaryTemplatesController::class, 'destroyAssignment'])->middleware('staff.permission:Payroll Management,delete')->name('staff.salary-templates.assign.destroy');
     Route::get('/surveys', [SurveysController::class, 'index'])->middleware('staff.permission:Feedback Management,view')->name('surveys');
+    Route::get('/survey/mine', [SurveysController::class, 'mine'])->middleware('staff.permission:Feedback Management,view')->name('surveys.mine');
     Route::get('/survey/guide', [SurveysController::class, 'guide'])->middleware('staff.permission:Feedback Management,view')->name('surveys.guide');
     Route::post('/surveys', [SurveysController::class, 'storeSurvey'])->middleware('staff.permission:Feedback Management,add')->name('surveys.store');
     Route::put('/surveys/{survey}', [SurveysController::class, 'updateSurvey'])->middleware('staff.permission:Feedback Management,edit')->name('surveys.update');
@@ -350,6 +352,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::delete('/class-time-table/{timetable}', [ClassesController::class, 'destroyTimeTableEntry'])->middleware('staff.permission:Class Time Table,delete')->name('class-time-table.destroy');
     Route::get('/teacher-time-table', [ClassesController::class, 'teacherTimeTable'])->middleware('staff.permission:Teachers Time Table,view')->name('teacher-time-table');
     Route::get('/lesson-plan', [ClassesController::class, 'lessonPlan'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan');
+    Route::get('/lesson-plan/review', [ClassesController::class, 'lessonPlanReview'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan.review');
+    Route::get('/lesson-plan/reports', [ClassesController::class, 'lessonPlanReports'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan.reports');
     Route::get('/lesson-plan/guide', [ClassesController::class, 'guide'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan.guide');
     Route::get('/lesson-plan/settings', [ClassesController::class, 'lessonPlannerSettings'])->middleware('staff.permission:Lesson Plan,view')->name('lesson-plan.settings');
     Route::patch('/lesson-plan/settings', [ClassesController::class, 'updateLessonPlannerSettings'])->middleware('staff.permission:Lesson Plan,edit')->name('lesson-plan.settings.update');
@@ -889,6 +893,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/osm/moderation/{evaluation}', [OsmController::class, 'moderate'])->middleware('staff.permission:Assessment,edit')->name('osm.moderation');
     Route::get('/ptm', [PtmController::class, 'index'])->middleware('staff.permission:PTM,view')->name('ptm');
     Route::get('/ptm/guide', [PtmController::class, 'guide'])->middleware('staff.permission:PTM,view')->name('ptm.guide');
+    Route::get('/ptm/record', [PtmController::class, 'record'])->middleware('staff.permission:PTM,view')->name('ptm.record');
+    Route::get('/ptm/followups', [PtmController::class, 'followups'])->middleware('staff.permission:PTM,view')->name('ptm.followups');
     Route::get('/ptm/reports', [PtmController::class, 'reports'])->middleware('staff.permission:PTM,view')->name('ptm.reports');
     Route::post('/ptm', [PtmController::class, 'storeSession'])->middleware('staff.permission:PTM,add')->name('ptm.store');
     Route::patch('/ptm/{ptmSession}', [PtmController::class, 'updateSession'])->middleware('staff.permission:PTM,edit')->name('ptm.update');
@@ -896,6 +902,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/ptm/{ptmSession}/appointments', [PtmController::class, 'storeAppointment'])->middleware('staff.permission:PTM,add')->name('ptm.appointments.store');
     Route::patch('/ptm/appointments/{ptmAppointment}', [PtmController::class, 'updateAppointment'])->middleware('staff.permission:PTM,edit')->name('ptm.appointments.update');
    Route::patch('/ptm/appointments/{ptmAppointment}/follow-up', [PtmController::class, 'toggleAppointmentFollowUp'])->middleware('staff.permission:PTM,edit')->name('ptm.appointments.follow-up');
+    Route::patch('/ptm/appointments/{ptmAppointment}/record', [PtmController::class, 'recordAppointment'])->middleware('staff.permission:PTM,edit')->name('ptm.appointments.record');
     Route::delete('/ptm/appointments/{ptmAppointment}', [PtmController::class, 'destroyAppointment'])->middleware('staff.permission:PTM,delete')->name('ptm.appointments.destroy');
     Route::get('/website-cms', [SettingsController::class, 'websiteCms'])->middleware('staff.permission:Website CMS,view')->name('website-cms');
     Route::get('/website-cms/cbse-disclosure', [CbseDisclosureController::class, 'adminIndex'])->middleware('staff.permission:Website CMS,view')->name('cbse-disclosure');

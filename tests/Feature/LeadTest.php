@@ -210,7 +210,7 @@ class LeadTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_teacher_cannot_access_leads(): void
+    public function test_teacher_can_view_leads(): void
     {
         $organization = $this->createOrganization();
         app(StaffPermissionService::class)->ensureRolesExist($organization);
@@ -219,7 +219,7 @@ class LeadTest extends TestCase
 
         $this->actingAs($teacher)
             ->get('/leads')
-            ->assertForbidden();
+            ->assertOk();
     }
 
     public function test_leads_can_be_filtered_by_status(): void

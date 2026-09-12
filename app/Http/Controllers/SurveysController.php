@@ -66,6 +66,59 @@ class SurveysController extends Controller
         ]);
     }
 
+    public function mine(Request $request): Response
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $surveys = Survey::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', 'active')
+            ->with(['questions', 'responses'])
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (Survey $survey) => $this->surveyPayload($survey));
+
+        return Inertia::render('dashboard/Surveys', [
+            'user' => $user,
+            'surveys' => $surveys->values(),
+            'myResponses' => $this->myResponseIds($organization, $user),
+            'summary' => [
+                'activeSurveys' => $surveys->count(),
+                'totalResponses' => SurveyResponse::query()->where('organization_id', $organization->id)->count(),
+                'mySurveys' => $surveys->values()->count(),
+            ],
+            'canManage' => false,
+            'mineMode' => true,
+        ]);
+    }
+
+    private function surveyPayload(Survey $survey): array
+    {
+        $ratings = $survey->responses->flatMap(fn (SurveyResponse $response) => $response->answers->pluck('rating'))
+            ->filter(fn ($value) => $value !== null);
+
+        return [
+            'id' => $survey->id,
+            'title' => $survey->title,
+            'description' => $survey->description,
+            'audience' => $survey->audience,
+            'status' => $survey->status,
+            'startsOn' => $survey->starts_on?->toDateString(),
+            'endsOn' => $survey->ends_on?->toDateString(),
+            'questions' => $survey->questions->map(fn (SurveyQuestion $question) => [
+                'id' => $question->id,
+                'question' => $question->question,
+                'type' => $question->type,
+                'options' => $question->options ?? [],
+                'sortOrder' => $question->sort_order,
+            ])->values(),
+            'responsesCount' => $survey->responses->count(),
+            'avgRating' => $ratings->count() > 0 ? round($ratings->avg(), 1) : null,
+        ];
+    }
+
     public function guide(Request $request): Response
     {
         $organization = $this->resolveOrganizationForUser($request->user());

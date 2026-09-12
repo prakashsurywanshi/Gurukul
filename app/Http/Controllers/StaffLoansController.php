@@ -59,6 +59,47 @@ class StaffLoansController extends Controller
         ]);
     }
 
+    public function mine(Request $request): Response
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+
+        $loans = StaffLoan::query()
+            ->where('organization_id', $organization->id)
+            ->where('staff_user_id', $user->id)
+            ->with(['approver:id,name'])
+            ->orderByDesc('start_date')
+            ->get()
+            ->map(function (StaffLoan $loan) {
+                return [
+                    'id' => $loan->id,
+                    'reason' => $loan->loan_reason,
+                    'principal' => (float) $loan->principal_amount,
+                    'interestRate' => (float) $loan->interest_rate,
+                    'tenureMonths' => $loan->tenure_months,
+                    'monthlyEmi' => (float) $loan->monthly_emi,
+                    'startDate' => $loan->start_date->toDateString(),
+                    'paidEmis' => $loan->paid_emis,
+                    'remainingEmis' => max(0, $loan->tenure_months - $loan->paid_emis),
+                    'outstanding' => max(0.0, round((float) $loan->monthly_emi * ($loan->tenure_months - $loan->paid_emis), 2)),
+                    'status' => $loan->status,
+                    'approvedBy' => $loan->approver?->name,
+                ];
+            })
+            ->values();
+
+        return Inertia::render('dashboard/MyLoans', [
+            'user' => $user,
+            'loans' => $loans,
+            'summary' => [
+                'openLoans' => $loans->filter(fn ($loan) => $loan['status'] === 'active')->count(),
+                'outstandingTotal' => (float) $loans->filter(fn ($loan) => $loan['status'] === 'active')->sum('outstanding'),
+                'emisPaid' => $loans->sum('paidEmis'),
+            ],
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();

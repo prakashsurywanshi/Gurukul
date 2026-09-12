@@ -157,7 +157,7 @@ class LeadPipelineConfigTest extends TestCase
         $this->assertDatabaseMissing('lead_sources', ['id' => $source->id]);
     }
 
-    public function test_teacher_cannot_access_pipeline_config(): void
+    public function test_teacher_can_view_but_not_manage_pipeline_config(): void
     {
         $organization = $this->createOrganization();
         app(StaffPermissionService::class)->ensureRolesExist($organization);
@@ -166,7 +166,7 @@ class LeadPipelineConfigTest extends TestCase
 
         $this->actingAs($teacher)
             ->get('/leads/sources-stages')
-            ->assertForbidden();
+            ->assertOk();
 
         $this->actingAs($teacher)
             ->post('/leads/sources-stages/sources', ['name' => 'camp'])

@@ -17,6 +17,7 @@ class PtmController extends Controller
 {
     private const SESSION_STATUSES = ['scheduled', 'completed', 'cancelled'];
     private const APPOINTMENT_STATUSES = ['booked', 'checked_in', 'completed', 'absent'];
+    private const FOLLOWUP_FILTERS = ['pending', 'completed', 'all'];
 
     public function index(Request $request)
     {
@@ -122,6 +123,119 @@ class PtmController extends Controller
         abort_unless($organization, 403);
 
         return inertia('dashboard/PtmGuide', ['user' => $user]);
+    }
+
+    public function record(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $sessions = PtmSession::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', '!=', 'cancelled')
+            ->with('appointments.student:id,organization_id,first_name,last_name,class_id')
+            ->orderByDesc('date')
+            ->limit(60)
+            ->get()
+            ->map(function (PtmSession $session) {
+                $appointments = $session->appointments;
+
+                return [
+                    'id' => $session->id,
+                    'title' => $session->localized('title'),
+                    'date' => $session->date->format('Y-m-d'),
+                    'start_time' => $session->start_time,
+                    'status' => $session->status,
+                    'appointmentCount' => $appointments->count(),
+                    'appointments' => $appointments->map(fn (PtmAppointment $appointment) => [
+                        'id' => $appointment->id,
+                        'slot_time' => $appointment->slot_time,
+                        'parent_name' => $appointment->parent_name,
+                        'status' => $appointment->status,
+                        'remarks' => $appointment->remarks,
+                        'follow_up_required' => $appointment->follow_up_required,
+                        'follow_up_due' => optional($appointment->follow_up_due)->format('Y-m-d'),
+                        'student' => $appointment->student ? [
+                            'id' => (string) $appointment->student->id,
+                            'name' => trim(($appointment->student->first_name ?? '').' '.($appointment->student->last_name ?? '')),
+                            'class' => $appointment->student->schoolClass?->name,
+                            'section' => $appointment->student->schoolClass?->section,
+                        ] : null,
+                    ])->sortBy('slot_time')->values()->all(),
+                ];
+            })
+            ->values()
+            ->all();
+
+        return inertia('dashboard/PtmRecord', [
+            'user' => $user,
+            'sessions' => $sessions,
+        ]);
+    }
+
+    public function followups(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $filter = in_array($request->query('status'), self::FOLLOWUP_FILTERS, true)
+            ? $request->query('status')
+            : 'pending';
+
+        $appointments = PtmAppointment::query()
+            ->where('organization_id', $organization->id)
+            ->where('follow_up_required', true)
+            ->when($filter === 'pending', fn ($query) => $query->whereNull('follow_up_completed_at'))
+            ->when($filter === 'completed', fn ($query) => $query->whereNotNull('follow_up_completed_at'))
+            ->with('student:id,organization_id,first_name,last_name,class_id')
+            ->with('session')
+            ->orderBy('follow_up_due')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get()
+            ->map(fn (PtmAppointment $appointment) => [
+                'id' => $appointment->id,
+                'status' => $appointment->status,
+                'remarks' => $appointment->remarks,
+                'follow_up_due' => optional($appointment->follow_up_due)->format('Y-m-d'),
+                'follow_up_completed_at' => optional($appointment->follow_up_completed_at)->format('Y-m-d H:i'),
+                'session_title' => $appointment->session?->localized('title'),
+                'session_date' => optional($appointment->session?->date)->format('Y-m-d'),
+                'student' => $appointment->student ? [
+                    'id' => (string) $appointment->student->id,
+                    'name' => trim(($appointment->student->first_name ?? '').' '.($appointment->student->last_name ?? '')),
+                    'class' => $appointment->student->schoolClass?->name,
+                    'section' => $appointment->student->schoolClass?->section,
+                ] : null,
+            ])
+            ->values()
+            ->all();
+
+        $pendingCount = PtmAppointment::query()
+            ->where('organization_id', $organization->id)
+            ->where('follow_up_required', true)
+            ->whereNull('follow_up_completed_at')
+            ->count();
+
+        $completedCount = PtmAppointment::query()
+            ->where('organization_id', $organization->id)
+            ->where('follow_up_required', true)
+            ->whereNotNull('follow_up_completed_at')
+            ->count();
+
+        return inertia('dashboard/PtmFollowups', [
+            'user' => $user,
+            'appointments' => $appointments,
+            'filter' => $filter,
+            'summary' => [
+                'pending' => $pendingCount,
+                'completed' => $completedCount,
+            ],
+        ]);
     }
 
     public function reports(Request $request)
@@ -313,6 +427,26 @@ class PtmController extends Controller
         return redirect()->route('ptm', ['session_id' => $ptmAppointment->ptm_session_id])->with('success', 'Appointment updated successfully.');
     }
 
+    public function recordAppointment(Request $request, PtmAppointment $ptmAppointment): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization && $ptmAppointment->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(self::APPOINTMENT_STATUSES)],
+            'remarks' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $ptmAppointment->update([
+            'status' => $validated['status'],
+            'remarks' => $validated['remarks'] ?? $ptmAppointment->remarks,
+        ]);
+
+        return back()->with('success', 'Attendance recorded.');
+    }
+
     public function toggleAppointmentFollowUp(Request $request, PtmAppointment $ptmAppointment): RedirectResponse
     {
         $user = Auth::user();
@@ -328,7 +462,7 @@ class PtmController extends Controller
             'follow_up_completed_at' => $validated['done'] ? now() : null,
         ]);
 
-        return redirect()->route('ptm', ['session_id' => $ptmAppointment->ptm_session_id])->with('success', 'Follow-up updated successfully.');
+        return back()->with('success', 'Follow-up updated successfully.');
     }
 
     public function destroyAppointment(PtmAppointment $ptmAppointment): RedirectResponse
