@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\ExpenseEntry;
 use App\Models\FeeAudit;
+use App\Models\FeeDueSlipLog;
 use App\Models\FeePayment;
 use App\Models\FeeStructure;
 use App\Models\FeeType;
@@ -1230,6 +1231,80 @@ class FeesController extends Controller
         ]);
     }
 
+    public function dueSlipHistory()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return inertia('dashboard/DueSlipHistory', [
+                'user' => $user,
+                'organization' => null,
+                'sessionName' => null,
+                'logs' => [],
+                'summary' => ['totalSlips' => 0, 'todaySlips' => 0, 'totalDue' => 0],
+            ]);
+        }
+
+        $logs = FeeDueSlipLog::query()
+            ->where('organization_id', $organization->id)
+            ->with('student')
+            ->with('creator:id,name')
+            ->latest('slip_date')
+            ->latest('id')
+            ->take(300)
+            ->get();
+
+        $today = now()->toDateString();
+
+        $serialized = $logs->map(function (FeeDueSlipLog $log) use ($organization) {
+            $student = $log->student;
+            $schoolClass = $student?->schoolClass;
+
+            return [
+                'id' => $log->id,
+                'student_id' => (string) $log->student_id,
+                'student' => $student ? trim(implode(' ', array_filter([$student->first_name, $student->middle_name, $student->last_name]))) : '—',
+                'admission_no' => $student?->admission_no,
+                'class' => $schoolClass?->name,
+                'section' => $schoolClass?->section,
+                'total_due' => (float) $log->total_due,
+                'slip_date' => $log->slip_date?->toDateString(),
+                'via' => $log->via,
+                'generated_by' => $log->creator?->name,
+                'generated_at' => $log->created_at?->toDateTimeString(),
+            ];
+        })->values()->all();
+
+        return inertia('dashboard/DueSlipHistory', [
+            'user' => $user,
+            'organization' => $this->serializeOrganization($organization),
+            'sessionName' => $this->getActiveSessionName($organization),
+            'logs' => $serialized,
+            'summary' => [
+                'totalSlips' => $logs->count(),
+                'todaySlips' => $logs->filter(fn (FeeDueSlipLog $log) => $log->slip_date?->toDateString() === $today)->count(),
+                'totalDue' => (float) $logs->sum('total_due'),
+            ],
+        ]);
+    }
+
+    private function logDueSlip(Student $student, Organization $organization, float $totalDue, string $via): void
+    {
+        if ($totalDue <= 0) {
+            return;
+        }
+
+        FeeDueSlipLog::query()->create([
+            'organization_id' => $organization->id,
+            'student_id' => $student->id,
+            'total_due' => $totalDue,
+            'slip_date' => now()->toDateString(),
+            'via' => $via,
+            'created_by' => Auth::id(),
+        ]);
+    }
+
     public function printChallan(StudentFee $studentFee)
     {
         $organization = $this->resolveOrganizationForUser(Auth::user());
@@ -1257,7 +1332,10 @@ class FeesController extends Controller
         $organization = $this->resolveOrganizationForUser(Auth::user());
         abort_unless($organization && $student->organization_id === $organization->id, 404);
 
-        return response()->view('finance.due-slip', $this->buildDueSlipData($student, $organization));
+        $data = $this->buildDueSlipData($student, $organization);
+        $this->logDueSlip($student, $organization, $data['total_due'], 'print');
+
+        return response()->view('finance.due-slip', $data);
     }
 
     public function downloadDueSlip(Student $student)
@@ -1265,7 +1343,10 @@ class FeesController extends Controller
         $organization = $this->resolveOrganizationForUser(Auth::user());
         abort_unless($organization && $student->organization_id === $organization->id, 404);
 
-        $html = view('finance.due-slip', $this->buildDueSlipData($student, $organization))->render();
+        $data = $this->buildDueSlipData($student, $organization);
+        $this->logDueSlip($student, $organization, $data['total_due'], 'download');
+
+        $html = view('finance.due-slip', $data)->render();
 
         $pdf = Pdf::loadHTML($html)
             ->setPaper('a4', 'portrait')

@@ -66,6 +66,53 @@ class ComplianceController extends Controller
         ]);
     }
 
+    public function calendar(Request $request): Response
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($request->user());
+
+        $items = ComplianceItem::query()
+            ->where('organization_id', $organization->id)
+            ->with('pack:id,name,category')
+            ->whereNotNull('due_date')
+            ->orderBy('due_date')
+            ->take(500)
+            ->get();
+
+        $today = now()->startOfDay();
+
+        $events = $items->map(fn (ComplianceItem $item) => [
+            'id' => $item->id,
+            'title' => $item->title,
+            'pack' => $item->pack?->name,
+            'category' => $item->pack?->category,
+            'dueDate' => $item->due_date->toDateString(),
+            'status' => $item->status,
+            'overdue' => $item->status === 'pending' && $item->due_date->lt($today),
+        ]);
+
+        $todayString = $today->toDateString();
+
+        $upcoming = $events
+            ->filter(fn (array $event) => $event['status'] === 'pending' && $event['dueDate'] >= $todayString)
+            ->sortBy('dueDate')
+            ->take(10)
+            ->values();
+
+        return Inertia::render('dashboard/ComplianceCalendar', [
+            'user' => $user,
+            'events' => $events->values()->all(),
+            'upcoming' => $upcoming->all(),
+            'summary' => [
+                'events' => $events->count(),
+                'overdue' => $events->where('overdue', true)->count(),
+                'dueThisMonth' => $events->filter(fn (array $event) => substr($event['dueDate'], 0, 7) === now()->format('Y-m') && $event['status'] === 'pending')->count(),
+            ],
+        ]);
+    }
+
     public function storePack(Request $request): RedirectResponse
     {
         $organization = $this->resolveOrganizationForUser($request->user());

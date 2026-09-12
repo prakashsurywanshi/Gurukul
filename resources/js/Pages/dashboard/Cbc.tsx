@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Award, ChartColumn, Compass, Plus, Shapes, Trash2, TrendingUp, Users } from 'lucide-react';
+import { Award, BarChart3, ChartColumn, Compass, Plus, Shapes, Trash2, TrendingUp, Users } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
@@ -72,9 +72,16 @@ interface CbcProps {
     competencyOptions: { id: number; name: string; strand_id: number }[];
     students: { id: number; name: string; admission_no: string }[];
     summary: { competencies: number; assessments: number; studentsAssessed: number; levels: Record<string, number> };
+    reports: {
+        byStrand: { id: number; name: string; assessments: number; levels: Record<string, number> }[];
+        byOutcome: { id: number; name: string; assessments: number; levels: Record<string, number> }[];
+        byCompetency: { id: number; name: string; assessments: number }[];
+        proficiencyRate: number;
+        levelTotals: Record<string, number>;
+    };
 }
 
-type Tab = 'strands' | 'outcomes' | 'pathways' | 'competencies' | 'assessments' | 'dashboard';
+type Tab = 'strands' | 'outcomes' | 'pathways' | 'competencies' | 'assessments' | 'dashboard' | 'reports';
 
 const LEVEL_LABELS: Record<string, string> = {
     emerging: 'Emerging',
@@ -88,6 +95,13 @@ const LEVEL_STYLES: Record<string, string> = {
     developing: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
     proficient: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
     advanced: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+};
+
+const LEVEL_BARS: Record<string, string> = {
+    emerging: 'bg-slate-400',
+    developing: 'bg-sky-500',
+    proficient: 'bg-emerald-500',
+    advanced: 'bg-indigo-500',
 };
 
 export default function Cbc(pageProps: CbcProps) {
@@ -104,6 +118,7 @@ export default function Cbc(pageProps: CbcProps) {
         competencyOptions,
         students,
         summary,
+        reports,
     } = pageProps;
     const [activeTab, setActiveTab] = useState<Tab>(tab as Tab);
     const [strandForm, setStrandForm] = useState({ name: '', code: '', description: '' });
@@ -229,6 +244,7 @@ export default function Cbc(pageProps: CbcProps) {
         { key: 'competencies', label: 'Core Competencies', icon: Award },
         { key: 'assessments', label: 'Assessments', icon: Users },
         { key: 'dashboard', label: 'Dashboard', icon: ChartColumn },
+        { key: 'reports', label: 'Reports', icon: BarChart3 },
     ];
 
     return (
@@ -915,6 +931,171 @@ export default function Cbc(pageProps: CbcProps) {
                         )}
                     </CardContent>
                 </Card>
+
+                {activeTab === 'reports' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                            <Card>
+                                <CardContent className="p-4">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Proficiency Rate</p>
+                                    <p className="text-2xl font-bold">{reports.proficiencyRate}%</p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="p-4">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Assessments</p>
+                                    <p className="text-2xl font-bold">{summary.assessments}</p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="p-4">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Students Assessed</p>
+                                    <p className="text-2xl font-bold">{summary.studentsAssessed}</p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="p-4">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Strands Reported</p>
+                                    <p className="text-2xl font-bold">
+                                        {reports.byStrand.filter((report) => report.assessments > 0).length}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Assessment Level Distribution</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {Object.entries(reports.levelTotals).map(([level, count]) => {
+                                    const max = Math.max(1, ...Object.values(reports.levelTotals));
+                                    return (
+                                        <div key={level}>
+                                            <div className="mb-1 flex items-center justify-between text-sm">
+                                                <Badge className={LEVEL_STYLES[level] ?? ''}>
+                                                    {LEVEL_LABELS[level] ?? level}
+                                                </Badge>
+                                                <span className="font-medium">{count}</span>
+                                            </div>
+                                            <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-800">
+                                                <div
+                                                    className={`h-2 rounded-full ${LEVEL_BARS[level] ?? 'bg-indigo-500'}`}
+                                                    style={{ width: `${(count / max) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Strand-wise Report</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                                {reports.byStrand.filter((report) => report.assessments > 0).length === 0 ? (
+                                    <p className="py-10 text-center text-gray-400">No assessment data recorded yet.</p>
+                                ) : (
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                                <th className="py-2 pr-4">Strand</th>
+                                                <th className="py-2 pr-4">Assessments</th>
+                                                {Object.keys(LEVEL_LABELS).map((level) => (
+                                                    <th key={level} className="py-2 pr-4">
+                                                        {LEVEL_LABELS[level]}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {reports.byStrand
+                                                .filter((report) => report.assessments > 0)
+                                                .map((report) => (
+                                                    <tr key={report.id} className="border-b last:border-0">
+                                                        <td className="py-2 pr-4 font-medium">{report.name}</td>
+                                                        <td className="py-2 pr-4">{report.assessments}</td>
+                                                        {Object.keys(LEVEL_LABELS).map((level) => (
+                                                            <td key={level} className="py-2 pr-4">
+                                                                {report.levels[level] ?? 0}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Top Learning Outcomes</CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    {reports.byOutcome.length === 0 ? (
+                                        <p className="py-10 text-center text-gray-400">No outcome data recorded yet.</p>
+                                    ) : (
+                                        <ul className="space-y-2">
+                                            {reports.byOutcome.map((report) => (
+                                                <li
+                                                    key={report.id}
+                                                    className="flex items-center justify-between gap-2 rounded-lg border p-3"
+                                                >
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-sm font-medium">{report.name}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {report.assessments} assessments
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex shrink-0 flex-wrap gap-1">
+                                                        {Object.keys(LEVEL_LABELS).map((level) =>
+                                                            (report.levels[level] ?? 0) > 0 ? (
+                                                                <Badge
+                                                                    key={level}
+                                                                    className={LEVEL_STYLES[level] ?? ''}
+                                                                >
+                                                                    {report.levels[level]}
+                                                                </Badge>
+                                                            ) : null,
+                                                        )}
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Top Core Competencies</CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    {reports.byCompetency.length === 0 ? (
+                                        <p className="py-10 text-center text-gray-400">
+                                            No competency data recorded yet.
+                                        </p>
+                                    ) : (
+                                        <ul className="space-y-2">
+                                            {reports.byCompetency.map((report) => (
+                                                <li
+                                                    key={report.id}
+                                                    className="flex items-center justify-between gap-2 rounded-lg border p-3"
+                                                >
+                                                    <span className="truncate text-sm font-medium">{report.name}</span>
+                                                    <Badge variant="outline">{report.assessments} assessments</Badge>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

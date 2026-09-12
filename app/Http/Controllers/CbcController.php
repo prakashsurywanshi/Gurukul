@@ -26,7 +26,7 @@ class CbcController extends Controller
         abort_unless($organization, 403);
         abort_unless(in_array($user->role, ['admin', 'super_admin', 'teacher'], true), 403);
 
-        $tab = in_array($request->query('tab'), ['strands', 'outcomes', 'pathways', 'competencies', 'assessments', 'dashboard'], true)
+        $tab = in_array($request->query('tab'), ['strands', 'outcomes', 'pathways', 'competencies', 'assessments', 'dashboard', 'reports'], true)
             ? $request->query('tab')
             : 'strands';
 
@@ -83,6 +83,52 @@ class CbcController extends Controller
                 'admission_no' => $student->admission_no,
             ])
             ->values();
+
+        $levelOrder = ['emerging', 'developing', 'proficient', 'advanced'];
+
+        $levelPivot = function (string $level) use ($assessments): int {
+            return $assessments->filter(fn (CbcAssessment $assessment) => $assessment->level === $level)->count();
+        };
+
+        $strandReports = $strands->map(function (CbcStrand $strand) use ($assessments, $levelOrder): array {
+            $strandAssessments = $assessments->filter(fn (CbcAssessment $assessment) => $assessment->cbc_strand_id === $strand->id);
+
+            return [
+                'id' => $strand->id,
+                'name' => $strand->name,
+                'assessments' => $strandAssessments->count(),
+                'levels' => collect($levelOrder)->mapWithKeys(
+                    fn (string $level) => [$level => $strandAssessments->filter(fn (CbcAssessment $assessment) => $assessment->level === $level)->count()]
+                )->all(),
+            ];
+        })->values();
+
+        $outcomeReports = $outcomes->take(8)->map(function (CbcLearningOutcome $outcome) use ($assessments, $levelOrder): array {
+            $outcomeAssessments = $assessments->filter(fn (CbcAssessment $assessment) => $assessment->cbc_learning_outcome_id === $outcome->id);
+
+            return [
+                'id' => $outcome->id,
+                'name' => $outcome->name,
+                'assessments' => $outcomeAssessments->count(),
+                'levels' => collect($levelOrder)->mapWithKeys(
+                    fn (string $level) => [$level => $outcomeAssessments->filter(fn (CbcAssessment $assessment) => $assessment->level === $level)->count()]
+                )->all(),
+            ];
+        })->values()->filter(fn (array $report) => $report['assessments'] > 0)->values();
+
+        $competencyReports = $competencies->take(8)->map(function (CbcCompetency $competency) use ($assessments): array {
+            $competencyAssessments = $assessments->filter(fn (CbcAssessment $assessment) => $assessment->cbc_competency_id === $competency->id);
+
+            return [
+                'id' => $competency->id,
+                'name' => $competency->name,
+                'assessments' => $competencyAssessments->count(),
+            ];
+        })->values()->filter(fn (array $report) => $report['assessments'] > 0)->values();
+
+        $totalAssessed = $assessments->count();
+        $proficientPlus = $levelPivot('proficient') + $levelPivot('advanced');
+        $proficiencyRate = $totalAssessed > 0 ? round(($proficientPlus / $totalAssessed) * 100) : 0;
 
         return inertia('dashboard/Cbc', [
             'user' => $user,
@@ -149,6 +195,13 @@ class CbcController extends Controller
                 'assessments' => $assessments->count(),
                 'studentsAssessed' => $assessments->pluck('student_id')->unique()->count(),
                 'levels' => $levelCounts,
+            ],
+            'reports' => [
+                'byStrand' => $strandReports,
+                'byOutcome' => $outcomeReports,
+                'byCompetency' => $competencyReports,
+                'proficiencyRate' => $proficiencyRate,
+                'levelTotals' => collect($levelOrder)->mapWithKeys(fn (string $level) => [$level => $levelPivot($level)])->all(),
             ],
         ]);
     }

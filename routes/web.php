@@ -306,6 +306,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/chat-moderation', [ChatModerationController::class, 'index'])->middleware('staff.permission:Live Chat,view')->name('chat-moderation');
     Route::post('/chat-moderation/{chatMessage}/moderate', [ChatModerationController::class, 'moderate'])->middleware('staff.permission:Live Chat,edit')->name('chat-moderation.moderate');
     Route::get('/compliance', [ComplianceController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance');
+    Route::get('/compliance/calendar', [ComplianceController::class, 'calendar'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.calendar');
     Route::post('/compliance/packs', [ComplianceController::class, 'storePack'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.packs.store');
     Route::delete('/compliance/packs/{pack}', [ComplianceController::class, 'destroyPack'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.packs.destroy');
     Route::post('/compliance/packs/{pack}/items', [ComplianceController::class, 'storeItem'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.items.store');
@@ -442,6 +443,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/fees/challans/{studentFee}/print', [FeesController::class, 'printChallan'])->middleware('staff.permission:Fees Management,view')->name('fees.challans.print');
     Route::get('/fees/challans/{studentFee}/download', [FeesController::class, 'downloadChallan'])->middleware('staff.permission:Fees Management,view')->name('fees.challans.download');
     Route::get('/fees/due-slips', [FeesController::class, 'dueSlips'])->middleware('staff.permission:Fees Management,view')->name('fees.due-slips');
+    Route::get('/fees/due-slips/history', [FeesController::class, 'dueSlipHistory'])->middleware('staff.permission:Fees Management,view')->name('fees.due-slips.history');
     Route::get('/fees/due-slips/{student}/print', [FeesController::class, 'printDueSlip'])->middleware('staff.permission:Fees Management,view')->name('fees.due-slips.print');
     Route::get('/fees/due-slips/{student}/download', [FeesController::class, 'downloadDueSlip'])->middleware('staff.permission:Fees Management,view')->name('fees.due-slips.download');
     Route::get('/fees/audit', [FeesController::class, 'feeAudit'])->middleware('staff.permission:Fees Management,view')->name('fees.audit');
