@@ -1,0 +1,136 @@
+[
+ {
+  "label": "Dashboard",
+  "href": "https://demo.multischoolerp.com/school/dashboard",
+  "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "My Profile",
+  "href": "https://demo.multischoolerp.com/school/my-profile",
+  "icon": "nav-icon fas fa-fw fa-user-circle ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "My Loans & Advances",
+  "href": "https://demo.multischoolerp.com/school/loans",
+  "icon": "nav-icon fas fa-fw fa-hand-holding-usd ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Apply Leave",
+  "href": "https://demo.multischoolerp.com/school/apply-leave",
+  "icon": "nav-icon fas fa-fw fa-paper-plane ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Student List",
+  "href": "https://demo.multischoolerp.com/school/students",
+  "icon": "nav-icon fas fa-fw fa-users ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Collect Fees",
+  "href": "https://demo.multischoolerp.com/school/collect-fees",
+  "icon": "nav-icon fas fa-fw fa-hand-holding-usd ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Search Due Fees",
+  "href": "https://demo.multischoolerp.com/school/due-fees",
+  "icon": "nav-icon fas fa-fw fa-file-invoice-dollar ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Assign Fees",
+  "href": "https://demo.multischoolerp.com/school/assign-fees",
+  "icon": "nav-icon fas fa-fw fa-user-tag ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Fee Groups",
+  "href": "https://demo.multischoolerp.com/school/fee-groups",
+  "icon": "nav-icon fas fa-fw fa-layer-group ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Fee Types",
+  "href": "https://demo.multischoolerp.com/school/fee-types",
+  "icon": "nav-icon fas fa-fw fa-tags ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Income",
+  "href": "https://demo.multischoolerp.com/school/accounts/incomes",
+  "icon": "nav-icon fas fa-fw fa-arrow-down ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Expense",
+  "href": "https://demo.multischoolerp.com/school/accounts/expenses",
+  "icon": "nav-icon fas fa-fw fa-arrow-up ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Income Heads",
+  "href": "https://demo.multischoolerp.com/school/accounts/income-heads",
+  "icon": "nav-icon fas fa-fw fa-tags ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Expense Heads",
+  "href": "https://demo.multischoolerp.com/school/accounts/expense-heads",
+  "icon": "nav-icon fas fa-fw fa-tags ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Lead Management",
+  "href": "",
+  "icon": "nav-icon fas fa-fw fa-sliders-h ",
+  "header": false,
+  "children": [
+   {
+    "label": "Lead Dashboard",
+    "href": "https://demo.multischoolerp.com/school/leads/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lead Pipeline Board",
+    "href": "https://demo.multischoolerp.com/school/leads/board",
+    "icon": "nav-icon fas fa-fw fa-columns ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lead Sources & Stages",
+    "href": "https://demo.multischoolerp.com/school/leads/settings",
+    "icon": "nav-icon fas fa-fw fa-sliders-h ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Logout",
+  "href": "#",
+  "icon": "nav-icon fas fa-fw fa-sign-out-alt text-danger ",
+  "header": false,
+  "children": []
+ }
+]

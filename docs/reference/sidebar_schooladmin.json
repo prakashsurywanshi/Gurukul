@@ -1,0 +1,1968 @@
+[
+ {
+  "label": "Dashboard",
+  "href": "https://demo.multischoolerp.com/school/dashboard",
+  "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "ERP Navigator",
+  "href": "https://demo.multischoolerp.com/school/explore",
+  "icon": "nav-icon fas fa-fw fa-compass ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Contact Support",
+  "href": "https://demo.multischoolerp.com/school/support",
+  "icon": "nav-icon fas fa-fw fa-life-ring ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Finance & Fees",
+  "href": "",
+  "icon": "fas fa-fw fa-wallet",
+  "header": false,
+  "children": [
+   {
+    "label": "Fees Dashboard",
+    "href": "https://demo.multischoolerp.com/school/fees-dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Collect Fees",
+    "href": "https://demo.multischoolerp.com/school/collect-fees",
+    "icon": "nav-icon fas fa-fw fa-hand-holding-usd ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Search Due Fees",
+    "href": "https://demo.multischoolerp.com/school/due-fees",
+    "icon": "nav-icon fas fa-fw fa-file-invoice-dollar ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "All Transactions",
+    "href": "https://demo.multischoolerp.com/school/transactions",
+    "icon": "nav-icon fas fa fa-exchange ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Online Transactions",
+    "href": "https://demo.multischoolerp.com/school/online-payments",
+    "icon": "nav-icon fas fa-fw fa-globe ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Fee Challans",
+    "href": "https://demo.multischoolerp.com/school/fee-challans",
+    "icon": "nav-icon fas fa-fw fa-file-invoice ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assign Fees",
+    "href": "https://demo.multischoolerp.com/school/assign-fees",
+    "icon": "nav-icon fas fa-fw fa-user-tag ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Fees Carry Forward",
+    "href": "https://demo.multischoolerp.com/school/fees-carry-forward",
+    "icon": "nav-icon fas fa-fw fa-angle-double-right ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Fee Groups",
+    "href": "https://demo.multischoolerp.com/school/fee-groups",
+    "icon": "nav-icon fas fa-fw fa-layer-group ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Fees Discount",
+    "href": "https://demo.multischoolerp.com/school/fee-discounts",
+    "icon": "nav-icon fas fa-fw fa-percent ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Fee Types",
+    "href": "https://demo.multischoolerp.com/school/fee-types",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Generate Due Slip",
+    "href": "https://demo.multischoolerp.com/school/due-slips",
+    "icon": "nav-icon fas fa-fw fa-file-invoice-dollar ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Due Slip History",
+    "href": "https://demo.multischoolerp.com/school/due-slips/history",
+    "icon": "nav-icon fas fa-fw fa-history ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Fee Data Audit",
+    "href": "https://demo.multischoolerp.com/school/fee-audit",
+    "icon": "nav-icon fas fa-fw fa-user-shield ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Import Center",
+    "href": "https://demo.multischoolerp.com/school/fee-imports",
+    "icon": "nav-icon fas fa-fw fa-file-import ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Accounts",
+  "href": "",
+  "icon": "fas fa-fw fa-calculator",
+  "header": false,
+  "children": [
+   {
+    "label": "Accounts Dashboard",
+    "href": "https://demo.multischoolerp.com/school/accounting/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Income",
+    "href": "https://demo.multischoolerp.com/school/accounts/incomes",
+    "icon": "nav-icon fas fa-fw fa-arrow-down ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Expense",
+    "href": "https://demo.multischoolerp.com/school/accounts/expenses",
+    "icon": "nav-icon fas fa-fw fa-arrow-up ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Income Heads",
+    "href": "https://demo.multischoolerp.com/school/accounts/income-heads",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Expense Heads",
+    "href": "https://demo.multischoolerp.com/school/accounts/expense-heads",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Bank Accounts",
+    "href": "https://demo.multischoolerp.com/school/bank-accounts",
+    "icon": "nav-icon fas fa-fw fa-university ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Student Information",
+  "href": "",
+  "icon": "fas fa-fw fa-user-graduate",
+  "header": false,
+  "children": [
+   {
+    "label": "Student Dashboard",
+    "href": "https://demo.multischoolerp.com/school/student-dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Student Admission",
+    "href": "https://demo.multischoolerp.com/school/students/create",
+    "icon": "nav-icon fas fa-fw fa-user-plus ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Student List",
+    "href": "https://demo.multischoolerp.com/school/students",
+    "icon": "nav-icon fas fa-fw fa-users ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Search by Photo",
+    "href": "https://demo.multischoolerp.com/school/students-face-search",
+    "icon": "nav-icon fas fa-fw fa-camera-retro ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Parents & Guardians",
+    "href": "https://demo.multischoolerp.com/school/parents",
+    "icon": "nav-icon fas fa-fw fa-user-friends ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Student Attendance",
+    "href": "https://demo.multischoolerp.com/school/student-attendance",
+    "icon": "nav-icon fas fa-fw fa-calendar-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Behavior Records",
+    "href": "https://demo.multischoolerp.com/school/student-behavior",
+    "icon": "nav-icon fas fa-fw fa-address-book ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Student Houses",
+    "href": "https://demo.multischoolerp.com/school/student-houses",
+    "icon": "nav-icon fas fa-home ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Student Categories",
+    "href": "https://demo.multischoolerp.com/school/student-categories",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "TC & Exit",
+    "href": "https://demo.multischoolerp.com/school/student-exits",
+    "icon": "nav-icon fas fa-fw fa-user-slash ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Health Records",
+    "href": "https://demo.multischoolerp.com/school/student-health",
+    "icon": "nav-icon fas fa-fw fa-heartbeat ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Deleted Students",
+    "href": "https://demo.multischoolerp.com/school/students-recycle-bin",
+    "icon": "nav-icon fas fa-fw fa-trash-restore ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Academics",
+  "href": "",
+  "icon": "fas fa-fw fa-school",
+  "header": false,
+  "children": [
+   {
+    "label": "Academic Dashboard",
+    "href": "https://demo.multischoolerp.com/school/academics/dashboard",
+    "icon": "nav-icon fas fa-fw fa-th-large ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Academic Sessions",
+    "href": "https://demo.multischoolerp.com/school/academic-sessions",
+    "icon": "nav-icon fas fa-fw fa-calendar-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Classes",
+    "href": "https://demo.multischoolerp.com/school/classes",
+    "icon": "nav-icon fas fa-fw fa-chalkboard ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Sections",
+    "href": "https://demo.multischoolerp.com/school/sections",
+    "icon": "nav-icon fas fa-fw fa-users ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Subjects",
+    "href": "https://demo.multischoolerp.com/school/subjects",
+    "icon": "nav-icon fas fa-fw fa-book ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assign Subjects",
+    "href": "https://demo.multischoolerp.com/school/assign-subjects",
+    "icon": "nav-icon fas fa-fw fa-link ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assign Electives",
+    "href": "https://demo.multischoolerp.com/school/assign-electives",
+    "icon": "nav-icon fas fa-fw fa-list-ol ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assign Class Teacher",
+    "href": "https://demo.multischoolerp.com/school/assign-class-teacher",
+    "icon": "nav-icon fas fa-fw fa-chalkboard-teacher ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Periods",
+    "href": "https://demo.multischoolerp.com/school/time-slots",
+    "icon": "nav-icon fas fa-fw fa-clock ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Class Timetable",
+    "href": "https://demo.multischoolerp.com/school/timetable",
+    "icon": "nav-icon fas fa-fw fa-table ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Promote Students",
+    "href": "https://demo.multischoolerp.com/school/promote-students",
+    "icon": "nav-icon fas fa-fw fa-angle-double-up ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "School Website",
+  "href": "",
+  "icon": "fas fa-fw fa-globe",
+  "header": false,
+  "children": [
+   {
+    "label": "Website Overview",
+    "href": "https://demo.multischoolerp.com/school/website",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Pages",
+    "href": "https://demo.multischoolerp.com/school/website/pages",
+    "icon": "nav-icon fas fa-fw fa-file-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Hero Slides",
+    "href": "https://demo.multischoolerp.com/school/website/slides",
+    "icon": "nav-icon fas fa-fw fa-images ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Facilities",
+    "href": "https://demo.multischoolerp.com/school/website/facilities",
+    "icon": "nav-icon fas fa-fw fa-swimmer ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Testimonials",
+    "href": "https://demo.multischoolerp.com/school/website/testimonials",
+    "icon": "nav-icon fas fa-fw fa-quote-left ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Navigation Menu",
+    "href": "https://demo.multischoolerp.com/school/website/navigation",
+    "icon": "nav-icon fas fa-fw fa-bars ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "CBSE Disclosure",
+    "href": "https://demo.multischoolerp.com/school/website/disclosure",
+    "icon": "nav-icon fas fa-fw fa-clipboard-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Website Templates",
+    "href": "https://demo.multischoolerp.com/school/website/templates",
+    "icon": "nav-icon fas fa-fw fa-magic ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Design & Settings",
+    "href": "https://demo.multischoolerp.com/school/website/settings",
+    "icon": "nav-icon fas fa-fw fa-paint-brush ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Website (Full HTML)",
+    "href": "https://demo.multischoolerp.com/school/landing-page",
+    "icon": "nav-icon fas fa-fw fa-code ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Front Office",
+  "href": "",
+  "icon": "fas fa-fw fa-desktop",
+  "header": false,
+  "children": [
+   {
+    "label": "Front Office Dashboard",
+    "href": "https://demo.multischoolerp.com/school/front-office/dashboard",
+    "icon": "nav-icon fas fa-fw fa-desktop ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Admission Enquiries",
+    "href": "https://demo.multischoolerp.com/school/front-office/admission-enquiries",
+    "icon": "nav-icon fas fa-fw fa-user-tie ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Visitor Book",
+    "href": "https://demo.multischoolerp.com/school/front-office/visitor-logs",
+    "icon": "nav-icon fas fa-fw fa-book ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Complaints",
+    "href": "https://demo.multischoolerp.com/school/front-office/complaints",
+    "icon": "nav-icon fas fa-fw fa-exclamation-circle ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Postal Records",
+    "href": "https://demo.multischoolerp.com/school/front-office/postal-records",
+    "icon": "nav-icon fas fa-fw fa-mail-bulk ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Gate Passes",
+    "href": "https://demo.multischoolerp.com/school/front-office/gate-passes",
+    "icon": "nav-icon fas fa-fw fa-door-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Gate Terminal",
+    "href": "https://demo.multischoolerp.com/school/front-office/gate-passes/gate",
+    "icon": "nav-icon fas fa-fw fa-qrcode ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Campus Workers",
+    "href": "https://demo.multischoolerp.com/school/front-office/campus-workers",
+    "icon": "nav-icon fas fa-fw fa-hard-hat ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Lead Management",
+  "href": "",
+  "icon": "fas fa-fw fa-funnel-dollar",
+  "header": false,
+  "children": [
+   {
+    "label": "Lead Dashboard",
+    "href": "https://demo.multischoolerp.com/school/leads/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lead Pipeline Board",
+    "href": "https://demo.multischoolerp.com/school/leads/board",
+    "icon": "nav-icon fas fa-fw fa-columns ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lead Sources & Stages",
+    "href": "https://demo.multischoolerp.com/school/leads/settings",
+    "icon": "nav-icon fas fa-fw fa-sliders-h ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Offline Examinations",
+  "href": "",
+  "icon": "fas fa-fw fa-graduation-cap",
+  "header": false,
+  "children": [
+   {
+    "label": "Exam Dashboard",
+    "href": "https://demo.multischoolerp.com/school/exams-dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Offline Exams",
+    "href": "https://demo.multischoolerp.com/school/exams",
+    "icon": "nav-icon fas fa-fw fa-list-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Exam Types",
+    "href": "https://demo.multischoolerp.com/school/exam-types",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Schedule & Marks Setup",
+    "href": "https://demo.multischoolerp.com/school/exam-schedule",
+    "icon": "nav-icon fas fa-fw fa-calendar-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Enter Marks",
+    "href": "https://demo.multischoolerp.com/school/exam-marks/entry",
+    "icon": "nav-icon fas fa-fw fa-edit ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Cocurricular Areas",
+    "href": "https://demo.multischoolerp.com/school/cocurricular-areas",
+    "icon": "nav-icon fas fa-fw fa-palette ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Cocurricular Grades",
+    "href": "https://demo.multischoolerp.com/school/cocurricular-grades",
+    "icon": "nav-icon fas fa-fw fa-star ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Grades",
+    "href": "https://demo.multischoolerp.com/school/grades",
+    "icon": "nav-icon fas fa-fw fa-award ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Report Card Setups",
+    "href": "https://demo.multischoolerp.com/school/report-card-setups",
+    "icon": "nav-icon fas fa-fw fa-tools ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Generate Marksheet",
+    "href": "https://demo.multischoolerp.com/school/marksheet",
+    "icon": "nav-icon fas fa-fw fa-print ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Upload Marksheet",
+    "href": "https://demo.multischoolerp.com/school/marksheet/upload",
+    "icon": "nav-icon fas fa-fw fa-file-upload ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Uploads",
+    "href": "https://demo.multischoolerp.com/school/marksheet/upload-list",
+    "icon": "nav-icon fas fa-fw fa-tasks ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Teacher Remarks",
+    "href": "https://demo.multischoolerp.com/school/marksheet-remarks",
+    "icon": "nav-icon fas fa-fw fa-comment-dots ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Datesheet",
+    "href": "https://demo.multischoolerp.com/school/datesheets",
+    "icon": "nav-icon fas fa-fw fa-calendar-alt ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "CBC Academics",
+  "href": "",
+  "icon": "fas fa-fw fa-cubes",
+  "header": false,
+  "children": [
+   {
+    "label": "CBC Dashboard",
+    "href": "https://demo.multischoolerp.com/school/cbc/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Strands & Outcomes",
+    "href": "https://demo.multischoolerp.com/school/cbc/strands",
+    "icon": "nav-icon fas fa-fw fa-stream ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "CBC Assessments",
+    "href": "https://demo.multischoolerp.com/school/cbc/assessments",
+    "icon": "nav-icon fas fa-fw fa-tasks ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Core Competencies",
+    "href": "https://demo.multischoolerp.com/school/cbc/competencies",
+    "icon": "nav-icon fas fa-fw fa-star ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Pathways & Tracks",
+    "href": "https://demo.multischoolerp.com/school/cbc/pathways",
+    "icon": "nav-icon fas fa-fw fa-route ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "CBC Reports",
+    "href": "https://demo.multischoolerp.com/school/cbc/cbcreports",
+    "icon": "nav-icon fas fa-fw fa-file-pdf ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Online Examinations",
+  "href": "",
+  "icon": "fas fa-fw fa-laptop",
+  "header": false,
+  "children": [
+   {
+    "label": "Online Exam Dashboard",
+    "href": "https://demo.multischoolerp.com/school/online-exam/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Online Exams",
+    "href": "https://demo.multischoolerp.com/school/online-exam/manage-exams",
+    "icon": "nav-icon fas fa-fw fa-edit ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Question Bank",
+    "href": "https://demo.multischoolerp.com/school/online-exam/question-bank",
+    "icon": "nav-icon fas fa-fw fa-list-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Chapters & Topics",
+    "href": "https://demo.multischoolerp.com/school/online-exam/question-topics",
+    "icon": "nav-icon fas fa-fw fa-sitemap ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Human Resource",
+  "href": "",
+  "icon": "fas fa-fw fa-users-cog",
+  "header": false,
+  "children": [
+   {
+    "label": "HR Dashboard",
+    "href": "https://demo.multischoolerp.com/school/hr-dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Staff Directory",
+    "href": "https://demo.multischoolerp.com/school/staff",
+    "icon": "nav-icon fas fa-fw fa-id-card ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Staff Attendance",
+    "href": "https://demo.multischoolerp.com/school/staff-attendance",
+    "icon": "nav-icon fas fa-fw fa-calendar-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Payroll",
+    "href": "https://demo.multischoolerp.com/school/payroll",
+    "icon": "nav-icon fas fa-fw fa-receipt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Set Salary",
+    "href": "https://demo.multischoolerp.com/school/staff-salary",
+    "icon": "nav-icon fas fa-fw fa-money-check-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Approve Leave",
+    "href": "https://demo.multischoolerp.com/school/approve-leave",
+    "icon": "nav-icon fas fa-fw fa-check-circle ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Leave Types",
+    "href": "https://demo.multischoolerp.com/school/leave-types",
+    "icon": "nav-icon fas fa-fw fa-clipboard-list ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Departments",
+    "href": "https://demo.multischoolerp.com/school/departments",
+    "icon": "nav-icon fas fa-fw fa-building ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Designations",
+    "href": "https://demo.multischoolerp.com/school/designations",
+    "icon": "nav-icon fas fa-fw fa-user-tag ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Staff ID Card",
+    "href": "https://demo.multischoolerp.com/school/staff-id-card",
+    "icon": "nav-icon fas fa-fw fa-id-badge ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "HR Settings",
+    "href": "https://demo.multischoolerp.com/school/hr-settings",
+    "icon": "nav-icon fas fa-fw fa-cog ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Staff Loans",
+    "href": "https://demo.multischoolerp.com/school/loans",
+    "icon": "nav-icon fas fa-fw fa-piggy-bank ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Salary Templates",
+    "href": "https://demo.multischoolerp.com/school/salary-templates",
+    "icon": "nav-icon fas fa-fw fa-palette ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Appraisal Cycles",
+    "href": "https://demo.multischoolerp.com/school/appraisal-cycles",
+    "icon": "nav-icon fas fa-fw fa-calendar-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Appraisal Criteria",
+    "href": "https://demo.multischoolerp.com/school/appraisal-criteria",
+    "icon": "nav-icon fas fa-fw fa-list-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Appraisals",
+    "href": "https://demo.multischoolerp.com/school/appraisals",
+    "icon": "nav-icon fas fa-fw fa-star-half-alt ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "PTM Meetings",
+  "href": "",
+  "icon": "fas fa-fw fa-handshake",
+  "header": false,
+  "children": [
+   {
+    "label": "PTM Dashboard",
+    "href": "https://demo.multischoolerp.com/school/ptm/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "PTM Schedule Meetings",
+    "href": "https://demo.multischoolerp.com/school/ptm/meetings",
+    "icon": "nav-icon fas fa-fw fa-handshake ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "PTM Guide",
+    "href": "https://demo.multischoolerp.com/school/ptm/guide",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "PTM Attendance & Remarks",
+    "href": "https://demo.multischoolerp.com/school/ptm/record",
+    "icon": "nav-icon fas fa-fw fa-clipboard-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "PTM Follow-ups",
+    "href": "https://demo.multischoolerp.com/school/ptm/followups",
+    "icon": "nav-icon fas fa-fw fa-tasks ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "PTM Reports",
+    "href": "https://demo.multischoolerp.com/school/ptm/reports",
+    "icon": "nav-icon fas fa-fw fa-chart-bar ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Lesson Planner",
+  "href": "",
+  "icon": "fas fa-fw fa-clipboard-list",
+  "header": false,
+  "children": [
+   {
+    "label": "Lesson Planner Dashboard",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Plans",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/plans",
+    "icon": "nav-icon fas fa-fw fa-clipboard-list ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Planner Guide",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/guide",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Plan Review",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/review",
+    "icon": "nav-icon fas fa-fw fa-user-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Plan Approvals",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/approvals",
+    "icon": "nav-icon fas fa-fw fa-stamp ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Plan Coverage",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/coverage",
+    "icon": "nav-icon fas fa-fw fa-clipboard-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Plan Reports",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/reports",
+    "icon": "nav-icon fas fa-fw fa-chart-line ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Lesson Planner Settings",
+    "href": "https://demo.multischoolerp.com/school/lesson-plans/settings",
+    "icon": "nav-icon fas fa-fw fa-cog ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "OSM Module",
+  "href": "",
+  "icon": "fas fa-fw fa-pen-nib",
+  "header": false,
+  "children": [
+   {
+    "label": "OSM Dashboard",
+    "href": "https://demo.multischoolerp.com/school/osm/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "OSM Sessions",
+    "href": "https://demo.multischoolerp.com/school/osm/sessions",
+    "icon": "nav-icon fas fa-fw fa-layer-group ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "OSM Evaluate",
+    "href": "https://demo.multischoolerp.com/school/osm/evaluate",
+    "icon": "nav-icon fas fa-fw fa-pen-nib ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "OSM Reports",
+    "href": "https://demo.multischoolerp.com/school/osm/reports",
+    "icon": "nav-icon fas fa-fw fa-chart-bar ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "OSM Guide",
+    "href": "https://demo.multischoolerp.com/school/osm/guide",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "OSM Moderation",
+    "href": "https://demo.multischoolerp.com/school/osm/moderation",
+    "icon": "nav-icon fas fa-fw fa-balance-scale ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "QR Code Attendance",
+  "href": "",
+  "icon": "fas fa-fw fa-qrcode",
+  "header": false,
+  "children": [
+   {
+    "label": "QR Attendance",
+    "href": "https://demo.multischoolerp.com/school/qr-attendance",
+    "icon": "nav-icon fas fa-fw fa-id-card ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "QR Attendance Setting",
+    "href": "https://demo.multischoolerp.com/school/qr-attendance/settings",
+    "icon": "nav-icon fas fa-fw fa-cog ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "QR Attendance Report",
+    "href": "https://demo.multischoolerp.com/school/qr-attendance/report",
+    "icon": "nav-icon fas fa-fw fa-chart-bar ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "QR Scan Audit",
+    "href": "https://demo.multischoolerp.com/school/qr-attendance/audit",
+    "icon": "nav-icon fas fa-fw fa-shield-alt ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Biometric Devices",
+  "href": "",
+  "icon": "fas fa-fw fa-fingerprint",
+  "header": false,
+  "children": [
+   {
+    "label": "All Devices",
+    "href": "https://demo.multischoolerp.com/school/biometric/devices",
+    "icon": "nav-icon fas fa-fw fa-fingerprint ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Attendance Logs",
+    "href": "https://demo.multischoolerp.com/school/biometric/logs",
+    "icon": "nav-icon fas fa-fw fa-clipboard-list ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Face Monitoring",
+    "href": "https://demo.multischoolerp.com/school/biometric/monitoring-logs",
+    "icon": "nav-icon fas fa-fw fa-shield-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Agent Logs",
+    "href": "https://demo.multischoolerp.com/school/biometric/system-logs",
+    "icon": "nav-icon fas fa-fw fa-terminal ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Assessment",
+  "href": "",
+  "icon": "fas fa-fw fa-clipboard-check",
+  "header": false,
+  "children": [
+   {
+    "label": "Assessment Dashboard",
+    "href": "https://demo.multischoolerp.com/school/assessment/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assessments",
+    "href": "https://demo.multischoolerp.com/school/assessment/assessments",
+    "icon": "nav-icon fas fa-fw fa-list-ol ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assessment Guide",
+    "href": "https://demo.multischoolerp.com/school/assessment/guide",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Assessment Reports",
+    "href": "https://demo.multischoolerp.com/school/assessment/reports",
+    "icon": "nav-icon fas fa-fw fa-chart-line ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Surveys & Feedback",
+  "href": "",
+  "icon": "fas fa-fw fa-poll",
+  "header": false,
+  "children": [
+   {
+    "label": "Survey Dashboard",
+    "href": "https://demo.multischoolerp.com/school/survey/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "All Surveys",
+    "href": "https://demo.multischoolerp.com/school/survey",
+    "icon": "nav-icon fas fa-fw fa-list-ul ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "My Surveys",
+    "href": "https://demo.multischoolerp.com/school/survey/mine",
+    "icon": "nav-icon fas fa-fw fa-inbox ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Feedback Triage",
+    "href": "https://demo.multischoolerp.com/school/feedback",
+    "icon": "nav-icon fas fa-fw fa-clipboard-list ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Survey Guide",
+    "href": "https://demo.multischoolerp.com/school/survey/guide",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Compliance & Governance",
+  "href": "",
+  "icon": "fas fa-fw fa-shield-alt",
+  "header": false,
+  "children": [
+   {
+    "label": "Compliance Overview",
+    "href": "https://demo.multischoolerp.com/school/compliance",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "School Profile",
+    "href": "https://demo.multischoolerp.com/school/compliance/profile",
+    "icon": "nav-icon fas fa-fw fa-school ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Compliance Packs",
+    "href": "https://demo.multischoolerp.com/school/compliance/packs",
+    "icon": "nav-icon fas fa-fw fa-box-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Field Settings",
+    "href": "https://demo.multischoolerp.com/school/compliance/fields",
+    "icon": "nav-icon fas fa-fw fa-sliders-h ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Document Vault",
+    "href": "https://demo.multischoolerp.com/school/compliance/documents",
+    "icon": "nav-icon fas fa-fw fa-folder-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Compliance Checklist",
+    "href": "https://demo.multischoolerp.com/school/compliance/checklist",
+    "icon": "nav-icon fas fa-fw fa-clipboard-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Data Records",
+    "href": "https://demo.multischoolerp.com/school/compliance/records",
+    "icon": "nav-icon fas fa-fw fa-user-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Data Validator",
+    "href": "https://demo.multischoolerp.com/school/compliance/validator",
+    "icon": "nav-icon fas fa-fw fa-check-double ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Government Reports",
+    "href": "https://demo.multischoolerp.com/school/compliance/reports",
+    "icon": "nav-icon fas fa-fw fa-file-export ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Inspections",
+    "href": "https://demo.multischoolerp.com/school/compliance/inspections",
+    "icon": "nav-icon fas fa-fw fa-clipboard-list ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Compliance Calendar",
+    "href": "https://demo.multischoolerp.com/school/compliance/calendar",
+    "icon": "nav-icon fas fa-fw fa-calendar-alt ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Holistic Progress Card",
+  "href": "",
+  "icon": "fas fa-fw fa-child",
+  "header": false,
+  "children": [
+   {
+    "label": "HPC Dashboard",
+    "href": "https://demo.multischoolerp.com/school/hpc/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "HPC Activities",
+    "href": "https://demo.multischoolerp.com/school/hpc/activities",
+    "icon": "nav-icon fas fa-fw fa-tasks ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Progress Cards",
+    "href": "https://demo.multischoolerp.com/school/hpc/cards",
+    "icon": "nav-icon fas fa-fw fa-id-card ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "HPC Frameworks",
+    "href": "https://demo.multischoolerp.com/school/hpc/frameworks",
+    "icon": "nav-icon fas fa-fw fa-sitemap ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Card Appearance",
+    "href": "https://demo.multischoolerp.com/school/hpc/card-appearance",
+    "icon": "nav-icon fas fa-fw fa-palette ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Live Classes",
+  "href": "",
+  "icon": "fas fa-fw fa-video",
+  "header": false,
+  "children": [
+   {
+    "label": "Manage Live Classes",
+    "href": "https://demo.multischoolerp.com/school/study-center/live-classes",
+    "icon": "nav-icon fas fa-fw fa-chalkboard-teacher ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Live Class Settings",
+    "href": "https://demo.multischoolerp.com/school/study-center/live-classes/settings",
+    "icon": "nav-icon fas fa-fw fa-cog ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Apps Center",
+  "href": "https://demo.multischoolerp.com/school/apps",
+  "icon": "nav-icon fas fa-fw fa-th ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Study Center",
+  "href": "",
+  "icon": "fas fa-fw fa-book-reader",
+  "header": false,
+  "children": [
+   {
+    "label": "Dashboard",
+    "href": "https://demo.multischoolerp.com/school/study-center",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Syllabus",
+    "href": "https://demo.multischoolerp.com/school/study-center/syllabus",
+    "icon": "nav-icon fas fa-fw fa-sitemap ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Classwork & Logbook",
+    "href": "https://demo.multischoolerp.com/school/study-center/classwork",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Resources",
+    "href": "https://demo.multischoolerp.com/school/study-center/materials",
+    "icon": "nav-icon fas fa-fw fa-folder ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Homework & Assignments",
+    "href": "https://demo.multischoolerp.com/school/study-center/homework",
+    "icon": "nav-icon fas fa-fw fa-edit ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Certificates",
+  "href": "",
+  "icon": "fas fa-fw fa-certificate",
+  "header": false,
+  "children": [
+   {
+    "label": "Certificate Templates",
+    "href": "https://demo.multischoolerp.com/school/certificate-templates",
+    "icon": "nav-icon fas fa-fw fa-file-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Certificates & Documents",
+    "href": "https://demo.multischoolerp.com/school/generate-document",
+    "icon": "nav-icon fas fa-fw fa-print ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "ID Cards",
+  "href": "",
+  "icon": "fas fa-fw fa-id-card",
+  "header": false,
+  "children": [
+   {
+    "label": "Student ID Cards",
+    "href": "https://demo.multischoolerp.com/school/id-cards/students",
+    "icon": "nav-icon fas fa-fw fa-user-graduate ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Staff ID Cards",
+    "href": "https://demo.multischoolerp.com/school/id-cards/staff",
+    "icon": "nav-icon fas fa-fw fa-id-badge ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Card Designs",
+    "href": "https://demo.multischoolerp.com/school/id-cards/designs",
+    "icon": "nav-icon fas fa-fw fa-palette ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Communicate",
+  "href": "",
+  "icon": "fas fa-fw fa-bullhorn",
+  "header": false,
+  "children": [
+   {
+    "label": "Notice Board",
+    "href": "https://demo.multischoolerp.com/school/notices",
+    "icon": "nav-icon fas fa-fw fa-clipboard-list ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Events & Holidays",
+    "href": "https://demo.multischoolerp.com/school/events",
+    "icon": "nav-icon fas fa-fw fa-calendar-star ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Compose Broadcast",
+    "href": "https://demo.multischoolerp.com/school/communicate/broadcast/create",
+    "icon": "nav-icon fas fa-fw fa-pen-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Broadcast History",
+    "href": "https://demo.multischoolerp.com/school/communicate/broadcast",
+    "icon": "nav-icon fas fa-fw fa-history ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Image Gallery",
+    "href": "https://demo.multischoolerp.com/school/gallery",
+    "icon": "nav-icon fas fa-fw fa-images ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Library",
+  "href": "",
+  "icon": "fas fa-fw fa-book-open",
+  "header": false,
+  "children": [
+   {
+    "label": "Library Dashboard",
+    "href": "https://demo.multischoolerp.com/school/library/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Issue/Return Book",
+    "href": "https://demo.multischoolerp.com/school/library/issue-return",
+    "icon": "nav-icon fas fa-fw fa-exchange-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Books",
+    "href": "https://demo.multischoolerp.com/school/library/books",
+    "icon": "nav-icon fas fa-fw fa-book ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Book Categories",
+    "href": "https://demo.multischoolerp.com/school/library/categories",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Inventory",
+  "href": "",
+  "icon": "fas fa-fw fa-warehouse",
+  "header": false,
+  "children": [
+   {
+    "label": "Inventory Dashboard",
+    "href": "https://demo.multischoolerp.com/school/inventory/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Issue Item",
+    "href": "https://demo.multischoolerp.com/school/inventory/issue-item",
+    "icon": "nav-icon fas fa-fw fa-share-square ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Add Stock",
+    "href": "https://demo.multischoolerp.com/school/inventory/add-stock",
+    "icon": "nav-icon fas fa-fw fa-plus-square ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Item List",
+    "href": "https://demo.multischoolerp.com/school/inventory/items",
+    "icon": "nav-icon fas fa-fw fa-boxes ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Item Categories",
+    "href": "https://demo.multischoolerp.com/school/inventory/categories",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Suppliers",
+    "href": "https://demo.multischoolerp.com/school/inventory/suppliers",
+    "icon": "nav-icon fas fa-fw fa-truck ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Point of Sale",
+    "href": "https://demo.multischoolerp.com/school/inventory/sales/create",
+    "icon": "nav-icon fas fa-fw fa-cash-register ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Sales History",
+    "href": "https://demo.multischoolerp.com/school/inventory/sales",
+    "icon": "nav-icon fas fa-fw fa-receipt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Purchase Orders",
+    "href": "https://demo.multischoolerp.com/school/inventory/purchase-orders",
+    "icon": "nav-icon fas fa-fw fa-file-invoice ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Goods Receipts",
+    "href": "https://demo.multischoolerp.com/school/inventory/grns",
+    "icon": "nav-icon fas fa-fw fa-dolly ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Supplier Payments",
+    "href": "https://demo.multischoolerp.com/school/inventory/supplier-payments",
+    "icon": "nav-icon fas fa-fw fa-money-check-alt ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Transport",
+  "href": "",
+  "icon": "fas fa-fw fa-bus",
+  "header": false,
+  "children": [
+   {
+    "label": "Transport Dashboard",
+    "href": "https://demo.multischoolerp.com/school/transport/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Vehicles",
+    "href": "https://demo.multischoolerp.com/school/transport/vehicles",
+    "icon": "nav-icon fas fa-fw fa-truck ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Live Operations",
+    "href": "https://demo.multischoolerp.com/school/transport/live",
+    "icon": "nav-icon fas fa-fw fa-satellite-dish ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Routes",
+    "href": "https://demo.multischoolerp.com/school/transport/routes",
+    "icon": "nav-icon fas fa-fw fa-road ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Live Vehicle Tracking",
+    "href": "https://demo.multischoolerp.com/school/transport/tracking",
+    "icon": "nav-icon fas fa-fw fa-map-marked-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Drivers",
+    "href": "https://demo.multischoolerp.com/school/transport/drivers",
+    "icon": "nav-icon fas fa-fw fa-id-card ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Hostel",
+  "href": "",
+  "icon": "fas fa-fw fa-hotel",
+  "header": false,
+  "children": [
+   {
+    "label": "Hostel Dashboard",
+    "href": "https://demo.multischoolerp.com/school/hostel/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Student Allocation",
+    "href": "https://demo.multischoolerp.com/school/hostel/allocations",
+    "icon": "nav-icon fas fa-fw fa-users ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Rooms",
+    "href": "https://demo.multischoolerp.com/school/hostel/rooms",
+    "icon": "nav-icon fas fa-fw fa-door-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Room Types",
+    "href": "https://demo.multischoolerp.com/school/hostel/room-types",
+    "icon": "nav-icon fas fa-fw fa-bed ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Manage Hostels",
+    "href": "https://demo.multischoolerp.com/school/hostel/hostels",
+    "icon": "nav-icon fas fa-fw fa-building ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Help Center",
+  "href": "",
+  "icon": "fas fa-fw fa-circle",
+  "header": false,
+  "children": [
+   {
+    "label": "Manage Categories",
+    "href": "https://demo.multischoolerp.com/school/knowledge-base/categories",
+    "icon": "nav-icon fas fa-fw fa-layer-group ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Browse Articles",
+    "href": "https://demo.multischoolerp.com/school/knowledge-base/articles",
+    "icon": "nav-icon fas fa-fw fa-file-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "AI Chatbot",
+    "href": "https://demo.multischoolerp.com/school/knowledge-base/chatbot",
+    "icon": "nav-icon fas fa-fw fa-robot ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Asset Management",
+  "href": "",
+  "icon": "fas fa-fw fa-cubes",
+  "header": false,
+  "children": [
+   {
+    "label": "Asset Dashboard",
+    "href": "https://demo.multischoolerp.com/school/assets/dashboard",
+    "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Register",
+    "href": "https://demo.multischoolerp.com/school/assets/assets",
+    "icon": "nav-icon fas fa-fw fa-cubes ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Categories",
+    "href": "https://demo.multischoolerp.com/school/assets/categories",
+    "icon": "nav-icon fas fa-fw fa-tags ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Assignments",
+    "href": "https://demo.multischoolerp.com/school/assets/assignments",
+    "icon": "nav-icon fas fa-fw fa-people-carry ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Depreciation",
+    "href": "https://demo.multischoolerp.com/school/assets/depreciation",
+    "icon": "nav-icon fas fa-fw fa-chart-line ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Maintenance",
+    "href": "https://demo.multischoolerp.com/school/assets/maintenance",
+    "icon": "nav-icon fas fa-fw fa-tools ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Disposals",
+    "href": "https://demo.multischoolerp.com/school/assets/disposals",
+    "icon": "nav-icon fas fa-fw fa-recycle ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Audits",
+    "href": "https://demo.multischoolerp.com/school/assets/audits",
+    "icon": "nav-icon fas fa-fw fa-clipboard-check ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Asset Reports",
+    "href": "https://demo.multischoolerp.com/school/assets/reports",
+    "icon": "nav-icon fas fa-fw fa-chart-bar ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Engagement",
+  "href": "",
+  "icon": "fas fa-fw fa-bullhorn",
+  "header": false,
+  "children": [
+   {
+    "label": "Creatives",
+    "href": "https://demo.multischoolerp.com/school/engagement/designs",
+    "icon": "nav-icon fas fa-fw fa-palette ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Birthday Manager",
+    "href": "https://demo.multischoolerp.com/school/engagement/birthdays",
+    "icon": "nav-icon fas fa-fw fa-birthday-cake ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Festival Greetings",
+    "href": "https://demo.multischoolerp.com/school/engagement/festivals",
+    "icon": "nav-icon fas fa-fw fa-gift ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Auto-send Settings",
+    "href": "https://demo.multischoolerp.com/school/engagement/settings",
+    "icon": "nav-icon fas fa-fw fa-sliders-h ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "CCTV",
+  "href": "",
+  "icon": "fas fa-fw fa-video",
+  "header": false,
+  "children": [
+   {
+    "label": "Camera Wall",
+    "href": "https://demo.multischoolerp.com/school/cctv/wall",
+    "icon": "nav-icon fas fa-fw fa-th-large ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "CCTV Cameras",
+    "href": "https://demo.multischoolerp.com/school/cctv/cameras",
+    "icon": "nav-icon fas fa-fw fa-video ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "CCTV Access Log",
+    "href": "https://demo.multischoolerp.com/school/cctv/logs",
+    "icon": "nav-icon fas fa-fw fa-user-clock ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Reports & Analytics",
+  "href": "https://demo.multischoolerp.com/school/reports",
+  "icon": "nav-icon fas fa-fw fa-chart-pie ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Settings & Billing",
+  "href": "",
+  "icon": "fas fa-fw fa-cogs",
+  "header": false,
+  "children": [
+   {
+    "label": "School Settings",
+    "href": "https://demo.multischoolerp.com/school/settings",
+    "icon": "nav-icon fas fa-fw fa-cogs ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Custom Fields",
+    "href": "https://demo.multischoolerp.com/school/custom-fields",
+    "icon": "nav-icon fas fa-fw fa-plus-square ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Roles & Permissions",
+    "href": "https://demo.multischoolerp.com/school/roles",
+    "icon": "nav-icon fas fa-fw fa-user-shield ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Payment Gateway",
+    "href": "https://demo.multischoolerp.com/school/gateway-settings",
+    "icon": "nav-icon fas fa-fw fa-credit-card ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Notification Settings",
+    "href": "https://demo.multischoolerp.com/school/notification-settings",
+    "icon": "nav-icon fas fa-fw fa-bell ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Admission Settings",
+    "href": "https://demo.multischoolerp.com/school/admission-settings",
+    "icon": "nav-icon fas fa-fw fa-bell ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Admission Form Fields",
+    "href": "https://demo.multischoolerp.com/school/admission-fields",
+    "icon": "nav-icon fas fa-fw fa-eye-slash ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Audit Trail",
+    "href": "https://demo.multischoolerp.com/school/audit-trail",
+    "icon": "nav-icon fas fa-fw fa-history ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Subscription",
+    "href": "https://demo.multischoolerp.com/school/subscription",
+    "icon": "nav-icon fas fa-fw fa-rocket ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Subscription History",
+    "href": "https://demo.multischoolerp.com/school/payment-history",
+    "icon": "nav-icon fas fa-fw fa-rocket ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Module Settings",
+    "href": "https://demo.multischoolerp.com/school/module-settings",
+    "icon": "nav-icon fas fa-fw fa-cubes ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Content Safety",
+    "href": "https://demo.multischoolerp.com/school/nsfw",
+    "icon": "nav-icon fas fa-fw fa-shield-alt ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Backup Management",
+  "href": "https://demo.multischoolerp.com/school/backups",
+  "icon": "nav-icon fas fa-fw fa-hdd ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Comms Wallet",
+  "href": "https://demo.multischoolerp.com/school/comms",
+  "icon": "nav-icon fas fa-fw fa-wallet ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Chat Moderation",
+  "href": "https://demo.multischoolerp.com/school/chat",
+  "icon": "nav-icon fas fa-fw fa-comment-dots ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Messages",
+  "href": "https://demo.multischoolerp.com/school/messages",
+  "icon": "nav-icon fas fa-fw fa-comments ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Logout",
+  "href": "#",
+  "icon": "nav-icon fas fa-fw fa-sign-out-alt text-danger ",
+  "header": false,
+  "children": []
+ }
+]

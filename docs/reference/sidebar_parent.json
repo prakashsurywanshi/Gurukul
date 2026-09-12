@@ -1,0 +1,242 @@
+[
+ {
+  "label": "Dashboard",
+  "href": "https://demo.multischoolerp.com/parent/dashboard",
+  "icon": "nav-icon fas fa-fw fa-tachometer-alt ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Viewing: Kabir",
+  "href": "",
+  "icon": "nav-icon far fa-fw fa-circle ",
+  "header": false,
+  "children": [
+   {
+    "label": "Kabir Singh",
+    "href": "https://demo.multischoolerp.com/parent/switch-child/4",
+    "icon": "nav-icon fas fa-fw fa-check-circle text-success ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Shlok Verma",
+    "href": "https://demo.multischoolerp.com/parent/switch-child/51",
+    "icon": "nav-icon far fa-fw fa-circle ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Rajesh Singh",
+    "href": "https://demo.multischoolerp.com/parent/switch-child/280",
+    "icon": "nav-icon far fa-fw fa-circle ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "John Paul",
+    "href": "https://demo.multischoolerp.com/parent/switch-child/17066",
+    "icon": "nav-icon far fa-fw fa-circle ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "My Profile",
+  "href": "https://demo.multischoolerp.com/parent/profile",
+  "icon": "nav-icon fas fa-fw fa-user-cog ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Calendar",
+  "href": "https://demo.multischoolerp.com/parent/calendar",
+  "icon": "nav-icon fas fa-fw fa-calendar-alt ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Timetable",
+  "href": "https://demo.multischoolerp.com/parent/timetable",
+  "icon": "nav-icon fas fa-fw fa-table ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Attendance",
+  "href": "https://demo.multischoolerp.com/parent/attendance",
+  "icon": "nav-icon fas fa-fw fa-calendar-check ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Exams & Reports",
+  "href": "https://demo.multischoolerp.com/parent/exams",
+  "icon": "nav-icon fas fa-fw fa-graduation-cap ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Meetings",
+  "href": "https://demo.multischoolerp.com/parent/ptm",
+  "icon": "nav-icon fas fa-fw fa-handshake ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Evaluated Papers",
+  "href": "https://demo.multischoolerp.com/parent/osm",
+  "icon": "nav-icon fas fa-fw fa-pen-nib ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Online Exams",
+  "href": "https://demo.multischoolerp.com/parent/online-exam",
+  "icon": "nav-icon fas fa-fw fa-laptop ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Homework",
+  "href": "https://demo.multischoolerp.com/parent/homework",
+  "icon": "nav-icon fas fa-fw fa-edit ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Study Center",
+  "href": "",
+  "icon": "nav-icon fas fa-fw fa-video ",
+  "header": false,
+  "children": [
+   {
+    "label": "Classwork & Logbook",
+    "href": "https://demo.multischoolerp.com/parent/classwork",
+    "icon": "nav-icon fas fa-fw fa-book-open ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Syllabus & Materials",
+    "href": "https://demo.multischoolerp.com/parent/study-center",
+    "icon": "nav-icon fas fa-fw fa-sitemap ",
+    "header": false,
+    "children": []
+   },
+   {
+    "label": "Live Classes",
+    "href": "https://demo.multischoolerp.com/parent/live-classes",
+    "icon": "nav-icon fas fa-fw fa-video ",
+    "header": false,
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Fee Payments",
+  "href": "https://demo.multischoolerp.com/parent/fees",
+  "icon": "nav-icon fas fa-fw fa-money-bill-wave ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Transactions",
+  "href": "https://demo.multischoolerp.com/parent/fees/history",
+  "icon": "nav-icon fas fa-fw fa-history ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Notice Board",
+  "href": "https://demo.multischoolerp.com/parent/notices",
+  "icon": "nav-icon fas fa-fw fa-bullhorn ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "SMS",
+  "href": "https://demo.multischoolerp.com/parent/communication/sms",
+  "icon": "nav-icon fas fa-fw fa-sms ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "WhatsApp",
+  "href": "https://demo.multischoolerp.com/parent/communication/whatsapp",
+  "icon": "nav-icon fab fa-fw fa-whatsapp ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Email",
+  "href": "https://demo.multischoolerp.com/parent/communication/email",
+  "icon": "nav-icon fas fa-fw fa-envelope ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Transport",
+  "href": "https://demo.multischoolerp.com/parent/transport",
+  "icon": "nav-icon fas fa-fw fa-bus-alt ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Library",
+  "href": "https://demo.multischoolerp.com/parent/library",
+  "icon": "nav-icon fas fa-fw fa-book-open ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Hostel",
+  "href": "https://demo.multischoolerp.com/parent/hostel",
+  "icon": "nav-icon fas fa-fw fa-hotel ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Health Records",
+  "href": "https://demo.multischoolerp.com/parent/health",
+  "icon": "nav-icon fas fa-fw fa-heartbeat ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Documents",
+  "href": "https://demo.multischoolerp.com/parent/documents",
+  "icon": "nav-icon fas fa-fw fa-folder ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Gallery",
+  "href": "https://demo.multischoolerp.com/parent/gallery",
+  "icon": "nav-icon fas fa-fw fa-images ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "School Visit",
+  "href": "https://demo.multischoolerp.com/parent/visits",
+  "icon": "nav-icon fas fa-fw fa-calendar-check ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "AI Assistant",
+  "href": "https://demo.multischoolerp.com/parent/chatbot",
+  "icon": "nav-icon fas fa-fw fa-robot ",
+  "header": false,
+  "children": []
+ },
+ {
+  "label": "Logout",
+  "href": "#",
+  "icon": "nav-icon fas fa-fw fa-sign-out-alt text-danger ",
+  "header": false,
+  "children": []
+ }
+]

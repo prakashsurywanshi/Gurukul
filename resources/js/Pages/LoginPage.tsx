@@ -40,7 +40,7 @@ const portalOptions: Array<{
         description: 'Access attendance, exams, fees, messages, and school updates.',
         icon: Users,
         helper: 'Use a student or parent account email and password.',
-        demoEmail: 'tejasphirke.steja@gmail.com',
+        demoEmail: 'tejasphirake30@gmail.com',
         demoPassword: '12345678',
     },
     {
