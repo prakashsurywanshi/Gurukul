@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\DailyTrip;
 use App\Models\FeePayment;
+use App\Models\TransportGpsPosition;
 use App\Models\FeeStructure;
 use App\Models\Message;
 use App\Models\MessageRecipient;
@@ -885,6 +886,190 @@ class TransportManagementController extends Controller
         ]);
 
         return redirect()->route('transport-management')->with('success', 'Journey ended successfully.');
+    }
+
+    public function liveTracking()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        $academicYearId = $organization ? $this->getActiveAcademicYearId($organization) : null;
+
+        abort_unless($organization, 403);
+
+        $today = now()->toDateString();
+
+        $trips = DailyTrip::query()
+            ->with(['route:id,route_name,area', 'vehicle:id,vehicle_number', 'driver:id,name'])
+            ->when($academicYearId, fn ($query) => $query->where('academic_year_id', $academicYearId), fn ($query) => $query->whereRaw('1 = 0'))
+            ->where(fn ($query) => $query
+                ->where('trip_status', 'running')
+                ->orWhere(function ($query) use ($today) {
+                    $query->where('trip_status', 'completed')->whereDate('journey_date', $today);
+                }))
+            ->orderByDesc('started_at')
+            ->get();
+
+        $tripIds = $trips->pluck('id');
+        $latestPositions = TransportGpsPosition::query()
+            ->whereIn('daily_trip_id', $tripIds)
+            ->orderBy('recorded_at')
+            ->get()
+            ->groupBy('daily_trip_id')
+            ->map(fn ($positions) => $positions->last());
+
+        $totalSpeed = 0;
+        $speedCount = 0;
+        $totalPositions = 0;
+
+        $tripRows = $trips->map(function (DailyTrip $trip) use (&$totalSpeed, &$speedCount, &$totalPositions) {
+            $stops = $trip->pickup_points ? explode(',', $trip->pickup_points) : [];
+            $reached = $trip->stop_updates ?? [];
+
+            return [
+                'id' => (string) $trip->id,
+                'vehicleId' => $trip->vehicle_id ? (string) $trip->vehicle_id : '',
+                'vehicleNumber' => $trip->vehicle?->vehicle_number ?? '',
+                'routeId' => $trip->route_id ? (string) $trip->route_id : '',
+                'routeName' => $trip->route?->route_name ?? '',
+                'area' => $trip->route?->area ?? '',
+                'driverName' => $trip->driver?->name ?? '',
+                'shift' => $trip->shift ?? '',
+                'direction' => $trip->direction ?? 'pickup',
+                'journeyDate' => $trip->journey_date?->format('Y-m-d') ?? '',
+                'pickupPoints' => $stops,
+                'currentStop' => $trip->current_stop ?? '',
+                'currentLocation' => $trip->current_location ?? '',
+                'tripStatus' => $trip->trip_status,
+                'startedAt' => $trip->started_at?->format('Y-m-d H:i:s') ?? '',
+                'endedAt' => $trip->ended_at?->format('Y-m-d H:i:s') ?? '',
+                'reached' => count($reached),
+                'totalStops' => count($stops) + 1,
+                'positionCount' => 0,
+                'latestGps' => null,
+            ];
+        })
+            ->map(function (array $row) use ($latestPositions, &$totalSpeed, &$speedCount, &$totalPositions) {
+                if (! isset($latestPositions[$row['id']])) {
+                    return $row;
+                }
+
+                $position = $latestPositions[$row['id']];
+                $count = TransportGpsPosition::query()->where('daily_trip_id', $row['id'])->count();
+                $totalPositions += $count;
+
+                if ($position->speed_kmh > 0) {
+                    $totalSpeed += (float) $position->speed_kmh;
+                    $speedCount++;
+                }
+
+                $row['positionCount'] = $count;
+                $row['latestGps'] = [
+                    'lat' => (float) $position->lat,
+                    'lng' => (float) $position->lng,
+                    'speedKmh' => (float) $position->speed_kmh,
+                    'heading' => $position->heading ?? '',
+                    'recordedAt' => $position->recorded_at?->format('Y-m-d H:i:s') ?? '',
+                ];
+
+                return $row;
+            })
+            ->values();
+
+        $running = $tripRows->where('tripStatus', 'running');
+        $completedToday = $tripRows->where('tripStatus', 'completed');
+        $avgSpeed = $speedCount > 0 ? round($totalSpeed / $speedCount, 1) : 0;
+
+        return inertia('dashboard/TransportLiveTracking', [
+            'user' => $user,
+            'trips' => $tripRows,
+            'summary' => [
+                'running' => $running->count(),
+                'completedToday' => $completedToday->count(),
+                'avgSpeed' => $avgSpeed,
+                'positionsToday' => $totalPositions,
+            ],
+        ]);
+    }
+
+    public function simulateGpsStop(DailyTrip $dailyTrip): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+
+        $trip = DailyTrip::query()
+            ->where('academic_year_id', $academicYearId)
+            ->whereHas('route', fn ($query) => $query->where('organization_id', $organization->id))
+            ->findOrFail($dailyTrip->id);
+
+        $this->authorizeDailyTripDriver($trip);
+        abort_unless(in_array($trip->trip_status, ['running', 'scheduled'], true), 422);
+
+        $stops = $trip->pickup_points ? explode(',', $trip->pickup_points) : [];
+        $reached = $trip->stop_updates ?? [];
+        $nextIndex = count($reached);
+
+        [$lat, $lng, $speed] = $this->simulateCoordinateForStop($organization->id, $stops, $nextIndex);
+
+        $position = TransportGpsPosition::query()->create([
+            'organization_id' => $organization->id,
+            'daily_trip_id' => $trip->id,
+            'vehicle_id' => $trip->vehicle_id,
+            'lat' => $lat,
+            'lng' => $lng,
+            'speed_kmh' => $speed,
+            'heading' => $nextIndex % 2 === 0 ? 'NE' : 'SW',
+            'recorded_at' => now(),
+            'created_by' => Auth::id(),
+        ]);
+
+        $update = ['current_location' => "Simulated GPS {$position->lat}, {$position->lng}", 'trip_status' => 'running'];
+
+        if (isset($stops[$nextIndex])) {
+            $reached[] = [
+                'stop' => $stops[$nextIndex],
+                'note' => 'Simulated GPS arrival',
+                'reached_at' => now()->format('Y-m-d H:i:s'),
+                'updated_by' => Auth::user()?->name,
+            ];
+            $update['current_stop'] = $stops[$nextIndex];
+            $update['stop_updates'] = $reached;
+        }
+
+        $trip->update($update);
+
+        return redirect()->route('transport-management.live')->with('success', 'Simulated GPS position recorded.');
+    }
+
+    public function resetTripGps(DailyTrip $dailyTrip): RedirectResponse
+    {
+        $organization = $this->requireOrganization();
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+
+        $trip = DailyTrip::query()
+            ->where('academic_year_id', $academicYearId)
+            ->whereHas('route', fn ($query) => $query->where('organization_id', $organization->id))
+            ->findOrFail($dailyTrip->id);
+
+        TransportGpsPosition::query()
+            ->where('daily_trip_id', $trip->id)
+            ->where('organization_id', $organization->id)
+            ->delete();
+
+        return redirect()->route('transport-management.live')->with('success', 'Simulated GPS history cleared.');
+    }
+
+    private function simulateCoordinateForStop(int $organizationId, array $stops, int $index): array
+    {
+        $baseLat = 18.5204 + (($organizationId % 9) * 0.02);
+        $baseLng = 73.8567 + (($organizationId % 7) * 0.015);
+        $stopName = $stops[$index] ?? 'destination-'.$index;
+        $seed = crc32((string) $organizationId.'|'.$stopName);
+
+        $lat = $baseLat + (($seed % 1600) / 100000);
+        $lng = $baseLng + ((intdiv($seed, 1600) % 1600) / 100000);
+        $speed = 18 + ($seed % 45);
+
+        return [$lat, $lng, $speed];
     }
 
     public function deleteTrip($id)

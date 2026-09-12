@@ -75,6 +75,7 @@ import {
     LibraryBig,
     LifeBuoy,
     ListChecks,
+    LocateFixed,
     Megaphone,
     MessageCircle,
     MessageSquare,
@@ -2321,7 +2322,7 @@ export const sidebarConfig: {
         label: 'Transport',
         icon: BusFront,
         navMode: 'href-or-id',
-        tabs: ['transport-dashboard', 'transport-management', 'transport-fee-collection'],
+        tabs: ['transport-dashboard', 'transport-management', 'transport-fee-collection', 'transport-live'],
         items: [
             {
                 id: 'transport-dashboard',
@@ -2336,6 +2337,14 @@ export const sidebarConfig: {
                 label: 'Transport Management',
                 icon: BusFront,
                 href: '/transport-management',
+                roles: ['admin', 'receptionist', 'driver'],
+                feature: 'Transport Management',
+            },
+            {
+                id: 'transport-live',
+                label: 'Live Vehicle Tracking',
+                icon: LocateFixed,
+                href: '/transport-management/live',
                 roles: ['admin', 'receptionist', 'driver'],
                 feature: 'Transport Management',
             },

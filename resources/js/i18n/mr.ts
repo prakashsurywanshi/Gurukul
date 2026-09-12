@@ -4611,5 +4611,35 @@ const mr = {
     'View your salary advances, EMIs paid and outstanding balances.':
         'तुमची पगार अग्रिम, भरलेली ईएमआय आणि थकीत रक्कम पहा.',
     'Generate Marksheet': 'मार्कशीट तयार करा',
+    'Avg Speed (km/h)': 'सरासरी वेग (किमी/तास)',
+    Completed: 'पूर्ण',
+    'Completed Today': 'आज पूर्ण',
+    'Demo mode': 'डेमो मोड',
+    Destination: 'गंतव्य',
+    Driver: 'चालक',
+    Drop: 'सोडते',
+    'GPS feeds are simulated on this dashboard. Use Simulate to advance a trip to its next stop with a live position.':
+        'GPS फीड या डॅशबोर्डवर सिम्युलेट केले जातात. ट्रिप त्याच्या पुढील स्टॉपपर्यंत पुढे नेण्यासाठी सिम्युलेट वापरा.',
+    Heading: 'दिशा',
+    'Latest GPS Position': 'नवीनतम GPS स्थिती',
+    'Live Vehicle Tracking': 'लाइव्ह वाहन ट्रॅकिंग',
+    'Monitor live vehicle GPS positions and simulated trip progress for running journeys.':
+        'सुरू असलेल्या प्रवासांसाठी लाइव्ह वाहन GPS स्थिती आणि सिम्युलेटेड ट्रिप प्रगतीचे निरीक्षण करा.',
+    'No active or completed trips today.': 'आज कोणतीही सक्रिय किंवा पूर्ण सहल नाही.',
+    'No GPS position yet. Simulate a stop to record one.':
+        'अद्याप कोणतीही GPS स्थिती नाही. एक नोंदवण्यासाठी स्टॉप सिम्युलेट करा.',
+    Pickup: 'पिकअप',
+    'Positions Recorded': 'नोंदवलेल्या स्थिती',
+    'Reset GPS': 'GPS रीसेट करा',
+    'Reset the simulated GPS history for this trip?': 'या सहलीसाठी सिम्युलेटेड GPS इतिहास रीसेट करायचा?',
+    Running: 'सुरू',
+    'Running Trips': 'सुरू सहली',
+    'Simulate Next Stop': 'पुढील स्टॉप सिम्युलेट करा',
+    'Simulated GPS history cleared.': 'सिम्युलेटेड GPS इतिहास साफ केला.',
+    'Simulated GPS position recorded.': 'सिम्युलेटेड GPS स्थिती नोंदवली.',
+    Started: 'सुरू झाले',
+    'Stop Progress': 'स्टॉप प्रगती',
+    'Stops Reached': 'पोहोचलेले स्टॉप',
+    'Unable to simulate the GPS position. Please try again.': 'GPS स्थिती सिम्युलेट करण्यात अक्षम. पुन्हा प्रयत्न करा.',
 };
 export default mr;

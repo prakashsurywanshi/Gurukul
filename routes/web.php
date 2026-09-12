@@ -532,6 +532,9 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/transport-management/journeys/start', [TransportManagementController::class, 'startJourney'])->middleware('staff.permission:Transport Management,add')->name('transport-management.journeys.start');
     Route::patch('/transport-management/journeys/{dailyTrip}/stop', [TransportManagementController::class, 'updateReachedStop'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.journeys.stop');
     Route::patch('/transport-management/journeys/{dailyTrip}/end', [TransportManagementController::class, 'endJourney'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.journeys.end');
+    Route::get('/transport-management/live', [TransportManagementController::class, 'liveTracking'])->middleware('staff.permission:Transport Management,view')->name('transport-management.live');
+    Route::post('/transport-management/trips/{dailyTrip}/simulate-gps', [TransportManagementController::class, 'simulateGpsStop'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.simulate-gps');
+    Route::delete('/transport-management/trips/{dailyTrip}/gps', [TransportManagementController::class, 'resetTripGps'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.gps.destroy');
     Route::get('/attendance', [AttendanceController::class, 'index'])->middleware('staff.permission:Attendance Management,view')->name('attendance');
     Route::post('/attendance', [AttendanceController::class, 'store'])->middleware('staff.permission:Attendance Management,add')->name('attendance.store');
     Route::get('/exams', [ExamController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams');
