@@ -77,7 +77,7 @@ export default function EnterMarks({
         const grid: MarkCell[][] = students.map((student) =>
             subjects.map((_, subjectIndex) => {
                 const mark = student.marks[subjectIndex];
-                return { marks: mark?.marks != null ? String(mark.marks) : '', absent: mark?.absent ?? false };
+                return { marks: mark?.marks != null ? String(mark.marks) : '', absent: mark?.isAbsent ?? false };
             }),
         );
         return grid;
@@ -90,7 +90,7 @@ export default function EnterMarks({
             students.map((student) =>
                 subjects.map((_, subjectIndex) => {
                     const mark = student.marks[subjectIndex];
-                    return { marks: mark?.marks != null ? String(mark.marks) : '', absent: mark?.absent ?? false };
+                    return { marks: mark?.marks != null ? String(mark.marks) : '', absent: mark?.isAbsent ?? false };
                 }),
             ),
         );

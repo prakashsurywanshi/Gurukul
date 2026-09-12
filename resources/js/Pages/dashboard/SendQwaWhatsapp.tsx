@@ -257,8 +257,6 @@ export default function SendQwaWhatsapp({
         const interval = window.setInterval(() => {
             router.reload({
                 only: ['qwaHistory'],
-                preserveScroll: true,
-                preserveState: true,
             });
         }, 12000);
 

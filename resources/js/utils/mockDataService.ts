@@ -52,7 +52,7 @@ const normalizeBoolean = (value: unknown): boolean => {
 };
 
 const normalizeStudentPayload = <T extends Record<string, any>>(data: T): T => {
-    const normalizedData = { ...data };
+    const normalizedData: Record<string, any> = { ...data };
 
     if ('transport_required' in data) {
         normalizedData.transport_required = normalizeBoolean(data.transport_required);
@@ -74,7 +74,7 @@ const normalizeStudentPayload = <T extends Record<string, any>>(data: T): T => {
         normalizedData.transport_route_details = data.transport_route_details || '';
     }
 
-    return normalizedData;
+    return normalizedData as T;
 };
 
 // Helper to generate IDs

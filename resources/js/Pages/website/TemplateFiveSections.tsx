@@ -28,7 +28,7 @@ import {
     HelpCircle,
 } from 'lucide-react';
 
-interface PageSection {
+export interface PageSection {
     id: string;
     type: 'hero' | 'text' | 'image-gallery' | 'features' | 'contact' | 'cta' | 'faq';
     data: Record<string, any>;

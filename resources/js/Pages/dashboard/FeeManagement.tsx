@@ -1,6 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -477,18 +478,14 @@ export default function FeeManagement({
             return;
         }
 
-        router.post(
-            '/fees/import',
-            { entries: importRows },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setShowImportDialog(false);
-                    setImportText('');
-                    setImportRows([]);
-                },
+        router.post('/fees/import', { entries: importRows } as unknown as RequestPayload, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowImportDialog(false);
+                setImportText('');
+                setImportRows([]);
             },
-        );
+        });
     };
 
     const handleCarryForward = () => {

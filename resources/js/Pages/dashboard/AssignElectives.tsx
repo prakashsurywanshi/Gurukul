@@ -106,7 +106,16 @@ export default function AssignElectives({
             return;
         }
 
-        const bodyRows = [...rows, ...pending].map((row) => ({
+        const bodyRows = [
+            ...rows,
+            ...pending.map((s) => ({
+                subjectId: s.id,
+                name: s.name,
+                code: s.code,
+                type: 'theory' as const,
+                isElective: false,
+            })),
+        ].map((row) => ({
             subject_id: row.subjectId,
             is_elective: electives[row.subjectId] ?? false,
         }));
@@ -224,7 +233,16 @@ export default function AssignElectives({
                                                         </TableCell>
                                                     </TableRow>
                                                 ) : (
-                                                    [...rows, ...pending].map((row, index) => (
+                                                    [
+                                                        ...rows,
+                                                        ...pending.map((s) => ({
+                                                            subjectId: s.id,
+                                                            name: s.name,
+                                                            code: s.code,
+                                                            type: 'theory' as const,
+                                                            isElective: false,
+                                                        })),
+                                                    ].map((row, index) => (
                                                         <TableRow key={row.subjectId}>
                                                             <TableCell className="text-sm text-slate-500">
                                                                 {index + 1}

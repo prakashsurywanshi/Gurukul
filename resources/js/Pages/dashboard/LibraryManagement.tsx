@@ -654,8 +654,8 @@ export default function LibraryManagement({
     const getBook = (bookId: string) => books.find((book) => book.id === bookId);
     const getMember = (memberId: string) => members.find((member) => member.id === memberId);
 
-    const downloadCsv = (filename: string, rows: string[][]) => {
-        const csvContent = rows.map((row) => row.map((value) => escapeCsvValue(value)).join(',')).join('\n');
+    const downloadCsv = (filename: string, rows: Array<Array<string | number>>) => {
+        const csvContent = rows.map((row) => row.map((value) => escapeCsvValue(String(value))).join(',')).join('\n');
         const blob = new Blob([csvContent], {
             type: 'text/csv;charset=utf-8;',
         });

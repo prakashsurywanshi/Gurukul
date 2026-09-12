@@ -887,7 +887,12 @@ export default function HostelFeeCollection({
                                                     {t('All payment entries for this student hostel fee.')}
                                                 </p>
                                             </div>
-                                            <Button type="button" variant="outline" size="sm" onClick={refreshPayments}>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => refreshPayments()}
+                                            >
                                                 <RefreshCw className="mr-2 h-4 w-4" />
                                                 {t('Refresh')}
                                             </Button>

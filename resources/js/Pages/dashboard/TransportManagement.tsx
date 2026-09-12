@@ -671,6 +671,11 @@ export default function TransportManagement({
             return;
         }
 
+        const stopsArray = routeForm.stops
+            .split(/[\n,]/)
+            .map((stop) => stop.trim())
+            .filter(Boolean);
+
         const routePayload = {
             name: routeForm.name,
             area: routeForm.area,
@@ -680,7 +685,7 @@ export default function TransportManagement({
             morningPickup: routeForm.morningPickup,
             afternoonDrop: routeForm.afternoonDrop,
             monthlyFee: Number(routeForm.monthlyFee || 0),
-            stops: routeForm.stops,
+            stops: stopsArray.join(', '),
             status: routeForm.status,
         };
 
@@ -688,6 +693,7 @@ export default function TransportManagement({
             const fallbackRoute = normalizeRoute({
                 id: editingRouteId,
                 ...routePayload,
+                stops: stopsArray,
             });
 
             router.put(`/transport-management/routes/${editingRouteId}`, routePayload as any, {
@@ -704,7 +710,10 @@ export default function TransportManagement({
                 },
             });
         } else {
-            const fallbackRoute = normalizeRoute(routePayload);
+            const fallbackRoute = normalizeRoute({
+                ...routePayload,
+                stops: stopsArray,
+            });
 
             router.post('/transport-management/routes', routePayload as any, {
                 preserveScroll: true,

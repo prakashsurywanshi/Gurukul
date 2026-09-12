@@ -199,8 +199,6 @@ export default function SendWhatsapp({
         const interval = window.setInterval(() => {
             router.reload({
                 only: ['whatsappHistory'],
-                preserveScroll: true,
-                preserveState: true,
             });
         }, 12000);
 

@@ -8,15 +8,16 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
-interface ForgotPasswordPageProps {
+type ForgotPasswordPageProps = {
     flash?: {
         success?: string;
     };
-}
+    errors?: Record<string, string>;
+};
 
 export default function ForgotPasswordPage() {
     const { t } = useLanguage();
-    const page = usePage<ForgotPasswordPageProps & { errors?: Record<string, string> }>();
+    const page = usePage<ForgotPasswordPageProps>();
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });

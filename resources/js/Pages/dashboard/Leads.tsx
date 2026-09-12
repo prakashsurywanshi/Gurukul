@@ -189,7 +189,7 @@ export default function Leads({ user, leads, filters, statuses, sources, priorit
             follow_up_date: lead.followUpDate ?? '',
             notes: lead.notes ?? '',
             assigned_to: lead.assignedToName
-                ? (staffMembers.find((staff) => staff.name === lead.assignedToName)?.id ?? '')
+                ? String(staffMembers.find((staff) => staff.name === lead.assignedToName)?.id ?? '')
                 : '',
         });
         setShowDialog(true);

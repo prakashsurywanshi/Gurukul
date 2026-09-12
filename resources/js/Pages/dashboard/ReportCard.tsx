@@ -2,6 +2,7 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useMemo, useState } from 'react';
 import { Award, FileText, GraduationCap, Loader2, Printer, Save, Sparkles } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -95,14 +96,10 @@ export default function ReportCard(pageProps: ReportProps) {
         event.preventDefault();
 
         setSavingScale(true);
-        router.post(
-            '/exams/report-card/grading-scale',
-            { rows: scaleRows },
-            {
-                preserveScroll: true,
-                onFinish: () => setSavingScale(false),
-            },
-        );
+        router.post('/exams/report-card/grading-scale', { rows: scaleRows } as unknown as RequestPayload, {
+            preserveScroll: true,
+            onFinish: () => setSavingScale(false),
+        });
     };
 
     const updateScaleRow = (index: number, field: keyof GradeRow, value: string) => {

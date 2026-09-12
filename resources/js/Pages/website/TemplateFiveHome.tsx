@@ -33,7 +33,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { WebsiteContent, WebsiteMenuItem } from '../../utils/websiteCmsContent';
 import type { PublishedPage, CurrentUser } from '../Home';
 import InlineEditField from '../../components/website/InlineEditField';
-import InlineArrayEditor from '../../components/website/InlineArrayEditor';
+import InlineArrayEditor, { ArrayItem } from '../../components/website/InlineArrayEditor';
 import SectionEditBar from '../../components/website/SectionEditBar';
 import ImageUpload from '../../components/website/ImageUpload';
 import ImageLightbox from '../../components/website/ImageLightbox';
@@ -247,7 +247,7 @@ function NavigationMenuEditor({
                 )}
 
                 <InlineArrayEditor
-                    items={cmsContent.templateFiveMainMenuItems}
+                    items={cmsContent.templateFiveMainMenuItems as unknown as ArrayItem[]}
                     isEditing={true}
                     onChange={(items) => onArrayChange?.('templateFiveMainMenuItems', items)}
                     newItemDefaults={{

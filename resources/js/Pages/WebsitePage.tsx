@@ -3,9 +3,9 @@ import { Head, Link } from '@inertiajs/react';
 import { GraduationCap, ArrowLeft, Save, X, Pencil } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { normalizeWebsiteContent, WebsiteContent } from '../utils/websiteCmsContent';
-import type { CurrentUser } from './Home';
+import type { CurrentUser, PublishedPage } from './Home';
 import TemplateFiveLayout from './website/TemplateFiveLayout';
-import TemplateFiveSections from './website/TemplateFiveSections';
+import TemplateFiveSections, { PageSection } from './website/TemplateFiveSections';
 import RichTextEditor from '../components/RichTextEditor';
 
 interface WebsitePageProps {
@@ -32,8 +32,8 @@ interface WebsitePageProps {
         template: string | null;
     };
     websiteContent?: Partial<WebsiteContent> | null;
-    publishedPages?: Array<{ id?: number; title: string; slug: string }>;
-    menuPages?: Array<{ id?: number; title: string; slug: string }>;
+    publishedPages?: PublishedPage[];
+    menuPages?: PublishedPage[];
     schoolName?: string | null;
     schoolLogo?: string | null;
     user?: CurrentUser | null;
@@ -71,9 +71,12 @@ export default function WebsitePage({
     const richTextContent = hasRichText ? (typeof page.content === 'string' ? page.content : '') : '';
 
     const [isEditing, setIsEditing] = useState(!!editingPageId);
-    const [sections, setSections] = useState<Array<{ id: string; type: string; data: Record<string, any> }>>(
-        hasStructuredSections ? page.content.sections : [],
-    );
+    const structuredSections: Array<{ id: string; type: string; data: Record<string, any> }> = isStructuredContent(
+        page.content,
+    )
+        ? page.content.sections
+        : [];
+    const [sections, setSections] = useState(structuredSections);
     const [richTextValue, setRichTextValue] = useState(richTextContent);
     const [isSaving, setIsSaving] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
@@ -159,7 +162,7 @@ export default function WebsitePage({
     }, [sections, richTextValue, hasStructuredSections, hasRichText, page.id]);
 
     const handleCancel = useCallback(() => {
-        setSections(hasStructuredSections ? page.content.sections : []);
+        setSections(structuredSections);
         setRichTextValue(richTextContent);
         setIsEditing(false);
         setHasChanges(false);
@@ -236,7 +239,7 @@ export default function WebsitePage({
 
                     {hasStructuredSections && (
                         <TemplateFiveSections
-                            sections={sections}
+                            sections={sections as PageSection[]}
                             isEditing={isEditing}
                             onSectionUpdate={handleSectionUpdate}
                             onSectionRemove={handleSectionRemove}

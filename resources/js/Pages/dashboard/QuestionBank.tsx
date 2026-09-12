@@ -2,6 +2,7 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useState } from 'react';
 import { HelpCircle, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -158,9 +159,9 @@ export default function QuestionBank(pageProps: QuestionBankProps) {
             onFinish: () => setSaving(false),
         };
         if (editing) {
-            router.patch(url, payload(), options);
+            router.patch(url, payload() as RequestPayload, options);
         } else {
-            router.post(url, payload(), options);
+            router.post(url, payload() as RequestPayload, options);
         }
     };
 

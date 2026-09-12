@@ -93,6 +93,36 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+interface ChartTooltipPayloadItem {
+    name?: React.ReactNode;
+    value?: number | string;
+    dataKey?: string | number;
+    color?: string;
+    fill?: string;
+    payload?: Record<string, any>;
+}
+
+interface ChartTooltipContentProps extends React.ComponentProps<'div'> {
+    active?: boolean;
+    payload?: ChartTooltipPayloadItem[];
+    hideLabel?: boolean;
+    hideIndicator?: boolean;
+    indicator?: 'line' | 'dot' | 'dashed';
+    nameKey?: string;
+    labelKey?: string;
+    label?: React.ReactNode;
+    labelFormatter?: (value: React.ReactNode, payload: ChartTooltipPayloadItem[]) => React.ReactNode;
+    formatter?: (
+        value: React.ReactNode,
+        name: React.ReactNode,
+        item: ChartTooltipPayloadItem,
+        index: number,
+        payload: Record<string, any>,
+    ) => React.ReactNode;
+    color?: string;
+    labelClassName?: string;
+}
+
 function ChartTooltipContent({
     active,
     payload,
@@ -107,14 +137,7 @@ function ChartTooltipContent({
     color,
     nameKey,
     labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<'div'> & {
-        hideLabel?: boolean;
-        hideIndicator?: boolean;
-        indicator?: 'line' | 'dot' | 'dashed';
-        nameKey?: string;
-        labelKey?: string;
-    }) {
+}: ChartTooltipContentProps) {
     const { config } = useChart();
 
     const tooltipLabel = React.useMemo(() => {
@@ -227,17 +250,20 @@ function ChartTooltipContent({
 
 const ChartLegend = RechartsPrimitive.Legend;
 
+interface ChartLegendContentProps extends React.ComponentProps<'div'> {
+    hideIcon?: boolean;
+    nameKey?: string;
+    verticalAlign?: 'top' | 'bottom';
+    payload?: ChartTooltipPayloadItem[];
+}
+
 function ChartLegendContent({
     className,
     hideIcon = false,
     payload,
     verticalAlign = 'bottom',
     nameKey,
-}: React.ComponentProps<'div'> &
-    Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
-        hideIcon?: boolean;
-        nameKey?: string;
-    }) {
+}: ChartLegendContentProps) {
     const { config } = useChart();
 
     if (!payload?.length) {

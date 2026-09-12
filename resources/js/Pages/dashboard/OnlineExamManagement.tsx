@@ -1,6 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { ChangeEvent, FormEvent, useMemo, useRef, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import { toast } from 'sonner';
 import {
     AlertCircle,
@@ -395,7 +396,7 @@ export default function OnlineExamManagement({
 
         const submit = editingOnlineExamId
             ? () =>
-                  router.patch(`/online-exams/${editingOnlineExamId}`, payload, {
+                  router.patch(`/online-exams/${editingOnlineExamId}`, payload as unknown as RequestPayload, {
                       preserveScroll: true,
                       onSuccess: () => {
                           setShowOnlineExamBuilder(false);
@@ -404,7 +405,7 @@ export default function OnlineExamManagement({
                       },
                   })
             : () =>
-                  router.post('/online-exams', payload, {
+                  router.post('/online-exams', payload as unknown as RequestPayload, {
                       preserveScroll: true,
                       onSuccess: () => {
                           setShowOnlineExamBuilder(false);

@@ -1,6 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import { Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
@@ -132,15 +133,11 @@ export default function ManageGrades({
         }
 
         setProcessing(true);
-        router.post(
-            '/grades',
-            { rows },
-            {
-                preserveScroll: true,
-                onError: () => toast.error('Failed to save grading scale.'),
-                onFinish: () => setProcessing(false),
-            },
-        );
+        router.post('/grades', { rows } as unknown as RequestPayload, {
+            preserveScroll: true,
+            onError: () => toast.error('Failed to save grading scale.'),
+            onFinish: () => setProcessing(false),
+        });
     };
 
     return (

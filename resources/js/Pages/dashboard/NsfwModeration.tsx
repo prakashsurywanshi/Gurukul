@@ -51,7 +51,7 @@ export default function NsfwModeration(pageProps: NsfwModerationProps) {
             item_id: Number(itemId),
             reason,
         });
-        setItemId('');
+        setId('');
         setReason('');
     };
 

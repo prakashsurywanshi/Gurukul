@@ -59,6 +59,8 @@ type ExpenseEntry = {
 
 export default function ExpenseManagement({ user, activeSession, sessions, entries }: ExpenseManagementProps) {
     const { t } = useLanguage();
+    const activeSessionName = activeSession ?? '';
+    const activeSessionId = String(sessions.find((session) => session.name === activeSessionName)?.id ?? '');
     const page = usePage<{ flash?: { success?: string; error?: string } }>();
     const flash = page.props.flash ?? {};
     const [search, setSearch] = useState('');
@@ -177,6 +179,8 @@ export default function ExpenseManagement({ user, activeSession, sessions, entri
 
         const payload: ExpenseEntry = {
             id: editingExpenseId || '',
+            sessionId: activeSessionId,
+            sessionName: activeSessionName,
             title: form.title,
             category: form.category,
             amount,
@@ -547,6 +551,8 @@ export default function ExpenseManagement({ user, activeSession, sessions, entri
 
                 return {
                     id: `EXP-IMP-${Date.now()}-${index}`,
+                    sessionId: activeSessionId,
+                    sessionName: activeSessionName,
                     title: row.title,
                     category: row.category,
                     amount,

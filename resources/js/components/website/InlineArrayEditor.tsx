@@ -6,6 +6,8 @@ interface ArrayItem {
     [key: string]: string;
 }
 
+export type { ArrayItem };
+
 interface InlineArrayEditorProps {
     items: ArrayItem[];
     isEditing: boolean;

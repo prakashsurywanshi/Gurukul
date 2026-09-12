@@ -704,7 +704,7 @@ export default function Osm(pageProps: OsmProps) {
                                         </div>
                                     )}
 
-                                    {expandedSheet && expandedSheet.sheet.id === sheet.id && (
+                                    {expandedSheet && expandedSheet.sessionId === session.id && (
                                         <form onSubmit={submitEvaluations} className="mt-3 space-y-3">
                                             <Table>
                                                 <TableHeader>

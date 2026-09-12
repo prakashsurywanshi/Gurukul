@@ -244,6 +244,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                         if (group.items.length === 1) {
                             const only = group.items[0];
                             const onlyIcon = only.icon;
+                            const OnlyIcon = onlyIcon as React.ComponentType<{ className?: string }>;
                             const isActive = activeTab === only.id;
 
                             return (
@@ -261,7 +262,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                                         onNavigate?.();
                                     }}
                                 >
-                                    <onlyIcon className="w-4 h-4 mr-3" />
+                                    <OnlyIcon className="w-4 h-4 mr-3" />
                                     {t(only.label)}
                                 </Button>
                             );

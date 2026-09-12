@@ -1,6 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import { ArrowDown, ArrowUp, Clock, Coffee, Pencil, Plus, Save, Trash2 } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
@@ -85,7 +86,7 @@ export default function ManagePeriods({ user, slots }: { user: any; slots: SlotR
         setProcessing(true);
 
         if (editing) {
-            router.put(`/time-slots/${editing.id}`, form, {
+            router.put(`/time-slots/${editing.id}`, form as unknown as RequestPayload, {
                 preserveScroll: true,
                 onError: () => toast.error('Failed to update slot.'),
                 onFinish: () => setProcessing(false),
@@ -93,7 +94,7 @@ export default function ManagePeriods({ user, slots }: { user: any; slots: SlotR
             return;
         }
 
-        router.post('/time-slots', form, {
+        router.post('/time-slots', form as unknown as RequestPayload, {
             preserveScroll: true,
             onError: () => toast.error('Failed to add slot.'),
             onFinish: () => setProcessing(false),

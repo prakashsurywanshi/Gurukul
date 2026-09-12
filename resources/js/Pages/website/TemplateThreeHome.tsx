@@ -53,6 +53,66 @@ export default function TemplateThreeHome({
     isSaving = false,
 }: TemplateThreeHomeProps) {
     const { t } = useLanguage();
+
+    const SECTION_FIELD_KEYS: Record<string, string[]> = {
+        hero: [
+            'heroBadge',
+            'heroTitleLineOne',
+            'heroTitleAccent',
+            'heroDescription',
+            'heroPrimaryCta',
+            'heroSecondaryCta',
+            'highlights',
+            'brandName',
+            'featureEyebrow',
+            'featureTitle',
+            'openHouseDescription',
+            'openHouseLabel',
+            'openHouseDate',
+            'liveOverviewValue',
+            'liveOverviewLabel',
+        ],
+        about: ['aboutEyebrow', 'aboutTitle', 'aboutDescription', 'pillars'],
+        programs: ['programsEyebrow', 'programsTitle', 'programsDescription', 'programs'],
+        campus: ['campusEyebrow', 'campusTitle', 'campusDescription', 'campusStats', 'newsEyebrow', 'news'],
+        outcomes: ['outcomesEyebrow', 'outcomesTitle', 'outcomesDescription', 'outcomes', 'brandName'],
+        journey: ['journeyEyebrow', 'journeyTitle', 'journeyDescription', 'journeySteps'],
+        voicesAndVisit: [
+            'voicesEyebrow',
+            'voicesTitle',
+            'testimonials',
+            'visitEyebrow',
+            'visitTitle',
+            'visitPointOneTitle',
+            'visitPointOneText',
+            'visitPointTwoTitle',
+            'visitPointTwoText',
+            'visitPointThreeTitle',
+            'visitPointThreeText',
+            'visitPrimaryCta',
+            'visitSecondaryCta',
+        ],
+        admissions: [
+            'admissionsEyebrow',
+            'admissionsTitle',
+            'admissionsDescription',
+            'admissionsPointOne',
+            'admissionsPointTwo',
+            'admissionsEmail',
+            'admissionsFormTitle',
+            'admissionsPortalButton',
+            'admissionsFormIntro',
+        ],
+    };
+
+    const saveSection = (sectionKey: string) => () => {
+        if (!onSaveSection) return;
+        const data: Record<string, any> = {};
+        for (const key of SECTION_FIELD_KEYS[sectionKey] || []) {
+            data[key] = (cmsContent as unknown as Record<string, unknown>)[key];
+        }
+        onSaveSection(sectionKey, data);
+    };
     const renderField = (
         value: string,
         fieldKey: string,
@@ -230,7 +290,7 @@ export default function TemplateThreeHome({
                     </header>
 
                     <main>
-                        <SectionEditBar sectionKey="hero" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="hero" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section className="mx-auto grid max-w-7xl gap-10 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[0.94fr_1.06fr] lg:px-10 lg:pt-10">
                                 <div className="max-w-2xl">
                                     <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-4 py-2 text-sm font-semibold text-blue-900 shadow-sm">
@@ -434,7 +494,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="about" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="about" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section id="about" className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
                                 <div className="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
                                     <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(160deg,rgba(255,255,255,0.86),rgba(249,245,237,0.96))] p-8 shadow-[0_24px_50px_rgba(15,23,42,0.08)]">
@@ -523,7 +583,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="programs" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="programs" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section id="programs" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
                                 <div className="max-w-3xl">
                                     <p className="text-sm font-semibold uppercase tracking-[0.28em] text-blue-800">
@@ -619,7 +679,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="campus" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="campus" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section id="campus" className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
                                 <div className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
                                     <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(145deg,rgba(30,58,95,0.95),rgba(68,64,60,0.92),rgba(30,41,59,0.92))] p-8 text-white shadow-[0_32px_70px_rgba(28,25,23,0.18)]">
@@ -755,7 +815,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="outcomes" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="outcomes" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section id="gallery" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
                                 <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
                                     <div className="rounded-[2rem] border border-white/70 bg-white/78 p-8 shadow-[0_24px_50px_rgba(15,23,42,0.08)]">
@@ -855,7 +915,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="journey" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="journey" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
                                 <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
                                     <div className="rounded-[2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_50px_rgba(15,23,42,0.08)]">
@@ -952,7 +1012,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="voicesAndVisit" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="voicesAndVisit" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
                                 <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
                                     <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(150deg,rgba(255,255,255,0.86),rgba(248,250,252,0.94))] p-8 shadow-[0_24px_50px_rgba(15,23,42,0.08)]">
@@ -1153,7 +1213,7 @@ export default function TemplateThreeHome({
                             </section>
                         </SectionEditBar>
 
-                        <SectionEditBar sectionKey="admissions" onSave={onSaveSection} isSaving={isSaving}>
+                        <SectionEditBar sectionKey="admissions" onSave={saveSection('hero')} isSaving={isSaving}>
                             <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10">
                                 <div className="rounded-[2.3rem] border border-white/70 bg-[linear-gradient(145deg,rgba(41,37,36,0.96),rgba(30,58,95,0.92),rgba(30,41,59,0.94))] px-6 py-10 text-white shadow-[0_35px_80px_rgba(28,25,23,0.18)] sm:px-10">
                                     <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">

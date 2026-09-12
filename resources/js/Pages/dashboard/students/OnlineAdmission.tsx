@@ -144,13 +144,14 @@ export default function OnlineAdmission({ user, inquiries, tableReady, classReco
             return classLabel === inquiryClass || `class ${classLabel}` === inquiryClass;
         });
 
-        setEnrollmentForm({
+        setEnrollmentForm((prev) => ({
+            ...prev,
             class_id: suggestedClass ? String(suggestedClass.id) : '',
             date_of_birth: '',
             gender: '',
             admission_date: new Date().toISOString().slice(0, 10),
             roll_number: '',
-        });
+        }));
     }, [selectedInquiry, classRecords]);
 
     useEffect(() => {

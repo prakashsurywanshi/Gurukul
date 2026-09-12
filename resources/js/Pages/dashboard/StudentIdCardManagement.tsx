@@ -121,7 +121,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
     const [applicableClass, setApplicableClass] = useState('All Classes');
     const [templateCode, setTemplateCode] = useState('ID-2026-A');
     const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>(() =>
-        availableStudents.slice(0, 2).map((student, index) => ({
+        availableStudents.slice(0, 2).map((student, index): GeneratedCard => ({
             id: `generated-${student.id}`,
             studentId: student.id,
             studentName: `${student.first_name} ${student.last_name}`,

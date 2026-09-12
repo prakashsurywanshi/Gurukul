@@ -80,7 +80,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const setLocale = useCallback((next: string) => {
         setStoredLocale(next);
         setLocaleCookie(next);
-        router.reload({ preserveState: true, preserveScroll: true });
+        router.reload();
     }, []);
 
     const t = useCallback(

@@ -10,6 +10,7 @@ import TemplateThreeHome from '../website/TemplateThreeHome';
 import TemplateFourHome from '../website/TemplateFourHome';
 import TemplateFiveHome from '../website/TemplateFiveHome';
 import TemplateOneHome from '../website/TemplateOneHome';
+import type { PublishedPage } from '../Home';
 import {
     normalizeWebsiteContent,
     normalizeWebsiteCmsContent,
@@ -45,7 +46,7 @@ class TemplateErrorBoundary extends Component<
 interface WebsiteCmsEditorProps {
     user: any;
     websiteContent?: Partial<WebsiteContent> | Partial<WebsiteCmsContent> | null;
-    publishedPages?: Array<{ id?: number; title: string; slug: string }>;
+    publishedPages?: PublishedPage[];
 }
 
 export default function WebsiteCmsEditor({ user, websiteContent, publishedPages = [] }: WebsiteCmsEditorProps) {

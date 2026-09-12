@@ -1,6 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import type { RequestPayload } from '@inertiajs/core';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -943,14 +944,14 @@ export default function CertificateManagement({
         };
 
         if (editingCertificateId) {
-            router.patch(`/certificates/templates/${editingCertificateId}`, payload, {
+            router.patch(`/certificates/templates/${editingCertificateId}`, payload as unknown as RequestPayload, {
                 preserveScroll: true,
                 onSuccess: () => {
                     resetEditor();
                 },
             });
         } else {
-            router.post('/certificates/templates', payload, {
+            router.post('/certificates/templates', payload as unknown as RequestPayload, {
                 preserveScroll: true,
                 onSuccess: () => {
                     resetEditor();

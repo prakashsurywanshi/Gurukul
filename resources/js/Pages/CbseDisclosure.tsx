@@ -63,7 +63,7 @@ export default function CbseDisclosure({ websiteContent, disclosure = {}, sectio
                                 {cmsContent.brandName}
                             </p>
                             <p className={`text-[10px] font-bold tracking-[0.24em] uppercase ${mutedTextClass}`}>
-                                {cmsContent.tagline}
+                                {cmsContent.brandSubtitle}
                             </p>
                         </div>
                     </Link>
@@ -75,7 +75,7 @@ export default function CbseDisclosure({ websiteContent, disclosure = {}, sectio
                             <ChevronLeft className="h-3.5 w-3.5" />
                             Back to Home
                         </Link>
-                        <LanguageSwitcher isLightTheme={isLightTheme} />
+                        <LanguageSwitcher variant="site" />
                     </div>
                 </header>
 

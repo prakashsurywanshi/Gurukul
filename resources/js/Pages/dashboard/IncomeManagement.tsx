@@ -49,6 +49,8 @@ type IncomeEntry = {
 
 export default function IncomeManagement({ user, activeSession, sessions, entries }: IncomeManagementProps) {
     const { t } = useLanguage();
+    const activeSessionName = activeSession ?? '';
+    const activeSessionId = String(sessions.find((session) => session.name === activeSessionName)?.id ?? '');
     const page = usePage<{ flash?: { success?: string; error?: string } }>();
     const flash = page.props.flash ?? {};
     const [search, setSearch] = useState('');
@@ -167,6 +169,8 @@ export default function IncomeManagement({ user, activeSession, sessions, entrie
 
         const payload: IncomeEntry = {
             id: editingIncomeId || '',
+            sessionId: activeSessionId,
+            sessionName: activeSessionName,
             title: form.title,
             category: form.category,
             amount,
@@ -342,6 +346,8 @@ export default function IncomeManagement({ user, activeSession, sessions, entrie
 
                 return {
                     id: `INC-IMP-${Date.now()}-${index}`,
+                    sessionId: activeSessionId,
+                    sessionName: activeSessionName,
                     title: row.title,
                     category: row.category,
                     amount,

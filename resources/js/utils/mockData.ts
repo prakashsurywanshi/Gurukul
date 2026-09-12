@@ -74,6 +74,11 @@ export interface Student {
     transport_route_details: string;
     hostel_required: boolean;
     status: 'active' | 'inactive';
+    first_name_mr?: string | null;
+    last_name_mr?: string | null;
+    father_name_mr?: string | null;
+    mother_name_mr?: string | null;
+    address_mr?: string | null;
 }
 
 export interface AlumniRecord {

@@ -407,7 +407,6 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                         }}
                         onSubmit={saveDevice}
                         saving={saving}
-                        isDialog
                     >
                         <DeviceForm form={form} setForm={setForm} />
                     </DialogShell>
@@ -419,7 +418,6 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                         onClose={() => setAddingLog(false)}
                         onSubmit={saveLog}
                         saving={saving}
-                        isDialog
                     >
                         <div className="space-y-4">
                             <div className="space-y-2">

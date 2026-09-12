@@ -234,8 +234,6 @@ export default function StudentManagement({
         const interval = window.setInterval(() => {
             router.reload({
                 only: ['studentImports', 'studentRecords'],
-                preserveScroll: true,
-                preserveState: true,
             });
         }, 3000);
 
