@@ -148,7 +148,10 @@ export default function LoginPage(_: LoginPageProps) {
         flash?: { success?: string };
         schoolName?: string | null;
         schoolLogo?: string | null;
+        demoLogin?: boolean;
     }>();
+
+    const demoLogin = page.props.demoLogin === true;
 
     const error = page.props.errors?.email || page.props.errors?.password || '';
     const schoolName = page.props.schoolName || 'Gurukul';
@@ -358,6 +361,31 @@ export default function LoginPage(_: LoginPageProps) {
                                     <Button type="submit" className="w-full" disabled={loading}>
                                         {loading ? t('Signing in...') : t('Sign In')}
                                     </Button>
+
+                                    {demoLogin ? (
+                                        <div className="space-y-2">
+                                            <p className="text-center text-xs uppercase tracking-[0.18em] text-slate-400">
+                                                {t('Demo quick login')}
+                                            </p>
+                                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                                {[
+                                                    { role: 'schooladmin', label: t('School Admin') },
+                                                    { role: 'teacher', label: t('Teacher') },
+                                                    { role: 'accountant', label: t('Accountant') },
+                                                    { role: 'parent', label: t('Parent') },
+                                                ].map((item) => (
+                                                    <button
+                                                        key={item.role}
+                                                        type="button"
+                                                        onClick={() => router.visit(`/demo-login/${item.role}`)}
+                                                        className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                                                    >
+                                                        {item.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null}
 
                                     <SSOButtons />
                                 </form>

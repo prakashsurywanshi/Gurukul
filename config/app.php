@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Demo Login
+    |--------------------------------------------------------------------------
+    |
+    | Enables the "instant login as role" links (~ demo.multischoolerp.com's
+    | /demo-login/{role}). Keep DISABLED outside demo/dev environments.
+    |
+    */
+
+    'demo_login' => (bool) env('DEMO_LOGIN', false),
+
 ];

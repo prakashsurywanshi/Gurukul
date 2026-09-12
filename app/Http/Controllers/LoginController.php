@@ -27,6 +27,7 @@ class LoginController extends Controller
         return inertia('LoginPage', [
             'schoolName' => $organization?->name,
             'schoolLogo' => $organization?->logo,
+            'demoLogin' => (bool) config('app.demo_login'),
         ]);
     }
     

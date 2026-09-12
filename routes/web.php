@@ -21,6 +21,7 @@ use App\Http\Controllers\CustomFieldsController;
 use App\Http\Controllers\CbseDisclosureController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardExtrasController;
+use App\Http\Controllers\DemoLoginController;
 use App\Http\Controllers\DomainDashboardController;
 use App\Http\Controllers\DatesheetController;
 use App\Http\Controllers\EbookLibraryController;
@@ -134,6 +135,9 @@ Route::get('/admissions/apply', [SettingsController::class, 'publicAdmissionForm
 Route::get('/pages/{slug}', [WebsitePageController::class, 'show'])->name('website-pages.show');
 Route::get('/login', [LoginController::class, 'viewLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
+Route::get('/demo-login/{role}', DemoLoginController::class)
+    ->whereIn('role', ['schooladmin', 'superadmin', 'admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'parent', 'student'])
+    ->name('demo-login');
 Route::get('/sso/status', [SsoController::class, 'status'])->name('sso.status');
 if (filter_var(env('SSO_ENABLED', false), FILTER_VALIDATE_BOOL)) {
     Route::get('/auth/sso/{provider}', [SsoController::class, 'redirect'])->name('sso.redirect');
