@@ -4599,5 +4599,10 @@ const mr = {
     'Website Templates': 'वेबसाइट टेम्पलेट',
     'Design Settings': 'डिझाइन सेटिंग्ज',
     'CBC Reports': 'सीबीसी अहवाल',
+    'School Profile': 'शाळा प्रोफाईल',
+    'Field Settings': 'फील्ड सेटिंग्ज',
+    'Compliance Checklist': 'अनुपालन चेकलिस्ट',
+    'Regulatory Profile': 'नियामक प्रोफाईल',
+    'Field Visibility': 'फील्ड दृश्यमानता',
 };
 export default mr;

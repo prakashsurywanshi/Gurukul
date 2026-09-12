@@ -17,6 +17,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\CocurricularController;
 use App\Http\Controllers\ComplianceController;
+use App\Http\Controllers\ComplianceProfileController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AdmissionSettingsController;
 use App\Http\Controllers\CustomFieldsController;
@@ -311,6 +312,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/chat-moderation', [ChatModerationController::class, 'index'])->middleware('staff.permission:Live Chat,view')->name('chat-moderation');
     Route::post('/chat-moderation/{chatMessage}/moderate', [ChatModerationController::class, 'moderate'])->middleware('staff.permission:Live Chat,edit')->name('chat-moderation.moderate');
     Route::get('/compliance', [ComplianceController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance');
+    Route::get('/compliance/profile', [ComplianceProfileController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.profile');
+    Route::patch('/compliance/profile', [ComplianceProfileController::class, 'update'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.profile.update');
     Route::get('/compliance/calendar', [ComplianceController::class, 'calendar'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.calendar');
     Route::post('/compliance/packs', [ComplianceController::class, 'storePack'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.packs.store');
     Route::delete('/compliance/packs/{pack}', [ComplianceController::class, 'destroyPack'])->middleware('staff.permission:Reports & Analytics,view')->name('compliance.packs.destroy');

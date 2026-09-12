@@ -4610,5 +4610,10 @@ const en = {
     'Website Templates': 'Website Templates',
     'Design Settings': 'Design Settings',
     'CBC Reports': 'CBC Reports',
+    'School Profile': 'School Profile',
+    'Field Settings': 'Field Settings',
+    'Compliance Checklist': 'Compliance Checklist',
+    'Regulatory Profile': 'Regulatory Profile',
+    'Field Visibility': 'Field Visibility',
 };
 export default en;

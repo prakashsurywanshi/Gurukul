@@ -4628,5 +4628,10 @@ const hi = {
     'Website Templates': 'वेबसाइट टेम्पलेट',
     'Design Settings': 'डिझाइन सेटिंग्स',
     'CBC Reports': 'सीबीसी रिपोर्ट',
+    'School Profile': 'स्कूल प्रोफ़ाइल',
+    'Field Settings': 'फ़ील्ड सेटिंग्स',
+    'Compliance Checklist': 'अनुपालन चेकलिस्ट',
+    'Regulatory Profile': 'नियामक प्रोफ़ाइल',
+    'Field Visibility': 'फ़ील्ड दृश्यता',
 };
 export default hi;
