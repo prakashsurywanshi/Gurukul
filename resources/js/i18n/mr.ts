@@ -4677,5 +4677,27 @@ const mr = {
     'Category List': 'श्रेणी यादी',
     Titles: 'शीर्षके',
     'No categories yet. Add books in the library catalog.': 'अद्याप श्रेणी नाहीत. ग्रंथालय कॅटलॉगमध्ये पुस्तके जोडा.',
+    'No media uploaded yet. Use `Upload Media` to add a document, video, or YouTube link.':
+        'अद्याप मीडिया अपलोड केलेले नाही. दस्तऐवज, व्हिडिओ किंवा YouTube लिंक जोडण्यासाठी `Upload Media` वापरा.',
+    'Required columns: `title`, `category`, `amount`, `date`, `payment_mode`, `paid_to`, `voucher_no`, `notes`, `status`':
+        'आवश्यक स्तंभ: `title`, `category`, `amount`, `date`, `payment_mode`, `paid_to`, `voucher_no`, `notes`, `status`',
+    'Required columns: `title`, `category`, `amount`, `date`, `payment_mode`, `received_from`, `reference_no`, `notes`, `status`':
+        'आवश्यक स्तंभ: `title`, `category`, `amount`, `date`, `payment_mode`, `received_from`, `reference_no`, `notes`, `status`',
+    'The `admission_inquiries` table is not available yet. Run `php artisan migrate` to create it and start seeing public website admission requests here.':
+        '`admission_inquiries` सारणी अद्याप उपलब्ध नाही. ती तयार करण्यासाठी `php artisan migrate` चालवा आणि येथे सार्वजनिक वेबसाइटच्या प्रवेश विनंत्या पहा.',
+    'The `complaint_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.':
+        '`complaint_entries` सारणी अद्याप उपलब्ध नाही. हे पृष्ठ वापरण्यापूर्वी ती तयार करण्यासाठी `php artisan migrate` चालवा.',
+    'The `complaint_entries` table is not available yet. Run `php artisan migrate` to enable complaints.':
+        '`complaint_entries` सारणी अद्याप उपलब्ध नाही. तक्रारी सक्षम करण्यासाठी `php artisan migrate` चालवा.',
+    'The `front_office_admission_enquiries` table is not available yet. Run `php artisan migrate` to create it before using this page.':
+        '`front_office_admission_enquiries` सारणी अद्याप उपलब्ध नाही. हे पृष्ठ वापरण्यापूर्वी ती तयार करण्यासाठी `php artisan migrate` चालवा.',
+    'The `phone_call_log_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.':
+        '`phone_call_log_entries` सारणी अद्याप उपलब्ध नाही. हे पृष्ठ वापरण्यापूर्वी ती तयार करण्यासाठी `php artisan migrate` चालवा.',
+    'The `postal_delivery_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.':
+        '`postal_delivery_entries` सारणी अद्याप उपलब्ध नाही. हे पृष्ठ वापरण्यापूर्वी ती तयार करण्यासाठी `php artisan migrate` चालवा.',
+    'The `postal_dispatch_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.':
+        '`postal_dispatch_entries` सारणी अद्याप उपलब्ध नाही. हे पृष्ठ वापरण्यापूर्वी ती तयार करण्यासाठी `php artisan migrate` चालवा.',
+    'The `visitor_register_entries` table is not available yet. Run `php artisan migrate` to create it before using this page.':
+        '`visitor_register_entries` सारणी अद्याप उपलब्ध नाही. हे पृष्ठ वापरण्यापूर्वी ती तयार करण्यासाठी `php artisan migrate` चालवा.',
 };
 export default mr;

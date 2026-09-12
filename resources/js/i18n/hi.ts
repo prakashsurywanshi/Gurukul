@@ -4706,5 +4706,6 @@ const hi = {
     Titles: 'शीर्षक',
     'No categories yet. Add books in the library catalog.':
         'अभी कोई श्रेणी नहीं है। पुस्तकालय कैटलॉग में पुस्तकें जोड़ें।',
+    'Low Stock': 'कमी स्टॉक',
 };
 export default hi;
