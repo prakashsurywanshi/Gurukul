@@ -50,7 +50,7 @@ class DashboardController extends Controller
     ) {
     }
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = Auth::user();
 
@@ -67,8 +67,12 @@ class DashboardController extends Controller
         abort_unless($organization, 403);
 
         $activeAcademicYear = $this->studentAcademicHistoryService->getActiveAcademicYear($organization->id);
-        $student = $user->role === 'student'
-            ? $this->resolveStudentForUser($user, $organization)
+        $isStudentView = $user->role === 'student';
+        $studentChildren = $isStudentView
+            ? $this->resolveChildrenForUser($user, $organization)
+            : [];
+        $student = $isStudentView
+            ? $this->selectChildStudent($studentChildren, $request->integer('student'))
             : null;
         $studentEnrollment = $student
             ? $this->studentAcademicHistoryService->getSessionEnrollmentForStudent($student)
@@ -82,11 +86,13 @@ class DashboardController extends Controller
                 'logo' => $organization->logo,
             ],
             'activeSession' => $activeAcademicYear?->name ?? $organization->selectedSessionName(),
-            'dashboardType' => $user->role === 'student' ? 'student' : 'admin',
-            'stats' => $user->role === 'student'
+            'dashboardType' => $isStudentView ? 'student' : 'admin',
+            'stats' => $isStudentView
                 ? $this->buildStudentDashboardStats($organization, $student, $studentEnrollment, $user)
                 : $this->buildAdminDashboardStats($organization, $user, $activeAcademicYear),
             'studentRecord' => $student ? $this->serializeStudent($student, $studentEnrollment) : null,
+            'studentChildren' => $studentChildren,
+            'selectedStudentId' => $student ? (string) $student->id : null,
             'notices' => $this->getDashboardNotices($organization, $user),
         ]);
     }
@@ -983,17 +989,48 @@ class DashboardController extends Controller
         ];
     }
 
-    private function resolveStudentForUser(User $user, Organization $organization): ?Student
+    private function resolveChildrenForUser(User $user, Organization $organization): array
     {
         return Student::query()
             ->where('organization_id', $organization->id)
             ->where(function ($query) use ($user) {
                 $query
                     ->where('user_id', $user->id)
-                    ->orWhere('email', $user->email);
+                    ->orWhere('email', $user->email)
+                    ->orWhere('father_email', $user->email)
+                    ->orWhere('mother_email', $user->email)
+                    ->orWhere('guardian_email', $user->email);
             })
             ->with('schoolClass:id,name,section')
-            ->first();
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Student $child) => [
+                'id' => (string) $child->id,
+                'name' => trim($child->first_name.' '.$child->last_name),
+                'className' => $child->schoolClass?->name ?? '-',
+                'section' => $child->schoolClass?->section ?? '-',
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function selectChildStudent(array $studentChildren, int $requestedId): ?Student
+    {
+        if (empty($studentChildren)) {
+            return null;
+        }
+
+        foreach ($studentChildren as $child) {
+            if ((int) $child['id'] === $requestedId) {
+                $student = Student::query()->with('schoolClass:id,name,section')->find($requestedId);
+
+                return $student ?: null;
+            }
+        }
+
+        $student = Student::query()->with('schoolClass:id,name,section')->find((int) $studentChildren[0]['id']);
+
+        return $student ?: null;
     }
 
     private function serializeStudent(Student $student, ?StudentAcademicHistory $studentEnrollment = null): array

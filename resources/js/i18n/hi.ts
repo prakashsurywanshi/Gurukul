@@ -751,6 +751,8 @@ const hi = {
     'Current Password': 'वर्तमान पासवर्ड',
     'Current Session': 'वर्तमान सत्र',
     'Current Status': 'वर्तमान स्थिति',
+    'Select child': 'बच्चा चुनें',
+    Viewing: 'देख रहे हैं',
     'Current bridge session used for QR and sending.':
         'वर्तमान ब्रिज सत्र का उपयोग क्यूआर और भेजने के लिए किया जाता है।',
     'Current server upload limit:': 'मौजूदा सर्वर अपलोड सीमा:',

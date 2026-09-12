@@ -19,6 +19,8 @@ import {
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Label } from '../ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { NoticeBoardPanel, NoticeBoardPreviewAction, type Notice } from './notice-board/NoticeBoardPanel';
 
 interface DashboardHomeProps {
@@ -39,6 +41,13 @@ interface DashboardHomeProps {
         className: string;
         section: string;
     } | null;
+    studentChildren?: {
+        id: string;
+        name: string;
+        className: string;
+        section: string;
+    }[];
+    selectedStudentId?: string | null;
     notices?: Notice[];
 }
 
@@ -110,10 +119,13 @@ export function DashboardHome({
     organization,
     stats,
     studentRecord = null,
+    studentChildren = [],
+    selectedStudentId = null,
     notices = [],
 }: DashboardHomeProps) {
     const { t } = useLanguage();
     const isStudent = dashboardType === 'student' || user.role === 'student';
+    const showChildSwitcher = isStudent && studentChildren.length > 1;
 
     return (
         <DashboardLayout user={user} activeTab="dashboard" onLogout={() => {}}>
@@ -143,6 +155,34 @@ export function DashboardHome({
                                 <span>{activeSession || t('Not set')}</span>
                             </div>
                         </div>
+
+                        {showChildSwitcher ? (
+                            <div className="w-full sm:max-w-xs self-start sm:self-auto">
+                                <Label className="mb-1 block text-xs uppercase tracking-[0.18em] text-slate-400">
+                                    {t('Viewing')}
+                                </Label>
+                                <Select
+                                    value={selectedStudentId ?? ''}
+                                    onValueChange={(childId) =>
+                                        router.get('/dashboard', { student: childId }, { preserveState: false })
+                                    }
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder={t('Select child')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {studentChildren.map((child) => (
+                                            <SelectItem key={child.id} value={child.id}>
+                                                {child.name}
+                                                {child.className !== '-'
+                                                    ? ` · ${child.className}-${child.section}`
+                                                    : ''}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ) : null}
 
                         {isStudent && studentRecord ? (
                             <div className="grid w-full gap-3 sm:max-w-md sm:grid-cols-2">

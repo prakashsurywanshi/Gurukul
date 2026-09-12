@@ -741,6 +741,8 @@ const en = {
     'Current Password': 'Current Password',
     'Current Session': 'Current Session',
     'Current Status': 'Current Status',
+    'Select child': 'Select child',
+    Viewing: 'Viewing',
     'Current bridge session used for QR and sending.': 'Current bridge session used for QR and sending.',
     'Current server upload limit:': 'Current server upload limit:',
     'Current session': 'Current session',

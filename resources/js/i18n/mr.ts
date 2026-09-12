@@ -747,6 +747,8 @@ const mr = {
     'Current Password': 'सद्याचे गुप्तशब्द (p):',
     'Current Session': 'वर्तमान सत्र साठवा',
     'Current Status': 'सद्यस्थिती:',
+    'Select child': 'मुलाची निवड करा',
+    Viewing: 'पाहत आहे',
     'Current bridge session used for QR and sending.': 'QR आणि पाठवण्याकरीता वापरले जाणारे सध्याचे ब्रिज सत्र.',
     'Current server upload limit:': 'वर्तमान सर्व्हर अपलोड मर्यादा:',
     'Current session': 'वर्तमान सत्र साठवा',
