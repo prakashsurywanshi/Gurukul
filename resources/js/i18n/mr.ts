@@ -4598,5 +4598,6 @@ const mr = {
     'Navigation Menu': 'नेव्हिगेशन मेनू',
     'Website Templates': 'वेबसाइट टेम्पलेट',
     'Design Settings': 'डिझाइन सेटिंग्ज',
+    'CBC Reports': 'सीबीसी अहवाल',
 };
 export default mr;

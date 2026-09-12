@@ -4609,5 +4609,6 @@ const en = {
     'Navigation Menu': 'Navigation Menu',
     'Website Templates': 'Website Templates',
     'Design Settings': 'Design Settings',
+    'CBC Reports': 'CBC Reports',
 };
 export default en;

@@ -2462,7 +2462,15 @@ export const sidebarConfig: {
         label: 'CBC Academics',
         icon: BookMarked,
         navMode: 'href-or-id',
-        tabs: ['cbc-dashboard', 'cbc', 'cbc-strands', 'cbc-assessments', 'cbc-competencies', 'cbc-pathways'],
+        tabs: [
+            'cbc-dashboard',
+            'cbc',
+            'cbc-strands',
+            'cbc-assessments',
+            'cbc-competencies',
+            'cbc-pathways',
+            'cbc-reports',
+        ],
         items: [
             {
                 id: 'cbc-dashboard',
@@ -2514,6 +2522,15 @@ export const sidebarConfig: {
                 label: 'Pathways & Tracks',
                 icon: GitBranch,
                 href: '/cbc',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'CBC',
+                module: 'cbc',
+            },
+            {
+                id: 'cbc-reports',
+                label: 'CBC Reports',
+                icon: BarChart3,
+                href: '/cbc?tab=reports',
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'CBC',
                 module: 'cbc',

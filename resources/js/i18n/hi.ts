@@ -4627,5 +4627,6 @@ const hi = {
     'Navigation Menu': 'नेव्हिगेशन मेनू',
     'Website Templates': 'वेबसाइट टेम्पलेट',
     'Design Settings': 'डिझाइन सेटिंग्स',
+    'CBC Reports': 'सीबीसी रिपोर्ट',
 };
 export default hi;
