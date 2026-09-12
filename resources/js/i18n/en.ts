@@ -4605,5 +4605,9 @@ const en = {
     'e.g. Helping a classmate with assignments': 'e.g. Helping a classmate with assignments',
     'e.g. Positive reinforcement discussed with class teacher.':
         'e.g. Positive reinforcement discussed with class teacher.',
+    Testimonials: 'Testimonials',
+    'Navigation Menu': 'Navigation Menu',
+    'Website Templates': 'Website Templates',
+    'Design Settings': 'Design Settings',
 };
 export default en;

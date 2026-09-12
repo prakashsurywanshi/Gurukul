@@ -4594,5 +4594,9 @@ const mr = {
     'e.g. Helping a classmate with assignments': 'उदा., सहाध्यायाला असाइनमेंटमध्ये मदत करणे',
     'e.g. Positive reinforcement discussed with class teacher.':
         'उदा., वर्ग शिक्षकांसोबत सकारात्मक प्रोत्साहनावर चर्चा.',
+    Testimonials: 'प्रशंसापत्रे',
+    'Navigation Menu': 'नेव्हिगेशन मेनू',
+    'Website Templates': 'वेबसाइट टेम्पलेट',
+    'Design Settings': 'डिझाइन सेटिंग्ज',
 };
 export default mr;

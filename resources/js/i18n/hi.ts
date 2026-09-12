@@ -4623,5 +4623,9 @@ const hi = {
     'e.g. Helping a classmate with assignments': 'जैसे, सहपाठी को असाइनमेंट में मदद करना',
     'e.g. Positive reinforcement discussed with class teacher.':
         'जैसे, कक्षा शिक्षक के साथ सकारात्मक प्रोत्साहन पर चर्चा।',
+    Testimonials: 'प्रशंसापत्र',
+    'Navigation Menu': 'नेव्हिगेशन मेनू',
+    'Website Templates': 'वेबसाइट टेम्पलेट',
+    'Design Settings': 'डिझाइन सेटिंग्स',
 };
 export default hi;
