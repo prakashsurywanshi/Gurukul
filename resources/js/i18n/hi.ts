@@ -4315,5 +4315,32 @@ const hi = {
     'Section Coverage': 'सेक्शन कवरेज',
     'Total Capacity': 'कुल क्षमता',
     Section: 'सेक्शन',
+    'Lead Sources & Stages': 'लीड स्रोत और चरण',
+    'Configure the lead sources and pipeline stages used in admissions.':
+        'प्रवेश में उपयोग होने वाले लीड स्रोत और पाइपलाइन चरण कॉन्फ़िगर करें।',
+    'Lead Sources': 'लीड स्रोत',
+    'Where leads come from. Custom sources appear in the lead form and filters.':
+        'लीड कहाँ से आते हैं। कस्टम स्रोत लीड फ़ॉर्म और फ़िल्टर में दिखाई देते हैं।',
+    'Add Source': 'स्रोत जोड़ें',
+    'Pipeline Stages': 'पाइपलाइन चरण',
+    'The stages a lead moves through until admission. Custom stages join the system defaults.':
+        'प्रवेश तक लीड जिन चरणों से गुज़रता है। कस्टम चरण सिस्टम डिफ़ॉल्ट में जुड़ते हैं।',
+    'Add Stage': 'चरण जोड़ें',
+    'Enter an option value and an optional display label.': 'एक विकल्प मान और वैकल्पिक प्रदर्शन लेबल दर्ज करें।',
+    'Enter a stage value and an optional display label.': 'एक चरण मान और वैकल्पिक प्रदर्शन लेबल दर्ज करें।',
+    'System defaults': 'सिस्टम डिफ़ॉल्ट',
+    'Option Name': 'विकल्प नाम',
+    'Option Value': 'विकल्प मान',
+    'Display Label': 'प्रदर्शन लेबल',
+    'No options added yet.': 'अभी तक कोई विकल्प नहीं जोड़ा गया।',
+    Disable: 'निष्क्रिय करें',
+    Enable: 'सक्रिय करें',
+    'Edit Option': 'विकल्प संपादित करें',
+    'e.g. Counselling Camp': 'जैसे काउंसलिंग कैंप',
+    'Enter a value for the option.': 'विकल्प के लिए एक मान दर्ज करें।',
+    'Failed to update option.': 'विकल्प अपडेट करने में विफल।',
+    'Failed to add option.': 'विकल्प जोड़ने में विफल।',
+    'Delete this option?': 'यह विकल्प हटाएं?',
+    'Failed to delete option.': 'विकल्प हटाने में विफल।',
 };
 export default hi;

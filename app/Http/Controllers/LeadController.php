@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
+use App\Models\LeadPipelineStage;
+use App\Models\LeadSource;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
@@ -30,11 +32,138 @@ class LeadController extends Controller
                 'assignedTo' => $request->query('assignedTo', 'all'),
                 'search' => $request->query('search', ''),
             ],
-            'statuses' => Lead::STATUSES,
-            'sources' => Lead::SOURCES,
+            'statuses' => $organization ? Lead::resolvedStatuses($organization->id) : Lead::STATUSES,
+            'sources' => $organization ? Lead::resolvedSources($organization->id) : Lead::SOURCES,
             'priorities' => Lead::PRIORITIES,
             'staffMembers' => $this->staffMembersForOrganization($organization),
         ]);
+    }
+
+    public function pipelineConfig(): Response
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        return Inertia::render('dashboard/LeadSourcesStages', [
+            'user' => $user,
+            'defaultSources' => Lead::SOURCES,
+            'defaultStages' => Lead::STATUSES,
+            'sources' => $this->serializeOptions(LeadSource::class, $organization->id),
+            'stages' => $this->serializeOptions(LeadPipelineStage::class, $organization->id),
+        ]);
+    }
+
+    public function storeSource(Request $request): RedirectResponse
+    {
+        return $this->storeOption($request, LeadSource::class);
+    }
+
+    public function updateSource(Request $request, LeadSource $leadSource): RedirectResponse
+    {
+        return $this->updateOption($request, $leadSource);
+    }
+
+    public function destroySource(LeadSource $leadSource): RedirectResponse
+    {
+        return $this->destroyOption($leadSource);
+    }
+
+    public function storeStage(Request $request): RedirectResponse
+    {
+        return $this->storeOption($request, LeadPipelineStage::class);
+    }
+
+    public function updateStage(Request $request, LeadPipelineStage $leadPipelineStage): RedirectResponse
+    {
+        return $this->updateOption($request, $leadPipelineStage);
+    }
+
+    public function destroyStage(LeadPipelineStage $leadPipelineStage): RedirectResponse
+    {
+        return $this->destroyOption($leadPipelineStage);
+    }
+
+    private function storeOption(Request $request, string $modelClass): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9_-]+$/'],
+            'label' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $exists = $modelClass::query()
+            ->where('organization_id', $organization->id)
+            ->where('name', $validated['name'])
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors(['name' => 'An option with this name already exists.'])->onlyInput('name');
+        }
+
+        $modelClass::query()->create([
+            'organization_id' => $organization->id,
+            'name' => $validated['name'],
+            'label' => $validated['label'] ?: null,
+            'is_system' => false,
+            'status' => true,
+        ]);
+
+        return back()->with('success', 'Option added.');
+    }
+
+    private function updateOption(Request $request, object $option): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization && (int) $option->organization_id === $organization->id, 404);
+
+        $validated = $request->validate([
+            'label' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'boolean'],
+        ]);
+
+        $option->update([
+            'label' => $validated['label'] ?? $option->label,
+            'status' => array_key_exists('status', $validated) ? (bool) $validated['status'] : $option->status,
+        ]);
+
+        return back()->with('success', 'Option updated.');
+    }
+
+    private function destroyOption(object $option): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization && (int) $option->organization_id === $organization->id, 404);
+
+        if ((bool) $option->is_system) {
+            return back()->withErrors(['name' => 'System options cannot be deleted.']);
+        }
+
+        $option->delete();
+
+        return back()->with('success', 'Option deleted.');
+    }
+
+    private function serializeOptions(string $modelClass, int $organizationId): Collection
+    {
+        return $modelClass::query()
+            ->where('organization_id', $organizationId)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (object $option) => [
+                'id' => (string) $option->id,
+                'name' => $option->name,
+                'label' => $option->label,
+                'isSystem' => (bool) $option->is_system,
+                'status' => (bool) $option->status,
+            ])
+            ->values();
     }
 
     public function store(Request $request): RedirectResponse
@@ -75,7 +204,7 @@ class LeadController extends Controller
         abort_unless($organization && $lead->organization_id === $organization->id, 404);
 
         $validated = $request->validate([
-            'status' => ['required', Rule::in(Lead::STATUSES)],
+            'status' => ['required', Rule::in(Lead::resolvedStatuses($organization->id))],
         ]);
 
         $lead->update(['status' => $validated['status']]);
@@ -102,10 +231,10 @@ class LeadController extends Controller
             'parent_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:255'],
-            'source' => ['required', Rule::in(Lead::SOURCES)],
+            'source' => ['required', Rule::in(Lead::resolvedSources($organization->id))],
             'interested_class' => ['nullable', 'string', 'max:255'],
             'academic_year' => ['nullable', 'string', 'max:64'],
-            'status' => ['required', Rule::in(Lead::STATUSES)],
+            'status' => ['required', Rule::in(Lead::resolvedStatuses($organization->id))],
             'priority' => ['required', Rule::in(Lead::PRIORITIES)],
             'preferred_contact_time' => ['nullable', 'string', 'max:64'],
             'follow_up_date' => ['nullable', 'date'],

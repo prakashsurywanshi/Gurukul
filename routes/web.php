@@ -371,6 +371,13 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::patch('/leads/{lead}', [LeadController::class, 'update'])->middleware('staff.permission:Admission Leads,edit')->name('leads.update');
     Route::patch('/leads/{lead}/status', [LeadController::class, 'updateStatus'])->middleware('staff.permission:Admission Leads,edit')->name('leads.updateStatus');
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])->middleware('staff.permission:Admission Leads,delete')->name('leads.destroy');
+    Route::get('/leads/sources-stages', [LeadController::class, 'pipelineConfig'])->middleware('staff.permission:Admission Leads,view')->name('leads.sources-stages');
+    Route::post('/leads/sources-stages/sources', [LeadController::class, 'storeSource'])->middleware('staff.permission:Admission Leads,add')->name('leads.sources-stages.sources.store');
+    Route::patch('/leads/sources-stages/sources/{leadSource}', [LeadController::class, 'updateSource'])->middleware('staff.permission:Admission Leads,edit')->name('leads.sources-stages.sources.update');
+    Route::delete('/leads/sources-stages/sources/{leadSource}', [LeadController::class, 'destroySource'])->middleware('staff.permission:Admission Leads,delete')->name('leads.sources-stages.sources.destroy');
+    Route::post('/leads/sources-stages/stages', [LeadController::class, 'storeStage'])->middleware('staff.permission:Admission Leads,add')->name('leads.sources-stages.stages.store');
+    Route::patch('/leads/sources-stages/stages/{leadPipelineStage}', [LeadController::class, 'updateStage'])->middleware('staff.permission:Admission Leads,edit')->name('leads.sources-stages.stages.update');
+    Route::delete('/leads/sources-stages/stages/{leadPipelineStage}', [LeadController::class, 'destroyStage'])->middleware('staff.permission:Admission Leads,delete')->name('leads.sources-stages.stages.destroy');
     Route::get('/visitor-register', [FrontOfficeController::class, 'visitorRegister'])->middleware('staff.permission:Visitor Register,view')->name('visitor-register');
     Route::post('/visitor-register', [FrontOfficeController::class, 'storeVisitorRegister'])->middleware('staff.permission:Visitor Register,add')->name('visitor-register.store');
     Route::patch('/visitor-register/{visitorRegisterEntry}', [FrontOfficeController::class, 'updateVisitorRegister'])->middleware('staff.permission:Visitor Register,edit')->name('visitor-register.update');

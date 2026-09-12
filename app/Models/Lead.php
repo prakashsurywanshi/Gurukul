@@ -13,6 +13,32 @@ class Lead extends Model
 
     public const PRIORITIES = ['low', 'medium', 'high'];
 
+    public static function resolvedStatuses(int $organizationId): array
+    {
+        return array_values(array_unique([
+            ...self::STATUSES,
+            ...LeadPipelineStage::query()
+                ->where('organization_id', $organizationId)
+                ->where('status', true)
+                ->orderBy('sort_order')
+                ->pluck('name')
+                ->all(),
+        ]));
+    }
+
+    public static function resolvedSources(int $organizationId): array
+    {
+        return array_values(array_unique([
+            ...self::SOURCES,
+            ...LeadSource::query()
+                ->where('organization_id', $organizationId)
+                ->where('status', true)
+                ->orderBy('sort_order')
+                ->pluck('name')
+                ->all(),
+        ]));
+    }
+
     protected $fillable = [
         'organization_id',
         'student_name',

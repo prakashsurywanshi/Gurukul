@@ -4297,5 +4297,32 @@ const en = {
     'Section Coverage': 'Section Coverage',
     'Total Capacity': 'Total Capacity',
     Section: 'Section',
+    'Lead Sources & Stages': 'Lead Sources & Stages',
+    'Configure the lead sources and pipeline stages used in admissions.':
+        'Configure the lead sources and pipeline stages used in admissions.',
+    'Lead Sources': 'Lead Sources',
+    'Where leads come from. Custom sources appear in the lead form and filters.':
+        'Where leads come from. Custom sources appear in the lead form and filters.',
+    'Add Source': 'Add Source',
+    'Pipeline Stages': 'Pipeline Stages',
+    'The stages a lead moves through until admission. Custom stages join the system defaults.':
+        'The stages a lead moves through until admission. Custom stages join the system defaults.',
+    'Add Stage': 'Add Stage',
+    'Enter an option value and an optional display label.': 'Enter an option value and an optional display label.',
+    'Enter a stage value and an optional display label.': 'Enter a stage value and an optional display label.',
+    'System defaults': 'System defaults',
+    'Option Name': 'Option Name',
+    'Option Value': 'Option Value',
+    'Display Label': 'Display Label',
+    'No options added yet.': 'No options added yet.',
+    Disable: 'Disable',
+    Enable: 'Enable',
+    'Edit Option': 'Edit Option',
+    'e.g. Counselling Camp': 'e.g. Counselling Camp',
+    'Enter a value for the option.': 'Enter a value for the option.',
+    'Failed to update option.': 'Failed to update option.',
+    'Failed to add option.': 'Failed to add option.',
+    'Delete this option?': 'Delete this option?',
+    'Failed to delete option.': 'Failed to delete option.',
 };
 export default en;
