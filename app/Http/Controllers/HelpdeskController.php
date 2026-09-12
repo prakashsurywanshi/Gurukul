@@ -46,7 +46,8 @@ class HelpdeskController extends Controller
                 'assignee:id,name',
                 'creator:id,name',
                 'replies' => fn ($q) => $q->orderByDesc('created_at')->limit(50)->with('user:id,name,role'),
-            ]);
+            ])
+            ->withCount('replies');
 
         if (!$isStaff) {
             $student = Student::query()->where('user_id', $user->id)->first();
@@ -54,13 +55,17 @@ class HelpdeskController extends Controller
             $query->where('student_id', $student->id);
         }
 
-        $tickets = $query->orderByDesc('created_at')->limit(200)->get()
+        $query->orderByDesc('created_at')->limit(200);
+
+        $tickets = $query->get()
             ->map(fn (SupportTicket $ticket) => [
                 'id' => (string) $ticket->id,
+                'reference' => 'TKT-' . str_pad((string) $ticket->id, 6, '0', STR_PAD_LEFT),
                 'subject' => $ticket->subject,
                 'department' => $ticket->department,
                 'priority' => $ticket->priority,
                 'status' => $ticket->status,
+                'message_count' => $ticket->replies_count,
                 'student' => $ticket->student?->user?->name ?? '—',
                 'class' => $ticket->student?->schoolClass?->name ?? '—',
                 'created_at' => $ticket->created_at?->toIso8601String(),

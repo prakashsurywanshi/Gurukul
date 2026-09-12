@@ -1737,6 +1737,362 @@ class SettingsController extends Controller
         ];
     }
 
+    private function defaultSocialMediaSettings(): array
+    {
+        return [
+            'facebook' => [
+                'enabled' => false,
+                'appId' => '',
+                'pageId' => '',
+                'pageName' => '',
+                'accessToken' => '',
+                'crossPostInstagram' => false,
+            ],
+            'autopost' => [
+                'notices' => true,
+                'events' => true,
+                'gallery' => true,
+            ],
+        ];
+    }
+
+    private function defaultTelegramSettings(): array
+    {
+        return [
+            'enabled' => false,
+            'botToken' => '',
+            'chatId' => '',
+        ];
+    }
+
+    private function defaultHRSettings(): array
+    {
+        return [
+            'saturday_pattern' => 'no_saturdays_off',
+            'weekly_off_days' => ['Sunday'],
+        ];
+    }
+
+    public function socialMediaSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $settings = $this->defaultSocialMediaSettings();
+
+        if ($organization) {
+            $settings = array_replace_recursive($settings, $organization->settings['social_media'] ?? []);
+        }
+
+        $settings['facebook']['accessToken'] = !empty($settings['facebook']['accessToken'])
+            ? $this->decryptSecret($settings['facebook']['accessToken'])
+            : '';
+
+        $configured = filled($settings['facebook']['pageId'] ?? '')
+            && filled($settings['facebook']['accessToken'] ?? '');
+
+        return inertia('dashboard/SocialMediaSettings', [
+            'user' => $user,
+            'socialMediaSettings' => $settings,
+            'configured' => $configured,
+        ]);
+    }
+
+    public function updateSocialMediaSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'facebook.enabled' => ['required', 'boolean'],
+            'facebook.appId' => ['nullable', 'string', 'max:100'],
+            'facebook.pageId' => ['nullable', 'string', 'max:100'],
+            'facebook.pageName' => ['nullable', 'string', 'max:255'],
+            'facebook.accessToken' => ['nullable', 'string', 'max:1000'],
+            'facebook.crossPostInstagram' => ['nullable', 'boolean'],
+            'autopost.notices' => ['nullable', 'boolean'],
+            'autopost.events' => ['nullable', 'boolean'],
+            'autopost.gallery' => ['nullable', 'boolean'],
+        ]);
+
+        $facebook = $validated['facebook'] ?? [];
+        $storedToken = $organization->settings['social_media']['facebook']['accessToken'] ?? '';
+
+        if (filled($facebook['accessToken'] ?? '') && $facebook['accessToken'] !== $storedToken) {
+            $facebook['accessToken'] = Crypt::encryptString($facebook['accessToken']);
+        } else {
+            $facebook['accessToken'] = $storedToken;
+        }
+
+        $validated['facebook'] = $facebook;
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'social_media' => array_replace_recursive(
+                    $this->defaultSocialMediaSettings(),
+                    $validated
+                ),
+            ],
+        ]);
+
+        return redirect()
+            ->route('settings.social-media')
+            ->with('success', 'Social media settings updated successfully.');
+    }
+
+    public function validateSocialMediaConnection(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $settings = $organization?->settings['social_media'] ?? [];
+
+        $token = $this->decryptSecret($settings['facebook']['accessToken'] ?? '');
+        $pageId = $settings['facebook']['pageId'] ?? '';
+
+        if (!filled($token) || !filled($pageId)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Facebook page is not configured yet.',
+            ]);
+        }
+
+        $client = new \GuzzleHttp\Client(['timeout' => 15]);
+        try {
+            $response = $client->get("https://graph.facebook.com/v19.0/{$pageId}", [
+                'query' => [
+                    'fields' => 'id,name,fan_count',
+                    'access_token' => $token,
+                ],
+            ]);
+
+            $data = json_decode((string) $response->getBody(), true);
+
+            return response()->json([
+                'ok' => true,
+                'message' => "Connected to \"{$data['name']}\" (".number_format($data['fan_count'] ?? 0).' followers).',
+                'page' => [
+                    'id' => $data['id'] ?? null,
+                    'name' => $data['name'] ?? null,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Could not reach the Facebook page. Please check the Page ID and Access Token.',
+            ]);
+        }
+    }
+
+    public function disconnectSocialMedia(): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'social_media' => $this->defaultSocialMediaSettings(),
+            ],
+        ]);
+
+        return redirect()
+            ->route('settings.social-media')
+            ->with('success', 'Social media connection removed.');
+    }
+
+    public function telegramSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $settings = $this->defaultTelegramSettings();
+
+        if ($organization) {
+            $settings = array_replace_recursive($settings, $organization->settings['telegram'] ?? []);
+        }
+
+        $settings['botToken'] = !empty($settings['botToken'])
+            ? $this->decryptSecret($settings['botToken'])
+            : '';
+
+        $configured = filled($settings['botToken'] ?? '') && filled($settings['chatId'] ?? '');
+
+        return inertia('dashboard/TelegramSettings', [
+            'user' => $user,
+            'telegramSettings' => $settings,
+            'configured' => $configured,
+        ]);
+    }
+
+    public function updateTelegramSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'botToken' => ['nullable', 'string', 'max:500'],
+            'chatId' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $storedToken = $organization->settings['telegram']['botToken'] ?? '';
+
+        if (filled($validated['botToken'] ?? '') && $validated['botToken'] !== $storedToken) {
+            $validated['botToken'] = Crypt::encryptString($validated['botToken']);
+        } else {
+            $validated['botToken'] = $storedToken;
+        }
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'telegram' => array_replace_recursive(
+                    $this->defaultTelegramSettings(),
+                    $validated
+                ),
+            ],
+        ]);
+
+        return redirect()
+            ->route('settings.telegram')
+            ->with('success', 'Telegram bot settings updated successfully.');
+    }
+
+    public function validateTelegramConnection(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $settings = $organization?->settings['telegram'] ?? [];
+
+        $token = $this->decryptSecret($settings['botToken'] ?? '');
+        $chatId = $settings['chatId'] ?? '';
+
+        if (!filled($token) || !filled($chatId)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Telegram bot is not configured yet.',
+            ]);
+        }
+
+        $client = new \GuzzleHttp\Client(['timeout' => 15]);
+        try {
+            $response = $client->post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'form_params' => [
+                    'chat_id' => $chatId,
+                    'text' => '✅ Gurukul ERP Telegram monitoring is now connected.',
+                ],
+            ]);
+
+            $data = json_decode((string) $response->getBody(), true);
+
+            if (($data['ok'] ?? false) !== true) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Telegram responded with an error. Please check the Bot Token and Chat ID.',
+                ]);
+            }
+
+            return response()->json([
+                'ok' => true,
+                'message' => 'Connected! A test message was sent to your chat.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Could not reach Telegram. Please check the Bot Token and Chat ID.',
+            ]);
+        }
+    }
+
+    public function disconnectTelegram(): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'telegram' => $this->defaultTelegramSettings(),
+            ],
+        ]);
+
+        return redirect()
+            ->route('settings.telegram')
+            ->with('success', 'Telegram bot connection removed.');
+    }
+
+    public function hrSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $settings = $this->defaultHRSettings();
+
+        if ($organization) {
+            $settings = array_replace_recursive($settings, $organization->settings['hr_settings'] ?? []);
+        }
+
+        return inertia('dashboard/HrSettings', [
+            'user' => $user,
+            'hrSettings' => $settings,
+        ]);
+    }
+
+    public function updateHrSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $validated = $request->validate([
+            'saturday_pattern' => ['required', 'string', Rule::in([
+                'no_saturdays_off',
+                'every_saturday_off',
+                'last_saturday_off',
+                'alternate_first_third',
+                'alternate_second_fourth',
+            ])],
+            'weekly_off_days' => ['required', 'array'],
+            'weekly_off_days.*' => ['string', Rule::in(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])],
+        ]);
+
+        $organization->update([
+            'settings' => [
+                ...($organization->settings ?? []),
+                'hr_settings' => array_replace_recursive(
+                    $this->defaultHRSettings(),
+                    $validated
+                ),
+            ],
+        ]);
+
+        return redirect()
+            ->route('settings.hr')
+            ->with('success', 'HR settings updated successfully.');
+    }
+
     public function ssoSettings()
     {
         $user = Auth::user();

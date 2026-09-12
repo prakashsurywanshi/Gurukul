@@ -240,7 +240,7 @@ class UsersController extends Controller
                 );
         }
 
-        LeaveRequest::query()->create([
+        $leaveRequest = LeaveRequest::query()->create([
             'organization_id' => $organization->id,
             'user_id' => $validated['staff_id'],
             'student_id' => null,
@@ -252,7 +252,37 @@ class UsersController extends Controller
             'status' => 'pending',
         ]);
 
+        $this->notifyAdminsOfLeaveRequest($leaveRequest);
+
         return redirect()->route('staff.leave-management')->with('success', 'Leave request created successfully.');
+    }
+
+    private function notifyAdminsOfLeaveRequest(LeaveRequest $leaveRequest): void
+    {
+        $admins = User::query()
+            ->where('organization_id', $leaveRequest->organization_id)
+            ->whereIn('role', ['admin', 'super_admin'])
+            ->where('status', 'active')
+            ->get();
+
+        $staffName = $leaveRequest->user?->name ?? 'Staff member';
+        $leaveType = ucfirst((string) ($leaveRequest->leave_type ?? 'leave'));
+        $days = max(1, $leaveRequest->from_date->diffInDays($leaveRequest->to_date) + 1);
+
+        foreach ($admins as $admin) {
+            \App\Models\SystemNotification::query()->create([
+                'organization_id' => $leaveRequest->organization_id,
+                'user_id' => $admin->id,
+                'type' => NotificationCenterController::TYPE_LEAVE_REQUEST,
+                'title' => 'New Leave Request',
+                'message' => sprintf('%s applied for %s leave for %d day(s).', $staffName, $leaveType, $days),
+                'data' => [
+                    'action_label' => 'Review Request',
+                    'action_url' => '/staff/leave-management',
+                    'event' => 'leave_request_created',
+                ],
+            ]);
+        }
     }
 
     public function updateLeaveRequest(Request $request, LeaveRequest $leaveRequest): RedirectResponse
@@ -327,6 +357,27 @@ class UsersController extends Controller
             'approved_by' => $validated['status'] === 'pending' ? null : $user->id,
             'approved_at' => $validated['status'] === 'pending' ? null : now(),
         ]);
+
+        $staff = User::query()->find($leaveRequest->user_id);
+        if ($staff) {
+            \App\Models\SystemNotification::query()->create([
+                'organization_id' => $leaveRequest->organization_id,
+                'user_id' => $staff->id,
+                'type' => NotificationCenterController::TYPE_LEAVE_REQUEST,
+                'title' => 'Leave Request ' . ucfirst($validated['status']),
+                'message' => sprintf(
+                    'Your %s leave request (%s) was %s.',
+                    ucfirst((string) ($leaveRequest->leave_type ?? 'leave')),
+                    $leaveRequest->from_date?->format('j M'),
+                    strtolower($validated['status'])
+                ),
+                'data' => [
+                    'action_label' => 'View Leave',
+                    'action_url' => '/staff/leave-management',
+                    'event' => 'leave_request_status',
+                ],
+            ]);
+        }
 
         return redirect()->route('staff.leave-management')->with('success', 'Leave request status updated successfully.');
     }

@@ -98,6 +98,11 @@ import {
     LifeBuoy,
     MessageCircle,
     Video,
+    Share2,
+    Settings2,
+    Megaphone,
+    BellRing,
+    Printer,
 } from 'lucide-react';
 import { organizationService } from '../utils/mockDataService';
 import { router, usePage } from '@inertiajs/react';
@@ -398,6 +403,23 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Dashboard Home',
             },
             {
+                id: 'notifications',
+                label: 'Notifications',
+                icon: BellRing,
+                href: '/notifications',
+                roles: [
+                    'super_admin',
+                    'admin',
+                    'teacher',
+                    'receptionist',
+                    'accountant',
+                    'librarian',
+                    'student',
+                    'parent',
+                ],
+                feature: 'Dashboard Home',
+            },
+            {
                 id: 'front-office-menu',
                 label: 'Front Office',
                 icon: Briefcase,
@@ -459,6 +481,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 icon: QrCode,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'QR Code Attendance',
+            },
+            {
+                id: 'fees-dashboard',
+                label: 'Fees Dashboard',
+                icon: IndianRupee,
+                href: '/fees/dashboard',
+                roles: ['super_admin', 'admin', 'accountant', 'receptionist'],
+                feature: 'Fees Management',
             },
             {
                 id: 'fees',
@@ -528,6 +558,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Tally Export',
             },
             {
+                id: 'accounts-dashboard',
+                label: 'Accounts Dashboard',
+                icon: Landmark,
+                href: '/accounting/dashboard',
+                roles: ['super_admin', 'admin', 'accountant'],
+                feature: 'Income Management',
+            },
+            {
                 id: 'income-management',
                 label: 'Income',
                 icon: ArrowUpCircle,
@@ -589,6 +627,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Content Safety',
             },
             {
+                id: 'asset-dashboard',
+                label: 'Asset Dashboard',
+                icon: Gauge,
+                href: '/assets/dashboard',
+                roles: ['super_admin', 'admin'],
+                feature: 'Asset Management',
+                module: 'assets',
+            },
+            {
                 id: 'assets',
                 label: 'Assets',
                 icon: Warehouse,
@@ -610,6 +657,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 icon: FileText,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Exam Management',
+            },
+            {
+                id: 'online-exam-dashboard',
+                label: 'Online Exam Dashboard',
+                icon: Globe,
+                href: '/online-exam/dashboard',
+                roles: ['super_admin', 'admin', 'teacher', 'student'],
+                feature: 'Online Exams',
             },
             {
                 id: 'online-exams',
@@ -691,6 +746,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Student Health',
             },
             {
+                id: 'ptm-dashboard',
+                label: 'PTM Dashboard',
+                icon: Handshake,
+                href: '/ptm/dashboard',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'PTM',
+            },
+            {
                 id: 'ptm',
                 label: 'Parent-Teacher Meeting',
                 icon: Handshake,
@@ -705,6 +768,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 feature: 'Certificate Management',
             },
             {
+                id: 'library-dashboard',
+                label: 'Library Dashboard',
+                icon: Book,
+                href: '/library/dashboard',
+                roles: ['super_admin', 'admin', 'librarian', 'teacher'],
+                feature: 'Library Management',
+            },
+            {
                 id: 'library',
                 label: 'Library',
                 icon: Book,
@@ -717,6 +788,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                 icon: LibraryBig,
                 roles: ['super_admin', 'admin', 'librarian', 'teacher', 'student'],
                 feature: 'E-Library',
+            },
+            {
+                id: 'inventory-dashboard',
+                label: 'Inventory Dashboard',
+                icon: Warehouse,
+                href: '/inventory/dashboard',
+                roles: ['super_admin', 'admin', 'accountant', 'librarian', 'receptionist'],
+                feature: 'Inventory Management',
             },
             {
                 id: 'inventory',
@@ -876,6 +955,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     };
     const studentMenuItems = [
         {
+            id: 'student-dashboard',
+            label: 'Student Dashboard',
+            icon: Users,
+            href: '/student-dashboard',
+            roles: ['super_admin', 'admin', 'receptionist', 'teacher'],
+            feature: 'Search Students',
+        },
+
+        {
             id: 'search_students',
             label: 'Search Students',
             icon: Users,
@@ -952,6 +1040,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const hasStudentMenu = studentMenuItems.length > 0;
     const academicMenuItems = [
         {
+            id: 'academic-dashboard',
+            label: 'Academic Dashboard',
+            icon: School,
+            href: '/academics/dashboard',
+            roles: ['super_admin', 'admin', 'teacher', 'student'],
+            feature: 'Class / Section',
+        },
+
+        {
             id: 'classes',
             label: 'Class / Section',
             icon: School,
@@ -980,6 +1077,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Teachers Time Table',
         },
+        {
+            id: 'lesson-plan-dashboard',
+            label: 'Lesson Planner Dashboard',
+            icon: BookOpen,
+            href: '/lesson-plans/dashboard',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Lesson Plan',
+        },
+
         {
             id: 'lesson-plan',
             label: 'Lesson Plan',
@@ -1010,6 +1116,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Promote Students',
         },
         {
+            id: 'assessment-dashboard',
+            label: 'Assessment Dashboard',
+            icon: ClipboardList,
+            href: '/assessment/dashboard',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Assessment',
+        },
+
+        {
             id: 'assessment',
             label: 'Assessment',
             icon: ListChecks,
@@ -1037,6 +1152,16 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             module: 'report-cards',
         },
         {
+            id: 'cbc-dashboard',
+            label: 'CBC Dashboard',
+            icon: Layers,
+            href: '/cbc/dashboard',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'CBC',
+            module: 'cbc',
+        },
+
+        {
             id: 'cbc',
             label: 'CBC',
             icon: Shapes,
@@ -1045,6 +1170,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'CBC',
             module: 'cbc',
         },
+        {
+            id: 'osm-dashboard',
+            label: 'OSM Dashboard',
+            icon: Building2,
+            href: '/osm/dashboard',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Assessment',
+        },
+
         {
             id: 'osm',
             label: 'OSM',
@@ -1065,12 +1199,30 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const hasAcademicMenu = academicMenuItems.length > 0;
     const frontOfficeMenuItems = [
         {
+            id: 'front-office-dashboard',
+            label: 'Front Office Dashboard',
+            icon: Briefcase,
+            href: '/front-office/dashboard',
+            roles: ['admin', 'receptionist'],
+            feature: 'Admission Enquiry',
+        },
+
+        {
             id: 'admission-enquiry',
             label: 'Admission Enquiry',
             icon: UserRound,
             roles: ['admin', 'receptionist'],
             feature: 'Admission Enquiry',
         },
+        {
+            id: 'lead-dashboard',
+            label: 'Lead Dashboard',
+            icon: Inbox,
+            href: '/leads/dashboard',
+            roles: ['admin', 'receptionist'],
+            feature: 'Admission Leads',
+        },
+
         {
             id: 'leads',
             label: 'Leads',
@@ -1123,6 +1275,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasFrontOfficeMenu = frontOfficeMenuItems.length > 0;
     const examMenuItems = [
+        {
+            id: 'exam-dashboard',
+            label: 'Exam Dashboard',
+            icon: FileText,
+            href: '/exams-dashboard',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+
         {
             id: 'examination',
             label: 'Examination',
@@ -1228,6 +1389,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Report Card',
         },
         {
+            id: 'marksheet-remarks',
+            label: 'Enter Report Card Remarks',
+            icon: MessageSquare,
+            href: '/marksheet-remarks',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Exam Management',
+        },
+        {
             id: 'hpc-dashboard',
             label: 'HPC Dashboard',
             icon: Gauge,
@@ -1310,6 +1479,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             roles: ['super_admin', 'admin', 'teacher'],
             feature: 'Student ID Card Management',
         },
+        {
+            id: 'generate-document',
+            label: 'Generate Documents',
+            icon: Printer,
+            href: '/documents/generate',
+            roles: ['super_admin', 'admin', 'teacher'],
+            feature: 'Certificate Management',
+        },
     ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasCertificateMenu = certificateMenuItems.length > 0;
     const communicationMenuItems = [
@@ -1344,6 +1521,22 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             href: '/communication/notice-board',
             roles: ['super_admin', 'admin', 'teacher', 'parent', 'receptionist', 'student'],
             feature: 'Notice Board',
+        },
+        {
+            id: 'compose-broadcast',
+            label: 'Compose Broadcast',
+            icon: Megaphone,
+            href: '/communicate/broadcast/create',
+            roles: ['super_admin', 'admin', 'teacher', 'receptionist'],
+            feature: 'Messages',
+        },
+        {
+            id: 'broadcast-history',
+            label: 'Broadcast History',
+            icon: History,
+            href: '/communicate/broadcast',
+            roles: ['super_admin', 'admin', 'teacher', 'receptionist'],
+            feature: 'Messages',
         },
         {
             id: 'helpdesk',
@@ -1492,6 +1685,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Payroll Management',
         },
         {
+            id: 'survey-dashboard',
+            label: 'Survey Dashboard',
+            icon: Send,
+            href: '/survey/dashboard',
+            roles: ['admin', 'student'],
+            feature: 'Feedback Management',
+        },
+
+        {
             id: 'surveys',
             label: 'Surveys',
             icon: ClipboardPenLine,
@@ -1591,6 +1793,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const hasHRMenu = staffMenuItems.length > 0;
     const hostelMenuItems = [
         {
+            id: 'hostel-dashboard',
+            label: 'Hostel Dashboard',
+            icon: BedDouble,
+            href: '/hostel/dashboard',
+            roles: ['admin'],
+            feature: 'Hostel Management',
+        },
+
+        {
             id: 'hostel-management',
             label: 'Manage Hostel',
             icon: BedDouble,
@@ -1609,6 +1820,15 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     ].filter((item) => canAccessItem(item.roles, item.feature, (item as { module?: string }).module));
     const hasHostelMenu = hostelMenuItems.length > 0;
     const transportMenuItems = [
+        {
+            id: 'transport-dashboard',
+            label: 'Transport Dashboard',
+            icon: BusFront,
+            href: '/transport/dashboard',
+            roles: ['admin', 'receptionist', 'driver'],
+            feature: 'Transport Management',
+        },
+
         {
             id: 'transport-management',
             label: 'Transport Management',
@@ -1653,6 +1873,22 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             feature: 'Communication Setting',
         },
         {
+            id: 'social-media-settings',
+            label: 'Social Media Autopost',
+            icon: Share2,
+            href: '/settings/social-media',
+            roles: ['admin'],
+            feature: 'Communication Setting',
+        },
+        {
+            id: 'telegram-settings',
+            label: 'Telegram Bot',
+            icon: Send,
+            href: '/settings/telegram',
+            roles: ['admin'],
+            feature: 'Communication Setting',
+        },
+        {
             id: 'online-payment-settings',
             label: 'Online Payments',
             icon: CreditCard,
@@ -1683,6 +1919,14 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             href: '/biometric-devices',
             roles: ['super_admin', 'admin'],
             feature: 'Biometric Settings',
+        },
+        {
+            id: 'hr-settings',
+            label: 'HR / Payroll Settings',
+            icon: Settings2,
+            href: '/settings/hr',
+            roles: ['admin'],
+            feature: 'User Management',
         },
         {
             id: 'roles-permissions',

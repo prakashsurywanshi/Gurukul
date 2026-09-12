@@ -21,10 +21,12 @@ interface Reply {
 
 interface Ticket {
     id: string;
+    reference?: string;
     subject: string;
     department: string;
     priority: string;
     status: string;
+    message_count?: number;
     student: string;
     class?: string | null;
     created_at?: string | null;
@@ -239,6 +241,11 @@ export default function Helpdesk(pageProps: HelpdeskProps) {
                                         />
                                         <span className="font-medium text-gray-900 dark:text-white">
                                             {ticket.subject}
+                                        </span>
+                                        <span className="font-mono text-xs text-gray-400">
+                                            {ticket.reference}
+                                            {typeof ticket.message_count === 'number' &&
+                                                ` · ${ticket.message_count} ${t('messages')}`}
                                         </span>
                                         <Badge className={STATUS_BADGE[ticket.status] ?? ''}>
                                             {t(i18nStatus(ticket.status))}
