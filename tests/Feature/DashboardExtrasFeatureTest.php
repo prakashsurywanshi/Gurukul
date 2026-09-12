@@ -90,4 +90,11 @@ class DashboardExtrasFeatureTest extends TestCase
 
         $this->actingAs($admin)->get('/agent-logs')->assertOk();
     }
+
+    public function test_sections_page_loads(): void
+    {
+        [$admin] = $this->seedContext();
+
+        $this->actingAs($admin)->get('/sections')->assertOk();
+    }
 }

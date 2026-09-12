@@ -190,6 +190,42 @@ class ClassesController extends Controller
         return redirect()->route('classes')->with('success', 'Section deleted successfully.');
     }
 
+    public function sections() {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $sections = $organization
+            ? SchoolClass::query()
+                ->where('organization_id', $organization->id)
+                ->selectRaw('section, COUNT(*) as class_count, COALESCE(SUM(capacity), 0) as total_capacity')
+                ->groupBy('section')
+                ->withCount([
+                    'studentAcademicHistories as student_count' => fn ($query) => $query
+                        ->where('is_current', true)
+                        ->where('status', 'active')
+                        ->whereHas('student', fn ($studentQuery) => $studentQuery->where('status', 'active')),
+                ])
+                ->orderBy('section')
+                ->get()
+                ->keyBy('section')
+                : collect();
+
+        $allSections = ($organization ? $this->getSectionRecords($organization) : [])
+            ?: $sections->keys()->all();
+
+        $records = collect($allSections)->map(fn (string $section) => [
+            'name' => $section,
+            'classCount' => (int) ($sections[$section]->class_count ?? 0),
+            'studentCount' => (int) ($sections[$section]->student_count ?? 0),
+            'totalCapacity' => (int) ($sections[$section]->total_capacity ?? 0),
+        ])->all();
+
+        return inertia('dashboard/Sections', [
+            'user' => $user,
+            'sectionRecords' => $records,
+        ]);
+    }
+
     public function classTimeTable()
     {
         $user = Auth::user();

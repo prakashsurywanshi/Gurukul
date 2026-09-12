@@ -66,6 +66,7 @@ import {
     Landmark,
     Languages,
     Layers,
+    LayoutList,
     LayoutDashboard,
     LayoutTemplate,
     Library,
@@ -166,7 +167,7 @@ export const sidebarConfig: {
         label: 'ERP Navigator',
         icon: Compass,
         navMode: 'href-or-id',
-        tabs: ['explore', 'data-validator'],
+        tabs: ['explore'],
         items: [
             {
                 id: 'explore',
@@ -175,14 +176,6 @@ export const sidebarConfig: {
                 href: '/explore',
                 roles: ['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian'],
                 feature: 'Dashboard Home',
-            },
-            {
-                id: 'data-validator',
-                label: 'Data Validator',
-                icon: ShieldCheck,
-                href: '/data-validator',
-                roles: ['super_admin', 'admin'],
-                feature: 'Reports & Analytics',
             },
         ],
     },
@@ -353,7 +346,7 @@ export const sidebarConfig: {
         label: 'Study Center',
         icon: GraduationCap,
         navMode: 'href-or-id',
-        tabs: ['study-materials', 'question-bank'],
+        tabs: ['study-materials', 'question-bank', 'classwork-logbook'],
         items: [
             {
                 id: 'study-materials',
@@ -368,6 +361,14 @@ export const sidebarConfig: {
                 icon: HelpCircle,
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Question Bank',
+            },
+            {
+                id: 'classwork-logbook',
+                label: 'Classwork & Logbook',
+                icon: BookOpenCheck,
+                href: '/classwork-logbook',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'Homework',
             },
         ],
     },
@@ -551,6 +552,7 @@ export const sidebarConfig: {
             'fee-groups',
             'fees-discounts',
             'scholarships',
+            'all-transactions',
         ],
         items: [
             {
@@ -621,6 +623,14 @@ export const sidebarConfig: {
                 roles: ['super_admin', 'admin', 'accountant'],
                 feature: 'Scholarship & Discounts',
             },
+            {
+                id: 'all-transactions',
+                label: 'All Transactions',
+                icon: ArrowLeftRight,
+                href: '/all-transactions',
+                roles: ['super_admin', 'admin', 'accountant'],
+                feature: 'Bank Accounts',
+            },
         ],
     },
     {
@@ -687,14 +697,6 @@ export const sidebarConfig: {
                 id: 'bank-accounts',
                 label: 'Bank Accounts',
                 icon: Landmark,
-                roles: ['super_admin', 'admin', 'accountant'],
-                feature: 'Bank Accounts',
-            },
-            {
-                id: 'all-transactions',
-                label: 'All Transactions',
-                icon: ArrowLeftRight,
-                href: '/all-transactions',
                 roles: ['super_admin', 'admin', 'accountant'],
                 feature: 'Bank Accounts',
             },
@@ -1247,7 +1249,7 @@ export const sidebarConfig: {
         label: 'Engagement',
         icon: Heart,
         navMode: 'href-or-id',
-        tabs: ['events-calendar', 'engagement'],
+        tabs: ['events-calendar', 'engagement', 'creatives'],
         items: [
             {
                 id: 'events-calendar',
@@ -1265,6 +1267,14 @@ export const sidebarConfig: {
                 roles: ['admin'],
                 feature: 'Events Calendar',
             },
+            {
+                id: 'creatives',
+                label: 'Creatives',
+                icon: Palette,
+                href: '/creatives',
+                roles: ['admin'],
+                feature: 'Events Calendar',
+            },
         ],
     },
     {
@@ -1272,7 +1282,7 @@ export const sidebarConfig: {
         label: 'Compliance & Governance',
         icon: ShieldCheck,
         navMode: 'href-or-id',
-        tabs: ['discipline', 'compliance'],
+        tabs: ['discipline', 'compliance', 'data-validator', 'inspections'],
         items: [
             {
                 id: 'discipline',
@@ -1287,6 +1297,22 @@ export const sidebarConfig: {
                 icon: ShieldCheck,
                 href: '/compliance',
                 roles: ['admin'],
+                feature: 'Reports & Analytics',
+            },
+            {
+                id: 'data-validator',
+                label: 'Data Validator',
+                icon: ShieldCheck,
+                href: '/data-validator',
+                roles: ['super_admin', 'admin'],
+                feature: 'Reports & Analytics',
+            },
+            {
+                id: 'inspections',
+                label: 'Inspections',
+                icon: ClipboardCheck,
+                href: '/inspections',
+                roles: ['super_admin', 'admin'],
                 feature: 'Reports & Analytics',
             },
         ],
@@ -1579,14 +1605,13 @@ export const sidebarConfig: {
         tabs: [
             'academic-dashboard',
             'classes',
+            'sections',
             'class-time-table',
             'auto-timetable',
             'teacher-time-table',
             'lesson-plan-dashboard',
             'lesson-plan',
             'homework',
-            'classwork-logbook',
-            'inspections',
             'subjects',
             'promote-students',
             'report-card-setups',
@@ -1611,6 +1636,14 @@ export const sidebarConfig: {
                 label: 'Class / Section',
                 icon: School,
                 roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'Class / Section',
+            },
+            {
+                id: 'sections',
+                label: 'Sections',
+                icon: LayoutList,
+                href: '/sections',
+                roles: ['super_admin', 'admin'],
                 feature: 'Class / Section',
             },
             {
@@ -1657,22 +1690,6 @@ export const sidebarConfig: {
                 href: '/homework',
                 roles: ['super_admin', 'admin', 'teacher', 'student'],
                 feature: 'Homework',
-            },
-            {
-                id: 'classwork-logbook',
-                label: 'Classwork & Logbook',
-                icon: BookOpenCheck,
-                href: '/classwork-logbook',
-                roles: ['super_admin', 'admin', 'teacher'],
-                feature: 'Homework',
-            },
-            {
-                id: 'inspections',
-                label: 'Inspections',
-                icon: ClipboardCheck,
-                href: '/inspections',
-                roles: ['super_admin', 'admin'],
-                feature: 'Class / Section',
             },
             {
                 id: 'subjects',
@@ -1847,7 +1864,7 @@ export const sidebarConfig: {
         label: 'Lead Management',
         icon: Target,
         navMode: 'href-or-id',
-        tabs: ['lead-dashboard', 'leads', 'agent-logs'],
+        tabs: ['lead-dashboard', 'leads'],
         items: [
             {
                 id: 'lead-dashboard',
@@ -1862,14 +1879,6 @@ export const sidebarConfig: {
                 label: 'Leads',
                 icon: Target,
                 roles: ['admin', 'receptionist'],
-                feature: 'Admission Leads',
-            },
-            {
-                id: 'agent-logs',
-                label: 'Agent Logs',
-                icon: History,
-                href: '/agent-logs',
-                roles: ['super_admin', 'admin'],
                 feature: 'Admission Leads',
             },
         ],
@@ -2036,7 +2045,7 @@ export const sidebarConfig: {
         label: 'School Website',
         icon: Globe,
         navMode: 'href-or-id',
-        tabs: ['facilities', 'website-cms', 'pages-builder', 'cbse-disclosure', 'creatives'],
+        tabs: ['facilities', 'website-cms', 'pages-builder', 'cbse-disclosure'],
         items: [
             {
                 id: 'facilities',
@@ -2069,14 +2078,6 @@ export const sidebarConfig: {
                 href: '/website-cms/cbse-disclosure',
                 roles: ['admin'],
                 feature: 'Website CMS',
-            },
-            {
-                id: 'creatives',
-                label: 'Creatives',
-                icon: Palette,
-                href: '/creatives',
-                roles: ['admin'],
-                feature: 'Image Gallery',
             },
         ],
     },
@@ -2118,7 +2119,7 @@ export const sidebarConfig: {
         label: 'Biometric Devices',
         icon: Fingerprint,
         navMode: 'href-or-id',
-        tabs: ['biometric-settings', 'biometric-devices'],
+        tabs: ['biometric-settings', 'biometric-devices', 'agent-logs'],
         items: [
             {
                 id: 'biometric-settings',
@@ -2133,6 +2134,14 @@ export const sidebarConfig: {
                 label: 'Biometric Devices',
                 icon: ScanFace,
                 href: '/biometric-devices',
+                roles: ['super_admin', 'admin'],
+                feature: 'Biometric Settings',
+            },
+            {
+                id: 'agent-logs',
+                label: 'Agent Logs',
+                icon: History,
+                href: '/agent-logs',
                 roles: ['super_admin', 'admin'],
                 feature: 'Biometric Settings',
             },

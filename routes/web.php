@@ -325,6 +325,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/staff/departments', [UsersController::class, 'storeDepartment'])->middleware('staff.permission:User Management,add')->name('users.departments.store');
     Route::delete('/staff/departments/{department}', [UsersController::class, 'destroyDepartment'])->middleware('staff.permission:User Management,delete')->name('users.departments.destroy');
     Route::get('/classes', [ClassesController::class, 'index'])->middleware('staff.permission:Class / Section,view')->name('classes');
+    Route::get('/sections', [ClassesController::class, 'sections'])->middleware('staff.permission:Class / Section,view')->name('sections');
     Route::post('/classes', [ClassesController::class, 'store'])->middleware('staff.permission:Class / Section,add')->name('classes.store');
     Route::patch('/classes/{schoolClass}', [ClassesController::class, 'update'])->middleware('staff.permission:Class / Section,edit')->name('classes.update');
     Route::delete('/classes/{schoolClass}', [ClassesController::class, 'destroy'])->middleware('staff.permission:Class / Section,delete')->name('classes.destroy');
@@ -672,10 +673,10 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/contact-support', [DashboardExtrasController::class, 'contactSupport'])->middleware('staff.permission:Knowledge Base,view')->name('contact-support');
     Route::get('/all-transactions', [DashboardExtrasController::class, 'allTransactions'])->middleware('staff.permission:Bank Accounts,view')->name('all-transactions');
     Route::get('/data-validator', [DashboardExtrasController::class, 'dataValidator'])->middleware('staff.permission:Reports & Analytics,view')->name('data-validator');
-    Route::get('/inspections', [DashboardExtrasController::class, 'inspections'])->middleware('staff.permission:Class / Section,view')->name('inspections');
+    Route::get('/inspections', [DashboardExtrasController::class, 'inspections'])->middleware('staff.permission:Reports & Analytics,view')->name('inspections');
     Route::get('/classwork-logbook', [DashboardExtrasController::class, 'classworkLogbook'])->middleware('staff.permission:Homework,view')->name('classwork-logbook');
-    Route::get('/creatives', [DashboardExtrasController::class, 'creatives'])->middleware('staff.permission:Image Gallery,view')->name('creatives');
-    Route::get('/agent-logs', [DashboardExtrasController::class, 'agentLogs'])->middleware('staff.permission:Admission Leads,view')->name('agent-logs');
+    Route::get('/creatives', [DashboardExtrasController::class, 'creatives'])->middleware('staff.permission:Events Calendar,view')->name('creatives');
+    Route::get('/agent-logs', [DashboardExtrasController::class, 'agentLogs'])->middleware('staff.permission:Biometric Settings,view')->name('agent-logs');
     Route::get('/settings', [SettingsController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('settings');
     Route::patch('/settings', [SettingsController::class, 'update'])->middleware('staff.permission:General Setting,edit')->name('settings.update');
     Route::get('/settings/language', [SettingsController::class, 'languageSettings'])->middleware('staff.permission:General Setting,view')->name('settings.language');
