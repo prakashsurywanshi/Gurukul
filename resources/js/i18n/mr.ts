@@ -4604,5 +4604,12 @@ const mr = {
     'Compliance Checklist': 'अनुपालन चेकलिस्ट',
     'Regulatory Profile': 'नियामक प्रोफाईल',
     'Field Visibility': 'फील्ड दृश्यमानता',
+    'Asset Categories': 'मालमत्ता श्रेणी',
+    'Asset Assignments': 'मालमत्ता नियुक्ती',
+    'Asset Depreciation': 'मालमत्ता घसारा',
+    'Asset Maintenance': 'मालमत्ता देखभाल',
+    'Asset Disposals': 'मालमत्ता विल्हेवाट',
+    'Asset Audits': 'मालमत्ता ऑडिट',
+    'Asset Reports': 'मालमत्ता अहवाल',
 };
 export default mr;

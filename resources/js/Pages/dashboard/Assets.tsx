@@ -4,6 +4,7 @@ import {
     BadgeIndianRupee,
     BarChart3,
     FileClock,
+    FolderKanban,
     Pencil,
     Plus,
     RefreshCw,
@@ -130,8 +131,21 @@ export default function Assets(pageProps: AssetsProps) {
         notes: '',
     });
 
-    type AssetView = 'assets' | 'assignments' | 'depreciation' | 'disposals' | 'audits' | 'reports';
-    const [view, setView] = useState<AssetView>('assets');
+    type AssetView = 'assets' | 'categories' | 'assignments' | 'depreciation' | 'disposals' | 'audits' | 'reports';
+    const [view, setView] = useState<AssetView>(() => {
+        const query = new URLSearchParams(window.location.search).get('view') ?? '';
+        const allowed: AssetView[] = [
+            'assets',
+            'categories',
+            'assignments',
+            'depreciation',
+            'disposals',
+            'audits',
+            'reports',
+        ];
+
+        return allowed.includes(query as AssetView) ? (query as AssetView) : 'assets';
+    });
 
     const assignedAssets = useMemo(() => assets.filter((asset) => asset.assigned_to), [assets]);
 
@@ -382,6 +396,7 @@ export default function Assets(pageProps: AssetsProps) {
                     {(
                         [
                             { key: 'assets', label: 'Assets', icon: Warehouse },
+                            { key: 'categories', label: 'Categories', icon: FolderKanban },
                             { key: 'assignments', label: 'Assignments', icon: UserRound },
                             { key: 'depreciation', label: 'Depreciation', icon: TrendingDown },
                             { key: 'disposals', label: 'Disposals', icon: Trash2 },
@@ -673,6 +688,52 @@ export default function Assets(pageProps: AssetsProps) {
                             </>
                         )}
 
+                        {view === 'categories' && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">Categories</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Category</TableHead>
+                                                <TableHead className="text-right">Assets</TableHead>
+                                                <TableHead className="text-right">Purchase Cost</TableHead>
+                                                <TableHead className="text-right">Current Value</TableHead>
+                                                <TableHead className="text-right">Depreciated</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {categoryReports.map((report) => (
+                                                <TableRow key={report.category}>
+                                                    <TableCell className="text-sm font-medium">
+                                                        {report.category}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-sm">{report.count}</TableCell>
+                                                    <TableCell className="text-right text-sm">
+                                                        ₹{report.cost.toLocaleString('en-IN')}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-sm">
+                                                        ₹{report.current.toLocaleString('en-IN')}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-sm">
+                                                        ₹{(report.cost - report.current).toLocaleString('en-IN')}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {categoryReports.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">
+                                                        No categories to show.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        )}
                         {view === 'reports' && (
                             <Card>
                                 <CardHeader>

@@ -4633,5 +4633,12 @@ const hi = {
     'Compliance Checklist': 'अनुपालन चेकलिस्ट',
     'Regulatory Profile': 'नियामक प्रोफ़ाइल',
     'Field Visibility': 'फ़ील्ड दृश्यता',
+    'Asset Categories': 'संपत्ति श्रेणियाँ',
+    'Asset Assignments': 'संपत्ति आवंटन',
+    'Asset Depreciation': 'संपत्ति मूल्यह्रास',
+    'Asset Maintenance': 'संपत्ति रखरखाव',
+    'Asset Disposals': 'संपत्ति निपटान',
+    'Asset Audits': 'संपत्ति ऑडिट',
+    'Asset Reports': 'संपत्ति रिपोर्ट',
 };
 export default hi;

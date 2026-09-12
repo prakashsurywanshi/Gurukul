@@ -4615,5 +4615,12 @@ const en = {
     'Compliance Checklist': 'Compliance Checklist',
     'Regulatory Profile': 'Regulatory Profile',
     'Field Visibility': 'Field Visibility',
+    'Asset Categories': 'Asset Categories',
+    'Asset Assignments': 'Asset Assignments',
+    'Asset Depreciation': 'Asset Depreciation',
+    'Asset Maintenance': 'Asset Maintenance',
+    'Asset Disposals': 'Asset Disposals',
+    'Asset Audits': 'Asset Audits',
+    'Asset Reports': 'Asset Reports',
 };
 export default en;
