@@ -21,7 +21,21 @@ const EXCLUDED = {
     accountant: new Set([
         'logout', // top-bar action, not a sidebar menu item (same rationale as teacher)
     ]),
+    parent: new Set([
+        'viewing kabir', // dynamic child-switcher header; surfaces as our child selector
+        'kabir singh', // fixture child name (switch-child), handled by our child switcher
+        'shlok verma', // fixture child name (switch-child), handled by our child switcher
+        'rajesh singh', // fixture child name (switch-child), handled by our child switcher
+        'john paul', // fixture child name (switch-child), handled by our child switcher
+        'study center', // container group; all children (Classwork & Logbook, Syllabus & Materials, Live Classes) are surfaced in the Parent Portal section
+        'logout', // top-bar action, not a sidebar menu item (same rationale as teacher)
+    ]),
 };
+
+// The demo parent portal authenticates as our `student` role (DemoLogin maps
+// parent -> student), so parent reference items are matched against the
+// student-visible sidebar items.
+const OUR_ROLE = { parent: 'student' }[role] ?? role;
 
 const refPath = `docs/reference/sidebar_${role}.json`;
 const ref = JSON.parse(await readFile(refPath, 'utf8'));
@@ -49,7 +63,7 @@ function walkGroup(group) {
     const visibleItems = [];
     function walkItems(items) {
         for (const item of items) {
-            const itemVisible = item.roles === undefined || item.roles.includes(role);
+            const itemVisible = item.roles === undefined || item.roles.includes(OUR_ROLE);
             if (itemVisible) {
                 visibleItems.push(normalize(item.label));
                 if (item.items?.length) walkItems(item.items);
