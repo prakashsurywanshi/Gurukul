@@ -10,6 +10,7 @@ use App\Models\IssuedCertificate;
 use App\Models\Organization;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\IdCardDesignService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -213,6 +214,7 @@ class CertificateController extends Controller
         return inertia('dashboard/StudentIdCardManagement', [
             'user' => $user,
             'students' => $organization ? $this->getStudentIdCardStudents($organization) : [],
+            'design' => $organization ? app(IdCardDesignService::class)->normalizeForOrganization($organization) : app(IdCardDesignService::class)->defaults(),
         ]);
     }
 

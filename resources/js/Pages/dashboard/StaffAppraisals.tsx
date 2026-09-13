@@ -63,34 +63,63 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
     const [appFeedback, setAppFeedback] = useState('');
     const [appSaving, setAppSaving] = useState(false);
 
+    const [editingCycle, setEditingCycle] = useState<CycleRow | null>(null);
+
+    const openEditCycle = (cycle: CycleRow) => {
+        setEditingCycle(cycle);
+        setCycleName(cycle.name);
+        setStartsOn(cycle.startsOn);
+        setEndsOn(cycle.endsOn);
+        setCycleStatus(cycle.status);
+        setCycleDescription(cycle.description ?? '');
+        toast.info(t('Editing appraisal cycle.'));
+    };
+
+    const resetCycleForm = () => {
+        setEditingCycle(null);
+        setCycleName('');
+        setStartsOn('');
+        setEndsOn('');
+        setCycleStatus('active');
+        setCycleDescription('');
+    };
+
+    const removeCycle = (cycle: CycleRow) => {
+        if (!window.confirm(t('Delete this appraisal cycle and its appraisals?'))) {
+            return;
+        }
+        router.delete(`/staff/appraisals/cycles/${cycle.id}`, {
+            preserveScroll: true,
+            onError: () => toast.error(t('Failed to delete appraisal cycle.')),
+        });
+    };
+
     const submitCycle = () => {
         if (!cycleName.trim() || !startsOn || !endsOn) {
             toast.error(t('Cycle name and dates are required.'));
             return;
         }
         setCycleSaving(true);
-        router.post(
-            '/staff/appraisals/cycles',
-            {
-                name: cycleName.trim(),
-                starts_on: startsOn,
-                ends_on: endsOn,
-                status: cycleStatus,
-                description: cycleDescription.trim() || null,
+        const payload = {
+            name: cycleName.trim(),
+            starts_on: startsOn,
+            ends_on: endsOn,
+            status: cycleStatus,
+            description: cycleDescription.trim() || null,
+        };
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => {
+                resetCycleForm();
+                toast.success(editingCycle ? t('Appraisal cycle updated.') : t('Appraisal cycle created.'));
             },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setCycleName('');
-                    setStartsOn('');
-                    setEndsOn('');
-                    setCycleStatus('active');
-                    setCycleDescription('');
-                    toast.success(t('Appraisal cycle created.'));
-                },
-                onFinish: () => setCycleSaving(false),
-            },
-        );
+            onFinish: () => setCycleSaving(false),
+        };
+        if (editingCycle) {
+            router.put(`/staff/appraisals/cycles/${editingCycle.id}`, payload, options);
+        } else {
+            router.post('/staff/appraisals/cycles', payload, options);
+        }
     };
 
     const submitAppraisal = () => {
@@ -193,7 +222,7 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('New Appraisal Cycle')}</CardTitle>
+                        <CardTitle>{editingCycle ? t('Edit Appraisal Cycle') : t('New Appraisal Cycle')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
@@ -232,7 +261,11 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
                         </div>
                         <Button onClick={submitCycle} disabled={cycleSaving}>
                             <Plus className="mr-2 h-4 w-4" />
-                            {cycleSaving ? t('Saving...') : t('Create Cycle')}
+                            {cycleSaving
+                                ? t('Saving...')
+                                : editingCycle
+                                  ? t('Update Cycle')
+                                  : t('Create Cycle')}
                         </Button>
                     </CardContent>
                 </Card>
@@ -262,6 +295,14 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
                                     <p className="mt-2 text-sm text-muted-foreground">
                                         {cycle.appraisalsCount} {t('appraisals')}
                                     </p>
+                                    <div className="mt-3 flex justify-end gap-1">
+                                        <Button size="icon" variant="ghost" onClick={() => openEditCycle(cycle)}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button size="icon" variant="ghost" onClick={() => removeCycle(cycle)}>
+                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

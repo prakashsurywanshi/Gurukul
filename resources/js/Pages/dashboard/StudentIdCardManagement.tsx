@@ -2,6 +2,8 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
 import { qrSvgToken } from '../../utils/qr';
 import DashboardLayout from '../DashboardLayout';
+import CardFace from '../../components/designer/CardFace';
+import { normalizeDesign, IdCardDesign } from '../../components/designer/cardTypes';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,11 +12,12 @@ import { Switch } from '../ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
-import { Download, IdCard, Plus, School, UserRound } from 'lucide-react';
+import { Download, IdCard, Plus } from 'lucide-react';
 
 interface StudentIdCardManagementProps {
     user: any;
     students?: StudentIdCardStudent[];
+    design?: Partial<IdCardDesign> | null;
 }
 
 interface StudentIdCardStudent {
@@ -68,8 +71,9 @@ const escapeHtml = (value: string) =>
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-export default function StudentIdCardManagement({ user, students = [] }: StudentIdCardManagementProps) {
+export default function StudentIdCardManagement({ user, students = [], design: designInput }: StudentIdCardManagementProps) {
     const { t } = useLanguage();
+    const design = normalizeDesign(designInput);
     const availableStudents = students;
 
     const classOptions = useMemo(
@@ -852,135 +856,39 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
                         </CardHeader>
                         <CardContent>
                             {selectedStudent ? (
-                                <div className="overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-lg">
-                                    <div className="bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-500 px-5 py-4 text-white">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div>
-                                                <p className="text-xs uppercase tracking-[0.3em] text-blue-100">
-                                                    {t('Template')}
-                                                    {templateCode}
-                                                </p>
-                                                <h2 className="mt-2 text-xl font-semibold">
-                                                    {cardTitle || t('Student ID Card')}
-                                                </h2>
-                                            </div>
-                                            <School className="h-9 w-9 text-blue-100" />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 p-5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-                                                <UserRound className="h-10 w-10" />
-                                            </div>
-                                            <div>
-                                                <p className="text-lg font-semibold text-slate-900">
-                                                    {printLanguage === 'mr' &&
-                                                    (selectedStudent.first_name_mr || selectedStudent.last_name_mr)
-                                                        ? `${selectedStudent.first_name_mr || ''} ${selectedStudent.last_name_mr || ''}`.trim()
-                                                        : `${selectedStudent.first_name} ${selectedStudent.last_name}`}
-                                                </p>
-                                                <p className="text-sm text-slate-500">
-                                                    {selectedStudent.email || 'student@gurukul.com'}
-                                                </p>
-                                                <Badge className="mt-2 bg-blue-600 text-white hover:bg-blue-600">
-                                                    {applicableClass}
-                                                </Badge>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-3 text-sm">
-                                            <div className="rounded-xl bg-slate-50 p-3">
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    {t('Student ID')}
-                                                </p>
-                                                <p className="mt-1 font-semibold text-slate-900">
-                                                    {buildStudentCardId(selectedStudent)}
-                                                </p>
-                                            </div>
-                                            <div className="rounded-xl bg-slate-50 p-3">
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    {t('Admission Number')}
-                                                </p>
-                                                <p className="mt-1 font-semibold text-slate-900">
-                                                    {buildAdmissionNumber(selectedStudent)}
-                                                </p>
-                                            </div>
-                                            <div className="rounded-xl bg-slate-50 p-3">
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    {t('Class')}
-                                                </p>
-                                                <p className="mt-1 font-semibold text-slate-900">
-                                                    {selectedStudent.class}-{selectedStudent.section}
-                                                </p>
-                                            </div>
-                                            <div className="rounded-xl bg-slate-50 p-3">
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    {t('Phone')}
-                                                </p>
-                                                <p className="mt-1 font-semibold text-slate-900">
-                                                    {selectedStudent.phone || t('N/A')}
-                                                </p>
-                                            </div>
-                                            <div className="rounded-xl bg-slate-50 p-3">
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    {t('Gender')}
-                                                </p>
-                                                <p className="mt-1 font-semibold text-slate-900">
-                                                    {selectedStudent.gender || t('N/A')}
-                                                </p>
-                                            </div>
-                                            <div className="rounded-xl bg-slate-50 p-3">
-                                                <p className="text-xs uppercase tracking-wide text-slate-500">
-                                                    {t('Blood Group')}
-                                                </p>
-                                                <p className="mt-1 font-semibold text-slate-900">
-                                                    {selectedStudent.blood_group || t('N/A')}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                                            {t('Guardian:')}{' '}
-                                            {printLanguage === 'mr' &&
+                                <CardFace
+                                    design={{ ...design, show_qr: design.show_qr && showQrCode }}
+                                    orgName={user?.organization?.name ?? user?.organization?.school_name ?? 'Gurukul School'}
+                                    title={cardTitle || t('Student ID Card')}
+                                    coachLabel={`${t('Template')} ${templateCode}`}
+                                    onDownloadPdf={handleDownloadPdf}
+                                    entity={{
+                                        name:
+                                            printLanguage === 'mr' &&
+                                            (selectedStudent.first_name_mr || selectedStudent.last_name_mr)
+                                                ? `${selectedStudent.first_name_mr || ''} ${selectedStudent.last_name_mr || ''}`.trim()
+                                                : `${selectedStudent.first_name} ${selectedStudent.last_name}`,
+                                        email: selectedStudent.email || null,
+                                        phone: selectedStudent.phone || null,
+                                        classLabel: applicableClass,
+                                        admissionNo: buildAdmissionNumber(selectedStudent),
+                                        idLabel: buildStudentCardId(selectedStudent),
+                                        gender: selectedStudent.gender || null,
+                                        bloodGroup: selectedStudent.blood_group || null,
+                                        guardian:
+                                            printLanguage === 'mr' &&
                                             (selectedStudent.father_name_mr || selectedStudent.mother_name_mr)
                                                 ? selectedStudent.father_name_mr || selectedStudent.mother_name_mr
                                                 : selectedStudent.father_name ||
                                                   selectedStudent.mother_name ||
-                                                  t('Not available')}
-                                        </div>
-
-                                        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                                            {t('Address:')}{' '}
-                                            {printLanguage === 'mr' && selectedStudent.address_mr
+                                                  null,
+                                        address:
+                                            printLanguage === 'mr' && selectedStudent.address_mr
                                                 ? selectedStudent.address_mr
-                                                : selectedStudent.address || t('Address not available')}
-                                        </div>
-
-                                        {showQrCode && (
-                                            <div className="flex flex-col items-center rounded-xl bg-slate-50 p-3">
-                                                <div
-                                                    className="mx-auto"
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: qrSvgToken(
-                                                            selectedStudent.qr_token ||
-                                                                buildStudentCardId(selectedStudent),
-                                                            84,
-                                                        ),
-                                                    }}
-                                                />
-                                                <p className="mt-2 text-[10px] uppercase tracking-widest text-slate-500">
-                                                    {t('Scan For Attendance')}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
-                                            <Download className="h-4 w-4" />
-                                            {t('Download as PDF')}
-                                        </Button>
-                                    </div>
-                                </div>
+                                                : selectedStudent.address || null,
+                                        qrToken: selectedStudent.qr_token || buildStudentCardId(selectedStudent),
+                                    }}
+                                />
                             ) : (
                                 <div className="py-10 text-center text-gray-500">
                                     <IdCard className="mx-auto mb-3 h-10 w-10 text-gray-400" />

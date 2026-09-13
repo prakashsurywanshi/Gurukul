@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\AcademicYear;
 use App\Models\ActivityLog;
 use App\Models\AlumniRecord;
@@ -47,6 +46,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
+use App\Services\PdfService;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -115,11 +115,11 @@ class ReportsController extends Controller
             'generatedAt' => now()->format('d M Y, h:i A'),
         ])->render();
 
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('a4', 'landscape')
-            ->setOption('isRemoteEnabled', true);
-
-        return $pdf->download("{$report['label']}-Report-" . now()->format('Y-m-d') . '.pdf');
+        return app(PdfService::class)->download(
+            $html,
+            "{$report['label']}-Report-" . now()->format('Y-m-d') . '.pdf',
+            ['orientation' => 'landscape']
+        );
     }
 
     private function getClassOptions(Organization $organization): Collection

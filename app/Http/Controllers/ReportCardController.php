@@ -7,6 +7,7 @@ use App\Models\ExamResult;
 use App\Models\Organization;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AppearanceService;
 use App\Services\GradingScaleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,10 +42,30 @@ class ReportCardController extends Controller
             'students' => $this->getStudents($organization),
             'exams' => $this->getExams($organization),
             'gradeScale' => GradingScaleService::effectiveScale($organization),
+            'appearance' => app(AppearanceService::class)->normalizeForOrganization($organization, 'report_card_appearance'),
             'selectedStudentId' => $selectedStudentId,
             'selectedExamId' => $selectedExamId,
             'report' => $report,
         ]);
+    }
+
+    public function saveAppearance(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        abort_unless(in_array($user->role, ['admin', 'super_admin', 'teacher'], true), 403);
+
+        $service = app(AppearanceService::class);
+        $normalized = $service->normalize($request->validate($service->rules()));
+
+        $current = $organization->settings;
+        $current['report_card_appearance'] = $normalized;
+
+        $organization->update(['settings' => $current]);
+
+        return back()->with('success', 'Report card appearance saved.');
     }
 
     public function saveGradeScale(Request $request): RedirectResponse

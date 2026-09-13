@@ -19,12 +19,12 @@ use App\Models\User;
 use App\Services\AccountTransactionService;
 use App\Services\FeeAuditService;
 use App\Services\StudentAcademicHistoryService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
+use App\Services\PdfService;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Throwable;
@@ -1358,11 +1358,11 @@ class FeesController extends Controller
             'organization' => $this->serializeOrganization($organization),
         ])->render();
 
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('a4', 'portrait')
-            ->setOption('isRemoteEnabled', true);
-
-        return $pdf->download('Fee-Challans-Batch-' . now()->format('Y-m-d') . '-' . now()->format('Hi') . '.pdf');
+        return app(PdfService::class)->download(
+            $html,
+            'Fee-Challans-Batch-' . now()->format('Y-m-d') . '-' . now()->format('Hi') . '.pdf',
+            ['orientation' => 'portrait']
+        );
     }
 
     public function dueSlips()
@@ -1489,11 +1489,11 @@ class FeesController extends Controller
 
         $html = view('finance.fee-challan', $this->buildChallanData($studentFee, $organization))->render();
 
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('a4', 'portrait')
-            ->setOption('isRemoteEnabled', true);
-
-        return $pdf->download('Fee-Challan-' . $studentFee->id . '-' . now()->format('Y-m-d') . '.pdf');
+        return app(PdfService::class)->download(
+            $html,
+            'Fee-Challan-' . $studentFee->id . '-' . now()->format('Y-m-d') . '.pdf',
+            ['orientation' => 'portrait']
+        );
     }
 
     public function printDueSlip(Student $student)
@@ -1517,11 +1517,11 @@ class FeesController extends Controller
 
         $html = view('finance.due-slip', $data)->render();
 
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('a4', 'portrait')
-            ->setOption('isRemoteEnabled', true);
-
-        return $pdf->download('Fee-Due-Slip-' . $student->id . '-' . now()->format('Y-m-d') . '.pdf');
+        return app(PdfService::class)->download(
+            $html,
+            'Fee-Due-Slip-' . $student->id . '-' . now()->format('Y-m-d') . '.pdf',
+            ['orientation' => 'portrait']
+        );
     }
 
     private function serializeOrganization(Organization $organization): array

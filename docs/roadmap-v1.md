@@ -1,0 +1,91 @@
+# QGurukul Roadmap v1 — to World-Class School / College / Institute ERP
+
+> Source: `docs/gap-analysis-v3.md`. Target: fully-customizable, properly-interconnected #1 system
+> (web admin + parent web + complete REST API for the Flutter companion), all phases gated.
+
+## Module build convention (every surface)
+
+1. **Migration** (idempotent, sqlite-safe, mirrors demo schema if any) → Model → Controller/Service → `RolePermissionCatalog` feature
+   → `staff.permission:<Feature>,<action>` routes (web) → React page → Sidebar menu + `en/mr/hi` i18n → feature tests → gates.
+2. **Gates:** `php -l`, prettier (TS only), `node scripts/validate-i18n.mjs` (0 bad), `npx tsc --noEmit`,
+   `npm run build`, full `php artisan test` (target 700+).
+
+## Phase acceptance criteria
+
+### P1 — Close parity + clean dead code
+- 11 PARTIAL surfaces become BUILT (dedicated route/page or verified wiring) **with tests**.
+- `CardDesigns` wired-or-retired decision recorded; `AuditTrail.tsx` reachable via route.
+- Accept: 0 MISSING, 0 PARTIAL-without-test.
+
+### P2 — Design-studio engine + server PDF
+- One shared `Designer` engine (elements/presets/tokens/live-preview) reused by certificates, ID cards (student+staff),
+  report cards, HPC cards, slips/challans, marksheets.
+- `CardDesigns` config consumed by card generation; on-screen previews everywhere.
+- Server PDF with three backends: dompdf (Blade/deterministic), headless Chromium (render React preview), browser print
+  fallback. mm-accurate sheets (CR80/A4/A3/letter/legal, cut marks, duplex) + print-center queue.
+- Accept: every certificate/card/slip previews live; PDF download tests green.
+
+### P3 — 360 hubs + interconnection
+- Student 360 / Staff 360 / Class 360 / Fee 360 tabbed hubs with cross-links + breadcrumbs + row-action deep links.
+- GlobalSearch (cmdk) resolves all primary entities role-scoped.
+- Accept: 90%+ of list rows deep-link to a hub; search covers ≥6 entity types.
+
+### P4 — Customization engines
+- Field-builder v2: types url/email/phone/checkbox/radio/multi-select/currency/file; validation-rule builder; more
+  entities (leads/books/assets/inventory); rendered on public admission form.
+- Generic approval-chain engine (steps/approvers/notify) adopted by concessions + attendance-corrections + lesson plans.
+- Notification rule engine (event→channel→recipients, digests, read receipts) + websocket bell.
+- Panel theming/branding engine (logo/colors/fonts/density, live preview).
+
+### P5 — Reports/export + i18n
+- Saved-query report builder; PDF/CSV/Excel export center; en/hi/mr 0-fallback; RTL-safe layout readiness.
+
+### P6 — College mode + platform
+- Org-type mode: college/institute semantics (courses/batches/semesters/lectures/credits/CBCS) across exams/attendance/fees/reports.
+- Platform: branch-admin multi-school; superadmin billing/subscription analytics.
+- Flutter API completeness: map `routes/api.php` → `flutter_gurukul/lib/models` + screens; de-mock remaining
+  `mock_data/` screens; version API `v1/`; contract tests.
+
+## Burn-down
+
+- [x] P0.1 Publish `docs/gap-analysis-v3.md`
+- [x] P0.2 Publish `docs/roadmap-v1.md`
+- [x] P1.1 Website Hero Slides / Testimonials / Nav surfaces + wiring + tests
+- [x] P1.2 Departments standalone page + CRUD + tests
+- [x] P1.3 Designations standalone page + CRUD + tests
+- [x] P1.4 Appraisal Cycles full CRUD + tests
+- [x] P1.5 Assessments feature tests
+- [x] P1.6 Cocurricular feature tests
+- [x] P1.7 CBC Strands/Competencies/Pathways feature tests
+- [x] P1.8 Dead-code cleanup: AuditTrail route + CardDesigns decision
+- [x] P2.1 Extract shared Designer engine
+- [x] P2.2 Designer → student+staff ID cards; wire CardDesigns; previews
+- [x] P2.3 Designer → report-card + HPC appearance
+- [x] P2.4 PDF service (dompdf + Chromium + print fallback) + print-center + tests
+- [ ] P3.1 Student 360 hub
+- [ ] P3.2 Staff 360 + Class 360 + Fee 360 hubs + breadcrumbs/deep links
+- [ ] P3.3 GlobalSearch entity wiring
+- [ ] P4.1 Field-builder v2 + public admission rendering
+- [ ] P4.2 Generic approval-chain engine + migrate 3 modules
+- [ ] P4.3 Notification rule engine + digests + websocket bell
+- [ ] P4.4 Panel theming/branding engine
+- [ ] P5.1 Report builder + export center + i18n/RTL polish
+- [ ] P6.1 College/Institute org-type mode
+- [ ] P6.2 Platform: branch-admin + superadmin billing/analytics
+- [ ] P6.3 Flutter API completeness + versioning + contract tests
+- [ ] P6.4 Full regression gates (700+ tests)
+
+## Notes & decisions log
+- PDF engine question → user chose "all of above": dompdf + headless Chromium + browser print fallback.
+- Platform scope → include branch-admin/superadmin billing; Flutter app exists at `../flutter_gurukul`; API-first.
+- Status updated as phases ship; gate results recorded next to each phase.
+
+## Phase gate results (recorded as we ship)
+- **P1 (done, unbatched)**: `WebsiteCmsSurfacesTest` 5 tests / 38 asserts; `DepartmentsDesignationsFeatureTest` 9 tests / 69 asserts; `AppraisalCycleFeatureTest` 7 tests / 34 asserts; `AssessmentFeatureTest` 6 tests / ~? ; `CocurricularFeatureTest` 6 tests; `CbcFeatureTest` 7 tests. All green. i18n 0 bad, tsc clean, prod build OK.
+- P1.8 notes: `AuditTrail` was **already fully wired** (route 916 + sidebar 3354 + controller renders `dashboard/AuditTrail`) — earlier gap-note was wrong, corrected in v3. `CardDesigns` (org `settings.id_card_design`, 8 fields) still unconsumed by `StudentIdCardManagement`/`StaffIdCards` → wiring moved to P2.2.
+- **P2 (done, committed)**: 
+  - P2.1+P2.2 — shared designer engine: `app/Services/IdCardDesignService.php`, `resources/js/components/designer/cardTypes.ts` + `CardFace.tsx`; `CardDesigns` page rewritten with live CardFace preview; `StudentIdCardManagement` (CardFace replaces hard-coded preview, QR gated by design) + `StaffIdCards` (design-aware print builder + live preview) wired; controllers pass `design`. `IdCardDesignFeatureTest` 5 tests / 69 asserts.
+  - P2.3 — shared `App\Services\AppearanceService` (primary/accent/font/logo/grades) drives **report-card** appearance (new `PATCH /exams/report-card/appearance` + editor panel + live color/font/grades application) and **HPC** (`HpcController` refactored onto the service, `HpcCardAppearance` gains live sample-card preview). `ReportCardAppearanceFeatureTest` 4 tests / 44 asserts; HPC regression green.
+  - P2.4 — `config/pdf.php` + `App\Services\PdfService` (drivers: `dompdf` default, `chromium` headless w/ dompdf fallback, `browser` print page); migrated 5 existing PDF endpoints (payroll payslip, reports export, fee challan batch + single + due slip) onto the service; new **Print & Export Center** hub (`GET /print-center`, sidebar Reports group). `PdfServiceAndPrintCenterTest` 6 tests / 27 asserts.
+  - Gates: full suite **719 tests, 5326 asserts pass** (baseline was 664 tests); i18n 0 bad (4437 keys ×3), tsc clean, prod build OK.
+- Gate baseline note: coverage grew 664 → 719 across P1+P2 (+ ~55 tests).

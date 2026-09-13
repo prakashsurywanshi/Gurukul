@@ -1,8 +1,9 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useMemo, useState } from 'react';
-import { Award, FileText, GraduationCap, Loader2, Printer, Save, Sparkles } from 'lucide-react';
+import { Award, FileText, GraduationCap, Loader2, Palette, Printer, Save, Sparkles } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import type { RequestPayload } from '@inertiajs/core';
+import { toast } from 'sonner';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -20,9 +21,18 @@ interface GradeRow {
     remark?: string | null;
 }
 
+interface AppearanceShape {
+    primary_color: string;
+    accent_color: string;
+    font_size: 'small' | 'normal' | 'large';
+    show_logo: boolean;
+    show_grades: boolean;
+}
+
 interface ReportProps {
     user: any;
     organization?: any;
+    appearance?: AppearanceShape | null;
     students?: Array<{
         id: string;
         first_name: string;
@@ -55,6 +65,13 @@ export default function ReportCard(pageProps: ReportProps) {
     const students = pageProps.students ?? [];
     const exams = pageProps.exams ?? [];
     const initialScale = pageProps.gradeScale ?? [];
+    const initialAppearance: AppearanceShape = pageProps.appearance ?? {
+        primary_color: '#2563EB',
+        accent_color: '#10B981',
+        font_size: 'normal',
+        show_logo: true,
+        show_grades: true,
+    };
 
     const canEditScale = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'teacher';
 
@@ -63,6 +80,11 @@ export default function ReportCard(pageProps: ReportProps) {
     const [generating, setGenerating] = useState(false);
     const [scaleRows, setScaleRows] = useState<GradeRow[]>(initialScale);
     const [savingScale, setSavingScale] = useState(false);
+    const [appearance, setAppearance] = useState<AppearanceShape>(initialAppearance);
+    const [savingAppearance, setSavingAppearance] = useState(false);
+
+    const reportFontSize =
+        appearance.font_size === 'small' ? '13px' : appearance.font_size === 'large' ? '15.5px' : '14px';
 
     const selectedExam = useMemo(() => exams.find((exam) => exam.id === examId) ?? null, [exams, examId]);
 
@@ -107,6 +129,27 @@ export default function ReportCard(pageProps: ReportProps) {
             current.map((row, i) =>
                 i === index ? { ...row, [field]: field === 'remark' ? value : Number(value) } : row,
             ),
+        );
+    };
+
+    const saveAppearance = () => {
+        setSavingAppearance(true);
+        router.patch(
+            '/exams/report-card/appearance',
+            {
+                primary_color: appearance.primary_color,
+                accent_color: appearance.accent_color,
+                font_size: appearance.font_size,
+                show_logo: appearance.show_logo,
+                show_grades: appearance.show_grades,
+            } as unknown as RequestPayload,
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success(t('Report card appearance saved.'));
+                },
+                onFinish: () => setSavingAppearance(false),
+            },
         );
     };
 
@@ -291,28 +334,165 @@ export default function ReportCard(pageProps: ReportProps) {
                             </CardContent>
                         </Card>
                     ) : null}
+
+                    {canEditScale ? (
+                        <Card data-appearance-editor>
+                            <CardHeader>
+                                <CardTitle>
+                                    <Palette className="mr-2 inline-block h-5 w-5 text-indigo-600" />
+                                    {t('Report Card Appearance')}
+                                </CardTitle>
+                                <CardDescription>
+                                    {t('Customize the colors, font size and fields shown on the report card.')}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-5">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <Label>{t('Primary Color')}</Label>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                value={appearance.primary_color}
+                                                onChange={(e) =>
+                                                    setAppearance((a) => ({
+                                                        ...a,
+                                                        primary_color: e.target.value,
+                                                    }))
+                                                }
+                                                className="h-9 w-12 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900"
+                                            />
+                                            <Input
+                                                value={appearance.primary_color}
+                                                onChange={(e) =>
+                                                    setAppearance((a) => ({
+                                                        ...a,
+                                                        primary_color: e.target.value,
+                                                    }))
+                                                }
+                                                className="h-9"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label>{t('Accent Color')}</Label>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                value={appearance.accent_color}
+                                                onChange={(e) =>
+                                                    setAppearance((a) => ({
+                                                        ...a,
+                                                        accent_color: e.target.value,
+                                                    }))
+                                                }
+                                                className="h-9 w-12 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900"
+                                            />
+                                            <Input
+                                                value={appearance.accent_color}
+                                                onChange={(e) =>
+                                                    setAppearance((a) => ({
+                                                        ...a,
+                                                        accent_color: e.target.value,
+                                                    }))
+                                                }
+                                                className="h-9"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="w-full md:w-72">
+                                    <Label>{t('Font Size')}</Label>
+                                    <Select
+                                        value={appearance.font_size}
+                                        onValueChange={(value) =>
+                                            setAppearance((a) => ({
+                                                ...a,
+                                                font_size: value as AppearanceShape['font_size'],
+                                            }))
+                                        }
+                                    >
+                                        <SelectTrigger className="mt-1">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="small">{t('Small')}</SelectItem>
+                                            <SelectItem value="normal">{t('Normal')}</SelectItem>
+                                            <SelectItem value="large">{t('Large')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={appearance.show_logo}
+                                            onChange={(e) =>
+                                                setAppearance((a) => ({ ...a, show_logo: e.target.checked }))
+                                            }
+                                            className="h-4 w-4"
+                                        />
+                                        <span className="text-sm dark:text-white">{t('Show school logo')}</span>
+                                    </label>
+                                    <label className="flex items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={appearance.show_grades}
+                                            onChange={(e) =>
+                                                setAppearance((a) => ({ ...a, show_grades: e.target.checked }))
+                                            }
+                                            className="h-4 w-4"
+                                        />
+                                        <span className="text-sm dark:text-white">{t('Show grades & points')}</span>
+                                    </label>
+                                </div>
+
+                                <Button type="button" onClick={saveAppearance} disabled={savingAppearance}>
+                                    {savingAppearance ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="h-4 w-4" />
+                                    )}
+                                    {t('Save Appearance')}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ) : null}
                 </div>
 
                 {report ? (
                     <div
                         data-report-card
                         className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm print:mt-0 print:rounded-none print:border-0 print:p-0 print:shadow-none"
+                        style={{ fontSize: reportFontSize }}
                     >
                         <div className="flex flex-col items-center gap-1 border-b border-slate-200 pb-4 text-center print:border-b print:pb-3">
-                            {organization?.logo ? (
-                                <img
-                                    src={organization.logo}
-                                    alt="School logo"
-                                    className="mb-1 h-16 w-16 rounded-full object-cover"
-                                />
-                            ) : (
-                                <GraduationCap className="mb-1 h-10 w-10 text-indigo-600" />
-                            )}
-                            <h3 className="text-xl font-bold text-slate-900">{organization?.name}</h3>
+                            {appearance.show_logo ? (
+                                organization?.logo ? (
+                                    <img
+                                        src={organization.logo}
+                                        alt="School logo"
+                                        className="mb-1 h-16 w-16 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <GraduationCap
+                                        className="mb-1 h-10 w-10"
+                                        style={{ color: appearance.primary_color }}
+                                    />
+                                )
+                            ) : null}
+                            <h3 className="text-xl font-bold" style={{ color: appearance.primary_color }}>
+                                {organization?.name}
+                            </h3>
                             {organization?.address ? (
                                 <p className="text-sm text-slate-500">{organization.address}</p>
                             ) : null}
-                            <p className="mt-1 text-lg font-semibold uppercase tracking-wide text-indigo-700">
+                            <p
+                                className="mt-1 text-lg font-semibold uppercase tracking-wide"
+                                style={{ color: appearance.accent_color }}
+                            >
                                 {t('Report Card')}
                             </p>
                         </div>
@@ -349,8 +529,12 @@ export default function ReportCard(pageProps: ReportProps) {
                                         <TableHead className="text-center">{t('Passing')}</TableHead>
                                         <TableHead className="text-center">{t('Obtained')}</TableHead>
                                         <TableHead className="text-center">{t('%')}</TableHead>
-                                        <TableHead className="text-center">{t('Grade')}</TableHead>
-                                        <TableHead className="text-center">{t('Point')}</TableHead>
+                                        {appearance.show_grades ? (
+                                            <>
+                                                <TableHead className="text-center">{t('Grade')}</TableHead>
+                                                <TableHead className="text-center">{t('Point')}</TableHead>
+                                            </>
+                                        ) : null}
                                         <TableHead className="text-center">{t('Result')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -369,14 +553,18 @@ export default function ReportCard(pageProps: ReportProps) {
                                                     {row.isAbsent ? '—' : row.obtainedMarks}
                                                 </TableCell>
                                                 <TableCell className="text-center">{row.percentage}</TableCell>
-                                                <TableCell className="text-center">
-                                                    <Badge variant={subjectPass ? 'default' : 'destructive'}>
-                                                        {row.isAbsent ? t('Absent') : row.grade}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {row.isAbsent ? '—' : row.gradePoint}
-                                                </TableCell>
+                                                {appearance.show_grades ? (
+                                                    <>
+                                                        <TableCell className="text-center">
+                                                            <Badge variant={subjectPass ? 'default' : 'destructive'}>
+                                                                {row.isAbsent ? t('Absent') : row.grade}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-center">
+                                                            {row.isAbsent ? '—' : row.gradePoint}
+                                                        </TableCell>
+                                                    </>
+                                                ) : null}
                                                 <TableCell className="text-center">
                                                     <span className={subjectPass ? 'text-emerald-600' : 'text-red-600'}>
                                                         {row.isAbsent ? t('Absent') : subjectPass ? 'Pass' : 'Fail'}
@@ -401,13 +589,15 @@ export default function ReportCard(pageProps: ReportProps) {
                                     <p className="text-xs font-medium uppercase text-slate-400">{t('Percentage')}</p>
                                     <p className="font-semibold text-slate-900">{report.percentage}%</p>
                                 </div>
-                                <div>
-                                    <p className="text-xs font-medium uppercase text-slate-400">{t('Overall Grade')}</p>
-                                    <p className="font-semibold text-slate-900">
-                                        {report.overallGrade ?? '—'}{' '}
-                                        {report.overallGradePoint ? `(${report.overallGradePoint})` : ''}
-                                    </p>
-                                </div>
+                                {appearance.show_grades ? (
+                                    <div>
+                                        <p className="text-xs font-medium uppercase text-slate-400">{t('Overall Grade')}</p>
+                                        <p className="font-semibold text-slate-900">
+                                            {report.overallGrade ?? '—'}{' '}
+                                            {report.overallGradePoint ? `(${report.overallGradePoint})` : ''}
+                                        </p>
+                                    </div>
+                                ) : null}
                                 <div>
                                     <p className="text-xs font-medium uppercase text-slate-400">{t('Rank')}</p>
                                     <p className="font-semibold text-slate-900">

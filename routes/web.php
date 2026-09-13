@@ -59,6 +59,7 @@ use App\Http\Controllers\QrScanAuditController;
 use App\Http\Controllers\QuestionBankController;
 use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\RegulatorReportsController;
+use App\Http\Controllers\PrintCenterController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\ReportCardRemarksController;
 use App\Http\Controllers\ScholarshipController;
@@ -297,6 +298,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::put('/staff/appraisal-criteria/{appraisalCriterion}', [StaffAppraisalsController::class, 'updateCriterion'])->middleware('staff.permission:Teacher Evaluations,edit')->name('staff.appraisal-criteria.update');
     Route::delete('/staff/appraisal-criteria/{appraisalCriterion}', [StaffAppraisalsController::class, 'destroyCriterion'])->middleware('staff.permission:Teacher Evaluations,delete')->name('staff.appraisal-criteria.destroy');
     Route::post('/staff/appraisals/cycles', [StaffAppraisalsController::class, 'storeCycle'])->middleware('staff.permission:Teacher Evaluations,add')->name('staff.appraisals.cycles.store');
+    Route::put('/staff/appraisals/cycles/{appraisalCycle}', [StaffAppraisalsController::class, 'updateCycle'])->middleware('staff.permission:Teacher Evaluations,edit')->name('staff.appraisals.cycles.update');
+    Route::delete('/staff/appraisals/cycles/{appraisalCycle}', [StaffAppraisalsController::class, 'destroyCycle'])->middleware('staff.permission:Teacher Evaluations,delete')->name('staff.appraisals.cycles.destroy');
     Route::post('/staff/appraisals', [StaffAppraisalsController::class, 'storeAppraisal'])->middleware('staff.permission:Teacher Evaluations,add')->name('staff.appraisals.store');
     Route::put('/staff/appraisals/{staffAppraisal}', [StaffAppraisalsController::class, 'updateAppraisal'])->middleware('staff.permission:Teacher Evaluations,edit')->name('staff.appraisals.update');
     Route::delete('/staff/appraisals/{staffAppraisal}', [StaffAppraisalsController::class, 'destroyAppraisal'])->middleware('staff.permission:Teacher Evaluations,delete')->name('staff.appraisals.destroy');
@@ -355,9 +358,13 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::patch('/staff/{managedUser}/status', [UsersController::class, 'updateStatus'])->middleware('staff.permission:User Management,edit')->name('users.status');
     Route::post('/staff/{managedUser}/reset-password', [UsersController::class, 'resetPassword'])->middleware('staff.permission:User Management,edit')->name('users.reset-password');
     Route::delete('/staff/{managedUser}', [UsersController::class, 'destroy'])->middleware('staff.permission:User Management,delete')->name('users.destroy');
+    Route::get('/staff/designations', [UsersController::class, 'designations'])->middleware('staff.permission:User Management,view')->name('users.designations');
     Route::post('/staff/designations', [UsersController::class, 'storeDesignation'])->middleware('staff.permission:User Management,add')->name('users.designations.store');
+    Route::put('/staff/designations/{designation}', [UsersController::class, 'updateDesignation'])->middleware('staff.permission:User Management,edit')->name('users.designations.update');
     Route::delete('/staff/designations/{designation}', [UsersController::class, 'destroyDesignation'])->middleware('staff.permission:User Management,delete')->name('users.designations.destroy');
+    Route::get('/staff/departments', [UsersController::class, 'departments'])->middleware('staff.permission:User Management,view')->name('users.departments');
     Route::post('/staff/departments', [UsersController::class, 'storeDepartment'])->middleware('staff.permission:User Management,add')->name('users.departments.store');
+    Route::put('/staff/departments/{department}', [UsersController::class, 'updateDepartment'])->middleware('staff.permission:User Management,edit')->name('users.departments.update');
     Route::delete('/staff/departments/{department}', [UsersController::class, 'destroyDepartment'])->middleware('staff.permission:User Management,delete')->name('users.departments.destroy');
     Route::get('/classes', [ClassesController::class, 'index'])->middleware('staff.permission:Class / Section,view')->name('classes');
     Route::get('/sections', [ClassesController::class, 'sections'])->middleware('staff.permission:Class / Section,view')->name('sections');
@@ -598,6 +605,7 @@ Route::get('/gate-passes', [GatePassController::class, 'index'])->middleware('st
     Route::patch('/exam-types/{examType}', [ExamTypeController::class, 'update'])->middleware('staff.permission:Exam Management,edit')->name('exam-types.update');
     Route::delete('/exam-types/{examType}', [ExamTypeController::class, 'destroy'])->middleware('staff.permission:Exam Management,delete')->name('exam-types.destroy');
     Route::post('/exams/report-card/grading-scale', [ReportCardController::class, 'saveGradeScale'])->middleware('staff.permission:Exam Management,edit')->name('exams.report-card.grading-scale');
+    Route::patch('/exams/report-card/appearance', [ReportCardController::class, 'saveAppearance'])->middleware('staff.permission:Exam Management,edit')->name('exams.report-card.appearance');
     Route::get('/datesheets', [DatesheetController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('datesheets');
     Route::get('/datesheets/{exam}', [DatesheetController::class, 'show'])->middleware('staff.permission:Exam Management,view')->name('datesheets.show');
     Route::post('/datesheets/{exam}/publish', [DatesheetController::class, 'publish'])->middleware('staff.permission:Exam Management,edit')->name('datesheets.publish');
@@ -882,6 +890,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::patch('/teacher-evaluations/{teacherEvaluation}', [TeacherEvaluationController::class, 'update'])->middleware('staff.permission:Teacher Evaluations,edit')->name('teacher-evaluations.update');
     Route::delete('/teacher-evaluations/{teacherEvaluation}', [TeacherEvaluationController::class, 'destroy'])->middleware('staff.permission:Teacher Evaluations,delete')->name('teacher-evaluations.destroy');
     Route::get('/staff/id-cards', [StaffIdCardController::class, 'index'])->middleware('staff.permission:Staff ID Cards,view')->name('staff-id-cards');
+    Route::get('/print-center', [PrintCenterController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('print-center');
     Route::get('/recruitment', [RecruitmentController::class, 'index'])->middleware('staff.permission:Recruitment & Hiring,view')->name('recruitment');
     Route::post('/recruitment', [RecruitmentController::class, 'store'])->middleware('staff.permission:Recruitment & Hiring,add')->name('recruitment.store');
     Route::patch('/recruitment/{position}', [RecruitmentController::class, 'update'])->middleware('staff.permission:Recruitment & Hiring,edit')->name('recruitment.update');

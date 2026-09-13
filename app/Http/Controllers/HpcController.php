@@ -9,6 +9,7 @@ use App\Models\HpcStudentCard;
 use App\Models\Organization;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AppearanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -173,17 +174,9 @@ class HpcController extends Controller
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
 
-        $settings = $organization->settings['hpc_appearance'] ?? [
-            'primary_color' => '#2563EB',
-            'accent_color' => '#10B981',
-            'font_size' => 'normal',
-            'show_logo' => true,
-            'show_grades' => true,
-        ];
-
         return Inertia::render('dashboard/HpcCardAppearance', [
             'user' => $request->user(),
-            'settings' => $settings,
+            'settings' => app(AppearanceService::class)->normalizeForOrganization($organization, 'hpc_appearance'),
         ]);
     }
 
@@ -192,22 +185,12 @@ class HpcController extends Controller
         $organization = $this->resolveOrganizationForUser($request->user());
         abort_unless($organization, 403);
 
-        $validated = $request->validate([
-            'primary_color' => ['nullable', 'string', 'max:20'],
-            'accent_color' => ['nullable', 'string', 'max:20'],
-            'font_size' => ['nullable', 'in:small,normal,large'],
-            'show_logo' => ['nullable', 'boolean'],
-            'show_grades' => ['nullable', 'boolean'],
-        ]);
+        $service = app(AppearanceService::class);
+        $validated = $request->validate($service->rules());
+        $normalized = $service->normalize($validated);
 
         $current = $organization->settings;
-        $current['hpc_appearance'] = [
-            'primary_color' => $validated['primary_color'] ?? '#2563EB',
-            'accent_color' => $validated['accent_color'] ?? '#10B981',
-            'font_size' => $validated['font_size'] ?? 'normal',
-            'show_logo' => $validated['show_logo'] ?? true,
-            'show_grades' => $validated['show_grades'] ?? true,
-        ];
+        $current['hpc_appearance'] = $normalized;
 
         $organization->update(['settings' => $current]);
 

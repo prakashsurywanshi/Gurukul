@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { CreditCard, Printer, Search } from 'lucide-react';
 import { qrSvgToken } from '../../utils/qr';
 import DashboardLayout from '../DashboardLayout';
+import CardFace from '../../components/designer/CardFace';
+import { normalizeDesign, IdCardDesign } from '../../components/designer/cardTypes';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -29,6 +31,7 @@ interface StaffIdCardsProps {
     user: any;
     organization?: any;
     staff: StaffMember[];
+    design?: Partial<IdCardDesign> | null;
 }
 
 function roleLabel(role: string): string {
@@ -47,6 +50,8 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
     const user = pageProps.user;
     const organization = pageProps.organization;
     const staff = pageProps.staff ?? [];
+    const design = normalizeDesign(pageProps.design);
+    const accent = design.primary_color;
 
     const [query, setQuery] = useState('');
     const [showQrCode, setShowQrCode] = useState(true);
@@ -77,7 +82,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
         const photo = member.profile_photo
             ? `<img src="${member.profile_photo}" alt="photo" class="photo" />`
             : `<div class="initial">${initials}</div>`;
-        const qrBlock = showQrCode
+        const qrBlock = showQrCode && design.show_qr
             ? `
               <div class="qr-scan">
                 ${qrSvgToken(member.qr_token || `EMP-${member.id}`, 72)}
@@ -115,7 +120,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
             .header {
               padding: 18px 20px;
               color: #ffffff;
-              background: linear-gradient(90deg, #1d4ed8 0%, #0e7490 100%);
+              background: ${accent};
               display: flex;
               align-items: center;
               gap: 12px;
@@ -161,8 +166,8 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
               display: flex;
               align-items: center;
               justify-content: center;
-              background: #dbeafe;
-              color: #1d4ed8;
+              background: ${accent}26;
+              color: ${accent};
               font-size: 30px;
               font-weight: 700;
             }
@@ -171,7 +176,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
               font-weight: 700;
             }
             .role {
-              color: #0e7490;
+              color: ${accent};
               font-size: 13px;
               font-weight: 600;
               text-transform: uppercase;
@@ -310,43 +315,71 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
                                 />
                             </div>
 
-                            {filtered.length === 0 ? (
-                                <div className="py-12 text-center text-sm text-gray-400">
-                                    {t('No staff members found.')}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {filtered.map((member) => (
-                                        <Card key={member.id} className="overflow-hidden">
-                                            <div className="h-1.5 bg-gradient-to-r from-blue-600 to-cyan-500" />
-                                            <CardContent className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-lg font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                                        {member.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="truncate font-semibold text-gray-900 dark:text-white">
-                                                            {member.name}
+                            {filtered.length > 0 && (
+                                <div className="mb-6 grid gap-6 lg:grid-cols-[420px_1fr]">
+                                    <Card className="h-fit">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-sm">{t('Live Preview')}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <CardFace
+                                                design={{ ...design, show_qr: design.show_qr && showQrCode }}
+                                                orgName={organization?.name ?? 'Gurukul School'}
+                                                title={t('Staff ID Card')}
+                                                coachLabel="ESTD."
+                                                entity={{
+                                                    name: filtered[0].name,
+                                                    email: filtered[0].email || null,
+                                                    phone: filtered[0].phone || null,
+                                                    roleLabel: filtered[0].designation || roleLabel(filtered[0].role),
+                                                    idLabel: filtered[0].employee_id || `UID-${filtered[0].id}`,
+                                                    bloodGroup: filtered[0].blood_group || null,
+                                                    gender: filtered[0].gender || null,
+                                                    dob: filtered[0].joining_date || null,
+                                                    qrToken: filtered[0].qr_token || `EMP-${filtered[0].id}`,
+                                                }}
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                    <div>
+                                        <CardTitle className="mb-3 flex items-center gap-2 text-base">
+                                            <CreditCard className="h-5 w-5 text-blue-500" />
+                                            {t('Staff Members')}
+                                        </CardTitle>
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
+                                            {filtered.map((member) => (
+                                                <Card key={member.id} className="overflow-hidden">
+                                                    <div className="h-1.5" style={{ backgroundColor: accent }} />
+                                                    <CardContent className="p-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold" style={{ backgroundColor: `${accent}26`, color: accent }}>
+                                                                {member.name.charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div className="truncate font-semibold text-gray-900 dark:text-white">
+                                                                    {member.name}
+                                                                </div>
+                                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                    {member.designation || roleLabel(member.role)}
+                                                                </div>
+                                                                <div className="text-xs text-gray-400">
+                                                                    {member.employee_id || `UID-${member.id}`}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {member.designation || roleLabel(member.role)}
-                                                        </div>
-                                                        <div className="text-xs text-gray-400">
-                                                            {member.employee_id || `UID-${member.id}`}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <Button
-                                                    className="mt-4 w-full"
-                                                    size="sm"
-                                                    onClick={() => printCard(member)}
-                                                >
-                                                    <Printer className="mr-2 h-4 w-4" />
-                                                    {t('Print ID Card')}
-                                                </Button>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                                        <Button
+                                                            className="mt-4 w-full"
+                                                            size="sm"
+                                                            onClick={() => printCard(member)}
+                                                        >
+                                                            <Printer className="mr-2 h-4 w-4" />
+                                                            {t('Print ID Card')}
+                                                        </Button>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </CardContent>

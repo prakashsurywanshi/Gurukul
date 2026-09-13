@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\IdCardDesignService;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 
@@ -51,6 +52,7 @@ class StaffIdCardController extends Controller
             'user' => $user,
             'organization' => ['id' => $organization->id, 'name' => $organization->name],
             'staff' => $staff,
+            'design' => app(IdCardDesignService::class)->normalizeForOrganization($organization),
         ]);
     }
 

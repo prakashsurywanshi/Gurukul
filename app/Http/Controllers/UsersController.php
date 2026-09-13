@@ -14,7 +14,7 @@ use App\Models\User;
 use App\Services\LeaveBalanceService;
 use App\Services\StaffPermissionService;
 use App\Services\SystemNotificationService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -196,13 +196,9 @@ class UsersController extends Controller
 
         $html = view('payroll.slip', ['slip' => $this->buildPayslipData($payrollEntry, $organization)])->render();
 
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('a4', 'portrait')
-            ->setOption('isRemoteEnabled', true);
-
         $filename = 'Payslip-' . $payrollEntry->id . '-' . optional($payrollEntry->payroll_month)->format('Y-m') . '.pdf';
 
-        return $pdf->download($filename);
+        return app(PdfService::class)->download($html, $filename, ['orientation' => 'portrait']);
     }
 
     public function storeLeaveRequest(Request $request): RedirectResponse
@@ -433,6 +429,38 @@ class UsersController extends Controller
             ->with('success', 'Leave balances updated successfully.');
     }
 
+    public function designations(): Response
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return Inertia::render('dashboard/Designations', [
+            'user' => $user,
+            'designations' => $organization
+                ? Designation::withCount('users')
+                    ->where('organization_id', $organization->id)
+                    ->orderBy('name')
+                    ->get(['id', 'name'])
+                : [],
+        ]);
+    }
+
+    public function departments(): Response
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        return Inertia::render('dashboard/Departments', [
+            'user' => $user,
+            'departments' => $organization
+                ? Department::withCount('users')
+                    ->where('organization_id', $organization->id)
+                    ->orderBy('name')
+                    ->get(['id', 'name'])
+                : [],
+        ]);
+    }
+
     public function storeDesignation(Request $request): RedirectResponse
     {
         $currentUser = Auth::user();
@@ -452,6 +480,26 @@ class UsersController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Designation created successfully.');
+    }
+
+    public function updateDesignation(Request $request, Designation $designation): RedirectResponse
+    {
+        $currentUser = Auth::user();
+        $organization = $this->resolveOrganizationForUser($currentUser);
+
+        if (!$organization || !$this->canManageUsers($currentUser)) {
+            abort(403);
+        }
+
+        abort_unless($designation->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $designation->update(['name' => $validated['name']]);
+
+        return redirect()->back()->with('success', 'Designation updated successfully.');
     }
 
     public function destroyDesignation(Request $request, Designation $designation): RedirectResponse
@@ -489,6 +537,26 @@ class UsersController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Department created successfully.');
+    }
+
+    public function updateDepartment(Request $request, Department $department): RedirectResponse
+    {
+        $currentUser = Auth::user();
+        $organization = $this->resolveOrganizationForUser($currentUser);
+
+        if (!$organization || !$this->canManageUsers($currentUser)) {
+            abort(403);
+        }
+
+        abort_unless($department->organization_id === $organization->id, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $department->update(['name' => $validated['name']]);
+
+        return redirect()->back()->with('success', 'Department updated successfully.');
     }
 
     public function destroyDepartment(Request $request, Department $department): RedirectResponse
