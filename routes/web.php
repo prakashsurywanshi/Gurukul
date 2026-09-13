@@ -468,6 +468,8 @@ Route::get('/gate-passes', [GatePassController::class, 'index'])->middleware('st
     Route::post('/fees/online/razorpay/verify', [OnlinePaymentController::class, 'razorpayVerify'])->middleware('staff.permission:Fees Management,view')->name('fees.online.razorpay.verify');
     Route::post('/fees/online/upi/confirm', [OnlinePaymentController::class, 'upiConfirm'])->middleware('staff.permission:Fees Management,view')->name('fees.online.upi.confirm');
     Route::get('/fees/challans', [FeesController::class, 'challans'])->middleware('staff.permission:Fees Management,view')->name('fees.challans');
+    Route::get('/fees/challans/issue', [FeesController::class, 'issueChallans'])->middleware('staff.permission:Fees Management,view')->name('fees.challans.issue');
+    Route::get('/fees/challans/issue/batch', [FeesController::class, 'issueChallansBatch'])->middleware('staff.permission:Fees Management,view')->name('fees.challans.issue.batch');
     Route::get('/fees/challans/{studentFee}/print', [FeesController::class, 'printChallan'])->middleware('staff.permission:Fees Management,view')->name('fees.challans.print');
     Route::get('/fees/challans/{studentFee}/download', [FeesController::class, 'downloadChallan'])->middleware('staff.permission:Fees Management,view')->name('fees.challans.download');
     Route::get('/fees/due-slips', [FeesController::class, 'dueSlips'])->middleware('staff.permission:Fees Management,view')->name('fees.due-slips');
@@ -738,10 +740,19 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/hpc/card-appearance', [HpcController::class, 'cardAppearance'])->middleware('staff.permission:HPC Progress Cards,view')->name('hpc.card-appearance');
     Route::post('/hpc/card-appearance', [HpcController::class, 'saveAppearance'])->middleware('staff.permission:HPC Progress Cards,edit')->name('hpc.card-appearance.save');
     Route::get('/contact-support', [DashboardExtrasController::class, 'contactSupport'])->middleware('staff.permission:Knowledge Base,view')->name('contact-support');
+    Route::post('/contact-support', [DashboardExtrasController::class, 'storeSupportTicket'])->middleware('staff.permission:Knowledge Base,add')->name('contact-support.store');
+    Route::post('/contact-support/{ticket}/reply', [DashboardExtrasController::class, 'replySupportTicket'])->middleware('staff.permission:Knowledge Base,edit')->name('contact-support.reply');
+    Route::patch('/contact-support/{ticket}', [DashboardExtrasController::class, 'updateSupportTicket'])->middleware('staff.permission:Knowledge Base,edit')->name('contact-support.update');
     Route::get('/all-transactions', [DashboardExtrasController::class, 'allTransactions'])->middleware('staff.permission:Bank Accounts,view')->name('all-transactions');
     Route::get('/data-validator', [DashboardExtrasController::class, 'dataValidator'])->middleware('staff.permission:Reports & Analytics,view')->name('data-validator');
-    Route::get('/inspections', [DashboardExtrasController::class, 'inspections'])->middleware('staff.permission:Reports & Analytics,view')->name('inspections');
+    Route::get('/inspections', [DashboardExtrasController::class, 'inspections'])->middleware('staff.permission:Inspections,view')->name('inspections');
+    Route::post('/inspections', [DashboardExtrasController::class, 'storeInspection'])->middleware('staff.permission:Inspections,add')->name('inspections.store');
+    Route::patch('/inspections/{inspection}', [DashboardExtrasController::class, 'updateInspection'])->middleware('staff.permission:Inspections,edit')->name('inspections.update');
+    Route::delete('/inspections/{inspection}', [DashboardExtrasController::class, 'destroyInspection'])->middleware('staff.permission:Inspections,delete')->name('inspections.destroy');
     Route::get('/classwork-logbook', [DashboardExtrasController::class, 'classworkLogbook'])->middleware('staff.permission:Homework,view')->name('classwork-logbook');
+    Route::post('/classwork-logbook', [DashboardExtrasController::class, 'storeClasswork'])->middleware('staff.permission:Homework,add')->name('classwork-logbook.store');
+    Route::patch('/classwork-logbook/{classworkEntry}', [DashboardExtrasController::class, 'updateClasswork'])->middleware('staff.permission:Homework,edit')->name('classwork-logbook.update');
+    Route::delete('/classwork-logbook/{classworkEntry}', [DashboardExtrasController::class, 'destroyClasswork'])->middleware('staff.permission:Homework,delete')->name('classwork-logbook.destroy');
     Route::get('/creatives', [DashboardExtrasController::class, 'creatives'])->middleware('staff.permission:Events Calendar,view')->name('creatives');
     Route::get('/agent-logs', [DashboardExtrasController::class, 'agentLogs'])->middleware('staff.permission:Biometric Settings,view')->name('agent-logs');
     Route::get('/settings', [SettingsController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('settings');
@@ -926,6 +937,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/apps', [AppsCenterController::class, 'index'])->middleware('staff.permission:Apps Center,view', 'module.enabled:apps-center')->name('apps-center');
     Route::post('/apps/question-paper', [AppsCenterController::class, 'questionPaper'])->middleware('staff.permission:Apps Center,add', 'module.enabled:apps-center')->name('apps-center.question-paper');
     Route::get('/settings/themes', [DashboardThemesController::class, 'index'])->middleware('staff.permission:General Setting,view', 'module.enabled:dashboard-themes')->name('settings.themes');
+    Route::patch('/settings/themes', [DashboardThemesController::class, 'updateTheme'])->middleware('staff.permission:General Setting,edit', 'module.enabled:dashboard-themes')->name('settings.themes.update');
     Route::get('/face-search', [FaceSearchController::class, 'index'])->middleware('staff.permission:Search Students,view', 'module.enabled:face-search')->name('face-search');
     Route::get('/face-search/kiosk', [FaceSearchController::class, 'kioskIndex'])->middleware('staff.permission:Search Students,view', 'module.enabled:face-search')->name('face-search.kiosk.index');
     Route::post('/face-search', [FaceSearchController::class, 'search'])->middleware('staff.permission:Search Students,add', 'module.enabled:face-search')->name('face-search.search');

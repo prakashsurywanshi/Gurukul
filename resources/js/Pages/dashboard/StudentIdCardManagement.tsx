@@ -9,7 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
 import { Download, IdCard, Plus, School, UserRound } from 'lucide-react';
-import { mockStudents } from '../../utils/mockData';
 
 interface StudentIdCardManagementProps {
     user: any;
@@ -68,13 +67,7 @@ const escapeHtml = (value: string) =>
 
 export default function StudentIdCardManagement({ user, students = [] }: StudentIdCardManagementProps) {
     const { t } = useLanguage();
-    const availableStudents = useMemo(() => {
-        if (user?.organization_id) {
-            return students;
-        }
-
-        return mockStudents;
-    }, [students, user?.organization_id]);
+    const availableStudents = students;
 
     const classOptions = useMemo(
         () =>

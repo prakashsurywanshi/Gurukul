@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\CertificateTemplate;
+use App\Models\Exam;
+use App\Models\ExamResult;
+use App\Models\ExamSchedule;
 use App\Models\IssuedCertificate;
 use App\Models\Organization;
 use App\Models\Student;
@@ -188,8 +191,17 @@ class CertificateController extends Controller
     public function marksheet()
     {
         $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
         return inertia('dashboard/MarksheetManagement', [
-            'user' => $user
+            'user' => $user,
+            'organization' => $organization ? [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'logo' => $organization->logo,
+            ] : null,
+            'students' => $organization ? $this->getStudents($organization) : [],
+            'examGroups' => $organization ? $this->getExamGroups($organization) : [],
         ]);
     }
 
@@ -253,8 +265,82 @@ class CertificateController extends Controller
                 'last_name_mr' => $student->last_name_mr,
                 'class' => $student->schoolClass?->name,
                 'section' => $student->schoolClass?->section,
+                'roll_number' => $student->roll_number,
             ])
             ->all();
+    }
+
+    private function getExamGroups(Organization $organization): array
+    {
+        return Exam::query()
+            ->where('organization_id', $organization->id)
+            ->with([
+                'schedules.subject:id,name,name_mr,name_hi',
+                'schedules.results.student:id,first_name,last_name,class_id,roll_number',
+                'schedules.schoolClass:id,name,section',
+            ])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function (Exam $exam) {
+                $examMetadata = $this->decodeExamMetadata($exam);
+
+                return [
+                    'groupId' => (string) $exam->id,
+                    'name' => $exam->localized('name'),
+                    'publishStatus' => $exam->publish_status ?? 'draft',
+                    'className' => $examMetadata['className'],
+                    'section' => $examMetadata['section'],
+                    'studentIds' => [],
+                    'createdAt' => optional($exam->created_at)->toDateTimeString(),
+                    'exams' => $exam->schedules->map(function (ExamSchedule $schedule) {
+                        return [
+                            'id' => (string) $schedule->id,
+                            'subject_id' => $schedule->subject_id,
+                            'subject' => $schedule->subject?->localized('name') ?? 'Subject',
+                            'class' => $schedule->schoolClass?->name,
+                            'section' => $schedule->schoolClass?->section,
+                            'exam_date' => optional($schedule->exam_date)->format('Y-m-d'),
+                            'start_time' => optional($schedule->start_time)->format('H:i'),
+                            'end_time' => optional($schedule->end_time)->format('H:i'),
+                            'room_number' => $schedule->room_number,
+                            'total_marks' => $schedule->max_marks,
+                            'passing_marks' => $schedule->passing_marks,
+                            'results' => $schedule->results->map(fn (ExamResult $result) => [
+                                'student_id' => (string) $result->student_id,
+                                'marks_obtained' => (float) $result->obtained_marks,
+                                'grade' => $result->grade,
+                            ])->values()->all(),
+                        ];
+                    })->values()->all(),
+                ];
+            })
+            ->all();
+    }
+
+    private function decodeExamMetadata(Exam $exam): array
+    {
+        $description = $exam->description;
+
+        if (! is_string($description) || trim($description) === '') {
+            return [
+                'className' => null,
+                'section' => null,
+            ];
+        }
+
+        $decoded = json_decode($description, true);
+
+        if (! is_array($decoded)) {
+            return [
+                'className' => null,
+                'section' => null,
+            ];
+        }
+
+        return [
+            'className' => isset($decoded['class_name']) && is_string($decoded['class_name']) ? $decoded['class_name'] : null,
+            'section' => isset($decoded['section']) && is_string($decoded['section']) ? $decoded['section'] : null,
+        ];
     }
 
     private function getStudentIdCardStudents(Organization $organization): array

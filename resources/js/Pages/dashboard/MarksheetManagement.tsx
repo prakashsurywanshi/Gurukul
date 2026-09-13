@@ -8,29 +8,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { FileText, Eye, Download } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
-import { examService, studentService } from '../../utils/mockDataService';
 import { toast } from 'sonner';
 
 interface MarksheetManagementProps {
     user: any;
-    accessToken?: string;
-}
-
-interface ExamDefinition {
-    groupId: string;
-    name: string;
-    publishStatus: 'draft' | 'published';
-    studentIds: string[];
-    createdAt: string;
-}
-
-interface GroupedExam {
-    groupId: string;
-    name: string;
-    publishStatus: 'draft' | 'published';
-    studentIds: string[];
-    exams: any[];
-    createdAt: string;
+    organization?: {
+        id: number;
+        name: string | null;
+        logo?: string | null;
+    } | null;
+    students?: any[];
+    examGroups?: any[];
 }
 
 interface GeneratedMarksheet {
@@ -46,115 +34,79 @@ interface GeneratedMarksheet {
     status: 'Pass' | 'Fail';
 }
 
-const EXAM_DEFINITIONS_STORAGE_KEY = 'laravel_gurukul_exam_definitions';
-const EXAM_GROUP_STORAGE_KEY = 'laravel_gurukul_exam_groups';
-
-const loadStoredJson = <T,>(key: string, fallback: T): T => {
-    if (typeof window === 'undefined') {
-        return fallback;
-    }
-
-    try {
-        const raw = window.localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-    } catch (error) {
-        console.error(`Error loading ${key}:`, error);
-        return fallback;
-    }
-};
-
-export default function MarksheetManagement({ user, accessToken }: MarksheetManagementProps) {
+export default function MarksheetManagement({
+    user,
+    organization,
+    students = [],
+    examGroups = [],
+}: MarksheetManagementProps) {
     const { t } = useLanguage();
-    const effectiveAccessToken = accessToken || `mock_token_${user?.id || 'marksheet'}`;
     const [printLanguage, setPrintLanguage] = useState<'en' | 'mr'>('en');
-    const [students, setStudents] = useState<any[]>([]);
-    const [groupedExams, setGroupedExams] = useState<GroupedExam[]>([]);
     const [selectedGroupId, setSelectedGroupId] = useState('');
     const [selectedClass, setSelectedClass] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
     const [generatedMarksheet, setGeneratedMarksheet] = useState<GeneratedMarksheet | null>(null);
     const [bulkGeneratedMarksheets, setBulkGeneratedMarksheets] = useState<GeneratedMarksheet[]>([]);
 
+    const availableGroups = useMemo(() => examGroups.filter((group) => (group.exams || []).length > 0), [examGroups]);
+
     useEffect(() => {
-        try {
-            const studentData = studentService.getAll(effectiveAccessToken);
-            setStudents(studentData.students || []);
-        } catch (error) {
-            console.error('Error loading students:', error);
+        if (!selectedGroupId || !availableGroups.some((group) => group.groupId === selectedGroupId)) {
+            setSelectedGroupId(availableGroups[0]?.groupId || '');
         }
-
-        try {
-            const definitions = loadStoredJson<ExamDefinition[]>(EXAM_DEFINITIONS_STORAGE_KEY, []);
-            const groupMap = loadStoredJson<Record<string, string>>(EXAM_GROUP_STORAGE_KEY, {});
-            const examData = examService.getAll();
-            const serviceGroups = new Map<string, any[]>();
-
-            (examData.exams || []).forEach((exam) => {
-                const groupId = groupMap[exam.id] || `legacy_${exam.id}`;
-                if (!serviceGroups.has(groupId)) {
-                    serviceGroups.set(groupId, []);
-                }
-                serviceGroups.get(groupId)?.push(exam);
-            });
-
-            const merged = definitions.map((definition) => ({
-                groupId: definition.groupId,
-                name: definition.name,
-                publishStatus: definition.publishStatus,
-                studentIds: definition.studentIds || [],
-                exams: serviceGroups.get(definition.groupId) || [],
-                createdAt: definition.createdAt,
-            }));
-
-            setGroupedExams(
-                merged.sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()),
-            );
-        } catch (error) {
-            console.error('Error loading exams:', error);
-        }
-    }, [effectiveAccessToken]);
+    }, [availableGroups, selectedGroupId]);
 
     const selectedExamGroup = useMemo(
-        () => groupedExams.find((group) => group.groupId === selectedGroupId) || null,
-        [groupedExams, selectedGroupId],
+        () => availableGroups.find((group) => group.groupId === selectedGroupId) || null,
+        [availableGroups, selectedGroupId],
     );
 
-    const availableClassOptions = useMemo(() => {
-        if (!selectedExamGroup) return [];
-
-        return Array.from(
-            new Set(
-                students
-                    .filter((student) => selectedExamGroup.studentIds.includes(student.id))
-                    .map((student) => String(student.class)),
+    const availableClassOptions = useMemo(
+        () =>
+            Array.from(new Set(students.map((student) => String(student.class)).filter(Boolean))).sort((left, right) =>
+                left.localeCompare(right, undefined, { numeric: true }),
             ),
-        ).sort((left, right) => left.localeCompare(right, undefined, { numeric: true }));
-    }, [selectedExamGroup, students]);
+        [students],
+    );
+
+    useEffect(() => {
+        const nextClass = selectedExamGroup?.className
+            ? String(selectedExamGroup.className)
+            : availableClassOptions[0] || '';
+        setSelectedClass(nextClass);
+        setSelectedSection(selectedExamGroup?.section ? String(selectedExamGroup.section) : '');
+        setGeneratedMarksheet(null);
+        setBulkGeneratedMarksheets([]);
+    }, [availableClassOptions, selectedExamGroup?.className, selectedExamGroup?.section, selectedGroupId]);
 
     const availableSectionOptions = useMemo(() => {
-        if (!selectedExamGroup || !selectedClass) return [];
+        if (!selectedClass) {
+            return [];
+        }
 
         return Array.from(
             new Set(
                 students
-                    .filter(
-                        (student) =>
-                            selectedExamGroup.studentIds.includes(student.id) &&
-                            String(student.class) === selectedClass,
-                    )
-                    .map((student) => String(student.section)),
+                    .filter((student) => String(student.class) === selectedClass)
+                    .map((student) => String(student.section))
+                    .filter(Boolean),
             ),
         ).sort();
-    }, [selectedClass, selectedExamGroup, students]);
+    }, [selectedClass, students]);
+
+    useEffect(() => {
+        if (!availableSectionOptions.includes(selectedSection)) {
+            setSelectedSection(availableSectionOptions[0] || '');
+        }
+    }, [availableSectionOptions, selectedSection]);
 
     const filteredStudents = useMemo(() => {
-        if (!selectedExamGroup || !selectedClass || !selectedSection) return [];
+        if (!selectedExamGroup || !selectedClass || !selectedSection) {
+            return [];
+        }
 
         return students.filter(
-            (student) =>
-                selectedExamGroup.studentIds.includes(student.id) &&
-                String(student.class) === selectedClass &&
-                String(student.section) === selectedSection,
+            (student) => String(student.class) === selectedClass && String(student.section) === selectedSection,
         );
     }, [selectedClass, selectedExamGroup, selectedSection, students]);
 
@@ -163,14 +115,15 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
 
         return filteredStudents.map((student) => {
             const subjectResults = selectedExamGroup.exams.map((exam) => {
-                const examData = examService.getById(exam.id);
-                const result = examData?.results?.find((entry) => entry.student_id === student.id);
+                const result = (exam.results || []).find(
+                    (entry: any) => String(entry.student_id) === String(student.id),
+                );
 
                 return {
                     subject: exam.subject,
-                    obtained: result?.marks_obtained ?? 0,
-                    total: exam.total_marks,
-                    passing: exam.passing_marks,
+                    obtained: Number(result?.marks_obtained ?? 0),
+                    total: Number(exam.total_marks ?? 0),
+                    passing: Number(exam.passing_marks ?? 0),
                 };
             });
 
@@ -204,8 +157,6 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
 
     const handleExamChange = (value: string) => {
         setSelectedGroupId(value);
-        setSelectedClass('');
-        setSelectedSection('');
         setGeneratedMarksheet(null);
         setBulkGeneratedMarksheets([]);
     };
@@ -230,6 +181,8 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
         );
     };
 
+    const studentRollNumber = (student: any) => student?.roll_number || String(student?.id || '');
+
     return (
         <DashboardLayout user={user} activeTab="marksheet">
             <div className="space-y-6 p-6">
@@ -252,7 +205,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                                     <SelectValue placeholder={t('Select exam')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {groupedExams.map((group) => (
+                                    {availableGroups.map((group) => (
                                         <SelectItem key={group.groupId} value={group.groupId}>
                                             {group.name}
                                         </SelectItem>
@@ -386,9 +339,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                                                 <TableCell className="font-medium">
                                                     {displayStudentName(student)}
                                                 </TableCell>
-                                                <TableCell>
-                                                    {student.roll_number || student.admission_no || student.id}
-                                                </TableCell>
+                                                <TableCell>{studentRollNumber(student)}</TableCell>
                                                 <TableCell>{selectedExamGroup.name}</TableCell>
                                                 <TableCell>{student.class}</TableCell>
                                                 <TableCell>{student.section}</TableCell>
@@ -488,13 +439,13 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {selectedExamGroup.exams.map((exam) => {
-                                            const examData = examService.getById(exam.id);
-                                            const result = examData?.results?.find(
-                                                (entry) => entry.student_id === generatedMarksheet.studentId,
+                                        {selectedExamGroup.exams.map((exam: any) => {
+                                            const result = (exam.results || []).find(
+                                                (entry: any) =>
+                                                    String(entry.student_id) === generatedMarksheet.studentId,
                                             );
-                                            const obtained = result?.marks_obtained ?? 0;
-                                            const passed = obtained >= exam.passing_marks;
+                                            const obtained = Number(result?.marks_obtained ?? 0);
+                                            const passed = obtained >= Number(exam.passing_marks ?? 0);
 
                                             return (
                                                 <TableRow key={exam.id}>
@@ -523,7 +474,7 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                                 <div className="mx-auto max-w-5xl rounded-2xl border-[10px] border-double border-slate-800 bg-white p-8 shadow-sm">
                                     <div className="border-b border-slate-200 pb-6 text-center">
                                         <h2 className="text-3xl font-bold tracking-wide text-slate-900">
-                                            {user?.organization_name || t('Gurukul School')}
+                                            {organization?.name || user?.organization_name || t('Gurukul School')}
                                         </h2>
                                         <p className="mt-2 text-sm uppercase tracking-[0.35em] text-slate-500">
                                             {t('Student Marksheet Preview')}
@@ -551,11 +502,13 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                                             <p className="text-lg font-semibold text-slate-900">
                                                 {filteredStudents.find(
                                                     (student) => student.id === generatedMarksheet.studentId,
-                                                )?.roll_number ||
-                                                    filteredStudents.find(
-                                                        (student) => student.id === generatedMarksheet.studentId,
-                                                    )?.admission_no ||
-                                                    generatedMarksheet.studentId}
+                                                )
+                                                    ? studentRollNumber(
+                                                          filteredStudents.find(
+                                                              (student) => student.id === generatedMarksheet.studentId,
+                                                          ),
+                                                      )
+                                                    : generatedMarksheet.studentId}
                                             </p>
                                         </div>
                                         <div className="space-y-2 rounded-xl border border-slate-200 p-4">
@@ -590,13 +543,13 @@ export default function MarksheetManagement({ user, accessToken }: MarksheetMana
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {selectedExamGroup.exams.map((exam) => {
-                                                    const examData = examService.getById(exam.id);
-                                                    const result = examData?.results?.find(
-                                                        (entry) => entry.student_id === generatedMarksheet.studentId,
+                                                {selectedExamGroup.exams.map((exam: any) => {
+                                                    const result = (exam.results || []).find(
+                                                        (entry: any) =>
+                                                            String(entry.student_id) === generatedMarksheet.studentId,
                                                     );
-                                                    const obtained = result?.marks_obtained ?? 0;
-                                                    const passed = obtained >= exam.passing_marks;
+                                                    const obtained = Number(result?.marks_obtained ?? 0);
+                                                    const passed = obtained >= Number(exam.passing_marks ?? 0);
 
                                                     return (
                                                         <TableRow key={`preview_${exam.id}`}>

@@ -1308,6 +1308,63 @@ class FeesController extends Controller
         ]);
     }
 
+    public function issueChallans(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        $selectedClassId = $request->integer('class') ?: null;
+
+        return inertia('dashboard/IssueChallans', [
+            'user' => $user,
+            'organization' => $organization ? $this->serializeOrganization($organization) : null,
+            'classRecords' => $organization ? $this->getClassRecords($organization) : [],
+            'sessionName' => $organization ? $this->getActiveSessionName($organization) : null,
+            'selectedClassId' => $selectedClassId,
+            'students' => $organization
+                ? $this->getStudentsForChallanIssue($organization, $selectedClassId)
+                : [],
+        ]);
+    }
+
+    public function issueChallansBatch(Request $request)
+    {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $fees = StudentFee::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('id', $validated['ids'])
+            ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'not like', self::HOSTEL_FEE_PREFIX))
+            ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'not like', self::TRANSPORT_FEE_PREFIX))
+            ->where('balance', '>', 0)
+            ->get();
+
+        if ($fees->isEmpty()) {
+            return back()->with('error', 'No eligible fee records selected for challan generation.');
+        }
+
+        $challans = $fees
+            ->sortBy(['student_id', 'id'])
+            ->map(fn (StudentFee $fee) => $this->buildChallanData($fee, $organization)['challan'])
+            ->values();
+
+        $html = view('finance.fee-challans-batch', [
+            'challans' => $challans,
+            'organization' => $this->serializeOrganization($organization),
+        ])->render();
+
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOption('isRemoteEnabled', true);
+
+        return $pdf->download('Fee-Challans-Batch-' . now()->format('Y-m-d') . '-' . now()->format('Hi') . '.pdf');
+    }
+
     public function dueSlips()
     {
         $user = Auth::user();
@@ -1631,6 +1688,50 @@ class FeesController extends Controller
             'roll_number' => $history?->roll_number ?: $student->roll_number,
             'status' => $history?->status ?: $student->status,
         ];
+    }
+
+    private function getStudentsForChallanIssue(Organization $organization, ?int $classId): array
+    {
+        $records = $this->getStudentFeeRecords($organization);
+        $students = collect($this->getStudents($organization));
+
+        if ($classId) {
+            $class = collect($this->getClassRecords($organization))->firstWhere('id', $classId);
+            if ($class) {
+                $students = $students->filter(
+                    fn (array $student) => ($student['class'] ?? null) === $class['name']
+                        && ($student['section'] ?? null) === $class['section'],
+                );
+            }
+        }
+
+        return $students
+            ->map(function (array $student) use ($records) {
+                $fees = collect($records[$student['id']]['fees'] ?? [])
+                    ->filter(fn (array $fee) => (float) $fee['due_amount'] > 0)
+                    ->values();
+
+                return [
+                    'id' => $student['id'],
+                    'first_name' => $student['first_name'],
+                    'last_name' => $student['last_name'],
+                    'admission_no' => $student['admission_no'] ?? null,
+                    'roll_number' => $student['roll_number'] ?? null,
+                    'class' => $student['class'] ?? null,
+                    'section' => $student['section'] ?? null,
+                    'fees' => $fees,
+                    'total_due' => $fees->sum('due_amount'),
+                ];
+            })
+            ->filter(fn (array $student) => (float) $student['total_due'] > 0)
+            ->sortBy([
+                ['class', 'asc'],
+                ['section', 'asc'],
+                ['first_name', 'asc'],
+                ['last_name', 'asc'],
+            ])
+            ->values()
+            ->all();
     }
 
     private function getClassRecords(Organization $organization): array

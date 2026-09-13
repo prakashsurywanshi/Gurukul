@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardLayout from '../DashboardLayout';
-import { Student } from '../../utils/mockData';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -41,8 +40,19 @@ interface TransportManagementProps {
     vehicles?: TransportVehicle[];
     assignments?: TransportAssignment[];
     trips?: DailyTrip[];
-    students?: Student[];
+    students?: TransportStudent[];
 }
+
+type TransportStudent = {
+    id: string;
+    first_name: string;
+    last_name?: string;
+    admission_no?: string;
+    class?: string;
+    section?: string;
+    status?: string;
+    transport_required?: boolean;
+};
 
 type TransportRoute = {
     id: string;

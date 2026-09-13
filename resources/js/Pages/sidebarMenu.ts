@@ -834,7 +834,7 @@ export const sidebarConfig: {
             },
             {
                 id: 'face-search',
-                label: 'Face Search Kiosk',
+                label: 'Face Search',
                 icon: ScanFace,
                 href: '/face-search/kiosk',
                 roles: ['super_admin', 'admin'],

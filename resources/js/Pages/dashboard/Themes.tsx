@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Check, Laptop, Moon, Palette, Sun } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 interface ThemesProps {
     user: any;
+    theme?: string | null;
 }
 
 type Theme = 'light' | 'dark' | 'system';
@@ -16,15 +18,19 @@ const THEMES: { key: Theme; label: string; description: string; icon: typeof Sun
     { key: 'system', label: 'System', description: 'Follow your device appearance.', icon: Laptop },
 ];
 
+const isTheme = (value: unknown): value is Theme => value === 'light' || value === 'dark' || value === 'system';
+
 export default function Themes(pageProps: ThemesProps) {
     const { user } = pageProps;
     const [theme, setTheme] = useState<Theme>(() => {
+        const serverTheme = pageProps.theme;
         try {
             const stored = localStorage.getItem('gurukul-theme') as Theme | null;
-            return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+            if (isTheme(stored)) return stored;
         } catch {
-            return 'system';
+            /* ignore */
         }
+        return isTheme(serverTheme) ? serverTheme : 'system';
     });
 
     const applyTheme = (next: Theme) => {
@@ -46,6 +52,12 @@ export default function Themes(pageProps: ThemesProps) {
         } else {
             root.classList.remove('light');
         }
+    };
+
+    const selectTheme = (next: Theme) => {
+        applyTheme(next);
+        router.patch('/settings/themes', { theme: next });
+        setTimeout(preview, 0);
     };
 
     const preview = () => {
@@ -86,8 +98,7 @@ export default function Themes(pageProps: ThemesProps) {
                                     active ? 'ring-2 ring-indigo-500' : 'hover:shadow-md'
                                 }`}
                                 onClick={() => {
-                                    applyTheme(themeItem.key);
-                                    setTimeout(preview, 0);
+                                    selectTheme(themeItem.key);
                                 }}
                             >
                                 <CardHeader>
