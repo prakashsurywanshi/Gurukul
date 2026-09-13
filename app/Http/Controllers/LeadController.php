@@ -8,6 +8,7 @@ use App\Models\LeadSource;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\SystemNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -177,7 +178,23 @@ class LeadController extends Controller
 
         $validated = $this->validatePayload($request, $organization);
 
-        Lead::query()->create([...$validated, 'organization_id' => $organization->id, 'created_by' => $user->id]);
+        $lead = Lead::query()->create([...$validated, 'organization_id' => $organization->id, 'created_by' => $user->id]);
+
+        app(SystemNotificationService::class)->notifyAdmins(
+            $organization,
+            NotificationCenterController::TYPE_LEAD,
+            'New Lead',
+            sprintf(
+                '%s was added as a lead%s.',
+                $lead->student_name,
+                $lead->interested_class ? ' for ' . $lead->interested_class : ''
+            ),
+            [
+                'action_label' => 'View Lead',
+                'action_url' => '/leads',
+                'event' => 'lead_created',
+            ]
+        );
 
         return back()->with('success', 'Lead created successfully.');
     }

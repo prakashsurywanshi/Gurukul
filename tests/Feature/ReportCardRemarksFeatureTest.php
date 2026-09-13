@@ -215,4 +215,193 @@ class ReportCardRemarksFeatureTest extends TestCase
             'student_id' => $studentId,
         ]);
     }
+
+    public function test_subject_options_are_scoped_to_selected_class(): void
+    {
+        [$admin, $organization, $classId, $studentId] = $this->seedContext();
+
+        $otherClassId = DB::table('classes')->insertGetId([
+            'organization_id' => $organization,
+            'academic_year_id' => DB::table('academic_years')->where('organization_id', $organization)->value('id'),
+            'name' => '11',
+            'section' => 'B',
+            'room_number' => 'R2',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $mathId = $this->createSubject($organization, 'Mathematics');
+        $this->attachSubjectToClass($organization, $classId, $mathId);
+        $this->attachSubjectToClass($organization, $otherClassId, $mathId);
+
+        $scienceId = $this->createSubject($organization, 'Science');
+        $this->attachSubjectToClass($organization, $otherClassId, $scienceId);
+
+        $this->actingAs($admin)
+            ->get("/marksheet-remarks?class={$classId}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('subjects', 1)
+                ->where('subjects.0.name', 'Mathematics'));
+    }
+
+    public function test_subject_wise_remark_saved(): void
+    {
+        [$admin, $organization, $classId, $studentId] = $this->seedContext();
+
+        $subjectId = $this->createSubject($organization, 'Mathematics');
+        $this->attachSubjectToClass($organization, $classId, $subjectId);
+
+        $this->actingAs($admin)
+            ->post('/marksheet-remarks', [
+                'class_id' => $classId,
+                'subject_id' => $subjectId,
+                'students' => [
+                    [
+                        'student_id' => $studentId,
+                        'class_teacher_remark' => 'Needs practice',
+                        'principal_remark' => '',
+                        'subject_remark' => 'Strong at algebra, revise geometry.',
+                    ],
+                ],
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('report_card_remarks', [
+            'organization_id' => $organization,
+            'exam_id' => null,
+            'student_id' => $studentId,
+            'subject_id' => $subjectId,
+            'subject_remark' => 'Strong at algebra, revise geometry.',
+        ]);
+    }
+
+    public function test_remarks_are_distinct_per_subject_for_same_student(): void
+    {
+        [$admin, $organization, $classId, $studentId] = $this->seedContext();
+
+        $mathId = $this->createSubject($organization, 'Mathematics');
+        $scienceId = $this->createSubject($organization, 'Science');
+        $this->attachSubjectToClass($organization, $classId, $mathId);
+        $this->attachSubjectToClass($organization, $classId, $scienceId);
+
+        $payload = fn (int $subjectId, string $remark) => [
+            'class_id' => $classId,
+            'subject_id' => $subjectId,
+            'students' => [
+                [
+                    'student_id' => $studentId,
+                    'class_teacher_remark' => '',
+                    'principal_remark' => '',
+                    'subject_remark' => $remark,
+                ],
+            ],
+        ];
+
+        $this->actingAs($admin)->post('/marksheet-remarks', $payload($mathId, 'Math remark'))->assertRedirect();
+        $this->actingAs($admin)->post('/marksheet-remarks', $payload($scienceId, 'Science remark'))->assertRedirect();
+
+        $this->assertDatabaseHas('report_card_remarks', [
+            'organization_id' => $organization,
+            'student_id' => $studentId,
+            'subject_id' => $mathId,
+            'subject_remark' => 'Math remark',
+        ]);
+        $this->assertDatabaseHas('report_card_remarks', [
+            'organization_id' => $organization,
+            'student_id' => $studentId,
+            'subject_id' => $scienceId,
+            'subject_remark' => 'Science remark',
+        ]);
+        $this->assertSame(2, DB::table('report_card_remarks')->where('organization_id', $organization)->where('student_id', $studentId)->count());
+    }
+
+    public function test_subject_remark_surfaced_in_grid(): void
+    {
+        [$admin, $organization, $classId, $studentId] = $this->seedContext();
+
+        $subjectId = $this->createSubject($organization, 'Mathematics');
+        $this->attachSubjectToClass($organization, $classId, $subjectId);
+
+        DB::table('report_card_remarks')->insert([
+            'organization_id' => $organization,
+            'exam_id' => null,
+            'student_id' => $studentId,
+            'subject_id' => $subjectId,
+            'class_teacher_remark' => null,
+            'principal_remark' => null,
+            'subject_remark' => 'Needs more geometry practice.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get("/marksheet-remarks?class={$classId}&subject={$subjectId}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('students', 1)
+                ->where('students.0.subjectRemark', 'Needs more geometry practice.'));
+    }
+
+    public function test_blank_subject_remark_deletes_subject_row(): void
+    {
+        [$admin, $organization, $classId, $studentId] = $this->seedContext();
+
+        $subjectId = $this->createSubject($organization, 'Mathematics');
+        $this->attachSubjectToClass($organization, $classId, $subjectId);
+
+        DB::table('report_card_remarks')->insert([
+            'organization_id' => $organization,
+            'exam_id' => null,
+            'student_id' => $studentId,
+            'subject_id' => $subjectId,
+            'subject_remark' => 'Old subject remark',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->post('/marksheet-remarks', [
+                'class_id' => $classId,
+                'subject_id' => $subjectId,
+                'students' => [
+                    [
+                        'student_id' => $studentId,
+                        'class_teacher_remark' => '',
+                        'principal_remark' => '',
+                        'subject_remark' => '   ',
+                    ],
+                ],
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('report_card_remarks', [
+            'organization_id' => $organization,
+            'student_id' => $studentId,
+            'subject_id' => $subjectId,
+        ]);
+    }
+
+    private function createSubject(int $organization, string $name): int
+    {
+        return DB::table('subjects')->insertGetId([
+            'organization_id' => $organization,
+            'name' => $name,
+            'code' => strtoupper(substr($name, 0, 2)) . uniqid(),
+            'type' => 'theory',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function attachSubjectToClass(int $organization, int $classId, int $subjectId): void
+    {
+        DB::table('class_subject')->insert([
+            'class_id' => $classId,
+            'subject_id' => $subjectId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
 }

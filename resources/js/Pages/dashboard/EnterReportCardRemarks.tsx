@@ -23,6 +23,11 @@ interface ExamOption {
     name: string;
 }
 
+interface SubjectOption {
+    id: number;
+    name: string;
+}
+
 interface StudentRow {
     id: string;
     name: string;
@@ -30,20 +35,24 @@ interface StudentRow {
     rollNumber: string;
     classTeacherRemark: string;
     principalRemark: string;
+    subjectRemark: string;
     isCurrent: boolean;
 }
 
 interface RemarkCell {
     classTeacher: string;
     principal: string;
+    subject: string;
 }
 
 export default function EnterReportCardRemarks({
     user,
     classes,
     exams,
+    subjects,
     selectedClassId,
     selectedExamId,
+    selectedSubjectId,
     includePromoted,
     search,
     students,
@@ -51,8 +60,10 @@ export default function EnterReportCardRemarks({
     user: any;
     classes: ClassOption[];
     exams: ExamOption[];
+    subjects: SubjectOption[];
     selectedClassId: number | null;
     selectedExamId: number | null;
+    selectedSubjectId: number | null;
     includePromoted: boolean;
     search: string;
     students: StudentRow[];
@@ -61,6 +72,7 @@ export default function EnterReportCardRemarks({
     const flash = (usePage().props as any).flash ?? {};
     const [classId, setClassId] = useState<string>(selectedClassId ? String(selectedClassId) : '');
     const [examId, setExamId] = useState<string>(selectedExamId ? String(selectedExamId) : '');
+    const [subjectId, setSubjectId] = useState<string>(selectedSubjectId ? String(selectedSubjectId) : '');
     const [promoted, setPromoted] = useState<boolean>(includePromoted);
     const [query, setQuery] = useState<string>(search);
     const [saving, setSaving] = useState(false);
@@ -70,6 +82,7 @@ export default function EnterReportCardRemarks({
             students.map((student) => ({
                 classTeacher: student.classTeacherRemark,
                 principal: student.principalRemark,
+                subject: student.subjectRemark,
             })),
         [students],
     );
@@ -81,6 +94,7 @@ export default function EnterReportCardRemarks({
             students.map((student) => ({
                 classTeacher: student.classTeacherRemark,
                 principal: student.principalRemark,
+                subject: student.subjectRemark,
             })),
         );
     }, [students]);
@@ -95,7 +109,13 @@ export default function EnterReportCardRemarks({
         }
     }, [flash.error, flash.success]);
 
-    const applyFilter = (nextClassId: string, nextExamId: string, nextPromoted: boolean, nextQuery: string) => {
+    const applyFilter = (
+        nextClassId: string,
+        nextExamId: string,
+        nextSubjectId: string,
+        nextPromoted: boolean,
+        nextQuery: string,
+    ) => {
         const params = new URLSearchParams();
 
         if (nextClassId) {
@@ -104,6 +124,10 @@ export default function EnterReportCardRemarks({
 
         if (nextExamId) {
             params.set('exam', nextExamId);
+        }
+
+        if (nextSubjectId) {
+            params.set('subject', nextSubjectId);
         }
 
         if (nextPromoted) {
@@ -137,11 +161,13 @@ export default function EnterReportCardRemarks({
             {
                 class_id: Number(classId),
                 exam_id: examId ? Number(examId) : null,
+                subject_id: subjectId ? Number(subjectId) : null,
                 promoted: promoted,
                 students: students.map((student, studentIndex) => ({
                     student_id: student.id,
                     class_teacher_remark: rows[studentIndex]?.classTeacher ?? '',
                     principal_remark: rows[studentIndex]?.principal ?? '',
+                    subject_remark: rows[studentIndex]?.subject ?? '',
                 })),
             },
             {
@@ -184,6 +210,7 @@ export default function EnterReportCardRemarks({
                                 )}
                             </p>
                             <p>{t('Leave a row blank to skip the remarks section for that student.')}</p>
+                            <p>{t('Select a subject above to also enter subject-wise remarks per student.')}</p>
                         </CardContent>
                     </Card>
 
@@ -193,14 +220,14 @@ export default function EnterReportCardRemarks({
                             <CardDescription>{t('Pick a class to load the student grid.')}</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid items-end gap-4 md:grid-cols-4">
+                            <div className="grid items-end gap-4 md:grid-cols-5">
                                 <div className="space-y-2">
                                     <span className="text-sm font-medium leading-none">{t('Class')}</span>
                                     <Select
                                         value={classId}
                                         onValueChange={(value) => {
                                             setClassId(value);
-                                            applyFilter(value, examId, promoted, query);
+                                            applyFilter(value, examId, subjectId, promoted, query);
                                         }}
                                     >
                                         <SelectTrigger id="remark-class-select">
@@ -222,7 +249,7 @@ export default function EnterReportCardRemarks({
                                         value={examId}
                                         onValueChange={(value) => {
                                             setExamId(value);
-                                            applyFilter(classId, value, promoted, query);
+                                            applyFilter(classId, value, subjectId, promoted, query);
                                         }}
                                     >
                                         <SelectTrigger id="remark-exam-select">
@@ -237,6 +264,27 @@ export default function EnterReportCardRemarks({
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                <div className="space-y-2">
+                                    <span className="text-sm font-medium leading-none">{t('Subject')}</span>
+                                    <Select
+                                        value={subjectId}
+                                        onValueChange={(value) => {
+                                            setSubjectId(value);
+                                            applyFilter(classId, examId, value, promoted, query);
+                                        }}
+                                    >
+                                        <SelectTrigger id="remark-subject-select">
+                                            <SelectValue placeholder={t('General (Report Card)')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {subjects.map((subject) => (
+                                                <SelectItem key={subject.id} value={String(subject.id)}>
+                                                    {subject.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <div className="flex items-center gap-2 pb-1">
                                     <Checkbox
                                         id="include-promoted"
@@ -244,7 +292,7 @@ export default function EnterReportCardRemarks({
                                         onCheckedChange={(checked) => {
                                             const next = checked === true;
                                             setPromoted(next);
-                                            applyFilter(classId, examId, next, query);
+                                            applyFilter(classId, examId, subjectId, next, query);
                                         }}
                                     />
                                     <label
@@ -262,7 +310,7 @@ export default function EnterReportCardRemarks({
                                         onChange={(event) => setQuery(event.target.value)}
                                         onKeyDown={(event) => {
                                             if (event.key === 'Enter') {
-                                                applyFilter(classId, examId, promoted, query);
+                                                applyFilter(classId, examId, subjectId, promoted, query);
                                             }
                                         }}
                                     />
@@ -299,6 +347,11 @@ export default function EnterReportCardRemarks({
                                                     <TableHead className="min-w-[280px]">
                                                         {t('Class Teacher Remark')}
                                                     </TableHead>
+                                                    {subjectId ? (
+                                                        <TableHead className="min-w-[280px]">
+                                                            {t('Subject Remark')}
+                                                        </TableHead>
+                                                    ) : null}
                                                     <TableHead className="min-w-[280px]">
                                                         {t('Principal Remark')}
                                                     </TableHead>
@@ -336,6 +389,19 @@ export default function EnterReportCardRemarks({
                                                                 }
                                                             />
                                                         </TableCell>
+                                                        {subjectId ? (
+                                                            <TableCell className="align-top">
+                                                                <Input
+                                                                    value={rows[studentIndex]?.subject ?? ''}
+                                                                    placeholder={t('Subject remark...')}
+                                                                    onChange={(event) =>
+                                                                        updateRemark(studentIndex, {
+                                                                            subject: event.target.value,
+                                                                        })
+                                                                    }
+                                                                />
+                                                            </TableCell>
+                                                        ) : null}
                                                         <TableCell className="align-top">
                                                             <Input
                                                                 value={rows[studentIndex]?.principal ?? ''}

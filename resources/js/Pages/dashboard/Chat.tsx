@@ -1,36 +1,11 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
+import { createEcho } from '../../lib/echo';
 import { Loader2, MessageCircle, Send } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Input } from '../ui/input';
-
-interface WindowWithEcho extends Window {
-    Echo?: any;
-    Pusher?: any;
-}
-
-function createEcho(): any {
-    const win = window as WindowWithEcho;
-    if (win.Echo) return win.Echo;
-    const key = import.meta.env.VITE_REVERB_APP_KEY as string | undefined;
-    if (!key) return null;
-    win.Pusher = win.Pusher ?? Pusher;
-    win.Echo = new Echo({
-        broadcaster: 'reverb',
-        key,
-        wsHost: (import.meta.env.VITE_REVERB_HOST as string | undefined) ?? '127.0.0.1',
-        wsPort: Number((import.meta.env.VITE_REVERB_PORT as string | undefined) ?? '8080'),
-        wssPort: Number((import.meta.env.VITE_REVERB_PORT as string | undefined) ?? '443'),
-        forceTLS: ((import.meta.env.VITE_REVERB_SCHEME as string | undefined) ?? 'http') === 'https',
-        enabledTransports: ['ws', 'wss'],
-        authEndpoint: '/broadcasting/auth',
-    });
-    return win.Echo;
-}
 
 interface ChatContact {
     id: string;

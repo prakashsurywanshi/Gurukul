@@ -115,6 +115,25 @@ class ChatController extends Controller
         ]);
     }
 
+    public function unread(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $total = MessageRecipient::query()
+            ->where('recipient_id', $user->id)
+            ->where('is_read', false)
+            ->whereIn('message_id', Message::query()
+                ->where('organization_id', $organization->id)
+                ->where('subject', 'Chat')
+                ->select('id'))
+            ->count();
+
+        return response()->json(['total' => $total]);
+    }
+
     public function read(Request $request): JsonResponse
     {
         $user = Auth::user();

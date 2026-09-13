@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\ReportCardRemark;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,8 +28,11 @@ class ReportCardRemarksController extends Controller
 
         $selectedClassId = $request->integer('class') ?: null;
         $selectedExamId = $request->integer('exam') ?: null;
+        $selectedSubjectId = $request->integer('subject') ?: null;
         $includePromoted = $request->boolean('promoted');
         $search = trim((string) $request->string('q'));
+
+        $subjects = $this->getSubjectOptions($organization, $selectedClassId);
 
         $students = [];
 
@@ -37,6 +41,7 @@ class ReportCardRemarksController extends Controller
                 $organization,
                 $selectedClassId,
                 $selectedExamId,
+                $selectedSubjectId,
                 $includePromoted,
                 $search
             );
@@ -46,8 +51,10 @@ class ReportCardRemarksController extends Controller
             'user' => $user,
             'classes' => $this->getClassOptions($organization),
             'exams' => $this->getExamOptions($organization),
+            'subjects' => $subjects,
             'selectedClassId' => $selectedClassId,
             'selectedExamId' => $selectedExamId,
+            'selectedSubjectId' => $selectedSubjectId,
             'includePromoted' => $includePromoted,
             'search' => $search,
             'students' => $students,
@@ -64,24 +71,29 @@ class ReportCardRemarksController extends Controller
         $validated = $request->validate([
             'class_id' => ['required', Rule::exists('classes', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id))],
             'exam_id' => ['nullable', Rule::exists('exams', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id))],
+            'subject_id' => ['nullable', Rule::exists('subjects', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id))],
             'students' => ['required', 'array'],
             'students.*.student_id' => ['required', Rule::exists('students', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id))],
             'students.*.class_teacher_remark' => ['nullable', 'string', 'max:500'],
             'students.*.principal_remark' => ['nullable', 'string', 'max:500'],
+            'students.*.subject_remark' => ['nullable', 'string', 'max:500'],
         ]);
 
         $examId = $validated['exam_id'] ?? null;
+        $subjectId = $validated['subject_id'] ?? null;
 
-        DB::transaction(function () use ($organization, $examId, $validated) {
+        DB::transaction(function () use ($organization, $examId, $subjectId, $validated) {
             foreach ($validated['students'] as $row) {
                 $classTeacherRemark = trim((string) ($row['class_teacher_remark'] ?? ''));
                 $principalRemark = trim((string) ($row['principal_remark'] ?? ''));
+                $subjectRemark = trim((string) ($row['subject_remark'] ?? ''));
 
-                if ($classTeacherRemark === '' && $principalRemark === '') {
+                if ($classTeacherRemark === '' && $principalRemark === '' && $subjectRemark === '') {
                     ReportCardRemark::query()
                         ->where('organization_id', $organization->id)
                         ->where('exam_id', $examId)
                         ->where('student_id', (int) $row['student_id'])
+                        ->where('subject_id', $subjectId)
                         ->delete();
 
                     continue;
@@ -92,10 +104,12 @@ class ReportCardRemarksController extends Controller
                         'organization_id' => $organization->id,
                         'exam_id' => $examId,
                         'student_id' => (int) $row['student_id'],
+                        'subject_id' => $subjectId,
                     ],
                     [
                         'class_teacher_remark' => $classTeacherRemark !== '' ? $classTeacherRemark : null,
                         'principal_remark' => $principalRemark !== '' ? $principalRemark : null,
+                        'subject_remark' => $subjectRemark !== '' ? $subjectRemark : null,
                     ]
                 );
             }
@@ -105,7 +119,9 @@ class ReportCardRemarksController extends Controller
             ->route('marksheet-remarks', [
                 'class' => $validated['class_id'],
                 'exam' => $examId,
+                'subject' => $subjectId,
                 'promoted' => $request->boolean('promoted') ? 1 : 0,
+                'q' => trim((string) $request->string('q')) ?: null,
             ])
             ->with('success', 'Report card remarks saved successfully.');
     }
@@ -114,6 +130,7 @@ class ReportCardRemarksController extends Controller
         Organization $organization,
         int $classId,
         ?int $examId,
+        ?int $subjectId,
         bool $includePromoted,
         string $search
     ): array {
@@ -147,6 +164,7 @@ class ReportCardRemarksController extends Controller
         $remarks = ReportCardRemark::query()
             ->where('organization_id', $organization->id)
             ->where('exam_id', $examId)
+            ->where('subject_id', $subjectId)
             ->whereIn('student_id', $studentIds)
             ->get()
             ->keyBy('student_id');
@@ -172,9 +190,27 @@ class ReportCardRemarksController extends Controller
                     'rollNumber' => $student->roll_number,
                     'classTeacherRemark' => $remark?->class_teacher_remark ?? '',
                     'principalRemark' => $remark?->principal_remark ?? '',
+                    'subjectRemark' => $remark?->subject_remark ?? '',
                     'isCurrent' => $currentStudentIds->contains($student->id),
                 ];
             })
+            ->values()
+            ->all();
+    }
+
+    private function getSubjectOptions(Organization $organization, ?int $classId): array
+    {
+        $query = Subject::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('name');
+
+        if ($classId) {
+            $query->whereHas('classes', fn ($query) => $query->where('classes.id', $classId));
+        }
+
+        return $query
+            ->get(['id', 'name'])
+            ->map(fn (Subject $subject) => ['id' => $subject->id, 'name' => $subject->name])
             ->values()
             ->all();
     }

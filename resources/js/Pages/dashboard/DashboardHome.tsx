@@ -49,6 +49,16 @@ interface DashboardHomeProps {
     }[];
     selectedStudentId?: string | null;
     notices?: Notice[];
+    upcomingEvents?: SchoolEventCardData[];
+}
+
+interface SchoolEventCardData {
+    id: string;
+    title: string;
+    type: string;
+    startDate: string;
+    endDate?: string;
+    isHoliday: boolean;
 }
 
 const adminQuickActions = [
@@ -122,6 +132,7 @@ export function DashboardHome({
     studentChildren = [],
     selectedStudentId = null,
     notices = [],
+    upcomingEvents = [],
 }: DashboardHomeProps) {
     const { t } = useLanguage();
     const isStudent = dashboardType === 'student' || user.role === 'student';
@@ -208,16 +219,24 @@ export function DashboardHome({
                 </div>
 
                 {isStudent ? (
-                    <StudentDashboard stats={stats} notices={notices} />
+                    <StudentDashboard stats={stats} notices={notices} upcomingEvents={upcomingEvents} />
                 ) : (
-                    <AdminDashboard stats={stats} notices={notices} />
+                    <AdminDashboard stats={stats} notices={notices} upcomingEvents={upcomingEvents} />
                 )}
             </div>
         </DashboardLayout>
     );
 }
 
-function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
+function AdminDashboard({
+    stats,
+    notices,
+    upcomingEvents,
+}: {
+    stats: any;
+    notices: Notice[];
+    upcomingEvents: SchoolEventCardData[];
+}) {
     const { t } = useLanguage();
     const cards = [
         {
@@ -456,30 +475,7 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
                 />
             </div>
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                <AdminListCard
-                    title={t('Library Alerts')}
-                    description="Open issue records that may need attention."
-                    icon={Book}
-                    emptyLabel="No library alerts at the moment."
-                    items={(stats?.library?.alerts || []).map((alert: any) => (
-                        <div key={alert.id} className="rounded-2xl border border-slate-200 p-4">
-                            <div className="flex items-start justify-between gap-3">
-                                <div>
-                                    <p className="font-semibold text-slate-900">{alert.bookTitle}</p>
-                                    <p className="mt-1 text-sm text-slate-500">{alert.studentName}</p>
-                                </div>
-                                <Badge variant={alert.status === 'overdue' ? 'destructive' : 'secondary'}>
-                                    {t(alert.status)}
-                                </Badge>
-                            </div>
-                            <p className="mt-3 text-sm text-slate-500">
-                                {t('Due date: {date}', { date: alert.dueDate })}
-                            </p>
-                        </div>
-                    ))}
-                />
-
+            <div className="grid gap-6 xl:grid-cols-3">
                 <Card className="border-slate-200 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
@@ -492,12 +488,84 @@ function AdminDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
                         <NoticeBoardPanel notices={notices} singleColumn />
                     </CardContent>
                 </Card>
+
+                <Card className="border-slate-200 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>{t('Upcoming Events')}</CardTitle>
+                            <CardDescription>{t('School calendar events and holidays.')}</CardDescription>
+                        </div>
+                        <CalendarDays className="h-5 w-5 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {upcomingEvents.length === 0 ? (
+                            <p className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+                                {t('No upcoming events scheduled.')}
+                            </p>
+                        ) : (
+                            upcomingEvents.map((event: SchoolEventCardData) => (
+                                <div key={event.id} className="rounded-2xl border border-slate-200 p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="font-semibold text-slate-900">{event.title}</p>
+                                            <p className="mt-1 text-sm text-slate-500">{t(event.type)}</p>
+                                        </div>
+                                        <Badge variant={event.isHoliday ? 'destructive' : 'outline'}>
+                                            {event.startDate}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card className="border-slate-200 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>{t('Library Alerts')}</CardTitle>
+                            <CardDescription>{t('Open issue records that may need attention.')}</CardDescription>
+                        </div>
+                        <Book className="h-5 w-5 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {(stats?.library?.alerts || []).map((alert: any) => (
+                            <div key={alert.id} className="rounded-2xl border border-slate-200 p-4">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className="font-semibold text-slate-900">{alert.bookTitle}</p>
+                                        <p className="mt-1 text-sm text-slate-500">{alert.studentName}</p>
+                                    </div>
+                                    <Badge variant={alert.status === 'overdue' ? 'destructive' : 'secondary'}>
+                                        {alert.status}
+                                    </Badge>
+                                </div>
+                                <p className="mt-3 text-sm text-slate-500">
+                                    {t('Due date: {date}', { date: alert.dueDate })}
+                                </p>
+                            </div>
+                        ))}
+                        {!stats?.library?.alerts?.length ? (
+                            <p className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+                                {t('No library alerts at the moment.')}
+                            </p>
+                        ) : null}
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
 }
 
-function StudentDashboard({ stats, notices }: { stats: any; notices: Notice[] }) {
+function StudentDashboard({
+    stats,
+    notices,
+    upcomingEvents,
+}: {
+    stats: any;
+    notices: Notice[];
+    upcomingEvents: SchoolEventCardData[];
+}) {
     const { t } = useLanguage();
     const cards = [
         {
@@ -585,7 +653,38 @@ function StudentDashboard({ stats, notices }: { stats: any; notices: Notice[] })
                 </CardContent>
             </Card>
 
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_420px]">
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <Card className="border-slate-200 shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>{t('Upcoming Events')}</CardTitle>
+                            <CardDescription>{t('School calendar events and holidays.')}</CardDescription>
+                        </div>
+                        <CalendarDays className="h-5 w-5 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {upcomingEvents.length === 0 ? (
+                            <p className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
+                                {t('No upcoming events scheduled.')}
+                            </p>
+                        ) : (
+                            upcomingEvents.map((event: SchoolEventCardData) => (
+                                <div key={event.id} className="rounded-2xl border border-slate-200 p-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="font-semibold text-slate-900">{event.title}</p>
+                                            <p className="mt-1 text-sm text-slate-500">{t(event.type)}</p>
+                                        </div>
+                                        <Badge variant={event.isHoliday ? 'destructive' : 'outline'}>
+                                            {event.startDate}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </CardContent>
+                </Card>
+
                 <Card className="border-slate-200 shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between gap-3">
                         <div>

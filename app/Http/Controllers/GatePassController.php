@@ -88,6 +88,42 @@ class GatePassController extends Controller
         ]);
     }
 
+    public function terminal(Request $request): Response
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $search = trim((string) $request->query('search'));
+
+        $query = GatePass::query()
+            ->where('organization_id', $organization->id)
+            ->whereDate('created_at', today())
+            ->with('createdBy:id,name');
+
+        if ($search !== '') {
+            $query->where('person_name', 'like', "%{$search}%");
+        }
+
+        $todayTotal = (clone $query)->count();
+        $openCount = (clone $query)->where('status', 'open')->count();
+        $checkedToday = (clone $query)->where('status', 'closed')->count();
+
+        $passes = $query->orderByDesc('created_at')->limit(100)->get();
+
+        return Inertia::render('dashboard/GateTerminal', [
+            'user' => $user,
+            'passes' => $passes->map(fn (GatePass $pass) => $this->serialize($pass)),
+            'summary' => [
+                'todayTotal' => $todayTotal,
+                'openCount' => $openCount,
+                'checkedToday' => $checkedToday,
+            ],
+            'search' => $search,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();

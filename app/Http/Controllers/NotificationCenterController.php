@@ -12,6 +12,11 @@ class NotificationCenterController extends Controller
     public const TYPE_INFO = 'info';
     public const TYPE_LEAVE_REQUEST = 'leave_request';
     public const TYPE_ADMIT_CARD = 'admit_card';
+    public const TYPE_ADMISSION_ENQUIRY = 'admission_enquiry';
+    public const TYPE_LEAD = 'lead';
+    public const TYPE_COMPLAINT = 'complaint';
+    public const TYPE_ATTENDANCE_CORRECTION = 'attendance_correction';
+    public const TYPE_FEE_CONCESSION = 'fee_concession';
 
     public function index()
     {

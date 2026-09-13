@@ -1054,6 +1054,118 @@ class FeesController extends Controller
         return redirect()->route('fees')->with('success', 'Payment collected successfully.');
     }
 
+    public function reconcilePayments(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return inertia('dashboard/FeePaymentReconciliation', [
+                'user' => $user,
+                'payments' => [],
+                'summary' => ['total' => 0, 'reconciled' => 0, 'pending' => 0],
+                'filters' => ['method' => null],
+            ]);
+        }
+
+        $method = $request->query('method');
+        $validMethods = ['cash', 'card', 'upi', 'cheque', 'bank_transfer', 'online'];
+        $filteredMethod = in_array($method, $validMethods, true) ? $method : null;
+
+        $payments = FeePayment::query()
+            ->with(['student:id,admission_no,first_name,last_name,middle_name,class_id', 'student.schoolClass:id,name,section'])
+            ->with('collector:id,name')
+            ->with('reconcileBy:id,name')
+            ->where('organization_id', $organization->id)
+            ->when($filteredMethod, fn ($query) => $query->where('payment_method', $filteredMethod))
+            ->orderByDesc('payment_date')
+            ->orderByDesc('id')
+            ->limit(300)
+            ->get()
+            ->map(fn (FeePayment $payment) => [
+                'id' => (string) $payment->id,
+                'receipt_number' => $payment->receipt_number,
+                'batch_reference' => $payment->batch_reference,
+                'amount' => (string) $payment->amount,
+                'payment_method' => $payment->payment_method,
+                'transaction_id' => $payment->transaction_id,
+                'cheque_number' => $payment->cheque_number,
+                'cheque_date' => $payment->cheque_date?->toDateString(),
+                'bank_name' => $payment->bank_name,
+                'payment_date' => $payment->payment_date?->toDateString(),
+                'status' => $payment->status,
+                'collected_by' => $payment->collector?->name ?? null,
+                'reconciled_at' => $payment->reconciled_at?->toDateTimeString(),
+                'reconciled_by' => $payment->reconcileBy?->name ?? null,
+                'student' => $payment->student ? [
+                    'name' => $this->studentFullName($payment->student),
+                    'admission_no' => $payment->student->admission_no,
+                    'class' => $payment->student->schoolClass
+                        ? trim(($payment->student->schoolClass->name ?? '').' '.($payment->student->schoolClass->section ?? ''))
+                        : null,
+                ] : null,
+            ])
+            ->values()
+            ->all();
+
+        $stats = [
+            'total' => FeePayment::query()
+                ->where('organization_id', $organization->id)
+                ->where('status', '!=', 'refunded')
+                ->when($filteredMethod, fn ($query) => $query->where('payment_method', $filteredMethod))
+                ->count(),
+            'reconciled' => FeePayment::query()
+                ->where('organization_id', $organization->id)
+                ->whereNotNull('reconciled_at')
+                ->where('status', '!=', 'refunded')
+                ->when($filteredMethod, fn ($query) => $query->where('payment_method', $filteredMethod))
+                ->count(),
+            'pending' => FeePayment::query()
+                ->where('organization_id', $organization->id)
+                ->whereNull('reconciled_at')
+                ->where('status', '!=', 'refunded')
+                ->when($filteredMethod, fn ($query) => $query->where('payment_method', $filteredMethod))
+                ->count(),
+        ];
+
+        return inertia('dashboard/FeePaymentReconciliation', [
+            'user' => $user,
+            'payments' => $payments,
+            'summary' => $stats,
+            'filters' => ['method' => $filteredMethod],
+        ]);
+    }
+
+    public function toggleReconciliation(Request $request, FeePayment $feePayment): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization && $feePayment->organization_id === $organization->id, 403);
+
+        if ($feePayment->status === 'refunded') {
+            return back()->with('error', 'Refunded payments cannot be reconciled.');
+        }
+
+        $reconciled = (bool) $request->boolean('reconciled');
+
+        $feePayment->update([
+            'reconciled_at' => $reconciled ? now() : null,
+            'reconciled_by' => $reconciled ? $user->id : null,
+        ]);
+
+        $this->feeAuditService->log($organization, $reconciled ? 'payment.reconciled' : 'payment.unreconciled', $user, [
+            'amount' => $feePayment->amount,
+            'student_fee_id' => $feePayment->student_fee_id,
+            'fee_payment_id' => $feePayment->id,
+            'meta' => [
+                'receipt_number' => $feePayment->receipt_number,
+                'payment_method' => $feePayment->payment_method,
+            ],
+        ]);
+
+        return back()->with('success', $reconciled ? 'Payment marked as reconciled.' : 'Reconciliation removed.');
+    }
+
     public function revertPayment(Request $request, FeePayment $feePayment): RedirectResponse
     {
         $user = Auth::user();

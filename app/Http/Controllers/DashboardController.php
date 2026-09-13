@@ -17,6 +17,7 @@ use App\Models\MessageRecipient;
 use App\Models\OnlineExam;
 use App\Models\Organization;
 use App\Models\SchoolClass;
+use App\Models\SchoolEvent;
 use App\Models\Student;
 use App\Models\StudentAcademicHistory;
 use App\Models\StudentFee;
@@ -94,6 +95,7 @@ class DashboardController extends Controller
             'studentChildren' => $studentChildren,
             'selectedStudentId' => $student ? (string) $student->id : null,
             'notices' => $this->getDashboardNotices($organization, $user),
+            'upcomingEvents' => $this->getUpcomingEvents($organization),
         ]);
     }
 
@@ -963,6 +965,25 @@ class DashboardController extends Controller
         }
 
         return $this->defaultDashboardNotices($organization, $user);
+    }
+
+    private function getUpcomingEvents(Organization $organization): array
+    {
+        return SchoolEvent::query()
+            ->where('organization_id', $organization->id)
+            ->whereDate('end_date', '>=', now()->toDateString())
+            ->orderBy('start_date')
+            ->limit(5)
+            ->get()
+            ->map(fn (SchoolEvent $event) => [
+                'id' => (string) $event->id,
+                'title' => $event->localized('title'),
+                'type' => $event->type,
+                'startDate' => $event->start_date->format('Y-m-d'),
+                'endDate' => optional($event->end_date)->format('Y-m-d'),
+                'isHoliday' => (bool) $event->is_holiday,
+            ])
+            ->all();
     }
 
     private function defaultDashboardNotices(Organization $organization, User $user): array

@@ -29,6 +29,8 @@ class FeePayment extends Model
         'reverted_by',
         'reverted_at',
         'revert_reason',
+        'reconciled_by',
+        'reconciled_at',
     ];
 
     protected $casts = [
@@ -36,7 +38,13 @@ class FeePayment extends Model
         'payment_date' => 'date',
         'cheque_date' => 'date',
         'reverted_at' => 'date',
+        'reconciled_at' => 'datetime',
     ];
+
+    public function reconcileBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reconciled_by');
+    }
 
     public function studentFee(): BelongsTo
     {

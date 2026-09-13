@@ -84,11 +84,49 @@ class DashboardExtrasFeatureTest extends TestCase
         $this->actingAs($admin)->get('/creatives')->assertOk();
     }
 
-    public function test_agent_logs_page_loads(): void
+public function test_agent_logs_page_loads(): void
+    {
+        [$admin] = $this->seedContext();
+        $this->actingAs($admin)->get('/agent-logs')->assertOk();
+    }
+
+    public function test_dashboard_includes_upcoming_events(): void
     {
         [$admin] = $this->seedContext();
 
-        $this->actingAs($admin)->get('/agent-logs')->assertOk();
+        $orgId = $admin->organization_id;
+        $eventId = DB::table('events')->insertGetId([
+            'organization_id' => $orgId,
+            'title' => 'Annual Day Celebration',
+            'description' => 'Cultural event',
+            'type' => 'cultural',
+            'start_date' => now()->addDays(5)->toDateString(),
+            'end_date' => now()->addDays(5)->toDateString(),
+            'is_holiday' => false,
+            'created_by' => $admin->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/DashboardHome')
+                ->has('upcomingEvents', 1)
+                ->where('upcomingEvents.0.title', 'Annual Day Celebration')
+                ->where('upcomingEvents.0.type', 'cultural'));
+    }
+
+    public function test_dashboard_upcoming_events_empty_when_none(): void
+    {
+        [$admin] = $this->seedContext();
+
+        $this->actingAs($admin)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('upcomingEvents', []));
     }
 
     public function test_sections_page_loads(): void

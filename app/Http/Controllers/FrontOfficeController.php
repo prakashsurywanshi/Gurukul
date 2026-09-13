@@ -16,6 +16,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\SystemNotificationService;
 
 class FrontOfficeController extends Controller
 {
@@ -69,10 +70,24 @@ class FrontOfficeController extends Controller
         $organization = $this->resolveOrganizationForUser(Auth::user());
         $validated = $this->validateAdmissionInquiry($request);
 
-        FrontOfficeAdmissionEnquiry::query()->create([
+        $enquiry = FrontOfficeAdmissionEnquiry::query()->create([
             ...$validated,
             'organization_id' => $organization?->id,
         ]);
+
+        if ($organization) {
+            app(SystemNotificationService::class)->notifyAdmins(
+                $organization,
+                NotificationCenterController::TYPE_ADMISSION_ENQUIRY,
+                'New Admission Enquiry',
+                sprintf('%s enquired about %s.', $enquiry->full_name, $enquiry->class_interested),
+                [
+                    'action_label' => 'View Enquiry',
+                    'action_url' => '/admission-enquiry',
+                    'event' => 'admission_enquiry_created',
+                ]
+            );
+        }
 
         return redirect()
             ->route('admission-enquiry')
@@ -504,7 +519,7 @@ class FrontOfficeController extends Controller
 
             $validated = $this->validateStudentComplaint($request);
 
-            ComplaintEntry::query()->create([
+            $complaint = ComplaintEntry::query()->create([
                 'organization_id' => $organization->id,
                 'student_id' => $student->id,
                 'submitted_by_user_id' => $user->id,
@@ -519,6 +534,12 @@ class FrontOfficeController extends Controller
                 'action_taken' => null,
             ]);
 
+            $this->notifyAdminsOfComplaint(
+                $organization,
+                $complaint->complainant_name,
+                $complaint->category
+            );
+
             return redirect()
                 ->route($request->input('return_to') === 'student-hostel' ? 'student.hostel' : 'complains')
                 ->with('success', 'Complaint submitted successfully.');
@@ -526,15 +547,42 @@ class FrontOfficeController extends Controller
 
         $validated = $this->validateComplaint($request);
 
-        ComplaintEntry::query()->create([
+        $complaint = ComplaintEntry::query()->create([
             ...$validated,
             'organization_id' => $organization?->id,
             'submitted_by_user_id' => $user->id,
         ]);
 
+        if ($organization) {
+            $this->notifyAdminsOfComplaint(
+                $organization,
+                $complaint->complainant_name ?: ($validated['complainant_name'] ?? 'A staff member'),
+                $complaint->category
+            );
+        }
+
         return redirect()
             ->route('complains')
             ->with('success', 'Complaint entry created successfully.');
+    }
+
+    private function notifyAdminsOfComplaint(Organization $organization, string $complainantName, ?string $category): void
+    {
+        app(SystemNotificationService::class)->notifyAdmins(
+            $organization,
+            NotificationCenterController::TYPE_COMPLAINT,
+            'New Complaint',
+            sprintf(
+                '%s submitted a%s complaint.',
+                $complainantName,
+                $category ? ' ' . $category : ''
+            ),
+            [
+                'action_label' => 'View Complaint',
+                'action_url' => '/complains',
+                'event' => 'complaint_created',
+            ]
+        );
     }
 
     public function updateComplaint(Request $request, ComplaintEntry $complaintEntry): RedirectResponse

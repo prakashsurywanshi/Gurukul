@@ -14,13 +14,16 @@ class ReportCardRemark extends Model
         'organization_id',
         'exam_id',
         'student_id',
+        'subject_id',
         'class_teacher_remark',
         'principal_remark',
+        'subject_remark',
     ];
 
     protected $casts = [
         'exam_id' => 'integer',
         'student_id' => 'integer',
+        'subject_id' => 'integer',
     ];
 
     public function organization(): BelongsTo
@@ -36,5 +39,10 @@ class ReportCardRemark extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class);
     }
 }

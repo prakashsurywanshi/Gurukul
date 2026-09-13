@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -170,6 +171,123 @@ class QrAttendanceController extends Controller
             'class_id' => $class->id,
             'date' => $validated['date'],
         ])->with('success', 'Attendance saved successfully.');
+    }
+
+    public function report(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+        abort_unless(in_array($user->role, ['admin', 'super_admin'], true), 403);
+
+        $from = $this->coerceDate($request->query('from', now()->subDays(29)->toDateString()));
+        $to = $this->coerceDate($request->query('to', now()->toDateString()));
+        $classIdValue = $request->query('class_id');
+        $classId = $classIdValue !== null && ctype_digit((string) $classIdValue) ? (int) $classIdValue : null;
+        $statusValue = $request->query('status', 'all');
+        $status = in_array($statusValue, ['all', 'success', 'failure'], true) ? $statusValue : 'all';
+
+        $query = QrScanLog::query()
+            ->where('qr_scan_logs.organization_id', $organization->id)
+            ->where('qr_scan_logs.method', 'qr')
+            ->when($from, fn ($query) => $query->whereDate('scan_date', '>=', $from))
+            ->when($to, fn ($query) => $query->whereDate('scan_date', '<=', $to))
+            ->when($classId, fn ($query) => $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $classId)))
+            ->when($status !== 'all', fn ($query) => $query->where('qr_scan_logs.status', $status));
+
+        $totalScans = (clone $query)->count();
+        $successScans = (clone $query)->where('status', 'success')->count();
+        $uniqueStudents = (clone $query)->whereNotNull('student_id')->distinct()->count('student_id');
+        $failedScans = $totalScans - $successScans;
+
+        $byDate = (clone $query)
+            ->selectRaw(
+                'scan_date, COUNT(*) as scans, SUM(CASE WHEN qr_scan_logs.status = ? THEN 1 ELSE 0 END) as success',
+                ['success']
+            )
+            ->groupBy('scan_date')
+            ->orderByDesc('scan_date')
+            ->get()
+            ->map(function ($row) {
+                $scans = (int) $row->scans;
+                $success = (int) $row->success;
+
+                return [
+                    'date' => Carbon::parse($row->scan_date)->toDateString(),
+                    'scans' => $scans,
+                    'success' => $success,
+                    'failed' => $scans - $success,
+                ];
+            })
+            ->values();
+
+        $byClass = (clone $query)
+            ->join('students', 'qr_scan_logs.student_id', '=', 'students.id')
+            ->join('classes', 'students.class_id', '=', 'classes.id')
+            ->selectRaw(
+                'classes.name as class_name, classes.section as class_section, COUNT(*) as scans, SUM(CASE WHEN qr_scan_logs.status = ? THEN 1 ELSE 0 END) as success, COUNT(DISTINCT students.id) as student_count',
+                ['success']
+            )
+            ->groupBy('classes.id', 'class_name', 'class_section')
+            ->orderBy('class_name')
+            ->orderBy('class_section')
+            ->get()
+            ->map(function ($row) {
+                $scans = (int) $row->scans;
+                $success = (int) $row->success;
+
+                return [
+                    'class' => trim(($row->class_name ?? '').' '.($row->class_section ?? '')),
+                    'scans' => $scans,
+                    'success' => $success,
+                    'failed' => $scans - $success,
+                    'studentCount' => (int) $row->student_count,
+                ];
+            })
+            ->values();
+
+        $classes = SchoolClass::query()
+            ->forCurrentSession($organization->id)
+            ->where('status', 'active')
+            ->orderByRaw('CAST(name AS UNSIGNED), name')
+            ->orderBy('section')
+            ->get(['id', 'name', 'section'])
+            ->map(fn (SchoolClass $schoolClass) => [
+                'id' => (string) $schoolClass->id,
+                'label' => trim(($schoolClass->name ?? '').' '.($schoolClass->section ?? '')),
+            ])
+            ->values()
+            ->all();
+
+        return inertia('dashboard/QrAttendanceReport', [
+            'user' => $user,
+            'summary' => [
+                'totalScans' => $totalScans,
+                'successScans' => $successScans,
+                'failedScans' => $failedScans,
+                'uniqueStudents' => $uniqueStudents,
+                'successRate' => $totalScans > 0 ? round(($successScans * 100) / $totalScans) : 0,
+            ],
+            'byDate' => $byDate,
+            'byClass' => $byClass,
+            'classes' => $classes,
+            'filters' => [
+                'from' => $from,
+                'to' => $to,
+                'classId' => $classId ? (string) $classId : null,
+                'status' => $status,
+            ],
+        ]);
+    }
+
+    private function coerceDate(mixed $value): string
+    {
+        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return $value;
+        }
+
+        return now()->toDateString();
     }
 
     private function generateQrToken(Organization $organization, Student $student): string

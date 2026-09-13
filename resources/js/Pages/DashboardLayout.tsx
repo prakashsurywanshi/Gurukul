@@ -14,30 +14,46 @@ import {
 } from './ui/dropdown-menu';
 import { ThemeToggle } from '../components/ThemeToggle';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import GlobalSearch from '../components/header/GlobalSearch';
+import ChatBell from '../components/header/ChatBell';
+import NotificationBell from '../components/header/NotificationBell';
 import { useLanguage } from '../i18n/LanguageProvider';
 
 export default function DashboardLayout({ user, activeTab, onLogout, children }: any) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { activeSession, subscriptionNotice, impersonation, staffPermissions } = usePage<{
-        activeSession?: string | null;
-        staffPermissions?: Record<string, Record<string, boolean>>;
-        subscriptionNotice?: {
-            message: string;
-            daysUntilExpiry: number;
-            expiryDate: string;
-        } | null;
-        impersonation?: {
-            isImpersonating: boolean;
-            impersonator: {
-                id: number;
-                name: string;
-                email: string;
-                role: string;
-            };
-        } | null;
-    }>().props;
+    const { activeSession, subscriptionNotice, impersonation, staffPermissions, headerNotifications, chatUnread } =
+        usePage<{
+            activeSession?: string | null;
+            staffPermissions?: Record<string, Record<string, boolean>>;
+            subscriptionNotice?: {
+                message: string;
+                daysUntilExpiry: number;
+                expiryDate: string;
+            } | null;
+            impersonation?: {
+                isImpersonating: boolean;
+                impersonator: {
+                    id: number;
+                    name: string;
+                    email: string;
+                    role: string;
+                };
+            } | null;
+            headerNotifications?: {
+                items: {
+                    id: string;
+                    title: string;
+                    message: string;
+                    read: boolean;
+                    created_at?: string | null;
+                }[];
+                unreadCount: number;
+            } | null;
+            chatUnread?: number;
+        }>().props;
     const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user?.role);
     const canViewTodo = user?.role === 'super_admin' || (isManagedStaffRole && Boolean(staffPermissions?.Todo?.view));
+    const canSearchPeople = user?.role === 'super_admin' || Boolean(staffPermissions?.['Search Students']?.view);
     const { t } = useLanguage();
 
     const formatRole = (role: string) =>
@@ -129,6 +145,9 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {canSearchPeople && <GlobalSearch />}
+                        <ChatBell initialUnread={chatUnread ?? 0} userId={user?.id} />
+                        <NotificationBell headerNotifications={headerNotifications} userId={user?.id} />
                         <ThemeToggle />
                         <LanguageSwitcher />
 

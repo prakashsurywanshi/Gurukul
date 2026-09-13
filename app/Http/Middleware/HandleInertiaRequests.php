@@ -56,6 +56,8 @@ class HandleInertiaRequests extends Middleware
             'modules' => fn () => $this->resolveModules($request),
             'impersonation' => fn () => $this->resolveImpersonation($request),
             'languageSettings' => fn () => $this->resolveLanguageSettings($request),
+            'headerNotifications' => fn () => $this->resolveHeaderNotifications($request),
+            'chatUnread' => fn () => $this->resolveChatUnread($request),
         ];
     }
 
@@ -91,6 +93,64 @@ class HandleInertiaRequests extends Middleware
         $locale = $request->attributes->get('locale');
 
         return app(\App\Services\LanguageService::class)->payload($organization, is_string($locale) ? $locale : null);
+    }
+
+    private function resolveHeaderNotifications(Request $request): array
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return ['items' => [], 'unreadCount' => 0];
+        }
+
+        $items = \App\Models\SystemNotification::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(8)
+            ->get()
+            ->map(function (\App\Models\SystemNotification $notification) {
+                $data = $notification->data ?? [];
+
+                return [
+                    'id' => (string) $notification->id,
+                    'type' => $notification->type,
+                    'title' => $notification->title,
+                    'message' => $notification->message,
+                    'icon' => $data['icon'] ?? null,
+                    'action_url' => $data['action_url'] ?? null,
+                    'event' => $data['event'] ?? null,
+                    'read' => (bool) $notification->is_read,
+                    'created_at' => $notification->created_at?->toIso8601String(),
+                ];
+            })
+            ->all();
+
+        return [
+            'items' => $items,
+            'unreadCount' => \App\Models\SystemNotification::query()
+                ->where('user_id', $user->id)
+                ->where('is_read', false)
+                ->count(),
+        ];
+    }
+
+    private function resolveChatUnread(Request $request): int
+    {
+        $user = $request->user();
+        $organizationId = $user ? $this->resolveOrganizationId($request) : null;
+
+        if (!$user || !$organizationId) {
+            return 0;
+        }
+
+        return \App\Models\MessageRecipient::query()
+            ->where('recipient_id', $user->id)
+            ->where('is_read', false)
+            ->whereIn('message_id', \App\Models\Message::query()
+                ->where('organization_id', $organizationId)
+                ->where('subject', 'Chat')
+                ->select('id'))
+            ->count();
     }
 
     private function resolveImpersonation(Request $request): ?array
