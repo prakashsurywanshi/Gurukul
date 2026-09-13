@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { User, LogOut, Menu, X, ChevronDown, Pencil, ListTodo, CalendarCheck, Globe } from 'lucide-react';
+import { User, LogOut, Menu, X, ChevronDown, Pencil, CalendarCheck, Globe } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import Sidebar from './Sidebar';
 import { Button } from './ui/button';
@@ -17,6 +17,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import GlobalSearch from '../components/header/GlobalSearch';
 import ChatBell from '../components/header/ChatBell';
 import NotificationBell from '../components/header/NotificationBell';
+import TodoBell from '../components/header/TodoBell';
 import { useLanguage } from '../i18n/LanguageProvider';
 
 export default function DashboardLayout({ user, activeTab, onLogout, children }: any) {
@@ -128,20 +129,7 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
                             <span className="font-semibold text-[var(--foreground)]">{activeSession || 'Not Set'}</span>
                         </div>
 
-                        {canViewTodo && (
-                            <Button
-                                variant={activeTab === 'todo' ? 'default' : 'outline'}
-                                className={`gap-2 border-[var(--border)] ${
-                                    activeTab === 'todo'
-                                        ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:bg-[var(--primary)]'
-                                        : 'bg-[var(--secondary)] text-[var(--foreground)] shadow-sm hover:bg-[var(--accent)]'
-                                }`}
-                                onClick={() => router.visit('/todo')}
-                            >
-                                <ListTodo className="h-4 w-4" />
-                                {t('TO DO')}
-                            </Button>
-                        )}
+                        {canViewTodo && <TodoBell active={activeTab === 'todo'} />}
                     </div>
 
                     <div className="flex items-center gap-2">

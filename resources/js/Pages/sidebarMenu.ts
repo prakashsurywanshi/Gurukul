@@ -848,7 +848,7 @@ export const sidebarConfig: {
         label: 'QR Code Attendance',
         icon: QrCode,
         navMode: 'href-or-id',
-        tabs: ['attendance-qr', 'qr-scan-audit', 'qr-attendance-report'],
+        tabs: ['attendance-qr', 'qr-scan-audit', 'qr-attendance-report', 'qr-attendance-settings'],
         items: [
             {
                 id: 'attendance-qr',
@@ -871,6 +871,14 @@ export const sidebarConfig: {
                 label: 'QR Attendance Report',
                 icon: FileSearch,
                 href: '/qr-attendance/report',
+                roles: ['super_admin', 'admin'],
+                feature: 'QR Code Attendance',
+            },
+            {
+                id: 'qr-attendance-settings',
+                label: 'QR Attendance Setting',
+                icon: Settings,
+                href: '/qr-attendance/settings',
                 roles: ['super_admin', 'admin'],
                 feature: 'QR Code Attendance',
             },

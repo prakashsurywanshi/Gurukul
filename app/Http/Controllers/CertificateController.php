@@ -351,28 +351,36 @@ class CertificateController extends Controller
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get()
-            ->map(fn (Student $student) => [
-                'id' => (string) $student->id,
-                'organization_id' => $student->organization_id,
-                'admission_no' => $student->admission_no,
-                'roll_number' => $student->roll_number,
-                'first_name' => $student->first_name,
-                'first_name_mr' => $student->first_name_mr,
-                'last_name' => $student->last_name,
-                'last_name_mr' => $student->last_name_mr,
-                'class' => $student->schoolClass?->name,
-                'section' => $student->schoolClass?->section,
-                'email' => $student->email,
-                'phone' => $student->phone,
-                'gender' => $student->gender,
-                'blood_group' => $student->blood_group,
-                'father_name' => $student->father_name,
-                'father_name_mr' => $student->father_name_mr,
-                'mother_name' => $student->mother_name,
-                'mother_name_mr' => $student->mother_name_mr,
-                'address' => $student->current_address ?: $student->permanent_address,
-                'address_mr' => $student->address_mr,
-            ])
+            ->map(function (Student $student) use ($organization) {
+                if (! $student->qr_token) {
+                    $student->qr_token = \App\Support\QrToken::generate('QR', $organization->id, (int) $student->id);
+                    $student->save();
+                }
+
+                return [
+                    'id' => (string) $student->id,
+                    'organization_id' => $student->organization_id,
+                    'admission_no' => $student->admission_no,
+                    'roll_number' => $student->roll_number,
+                    'first_name' => $student->first_name,
+                    'first_name_mr' => $student->first_name_mr,
+                    'last_name' => $student->last_name,
+                    'last_name_mr' => $student->last_name_mr,
+                    'class' => $student->schoolClass?->name,
+                    'section' => $student->schoolClass?->section,
+                    'email' => $student->email,
+                    'phone' => $student->phone,
+                    'gender' => $student->gender,
+                    'blood_group' => $student->blood_group,
+                    'father_name' => $student->father_name,
+                    'father_name_mr' => $student->father_name_mr,
+                    'mother_name' => $student->mother_name,
+                    'mother_name_mr' => $student->mother_name_mr,
+                    'address' => $student->current_address ?: $student->permanent_address,
+                    'address_mr' => $student->address_mr,
+                    'qr_token' => $student->qr_token,
+                ];
+            })
             ->all();
     }
 

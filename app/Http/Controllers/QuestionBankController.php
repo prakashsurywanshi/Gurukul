@@ -135,7 +135,7 @@ class QuestionBankController extends Controller
     private function rules(): array
     {
         return [
-            'class_id' => ['nullable', 'integer', 'exists:school_classes,id'],
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
             'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
             'type' => ['required', Rule::in(self::TYPES)],
             'question' => ['required', 'string', 'max:5000'],

@@ -32,7 +32,8 @@ const mr = {
     Reject: 'नाकारा',
     'No corrections found for the selected filter.': 'निवडलेल्या फिल्टरसाठी कोणतीही दुरुस्ती सापडली नाही.',
     'Select a student, date and requested status.': 'विद्यार्थी, तारीख आणि विनंती केलेली स्थिती निवडा.',
-    'Request and review attendance status changes for students.': 'विद्यार्थ्यांसाठी उपस्थिती स्थिती बदलाची विनंती आणि पुनरावलोकन करा.',
+    'Request and review attendance status changes for students.':
+        'विद्यार्थ्यांसाठी उपस्थिती स्थिती बदलाची विनंती आणि पुनरावलोकन करा.',
     'Fee Concession': 'शुल्क सवलत',
     'New Fee Concession': 'नवीन शुल्क सवलत',
     Applied: 'लागू केलेले',
@@ -273,6 +274,7 @@ const mr = {
     'Album name (e.g. Annual Day, Sports Day)': 'अल्बमचे नाव (उदा. वार्षिक दिवस, क्रीडा दिवस)',
     Alerts: 'सूचना',
     'All Categories': 'सर्व श्रेण्या',
+    'All caught up': 'सर्व व्यवस्थित आहे',
     'All Colors': 'सर्व रंग',
     'All Content': 'सर्व सामग्री',
     'All Pages': 'पृष्ठ',
@@ -374,6 +376,7 @@ const mr = {
     Modified: 'सुधारित',
     'No changes to save.': 'जतन करण्यासाठी कोणतेही बदल नाहीत.',
     'No translations found.': 'भाषांतरे सापडली नाहीत.',
+    'No upcoming tasks.': 'कोणतीही आगामी कार्ये नाहीत.',
     Hindi: 'हिंदी',
     Marathi: 'मराठी',
     Homework: 'गृहपाठ',
@@ -870,6 +873,7 @@ const mr = {
     'Due by': 'पर्यंत देय आहे',
     'Due date': 'देय तारीख ',
     'Due date: {date}': 'देय तारीख: {date}',
+    'Due Today': 'आज देय',
     Duplicate: 'नक्कल',
     'Duplicate subject.': 'डुप्लिकेट विषय.',
     'Duration (minutes)': 'कालावधी (मिनिटे)',
@@ -1213,6 +1217,7 @@ const mr = {
     'Hide Import Layout': 'आयात लेआउट लपवा',
     'Hide Setup': 'मांडणी लपवा',
     'Hide password': 'पासवर्ड लपवा',
+    'High Priority': 'उच्च प्राथमिकता',
     'High School (9-12)': 'उच्च माध्यमिक विद्यालय (9 -12)',
     'Homework Date': 'गृहपाठ तारीख',
     'Homework Details': 'गृहपाठ तपशील',
@@ -1729,6 +1734,7 @@ const mr = {
     'Open the share dialog and choose the media item from the library dropdown.':
         'शेअर संवाद उघडा आणि लायब्ररी ड्रॉपडाउनमधून मीडिया आयटम निवडा.',
     'Open the tools you use most often.': 'आपण बर्याचदा वापरत असलेली साधने उघडा.',
+    'Open Todo': 'टू-डू उघडा',
     'Open your upcoming online tests and results.': 'आपली आगामी ऑनलाइन चाचणी आणि परिणाम उघडा.',
     'Opening Stock': 'ओपनिंग स्टॉक',
     'Opening stock': 'ओपनिंग स्टॉक',
@@ -2924,6 +2930,7 @@ const mr = {
     'Top header address': 'शीर्ष शीर्षलेख पत्ता',
     'Top header email': 'शीर्ष शीर्षलेख ईमेल',
     'Top header phone': 'टॉप हेडर फोन',
+    Total: 'एकूण',
     'Total Alumni': 'एकूण माजी विद्यार्थी',
     'Total Calls': 'एकूण कॉल',
     'Total Classes': 'एकूण वर्ग',
@@ -3013,6 +3020,7 @@ const mr = {
     'Unread Messages': 'न वाचलेले संदेश',
     'Untitled Page': 'शीर्षक नसलेले पृष्ठ',
     'Untitled question': 'शीर्षकहीन प्रश्न',
+    Upcoming: 'आगामी',
     'Upcoming Exams': 'आगामी परीक्षा',
     'Upcoming Reminders': 'आगामी रिमाइंडर्स',
     'Upcoming reminders': 'आगामी रिमाइंडर्स',
@@ -4189,7 +4197,8 @@ const mr = {
     'Subject Remark': 'विषय शेरा',
     'Subject remark...': 'विषय शेरा...',
     'General (Report Card)': 'सामान्य (रिपोर्ट कार्ड)',
-    'Select a subject above to also enter subject-wise remarks per student.': 'वर विषय निवडा जेणेकरून प्रत्येक विद्यार्थ्यासाठी विषयनिहाय शेरे प्रविष्ट करता येतील।',
+    'Select a subject above to also enter subject-wise remarks per student.':
+        'वर विषय निवडा जेणेकरून प्रत्येक विद्यार्थ्यासाठी विषयनिहाय शेरे प्रविष्ट करता येतील।',
     'School calendar events and holidays.': 'शालेय दिनदर्शिका कार्यक्रम आणि सुट्ट्या.',
     'No upcoming events scheduled.': 'कोणतेही आगामी कार्यक्रम निश्चित केलेले नाहीत.',
     holiday: 'सुट्टी',
@@ -4769,6 +4778,34 @@ const mr = {
     Notifications: 'सूचना',
     'View all': 'सर्व पहा',
     'No new messages': 'नवीन संदेश नाही',
+    'QR Attendance Setting': 'QR उपस्थिती सेटिंग',
+    'Configure how QR codes are scanned and how attendance is marked.':
+        'QR कोड कसे स्कॅन केले जातात आणि उपस्थिती कशी नोंदवली जाते ते कॉन्फिगर करा.',
+    'Global Behaviour': 'वैश्विक वर्तन',
+    'Control whether QR scanning is available across the organization.':
+        'संस्थेत QR स्कॅनिंग उपलब्ध आहे का ते नियंत्रित करा.',
+    'Enable QR Attendance': 'QR उपस्थिती सक्षम करा',
+    'Allow scanning of student and staff QR codes.': 'विद्यार्थी आणि कर्मचारी QR कोड स्कॅन करण्याची परवानगी द्या.',
+    'Update on duplicate scan': 'डुप्लिकेट स्कॅनवर अद्यतनित करा',
+    'When a code is scanned twice for the same student on the same day, update the earlier status.':
+        'त्याच दिवशी त्याच विद्यार्थ्यासाठी कोड दोनदा स्कॅन केल्यास, आधीची स्थिती अद्यतनित करा.',
+    'Late Marking': 'उशीरा अंकन',
+    'Automatically mark a present scan as late when it is received after the opening window.':
+        'उघडण्याच्या वेळेनंतर प्राप्त झाल्यास उपस्थित स्कॅन आपोआप उशीरा चिन्हांकित करा.',
+    'Auto mark late': 'स्वयंचलित उशीरा चिन्हांकन',
+    'Treat present scans after the opening time threshold as late.':
+        'उघडण्याच्या वेळेच्या मर्यादेनंतरचे उपस्थित स्कॅन उशीरा माना.',
+    'Opening time': 'प्रारंभ वेळ',
+    'Late after (minutes)': 'किती मिनिटांनी उशीरा (मिनिटे)',
+    'Scans received after opening time plus this many minutes are marked late.':
+        'प्रारंभ वेळेनंतर या मिनिटांपर्यंत प्राप्त स्कॅन उशीरा चिन्हांकित केले जातात.',
+    'QR attendance settings saved.': 'QR उपस्थिती सेटिंग्ज जतन केल्या.',
+    Siblings: 'भावंडे',
+    'No siblings recorded for this student.': 'या विद्यार्थ्यासाठी कोणतीही भावंडे नोंदवलेली नाहीत.',
+    'Include attendance QR code': 'उपस्थिती QR कोड समाविष्ट करा',
+    'Print a QR code on the card that can be scanned to mark attendance.':
+        'कार्डवर QR कोड छापा जो उपस्थिती नोंदवण्यासाठी स्कॅन करता येईल.',
+    'Scan For Attendance': 'उपस्थितीसाठी स्कॅन करा',
     'New notification': 'नवीन सूचना',
 };
 export default mr;

@@ -26,6 +26,7 @@ interface StudentDetailsProps {
     user: any;
     studentId: string;
     student?: any | null;
+    siblings?: Sibling[];
     studentRecords?: any[];
     academicHistory?: {
         id: string;
@@ -41,10 +42,21 @@ interface StudentDetailsProps {
     }[];
 }
 
+interface Sibling {
+    id: string;
+    admission_no?: string | null;
+    name: string;
+    class?: string | null;
+    section?: string | null;
+    roll_number?: string | number | null;
+    gender?: string | null;
+}
+
 export default function StudentDetails({
     user,
     studentId,
     student: initialStudent,
+    siblings = [],
     studentRecords = [],
     academicHistory = [],
 }: StudentDetailsProps) {
@@ -508,6 +520,49 @@ export default function StudentDetails({
                                             <p className="font-medium text-slate-900">{student.mother_phone || '-'}</p>
                                         </div>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Users className="h-5 w-5 text-blue-600" />
+                                        {t('Siblings')}
+                                        <Badge variant="outline">{siblings.length}</Badge>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {siblings.length === 0 ? (
+                                        <p className="text-sm text-slate-500">
+                                            {t('No siblings recorded for this student.')}
+                                        </p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {siblings.map((sibling) => (
+                                                <Link
+                                                    key={sibling.id}
+                                                    href={`/students/${sibling.id}`}
+                                                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-slate-300 hover:bg-slate-50"
+                                                >
+                                                    <div className="min-w-0">
+                                                        <p className="truncate font-medium text-slate-900">
+                                                            {sibling.name}
+                                                        </p>
+                                                        <p className="mt-0.5 text-sm text-slate-500">
+                                                            {sibling.admission_no || '-'}
+                                                            {sibling.roll_number != null
+                                                                ? ` · ${t('Roll No.')}${sibling.roll_number}`
+                                                                : ''}
+                                                        </p>
+                                                    </div>
+                                                    <Badge variant="outline">
+                                                        {sibling.class || '-'}
+                                                        {sibling.section ? `-${sibling.section}` : ''}
+                                                    </Badge>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
 

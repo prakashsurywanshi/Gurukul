@@ -20,6 +20,66 @@ class QrAttendanceController extends Controller
 {
     private const STATUSES = ['present', 'absent', 'late', 'half_day'];
 
+    private const SETTINGS_DEFAULTS = [
+        'enabled' => true,
+        'duplicate_upsert' => false,
+        'auto_late_mark' => false,
+        'opening_time' => '08:30',
+        'late_after_minutes' => 15,
+    ];
+
+    public function settings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        return inertia('dashboard/QrAttendanceSettings', [
+            'user' => $user,
+            'settings' => $this->qrAttendanceSettings($organization),
+        ]);
+    }
+
+    public function saveSettings(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'enabled' => ['boolean'],
+            'duplicate_upsert' => ['boolean'],
+            'auto_late_mark' => ['boolean'],
+            'opening_time' => ['required', 'date_format:H:i'],
+            'late_after_minutes' => ['required', 'integer', 'between:0,180'],
+        ]);
+
+        $settings = $organization->settings ?? [];
+        $settings['qr_attendance'] = [
+            'enabled' => (bool) ($validated['enabled'] ?? false),
+            'duplicate_upsert' => (bool) ($validated['duplicate_upsert'] ?? false),
+            'auto_late_mark' => (bool) ($validated['auto_late_mark'] ?? false),
+            'opening_time' => $validated['opening_time'],
+            'late_after_minutes' => (int) $validated['late_after_minutes'],
+        ];
+
+        $organization->settings = $settings;
+        $organization->save();
+
+        return redirect()->route('qr-attendance.settings')->with('success', 'QR attendance settings saved.');
+    }
+
+    private function qrAttendanceSettings(Organization $organization): array
+    {
+        $saved = is_array($organization->settings['qr_attendance'] ?? null)
+            ? $organization->settings['qr_attendance']
+            : [];
+
+        return array_merge(self::SETTINGS_DEFAULTS, $saved);
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -135,31 +195,60 @@ class QrAttendanceController extends Controller
 
         $qrTokens = Student::query()->whereIn('id', $studentIds)->pluck('qr_token', 'id');
 
+        $settings = $this->qrAttendanceSettings($organization);
+
         foreach ($validated['entries'] as $entry) {
             if (! in_array($entry['student_id'], $validStudentIds, false)) {
                 continue;
             }
 
-            Attendance::query()->updateOrCreate(
-                [
+            $status = $entry['status'];
+
+            if ($status === 'present' && $settings['auto_late_mark'] && $validated['date'] === now()->toDateString()) {
+                $lateAfter = Carbon::createFromFormat('H:i', $settings['opening_time'])
+                    ->addMinutes((int) $settings['late_after_minutes']);
+                $currentTime = Carbon::createFromFormat('H:i', now()->format('H:i'));
+
+                if ($currentTime->greaterThanOrEqualTo($lateAfter)) {
+                    $status = 'late';
+                }
+            }
+
+            $existing = Attendance::query()
+                ->where('organization_id', $organization->id)
+                ->where('student_id', $entry['student_id'])
+                ->where('class_id', $class->id)
+                ->whereDate('date', $validated['date'])
+                ->first();
+
+            if ($existing) {
+                if (! $settings['duplicate_upsert']) {
+                    continue;
+                }
+
+                $existing->update([
+                    'status' => $status,
+                    'check_in_time' => $status === 'present' ? now()->format('H:i:s') : null,
+                    'marked_by' => $user->id,
+                ]);
+            } else {
+                Attendance::query()->create([
                     'organization_id' => $organization->id,
                     'student_id' => $entry['student_id'],
                     'class_id' => $class->id,
                     'date' => $validated['date'],
-                ],
-                [
-                    'status' => $entry['status'],
-                    'check_in_time' => $entry['status'] === 'present' ? now()->format('H:i:s') : null,
+                    'status' => $status,
+                    'check_in_time' => $status === 'present' ? now()->format('H:i:s') : null,
                     'marked_by' => $user->id,
-                ]
-            );
+                ]);
+            }
 
             QrScanLog::query()->create([
                 'organization_id' => $organization->id,
                 'student_id' => $entry['student_id'],
                 'scanned_by' => $user->id,
                 'method' => 'qr',
-                'status' => in_array($entry['status'], ['present', 'late'], true) ? 'success' : 'failure',
+                'status' => in_array($status, ['present', 'late'], true) ? 'success' : 'failure',
                 'qr_token' => $qrTokens[$entry['student_id']] ?? null,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),

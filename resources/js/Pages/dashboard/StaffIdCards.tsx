@@ -1,10 +1,13 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState } from 'react';
 import { CreditCard, Printer, Search } from 'lucide-react';
+import { qrSvgToken } from '../../utils/qr';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Switch } from '../ui/switch';
 
 interface StaffMember {
     id: string;
@@ -19,6 +22,7 @@ interface StaffMember {
     blood_group?: string | null;
     joining_date?: string | null;
     profile_photo?: string | null;
+    qr_token?: string | null;
 }
 
 interface StaffIdCardsProps {
@@ -45,6 +49,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
     const staff = pageProps.staff ?? [];
 
     const [query, setQuery] = useState('');
+    const [showQrCode, setShowQrCode] = useState(true);
 
     const filtered = staff.filter((member) => {
         const q = query.trim().toLowerCase();
@@ -72,6 +77,13 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
         const photo = member.profile_photo
             ? `<img src="${member.profile_photo}" alt="photo" class="photo" />`
             : `<div class="initial">${initials}</div>`;
+        const qrBlock = showQrCode
+            ? `
+              <div class="qr-scan">
+                ${qrSvgToken(member.qr_token || `EMP-${member.id}`, 72)}
+                <p class="qr-hint">Scan For Attendance</p>
+              </div>`
+            : '';
 
         printWindow.document.write(`
       <!DOCTYPE html>
@@ -191,6 +203,22 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
               letter-spacing: 0.08em;
               text-transform: uppercase;
             }
+            .qr-scan {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-top: 12px;
+            }
+            .qr-scan svg {
+              display: block;
+            }
+            .qr-hint {
+              margin: 6px 0 0;
+              font-size: 9px;
+              letter-spacing: 0.18em;
+              text-transform: uppercase;
+              color: #64748b;
+            }
             @media print {
               body { padding: 0; background: #ffffff; }
               .card { box-shadow: none; border: 1px solid #cbd5e1; }
@@ -223,6 +251,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
                 <div class="field">PHONE <b>${member.phone || 'N/A'}</b></div>
                 <div class="field">JOINED <b>${member.joining_date || '—'}</b></div>
               </div>
+              ${qrBlock}
             </div>
             <div class="footer">
               <span>Authorized By ${organization?.name ?? 'School'}</span>
@@ -238,76 +267,91 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                            {t('Staff ID Card')}
-                        </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {t('Generate and print identity cards for your staff.')}
-                        </p>
-                    </div>
-                </div>
-
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                            <CreditCard className="h-5 w-5 text-blue-500" />
-                            {t('Staff Members')}
-                            <span className="ml-auto text-sm font-normal text-gray-400">
-                                {filtered.length} / {staff.length}
-                            </span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="relative mb-4">
-                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            <Input
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder={t('Search by name, designation or employee ID')}
-                                className="pl-10"
+            <div className="min-h-full bg-slate-50 p-8">
+                <div className="mx-auto max-w-6xl space-y-6">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                {t('Staff ID Card')}
+                            </h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {t('Generate and print identity cards for your staff.')}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Label className="text-sm text-gray-600 dark:text-gray-400">
+                                {t('Include attendance QR code')}
+                            </Label>
+                            <Switch
+                                checked={showQrCode}
+                                onCheckedChange={(checked) => setShowQrCode(Boolean(checked))}
                             />
                         </div>
+                    </div>
 
-                        {filtered.length === 0 ? (
-                            <div className="py-12 text-center text-sm text-gray-400">
-                                {t('No staff members found.')}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <CreditCard className="h-5 w-5 text-blue-500" />
+                                {t('Staff Members')}
+                                <span className="ml-auto text-sm font-normal text-gray-400">
+                                    {filtered.length} / {staff.length}
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="relative mb-4">
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <Input
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                    placeholder={t('Search by name, designation or employee ID')}
+                                    className="pl-10"
+                                />
                             </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {filtered.map((member) => (
-                                    <Card key={member.id} className="overflow-hidden">
-                                        <div className="h-1.5 bg-gradient-to-r from-blue-600 to-cyan-500" />
-                                        <CardContent className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-lg font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                                    {member.name.charAt(0).toUpperCase()}
+
+                            {filtered.length === 0 ? (
+                                <div className="py-12 text-center text-sm text-gray-400">
+                                    {t('No staff members found.')}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {filtered.map((member) => (
+                                        <Card key={member.id} className="overflow-hidden">
+                                            <div className="h-1.5 bg-gradient-to-r from-blue-600 to-cyan-500" />
+                                            <CardContent className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-lg font-bold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                                        {member.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="truncate font-semibold text-gray-900 dark:text-white">
+                                                            {member.name}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {member.designation || roleLabel(member.role)}
+                                                        </div>
+                                                        <div className="text-xs text-gray-400">
+                                                            {member.employee_id || `UID-${member.id}`}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <div className="truncate font-semibold text-gray-900 dark:text-white">
-                                                        {member.name}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {member.designation || roleLabel(member.role)}
-                                                    </div>
-                                                    <div className="text-xs text-gray-400">
-                                                        {member.employee_id || `UID-${member.id}`}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Button className="mt-4 w-full" size="sm" onClick={() => printCard(member)}>
-                                                <Printer className="mr-2 h-4 w-4" />
-                                                {t('Print ID Card')}
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                                <Button
+                                                    className="mt-4 w-full"
+                                                    size="sm"
+                                                    onClick={() => printCard(member)}
+                                                >
+                                                    <Printer className="mr-2 h-4 w-4" />
+                                                    {t('Print ID Card')}
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </DashboardLayout>
     );

@@ -153,7 +153,7 @@ class OnlineClassController extends Controller
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'class_id' => ['nullable', 'integer', 'exists:school_classes,id'],
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
             'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
             'provider' => ['required', Rule::in(self::PROVIDERS)],
             'meeting_url' => ['nullable', 'url', 'max:500'],

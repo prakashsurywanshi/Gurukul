@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\Student;
 use App\Models\Todo;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,50 @@ class TodoController extends Controller
         return Inertia::render('dashboard/TodoPage', [
             'user' => $user,
             'todos' => $todos,
+        ]);
+    }
+
+    public function summary(): JsonResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        $query = fn () => Todo::query()
+            ->where('user_id', $user->id)
+            ->when($organization, fn ($query) => $query->where('organization_id', $organization->id));
+
+        $today = Carbon::today();
+
+        $total = $query()->count();
+        $active = $query()->where('completed', false)->count();
+        $completed = $query()->where('completed', true)->count();
+        $dueToday = $query()->where('completed', false)->whereDate('due_date', $today)->count();
+        $overdue = $query()->where('completed', false)->whereDate('due_date', '<', $today)->count();
+        $highPriority = $query()->where('completed', false)->where('priority', 'High')->count();
+
+        $upcoming = $query()
+            ->where('completed', false)
+            ->orderBy('due_date')
+            ->orderBy('id')
+            ->limit(5)
+            ->get()
+            ->map(fn (Todo $todo) => [
+                'id' => (string) $todo->id,
+                'title' => $todo->title,
+                'dueDate' => $todo->due_date?->format('Y-m-d') ?? '',
+                'priority' => $todo->priority,
+            ])
+            ->values()
+            ->all();
+
+        return response()->json([
+            'total' => $total,
+            'active' => $active,
+            'completed' => $completed,
+            'dueToday' => $dueToday,
+            'overdue' => $overdue,
+            'highPriority' => $highPriority,
+            'upcoming' => $upcoming,
         ]);
     }
 

@@ -717,6 +717,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/marksheet/upload-list/{marksheetUpload}/download', [MarksheetUploadController::class, 'download'])->middleware('staff.permission:Marksheet Management,view')->name('marksheet.upload-list.download');
     Route::delete('/marksheet/upload-list/{marksheetUpload}', [MarksheetUploadController::class, 'destroy'])->middleware('staff.permission:Marksheet Management,delete')->name('marksheet.upload-list.destroy');
     Route::get('/todo', [TodoController::class, 'index'])->middleware('staff.permission:Todo,view')->name('todo');
+    Route::get('/todo/summary', [TodoController::class, 'summary'])->middleware('staff.permission:Todo,view')->name('todo.summary');
     Route::post('/todo', [TodoController::class, 'store'])->middleware('staff.permission:Todo,add')->name('todo.store');
     Route::patch('/todo/{todo}', [TodoController::class, 'update'])->middleware('staff.permission:Todo,edit')->name('todo.update');
     Route::patch('/todo/{todo}/toggle', [TodoController::class, 'toggle'])->middleware('staff.permission:Todo,edit')->name('todo.toggle');
@@ -827,6 +828,8 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::delete('/student-health/{healthRecord}', [HealthRecordsController::class, 'destroy'])->middleware('staff.permission:Student Health,delete')->name('student-health.destroy');
     Route::get('/attendance-qr', [QrAttendanceController::class, 'index'])->middleware('staff.permission:QR Code Attendance,view')->name('attendance-qr');
     Route::post('/attendance-qr', [QrAttendanceController::class, 'store'])->middleware('staff.permission:QR Code Attendance,add')->name('attendance-qr.store');
+    Route::get('/qr-attendance/settings', [QrAttendanceController::class, 'settings'])->middleware('staff.permission:QR Code Attendance,view')->name('qr-attendance.settings');
+    Route::post('/qr-attendance/settings', [QrAttendanceController::class, 'saveSettings'])->middleware('staff.permission:QR Code Attendance,edit')->name('qr-attendance.settings.save');
     Route::get('/qr-attendance/report', [QrAttendanceController::class, 'report'])->middleware('staff.permission:QR Code Attendance,view')->name('qr-attendance.report');
     Route::get('/attendance-corrections', [AttendanceCorrectionController::class, 'index'])->middleware('staff.permission:Attendance Correction,view')->name('attendance-corrections');
     Route::post('/attendance-corrections', [AttendanceCorrectionController::class, 'store'])->middleware('staff.permission:Attendance Correction,add')->name('attendance-corrections.store');

@@ -74,7 +74,7 @@ class StudyMaterialController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'class_id' => ['nullable', 'integer', 'exists:school_classes,id'],
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
             'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
             'url' => ['nullable', 'url', 'max:500'],
             'file' => ['nullable', 'file', 'max:20480'],
@@ -116,7 +116,7 @@ class StudyMaterialController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'class_id' => ['nullable', 'integer', 'exists:school_classes,id'],
+            'class_id' => ['nullable', 'integer', 'exists:classes,id'],
             'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
             'url' => ['nullable', 'url', 'max:500'],
         ]);

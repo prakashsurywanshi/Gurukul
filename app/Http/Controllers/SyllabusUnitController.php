@@ -157,7 +157,7 @@ class SyllabusUnitController extends Controller
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'class_id' => ['required', 'integer', 'exists:school_classes,id'],
+            'class_id' => ['required', 'integer', 'exists:classes,id'],
             'subject_id' => ['required', 'integer', 'exists:subjects,id'],
             'book' => ['nullable', 'string', 'max:255'],
             'term' => ['nullable', 'integer', 'in:1,2'],

@@ -1,10 +1,12 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
+import { qrSvgToken } from '../../utils/qr';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { Switch } from '../ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Badge } from '../ui/badge';
@@ -36,6 +38,7 @@ interface StudentIdCardStudent {
     mother_name_mr?: string | null;
     address?: string | null;
     address_mr?: string | null;
+    qr_token?: string | null;
 }
 
 interface GeneratedCard {
@@ -113,6 +116,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
     const [printLanguage, setPrintLanguage] = useState<'en' | 'mr'>('en');
     const [applicableClass, setApplicableClass] = useState('All Classes');
     const [templateCode, setTemplateCode] = useState('ID-2026-A');
+    const [showQrCode, setShowQrCode] = useState(true);
     const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>(() =>
         availableStudents.slice(0, 2).map((student, index): GeneratedCard => ({
             id: `generated-${student.id}`,
@@ -156,6 +160,20 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
     }, [filteredStudents, selectedSection, selectedStudentId]);
 
     const selectedStudent = filteredStudents.find((student) => student.id === selectedStudentId) || null;
+
+    const qrMarkup = (student: StudentIdCardStudent): string => {
+        if (!showQrCode) {
+            return '';
+        }
+
+        const value = student.qr_token || buildStudentCardId(student);
+
+        return `
+        <div class="qr-scan">
+          ${qrSvgToken(value, 76)}
+          <p class="qr-hint">Scan For Attendance</p>
+        </div>`;
+    };
 
     const createGeneratedCard = (student: any, idSuffix: string): GeneratedCard => ({
         id: `${student.id}-${idSuffix}`,
@@ -341,6 +359,22 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
               color: #1e3a8a;
               margin-top: 12px;
             }
+            .qr-scan {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-top: 14px;
+            }
+            .qr-scan svg {
+              display: block;
+            }
+            .qr-hint {
+              margin: 6px 0 0;
+              font-size: 9px;
+              letter-spacing: 0.18em;
+              text-transform: uppercase;
+              color: #64748b;
+            }
             @media print {
               body {
                 background: #ffffff;
@@ -396,6 +430,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
                 </div>
                 <div class="guardian">Guardian: ${guardian}</div>
                 <div class="guardian">Address: ${address}</div>
+                ${qrMarkup(selectedStudent)}
               </div>
             </div>
           </div>
@@ -485,6 +520,7 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
               </div>
               <div class="guardian">Guardian: ${escapeHtml(guardian)}</div>
               <div class="guardian">Address: ${escapeHtml(address)}</div>
+              ${qrMarkup(student)}
             </div>
           </div>
         `;
@@ -618,6 +654,22 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
               padding: 14px;
               font-size: 14px;
               color: #1e3a8a;
+            }
+            .qr-scan {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              margin-top: 12px;
+            }
+            .qr-scan svg {
+              display: block;
+            }
+            .qr-hint {
+              margin: 6px 0 0;
+              font-size: 9px;
+              letter-spacing: 0.18em;
+              text-transform: uppercase;
+              color: #64748b;
             }
             @media print {
               body {
@@ -757,6 +809,18 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div className="flex items-center justify-between gap-4 md:col-span-2">
+                                <div>
+                                    <Label>{t('Include attendance QR code')}</Label>
+                                    <p className="text-xs text-slate-500">
+                                        {t('Print a QR code on the card that can be scanned to mark attendance.')}
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={showQrCode}
+                                    onCheckedChange={(checked) => setShowQrCode(Boolean(checked))}
+                                />
+                            </div>
                             <div className="space-y-2 md:col-span-2">
                                 <Label>{t('Select Student')}</Label>
                                 <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
@@ -892,6 +956,24 @@ export default function StudentIdCardManagement({ user, students = [] }: Student
                                                 ? selectedStudent.address_mr
                                                 : selectedStudent.address || t('Address not available')}
                                         </div>
+
+                                        {showQrCode && (
+                                            <div className="flex flex-col items-center rounded-xl bg-slate-50 p-3">
+                                                <div
+                                                    className="mx-auto"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: qrSvgToken(
+                                                            selectedStudent.qr_token ||
+                                                                buildStudentCardId(selectedStudent),
+                                                            84,
+                                                        ),
+                                                    }}
+                                                />
+                                                <p className="mt-2 text-[10px] uppercase tracking-widest text-slate-500">
+                                                    {t('Scan For Attendance')}
+                                                </p>
+                                            </div>
+                                        )}
 
                                         <Button variant="outline" className="w-full gap-2" onClick={handleDownloadPdf}>
                                             <Download className="h-4 w-4" />

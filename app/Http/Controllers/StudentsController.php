@@ -185,6 +185,7 @@ class StudentsController extends Controller
             'user' => $user,
             'studentId' => (string) $student->id,
             'student' => $this->serializeStudent($student, null, true),
+            'siblings' => $this->buildSiblings($organization, $student),
             'studentRecords' => $this->buildStudentDetailsRecords($organization, $student),
             'academicHistory' => $this->studentAcademicHistoryService
                 ->getStudentHistory($student)
@@ -202,6 +203,75 @@ class StudentsController extends Controller
                 ])
                 ->values(),
         ]);
+    }
+
+    private function buildSiblings(Organization $organization, Student $student): array
+    {
+        $student->loadMissing('schoolClass');
+
+        if (! $student->user_id
+            && ! $student->father_email
+            && ! $student->mother_email
+            && ! $student->guardian_email
+            && ! $student->father_phone
+            && ! $student->mother_phone
+            && ! $student->guardian_phone) {
+            return [];
+        }
+
+        $identifiers = collect([
+            'user_id' => $student->user_id,
+            'father_email' => $student->father_email,
+            'mother_email' => $student->mother_email,
+            'guardian_email' => $student->guardian_email,
+            'father_phone' => $student->father_phone,
+            'mother_phone' => $student->mother_phone,
+            'guardian_phone' => $student->guardian_phone,
+        ])->filter(fn ($value) => $value !== null && trim((string) $value) !== '');
+
+        $siblings = Student::query()
+            ->with('schoolClass:id,name,section')
+            ->where('organization_id', $organization->id)
+            ->where('students.id', '!=', $student->id)
+            ->where(function ($query) use ($identifiers) {
+                if ($identifiers->has('user_id')) {
+                    $query->orWhere('user_id', $identifiers['user_id']);
+                }
+
+                if ($identifiers->has('father_email')) {
+                    $query->orWhere('father_email', $identifiers['father_email']);
+                }
+
+                if ($identifiers->has('mother_email')) {
+                    $query->orWhere('mother_email', $identifiers['mother_email']);
+                }
+
+                if ($identifiers->has('guardian_email')) {
+                    $query->orWhere('guardian_email', $identifiers['guardian_email']);
+                }
+
+                foreach (['father_phone', 'mother_phone', 'guardian_phone'] as $column) {
+                    if ($identifiers->has($column) && strlen((string) $identifiers[$column]) >= 8) {
+                        $query->orWhere($column, $identifiers[$column]);
+                    }
+                }
+            })
+            ->where('students.status', 'active')
+            ->orderBy('students.admission_no')
+            ->get()
+            ->map(fn (Student $sibling) => [
+                'id' => (string) $sibling->id,
+                'admission_no' => $sibling->admission_no,
+                'name' => trim(($sibling->first_name ?? '').' '.($sibling->last_name ?? '')),
+                'class' => $sibling->schoolClass?->name,
+                'section' => $sibling->schoolClass?->section,
+                'roll_number' => $sibling->roll_number,
+                'gender' => $sibling->gender,
+            ])
+            ->values()
+            ->all();
+
+        return $siblings;
     }
 
     public function edit(Student $student)

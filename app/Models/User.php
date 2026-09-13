@@ -42,6 +42,7 @@ class User extends Authenticatable
         'joining_date',
         'designation_id',
         'department_id',
+        'qr_token',
     ];
 
     /**

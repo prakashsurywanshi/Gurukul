@@ -33,12 +33,14 @@ const en = {
     Reject: 'Reject',
     'No corrections found for the selected filter.': 'No corrections found for the selected filter.',
     'Select a student, date and requested status.': 'Select a student, date and requested status.',
-    'Request and review attendance status changes for students.': 'Request and review attendance status changes for students.',
+    'Request and review attendance status changes for students.':
+        'Request and review attendance status changes for students.',
     'Fee Concession': 'Fee Concession',
     'New Fee Concession': 'New Fee Concession',
     Applied: 'Applied',
     'No concession requests found for the selected filter.': 'No concession requests found for the selected filter.',
-    'Select a student, amount and reason for the concession.': 'Select a student, amount and reason for the concession.',
+    'Select a student, amount and reason for the concession.':
+        'Select a student, amount and reason for the concession.',
     'Request and approve fee concessions for students.': 'Request and approve fee concessions for students.',
     'Summary of QR-based attendance scans across your selected range.':
         'Summary of QR-based attendance scans across your selected range.',
@@ -274,6 +276,7 @@ const en = {
     'Album name (e.g. Annual Day, Sports Day)': 'Album name (e.g. Annual Day, Sports Day)',
     Alerts: 'Alerts',
     'All Categories': 'All Categories',
+    'All caught up': 'All caught up',
     'All Colors': 'All Colors',
     'All Content': 'All Content',
     'All Pages': 'All Pages',
@@ -375,6 +378,7 @@ const en = {
     Modified: 'Modified',
     'No changes to save.': 'No changes to save.',
     'No translations found.': 'No translations found.',
+    'No upcoming tasks.': 'No upcoming tasks.',
     Hindi: 'Hindi',
     Marathi: 'Marathi',
     Homework: 'Homework',
@@ -868,6 +872,7 @@ const en = {
     'Due by': 'Due by',
     'Due date': 'Due date',
     'Due date: {date}': 'Due date: {date}',
+    'Due Today': 'Due Today',
     Duplicate: 'Duplicate',
     'Duplicate subject.': 'Duplicate subject.',
     'Duration (minutes)': 'Duration (minutes)',
@@ -1210,6 +1215,7 @@ const en = {
     'Hide Import Layout': 'Hide Import Layout',
     'Hide Setup': 'Hide Setup',
     'Hide password': 'Hide password',
+    'High Priority': 'High Priority',
     'High School (9-12)': 'High School (9-12)',
     'Homework Date': 'Homework Date',
     'Homework Details': 'Homework Details',
@@ -1720,6 +1726,7 @@ const en = {
     'Open the share dialog and choose the media item from the library dropdown.':
         'Open the share dialog and choose the media item from the library dropdown.',
     'Open the tools you use most often.': 'Open the tools you use most often.',
+    'Open Todo': 'Open Todo',
     'Open your upcoming online tests and results.': 'Open your upcoming online tests and results.',
     'Opening Stock': 'Opening Stock',
     'Opening stock': 'Opening stock',
@@ -2930,6 +2937,7 @@ const en = {
     'Top header address': 'Top header address',
     'Top header email': 'Top header email',
     'Top header phone': 'Top header phone',
+    Total: 'Total',
     'Total Alumni': 'Total Alumni',
     'Total Calls': 'Total Calls',
     'Total Classes': 'Total Classes',
@@ -3019,6 +3027,7 @@ const en = {
     'Unread Messages': 'Unread Messages',
     'Untitled Page': 'Untitled Page',
     'Untitled question': 'Untitled question',
+    Upcoming: 'Upcoming',
     'Upcoming Exams': 'Upcoming Exams',
     'Upcoming Reminders': 'Upcoming Reminders',
     'Upcoming reminders': 'Upcoming reminders',
@@ -4202,7 +4211,8 @@ const en = {
     'Subject Remark': 'Subject Remark',
     'Subject remark...': 'Subject remark...',
     'General (Report Card)': 'General (Report Card)',
-    'Select a subject above to also enter subject-wise remarks per student.': 'Select a subject above to also enter subject-wise remarks per student.',
+    'Select a subject above to also enter subject-wise remarks per student.':
+        'Select a subject above to also enter subject-wise remarks per student.',
     'School calendar events and holidays.': 'School calendar events and holidays.',
     'No upcoming events scheduled.': 'No upcoming events scheduled.',
     holiday: 'Holiday',
@@ -4759,6 +4769,34 @@ const en = {
     Notifications: 'Notifications',
     'View all': 'View all',
     'No new messages': 'No new messages',
+    'QR Attendance Setting': 'QR Attendance Setting',
+    'Configure how QR codes are scanned and how attendance is marked.':
+        'Configure how QR codes are scanned and how attendance is marked.',
+    'Global Behaviour': 'Global Behaviour',
+    'Control whether QR scanning is available across the organization.':
+        'Control whether QR scanning is available across the organization.',
+    'Enable QR Attendance': 'Enable QR Attendance',
+    'Allow scanning of student and staff QR codes.': 'Allow scanning of student and staff QR codes.',
+    'Update on duplicate scan': 'Update on duplicate scan',
+    'When a code is scanned twice for the same student on the same day, update the earlier status.':
+        'When a code is scanned twice for the same student on the same day, update the earlier status.',
+    'Late Marking': 'Late Marking',
+    'Automatically mark a present scan as late when it is received after the opening window.':
+        'Automatically mark a present scan as late when it is received after the opening window.',
+    'Auto mark late': 'Auto mark late',
+    'Treat present scans after the opening time threshold as late.':
+        'Treat present scans after the opening time threshold as late.',
+    'Opening time': 'Opening time',
+    'Late after (minutes)': 'Late after (minutes)',
+    'Scans received after opening time plus this many minutes are marked late.':
+        'Scans received after opening time plus this many minutes are marked late.',
+    'QR attendance settings saved.': 'QR attendance settings saved.',
+    Siblings: 'Siblings',
+    'No siblings recorded for this student.': 'No siblings recorded for this student.',
+    'Include attendance QR code': 'Include attendance QR code',
+    'Print a QR code on the card that can be scanned to mark attendance.':
+        'Print a QR code on the card that can be scanned to mark attendance.',
+    'Scan For Attendance': 'Scan For Attendance',
     'New notification': 'New notification',
 };
 export default en;

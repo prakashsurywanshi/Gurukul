@@ -247,7 +247,7 @@ class StudentApiController extends Controller
             'mother_name' => ['nullable', 'string', 'max:100'],
             'mother_phone' => ['nullable', 'string', 'max:20'],
             'mother_occupation' => ['nullable', 'string', 'max:100'],
-            'class_id' => ['nullable', 'exists:school_classes,id'],
+            'class_id' => ['nullable', 'exists:classes,id'],
             'status' => ['nullable', 'string', 'max:20'],
         ]);
 

@@ -315,7 +315,7 @@ export default function TodoPage({ user, todos }: TodoPageProps) {
                                         className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between"
                                     >
                                         <div>
-                                            <p className="font-semibold text-slate-900">{t(todo.title)}</p>
+                                            <p className="font-semibold text-slate-900">{todo.title}</p>
                                             <p className="mt-1 text-sm text-slate-500">
                                                 {todo.note || t('No additional note added.')}
                                             </p>
@@ -585,7 +585,7 @@ export default function TodoPage({ user, todos }: TodoPageProps) {
                                                                         {t('active')}
                                                                     </p>
                                                                     <p className="line-clamp-1 break-words text-[10px] leading-3.5 text-slate-500 sm:text-[11px]">
-                                                                        {t(cell.todos[0].title)}
+                                                                        {cell.todos[0].title}
                                                                     </p>
                                                                 </div>
                                                             ) : (
@@ -632,7 +632,7 @@ export default function TodoPage({ user, todos }: TodoPageProps) {
                                                             <p
                                                                 className={`font-semibold ${todo.completed ? 'text-emerald-700 line-through' : 'text-slate-900'}`}
                                                             >
-                                                                {t(todo.title)}
+                                                                {todo.title}
                                                             </p>
                                                             <p className="mt-1 text-sm text-slate-500">
                                                                 {todo.note || t('No additional note added.')}

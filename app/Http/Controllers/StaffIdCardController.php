@@ -23,20 +23,28 @@ class StaffIdCardController extends Controller
             ->whereIn('role', self::STAFF_ROLES)
             ->orderBy('name')
             ->get()
-            ->map(fn (User $member) => [
-                'id' => (string) $member->id,
-                'name' => $member->name,
-                'email' => $member->email,
-                'phone' => $member->phone,
-                'employee_id' => $member->employee_id,
-                'designation' => $member->designation,
-                'department' => $member->department,
-                'role' => $member->role,
-                'gender' => $member->gender,
-                'blood_group' => $member->blood_group,
-                'joining_date' => $member->joining_date?->format('d-m-Y'),
-                'profile_photo' => $member->profile_photo,
-            ])
+            ->map(function (User $member) use ($organization) {
+                if (! $member->qr_token) {
+                    $member->qr_token = \App\Support\QrToken::generate('EMP', $organization->id, (int) $member->id);
+                    $member->save();
+                }
+
+                return [
+                    'id' => (string) $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'phone' => $member->phone,
+                    'employee_id' => $member->employee_id,
+                    'designation' => $member->designation,
+                    'department' => $member->department,
+                    'role' => $member->role,
+                    'gender' => $member->gender,
+                    'blood_group' => $member->blood_group,
+                    'joining_date' => $member->joining_date?->format('d-m-Y'),
+                    'profile_photo' => $member->profile_photo,
+                    'qr_token' => $member->qr_token,
+                ];
+            })
             ->all();
 
         return inertia('dashboard/StaffIdCards', [
