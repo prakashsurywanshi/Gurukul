@@ -1256,7 +1256,6 @@ export const sidebarConfig: {
                 href: '/settings/notification',
                 roles: ['admin'],
                 feature: 'General Setting',
-                module: 'notification-settings',
             },
         ],
     },

@@ -50,6 +50,53 @@ class StaffPermissionsTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_module_management_permission_is_seeded_for_admin(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $adminRole = Role::query()
+            ->where('organization_id', $organization->id)
+            ->where('slug', 'admin')
+            ->firstOrFail();
+
+        $permission = $adminRole->permissions()
+            ->where('feature', 'Module Management')
+            ->firstOrFail();
+
+        $this->assertTrue((bool) $permission->can_view);
+        $this->assertFalse((bool) $permission->can_add);
+        $this->assertTrue((bool) $permission->can_edit);
+        $this->assertSame('Settings', $permission->module);
+
+        $admin = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => 'admin',
+            'status' => 'active',
+        ]);
+
+        $perms = app(StaffPermissionService::class)->featurePermissionsFor($admin);
+
+        $this->assertTrue($perms['Module Management']['view'] ?? false);
+        $this->assertTrue($perms['Module Management']['edit'] ?? false);
+
+        $this->actingAs($admin)->get('/module-management')->assertOk();
+    }
+
+    public function test_teacher_cannot_access_module_management(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $teacher = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => 'teacher',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($teacher)->get('/module-management')->assertForbidden();
+    }
+
     public function test_teacher_can_only_manage_own_lesson_plans(): void
     {
         $organization = $this->createOrganization();

@@ -105,6 +105,7 @@ class RolePermissionCatalog
             ['module' => 'Settings', 'feature' => 'Sessions'],
             ['module' => 'Settings', 'feature' => 'SSO Settings'],
             ['module' => 'Settings', 'feature' => 'Biometric Settings'],
+            ['module' => 'Settings', 'feature' => 'Module Management'],
             ['module' => 'Settings', 'feature' => 'AI Assistant'],
             ['module' => 'Website', 'feature' => 'Website CMS'],
             ['module' => 'Website', 'feature' => 'Website Pages'],
