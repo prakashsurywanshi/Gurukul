@@ -123,7 +123,7 @@ class S4bAppraisalCriteriaTest extends TestCase
         $this->actingAs($teacher)->get('/staff/appraisal-criteria')->assertForbidden();
     }
 
-    public function test_admin_and_receptionist_can_view_complaints_page(): void
+    public function test_staff_roles_can_view_complaints_page(): void
     {
         $organization = $this->createOrganization();
         app(StaffPermissionService::class)->ensureRolesExist($organization);
@@ -145,7 +145,7 @@ class S4bAppraisalCriteriaTest extends TestCase
 
         $this->actingAs($admin)->get('/complains')->assertOk();
         $this->actingAs($receptionist)->get('/complains')->assertOk();
-        $this->actingAs($teacher)->get('/complains')->assertForbidden();
+        $this->actingAs($teacher)->get('/complains')->assertOk();
     }
 
     private function seedRole(): array

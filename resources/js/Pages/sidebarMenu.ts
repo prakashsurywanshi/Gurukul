@@ -632,7 +632,7 @@ export const sidebarConfig: {
                 label: 'Live Class Settings',
                 icon: Settings2,
                 href: '/live-classes/settings',
-                roles: ['super_admin', 'admin'],
+                roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Live Online Classes',
             },
         ],
@@ -1675,7 +1675,7 @@ export const sidebarConfig: {
                 id: 'complains',
                 label: 'Complaints',
                 icon: TriangleAlert,
-                roles: ['student', 'admin', 'receptionist'],
+                roles: ['student', 'admin', 'receptionist', 'teacher'],
                 feature: 'Complains',
             },
             {

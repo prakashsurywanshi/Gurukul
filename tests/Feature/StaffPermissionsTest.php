@@ -97,6 +97,74 @@ class StaffPermissionsTest extends TestCase
         $this->actingAs($teacher)->get('/module-management')->assertForbidden();
     }
 
+    public function test_teacher_can_access_complaints_surface(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $teacher = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => 'teacher',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($teacher)->get('/complains')->assertOk();
+    }
+
+    public function test_teacher_cannot_delete_complaints(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $teacher = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => 'teacher',
+            'status' => 'active',
+        ]);
+
+        $complaint = \App\Models\ComplaintEntry::query()->create([
+            'organization_id' => $organization->id,
+            'complainant_name' => 'Parent 1',
+            'category' => 'general',
+            'complaint_date' => '2026-09-01',
+            'status' => 'open',
+            'note' => 'Noisy corridor',
+            'submitted_by_user_id' => $teacher->id,
+        ]);
+
+        $this->actingAs($teacher)
+            ->delete("/complains/{$complaint->id}")
+            ->assertForbidden();
+    }
+
+    public function test_teacher_can_access_live_class_settings(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $teacher = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => 'teacher',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($teacher)->get('/live-classes/settings')->assertOk();
+    }
+
+    public function test_teacher_can_access_homework_surface(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $teacher = User::factory()->create([
+            'organization_id' => $organization->id,
+            'role' => 'teacher',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($teacher)->get('/homework')->assertOk();
+    }
+
     public function test_teacher_can_only_manage_own_lesson_plans(): void
     {
         $organization = $this->createOrganization();

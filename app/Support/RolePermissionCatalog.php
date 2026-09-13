@@ -320,7 +320,7 @@ class RolePermissionCatalog
                 'Phone Call Log' => self::featurePermissions(false),
                 'Postal Dispatch' => self::featurePermissions(false),
                 'Postal Delivery' => self::featurePermissions(false),
-                'Complains' => self::featurePermissions(false),
+                'Complains' => self::featurePermissions(true, true, true, false),
                 'Parent Helpdesk' => self::featurePermissions(true, true, true),
                 'Live Chat' => self::featurePermissions(true, true, true),
                 'Fees Management' => self::featurePermissions(false),

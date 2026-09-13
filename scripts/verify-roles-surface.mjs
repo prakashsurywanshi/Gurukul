@@ -11,10 +11,6 @@ if (!role) {
 // docs/gap-analysis-v2.md (Deferred / Deliberately-excluded rows).
 const EXCLUDED = {
     teacher: new Set([
-        'live class settings', // no dedicated settings page for live classes in our surface
-        'complaints', // teacher default permission off by design (403)
-        'manage online exams', // covered by Exam parity; keep teacher to offline exams
-        'homework assignments', // parent-ref parity (S3): Homework shared with parent portal
         'apps center', // platform-scale admin feature
         'logout', // top-bar action, not a sidebar menu item
     ]),
@@ -38,6 +34,9 @@ const EXCLUDED = {
 // Label-variant equivalences (reference label -> our sidebar labels that cover
 // the same surface). Kept per-role so role-specific wording stays faithful.
 const ALIASES = {
+    teacher: {
+        'homework assignments': ['homework'], // label-parity: our item is Homework inside Study Center
+    },
     schooladmin: {
         'class timetable': ['class time table'],
         'cocurricular grades': ['cocurricular areas'],
