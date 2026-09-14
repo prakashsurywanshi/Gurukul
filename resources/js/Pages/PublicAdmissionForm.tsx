@@ -10,6 +10,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { normalizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
 import TemplateFiveLayout from './website/TemplateFiveLayout';
+import AdmissionCustomFields, { AdmissionCustomField } from './dashboard/students/AdmissionCustomFields';
 import type { CurrentUser } from './Home';
 
 interface PublicAdmissionFormProps {
@@ -17,6 +18,7 @@ interface PublicAdmissionFormProps {
     user?: CurrentUser | null;
     publishedPages?: Array<{ id?: number; title: string; slug: string }>;
     menuPages?: Array<{ id?: number; title: string; slug: string }>;
+    admissionCustomFields?: AdmissionCustomField[];
 }
 
 export default function PublicAdmissionForm({
@@ -24,6 +26,7 @@ export default function PublicAdmissionForm({
     user,
     publishedPages = [],
     menuPages = [],
+    admissionCustomFields = [],
 }: PublicAdmissionFormProps) {
     const { t } = useLanguage();
     const page = usePage<{ flash?: { success?: string; error?: string } }>();
@@ -47,6 +50,7 @@ export default function PublicAdmissionForm({
         previous_institution: '',
         message: '',
         email_verification_token: '',
+        custom_fields: {},
     });
     const [verificationCode, setVerificationCode] = useState('');
     const [verificationStep, setVerificationStep] = useState<'idle' | 'code-sent' | 'verified'>('idle');
@@ -461,6 +465,26 @@ export default function PublicAdmissionForm({
 
                                         {errors.message && <p className="text-sm text-red-500">{errors.message}</p>}
                                     </div>
+
+                                    {admissionCustomFields.length > 0 && (
+                                        <div
+                                            className={`rounded-2xl border p-5 ${isLightTheme ? 'border-slate-200 bg-slate-50/90' : 'border-white/10 bg-white/5'}`}
+                                        >
+                                            <p className={`mb-4 text-sm font-semibold ${headingTextClass}`}>
+                                                {t('Additional Information')}
+                                            </p>
+                                            <AdmissionCustomFields
+                                                fields={admissionCustomFields}
+                                                values={data.custom_fields}
+                                                onChange={(fieldKey, value) =>
+                                                    setData('custom_fields', {
+                                                        ...data.custom_fields,
+                                                        [fieldKey]: value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                    )}
 
                                     <Button
                                         type="submit"

@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Mail\StudentWelcomeCredentialsMail;
 use App\Models\AdmissionInquiry;
 use App\Models\AcademicYear;
+use App\Models\CustomFieldDefinition;
+use App\Models\CustomFieldValue;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\SuperAdminSetting;
 use App\Models\User;
+use App\Services\CustomFieldValueService;
 use App\Services\SmtpSettingsService;
 use App\Services\StudentAcademicHistoryService;
 use App\Notifications\VerifyAdmissionInquiryCodeNotification;
@@ -35,6 +38,7 @@ use Throwable;
 class AdmissionInquiryController extends Controller
 {
     public function __construct(
+        private readonly CustomFieldValueService $customFieldValueService,
         private readonly StudentAcademicHistoryService $studentAcademicHistoryService,
         private readonly SmtpSettingsService $smtpSettingsService
     )
@@ -55,6 +59,7 @@ class AdmissionInquiryController extends Controller
                     'program_interest' => $inquiry->program_interest,
                     'previous_institution' => $inquiry->previous_institution,
                     'message' => $inquiry->message,
+                    'custom_data' => $inquiry->custom_data,
                     'status' => $inquiry->status ?? 'pending',
                     'enrolled_student_id' => $inquiry->enrolled_student_id,
                     'enrolled_at' => optional($inquiry->enrolled_at)->format('Y-m-d H:i:s'),
@@ -146,11 +151,15 @@ class AdmissionInquiryController extends Controller
             throw $exception;
         }
 
-        $admissionInquiry->update([
-            'status' => 'enrolled',
-            'enrolled_student_id' => $student->id,
-            'enrolled_at' => now(),
-        ]);
+$admissionInquiry->update([
+                'status' => 'enrolled',
+                'enrolled_student_id' => $student->id,
+                'enrolled_at' => now(),
+            ]);
+
+            if ($admissionInquiry->custom_data) {
+                $this->syncInquiryCustomDataToStudent($student, $organization, $admissionInquiry->custom_data);
+            }
 
         return redirect()
             ->route('online-admission')
@@ -270,6 +279,8 @@ class AdmissionInquiryController extends Controller
                 ->withInput();
         }
 
+        $customData = $this->validatePublicCustomFields($request);
+
         $admissionInquiryData = [
             ...$validated,
             'student_stage' => 'Not provided',
@@ -277,6 +288,10 @@ class AdmissionInquiryController extends Controller
             'status' => 'pending',
         ];
         unset($admissionInquiryData['email_verification_token']);
+
+        if ($customData !== []) {
+            $admissionInquiryData['custom_data'] = $customData;
+        }
 
         try {
             AdmissionInquiry::create($admissionInquiryData);
@@ -571,5 +586,83 @@ class AdmissionInquiryController extends Controller
             'previous_institution' => ['nullable', 'string', 'max:255'],
             'message' => ['nullable', 'string', 'max:1000'],
         ]);
+    }
+
+    private function validatePublicCustomFields(Request $request): array
+    {
+        $organization = $this->publicOrganization();
+
+        if (! $organization) {
+            return [];
+        }
+
+        $fields = CustomFieldDefinition::query()
+            ->where('organization_id', $organization->id)
+            ->where('entity', 'student')
+            ->where('is_active', true)
+            ->where('show_in_admission', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        if ($fields->isEmpty()) {
+            return [];
+        }
+
+        $submitted = $request->only(collect($fields)->pluck('field_key')->all())
+            ?: ($request->input('custom_fields', []) ?? []);
+
+        $submitted = is_array($submitted) ? $submitted : [];
+
+        $result = $this->customFieldValueService->validateForFields($fields, $submitted, 'custom_fields');
+
+        if ($result['errors']) {
+            throw ValidationException::withMessages($result['errors']);
+        }
+
+        $byId = $fields->keyBy('id');
+        $normalized = [];
+
+        foreach ($result['normalized'] as $fieldId => $value) {
+            if (isset($byId[$fieldId])) {
+                $normalized[$byId[$fieldId]->field_key] = $value;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function syncInquiryCustomDataToStudent(Student $student, Organization $organization, array $customData): void
+    {
+        $definitions = CustomFieldDefinition::query()
+            ->where('organization_id', $organization->id)
+            ->where('entity', 'student')
+            ->where('is_active', true)
+            ->where('show_in_admission', true)
+            ->get()
+            ->keyBy('field_key');
+
+        foreach ($customData as $fieldKey => $value) {
+            $field = $definitions->get($fieldKey);
+
+            if (! $field) {
+                continue;
+            }
+
+            CustomFieldValue::query()->updateOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'entity' => 'student',
+                    'entity_id' => $student->id,
+                    'field_id' => $field->id,
+                ],
+                ['value' => $value]
+            );
+        }
+    }
+
+    private function publicOrganization(): ?Organization
+    {
+        return Organization::query()->orderBy('id')->first();
     }
 }

@@ -14,6 +14,7 @@ class AdmissionInquiry extends Model
         'student_stage',
         'previous_institution',
         'message',
+        'custom_data',
         'email_verified_at',
         'status',
         'enrolled_student_id',
@@ -21,6 +22,7 @@ class AdmissionInquiry extends Model
     ];
 
     protected $casts = [
+        'custom_data' => 'array',
         'email_verified_at' => 'datetime',
         'enrolled_at' => 'datetime',
     ];

@@ -64,7 +64,7 @@ export default function CreateStudent({ user, classRecords, admissionCustomField
         caste: '',
         previous_school: '',
     });
-    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | string[]>>({});
     const [generatingAll, setGeneratingAll] = useState(false);
     const hasCustomFields = admissionCustomFields.length > 0;
 

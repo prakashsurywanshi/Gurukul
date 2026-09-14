@@ -24,7 +24,7 @@ interface EditStudentProps {
         section: string;
     }[];
     admissionCustomFields: AdmissionCustomField[];
-    admissionCustomFieldValues: Record<string, string>;
+    admissionCustomFieldValues: Record<string, string | string[]>;
 }
 
 const emptyForm = {
@@ -93,7 +93,7 @@ export default function EditStudent({
     const regionalLanguageLabel =
         regionalLanguage === 'mr' ? t('Marathi') : regionalLanguage === 'hi' ? t('Hindi') : t('Regional');
     const [formData, setFormData] = useState(emptyForm);
-    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>(admissionCustomFieldValues);
+    const [customFieldValues, setCustomFieldValues] = useState<Record<string, string | string[]>>(admissionCustomFieldValues);
     const [loading, setLoading] = useState(true);
     const [translating, setTranslating] = useState<string | null>(null);
     const [generatingAll, setGeneratingAll] = useState(false);

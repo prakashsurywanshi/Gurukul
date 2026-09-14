@@ -21,6 +21,7 @@ use App\Models\StudentExit;
 use App\Models\StudentFee;
 use App\Models\StudentImport;
 use App\Models\User;
+use App\Services\CustomFieldValueService;
 use App\Services\SmtpSettingsService;
 use App\Services\StudentAcademicHistoryService;
 use Illuminate\Database\QueryException;
@@ -42,6 +43,7 @@ class StudentsController extends Controller
     private ?array $studentTableColumns = null;
 
     public function __construct(
+        private readonly CustomFieldValueService $customFieldValueService,
         private readonly StudentAcademicHistoryService $studentAcademicHistoryService,
         private readonly SmtpSettingsService $smtpSettingsService
     ) {}
@@ -950,7 +952,7 @@ class StudentsController extends Controller
             ->where('entity', 'student')
             ->where('is_active', true)
             ->where('show_in_admission', true)
-            ->get(['id', 'field_key']);
+            ->get(['id', 'field_key', 'field_type']);
 
         if ($definitions->isEmpty()) {
             return [];
@@ -963,8 +965,20 @@ class StudentsController extends Controller
             ->whereIn('field_id', $definitions->pluck('id')->all())
             ->pluck('value', 'field_id');
 
+        $fieldsById = $definitions->keyBy('id');
+
         return $definitions
-            ->mapWithKeys(fn (CustomFieldDefinition $field) => [$field->field_key => $valuesByField->get($field->id)])
+            ->mapWithKeys(function (CustomFieldDefinition $field) use ($valuesByField, $fieldsById) {
+                $value = $valuesByField->get($field->id);
+
+                if ($field->field_type === 'multi-select' && is_string($value)) {
+                    $decoded = json_decode($value, true);
+
+                    return [$field->field_key => is_array($decoded) ? $decoded : []];
+                }
+
+                return [$field->field_key => $value];
+            })
             ->all();
     }
 
@@ -979,48 +993,22 @@ class StudentsController extends Controller
             ->orderBy('id')
             ->get();
 
-        $errors = [];
-        $normalized = [];
+        $result = $this->customFieldValueService->validateForFields($fields, $submitted, 'custom_fields');
 
-        foreach ($fields as $field) {
-            $input = $submitted[$field->field_key] ?? null;
-            $input = is_array($input) ? null : $input;
-
-            if ($field->is_required && blank($input)) {
-                $errors['custom_fields.'.$field->field_key] = 'The '.$field->label.' field is required.';
-            }
-
-            if (filled($input) && ! $this->customFieldValueIsValid($field, $input)) {
-                $errors['custom_fields.'.$field->field_key] = 'The '.$field->label.' field is invalid.';
-            }
-
-            $normalized[$field->field_key] = filled($input) ? $this->normalizeCustomFieldValue($field, $input) : null;
+        if ($result['errors']) {
+            throw ValidationException::withMessages($result['errors']);
         }
 
-        if ($errors) {
-            throw ValidationException::withMessages($errors);
+        $byId = $fields->keyBy('id');
+
+        $normalized = [];
+        foreach ($result['normalized'] as $fieldId => $value) {
+            if (isset($byId[$fieldId])) {
+                $normalized[$byId[$fieldId]->field_key] = $value;
+            }
         }
 
         return $normalized;
-    }
-
-    private function customFieldValueIsValid(CustomFieldDefinition $field, string $input): bool
-    {
-        return match ($field->field_type) {
-            'number' => is_numeric($input),
-            'date' => (bool) strtotime($input),
-            'select' => in_array($input, $field->options ?? [], true),
-            default => true,
-        };
-    }
-
-    private function normalizeCustomFieldValue(CustomFieldDefinition $field, string $input): string
-    {
-        return match ($field->field_type) {
-            'number' => (string) ((float) $input),
-            'date' => date('Y-m-d', strtotime($input)),
-            default => $input,
-        };
     }
 
     private function syncAdmissionCustomFieldValues(Student $student, Organization $organization, array $values): void

@@ -560,11 +560,33 @@ class SettingsController extends Controller
                 ->toArray()
             : [];
 
+        $admissionCustomFields = $organization
+            ? \App\Models\CustomFieldDefinition::query()
+                ->where('organization_id', $organization->id)
+                ->where('entity', 'student')
+                ->where('is_active', true)
+                ->where('show_in_admission', true)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($field) => [
+                    'id' => $field->id,
+                    'label' => $field->label,
+                    'fieldKey' => $field->field_key,
+                    'fieldType' => $field->field_type,
+                    'options' => $field->options ?? [],
+                    'isRequired' => $field->is_required,
+                ])
+                ->values()
+                ->all()
+            : [];
+
         return inertia('PublicAdmissionForm', [
             'websiteContent' => $this->publicWebsiteContent($organization),
             'user' => $user,
             'publishedPages' => $publishedPages,
             'menuPages' => $menuPages,
+            'admissionCustomFields' => $admissionCustomFields,
         ]);
     }
 

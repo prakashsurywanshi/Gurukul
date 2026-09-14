@@ -84,8 +84,11 @@
   `module.enabled` + sidebar hiding; core modules non-disableable.
 - **Org settings:** `organizations.settings` JSON (currency, timezone, date format, session, notification rules,
   payment keys); `website_settings` key/value; plan/subscription gating at login + middleware.
-- **Custom fields:** `CustomFieldDefinition`/`CustomFieldValue` — types text/textarea/number/date/select for student &
-  staff, `show_in_admission` flag wired into Create/EditStudent; **not rendered on public admission form**.
+- **Custom fields:** `CustomFieldDefinition`/`CustomFieldValue` — **P4.1 v2**: 6 entities (student, staff, lead, book,
+  asset, inventory), 13 field types (text/textarea/number/date/select/url/email/phone/checkbox/radio/multi-select/
+  currency/file) validated by shared `CustomFieldValueService` (regex pattern, min/max value, min/max length);
+  `show_in_admission` wired into Create/EditStudent **and rendered + validated on the public admission form**
+  (`custom_data` JSON on `AdmissionInquiry`, copied to the student on enroll).
 - **Notifications:** DB-first `SystemNotification` + FCM HTTP v1 push (FirebaseCloudMessagingService, device tokens);
   realtime libs installed (Pusher/Echo) but bell not websocket-driven.
 - **Approvals:** per-module ad-hoc (FeeConcession, AttendanceCorrection, LessonPlan) — no generic engine.
