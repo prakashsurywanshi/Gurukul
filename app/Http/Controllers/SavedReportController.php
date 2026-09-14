@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\SavedReport;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -35,7 +36,7 @@ class SavedReportController extends Controller
         'audit-trail',
     ];
 
-    private const FILTER_KEYS = ['class', 'session', 'month', 'search', 'date_from', 'date_to'];
+    private const FILTER_KEYS = ['class', 'session', 'month', 'search', 'date_from', 'date_to', 'semester'];
 
     public function index(Request $request): InertiaResponse
     {
@@ -67,6 +68,18 @@ class SavedReportController extends Controller
             ]),
             'classOptions' => $this->getClassOptions($organization),
             'sessionOptions' => $this->sessionOptions($organization),
+            'semesterOptions' => $academicYear
+                ? Semester::query()
+                    ->where('organization_id', $organization->id)
+                    ->where('academic_year_id', $academicYear->id)
+                    ->orderBy('sem_no')
+                    ->get(['id', 'name'])
+                    ->map(fn (Semester $semester) => [
+                        'value' => (string) $semester->id,
+                        'label' => $semester->name,
+                    ])
+                    ->values()
+                : collect(),
             'monthOptions' => $academicYear ? $this->monthOptions($academicYear) : collect(),
             'selectedSession' => (string) ($academicYear?->id ?? ''),
             'savedReports' => $savedReports,

@@ -27,6 +27,7 @@ interface SubjectRecord {
     name: string;
     code?: string | null;
     type: 'theory' | 'practical' | 'both';
+    credits?: number | null;
     description?: string | null;
     created_at?: string | null;
 }
@@ -40,6 +41,7 @@ const INITIAL_FORM = {
     name: '',
     code: '',
     type: 'theory',
+    credits: '',
     description: '',
 };
 
@@ -77,7 +79,7 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
         }
 
         return subjects.filter((subject) =>
-            [subject.name, subject.code || '', subject.type, subject.description || ''].some((value) =>
+            [subject.name, subject.code || '', subject.type, String(subject.credits ?? ''), subject.description || ''].some((value) =>
                 value.toLowerCase().includes(normalizedQuery),
             ),
         );
@@ -120,6 +122,7 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
             name: subject.name,
             code: subject.code || '',
             type: subject.type,
+            credits: subject.credits != null ? String(subject.credits) : '',
             description: subject.description || '',
         });
         setDialogOpen(true);
@@ -132,6 +135,7 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
             name: formData.name.trim(),
             code: formData.code.trim() || null,
             type: formData.type,
+            credits: formData.credits.trim() ? Number(formData.credits) : null,
             description: formData.description.trim() || null,
         };
 
@@ -260,6 +264,7 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
                                             <TableHead>{t('Subject')}</TableHead>
                                             <TableHead>{t('Code')}</TableHead>
                                             <TableHead>{t('Type')}</TableHead>
+                                            <TableHead className="text-right">{t('Credits')}</TableHead>
                                             <TableHead>{t('Description')}</TableHead>
                                             {canManageSubjects && (
                                                 <TableHead className="text-right">{t('Action')}</TableHead>
@@ -274,6 +279,9 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
                                                 </TableCell>
                                                 <TableCell>{subject.code || t('N/A')}</TableCell>
                                                 <TableCell>{renderTypeBadge(subject.type)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    {subject.credits != null ? subject.credits : t('N/A')}
+                                                </TableCell>
                                                 <TableCell className="max-w-md text-slate-600">
                                                     {subject.description ? (
                                                         <span className="line-clamp-2">{t(subject.description)}</span>
@@ -460,6 +468,26 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
                                     </SelectContent>
                                 </Select>
                                 {errors.type && <p className="text-sm text-red-600">{t(errors.type)}</p>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="subject-credits">{t('Credits (CBCS)')}</Label>
+                                <Input
+                                    id="subject-credits"
+                                    type="number"
+                                    min="0"
+                                    step="0.5"
+                                    value={formData.credits}
+                                    onChange={(event) =>
+                                        setFormData((current) => ({
+                                            ...current,
+                                            credits: event.target.value,
+                                        }))
+                                    }
+                                    placeholder={t('e.g. 4')}
+                                />
+
+                                {errors.credits && <p className="text-sm text-red-600">{errors.credits}</p>}
                             </div>
                         </div>
 

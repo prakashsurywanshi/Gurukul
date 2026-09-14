@@ -95,7 +95,7 @@ class ReportCardController extends Controller
         $exam = Exam::query()
             ->where('organization_id', $organization->id)
             ->with([
-                'schedules.subject:id,name,name_mr,name_hi',
+                'schedules.subject:id,name,name_mr,name_hi,credits',
                 'schedules.results' => fn ($query) => $query->where('student_id', $studentId),
             ])
             ->find($examId);
@@ -127,6 +127,7 @@ class ReportCardController extends Controller
 
                 return [
                     'subject' => $schedule->subject?->localized('name') ?? 'Subject',
+                    'credits' => $schedule->subject?->credits,
                     'maxMarks' => (float) $schedule->max_marks,
                     'passingMarks' => (float) $schedule->passing_marks,
                     'obtainedMarks' => (float) $result->obtained_marks,
@@ -160,6 +161,19 @@ class ReportCardController extends Controller
 
         $rank = $this->resolveRank($exam->id, $studentId);
 
+        $creditRows = collect($subjectRows)->filter(fn ($row) => $row['credits'] !== null && $row['credits'] > 0 && ! $row['isAbsent']);
+        $creditBased = $creditRows->isNotEmpty();
+        $totalCredits = $creditBased ? round($creditRows->sum('credits'), 2) : 0;
+        $sgpa = null;
+        if ($creditBased) {
+            $weighted = $creditRows->sum(function ($row) {
+                $point = $row['isAbsent'] || $row['obtainedMarks'] < $row['passingMarks'] ? 0 : (float) ($row['gradePoint'] ?? 0);
+
+                return $point * $row['credits'];
+            });
+            $sgpa = $totalCredits > 0 ? round($weighted / $totalCredits, 2) : null;
+        }
+
         return [
             'student' => [
                 'id' => (string) $student->id,
@@ -188,6 +202,10 @@ class ReportCardController extends Controller
             'result' => $promoted ? 'Pass' : 'Fail',
             'failedSubjects' => $failedSubjects,
             'rank' => $rank,
+            'creditBased' => $creditBased,
+            'totalCredits' => $totalCredits,
+            'sgpa' => $sgpa,
+            'cgpa' => $sgpa,
         ];
     }
 

@@ -525,6 +525,9 @@ export default function ReportCard(pageProps: ReportProps) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>{t('Subject')}</TableHead>
+                                        {report.creditBased ? (
+                                            <TableHead className="text-center">{t('Credits')}</TableHead>
+                                        ) : null}
                                         <TableHead className="text-center">{t('Max')}</TableHead>
                                         <TableHead className="text-center">{t('Passing')}</TableHead>
                                         <TableHead className="text-center">{t('Obtained')}</TableHead>
@@ -547,6 +550,11 @@ export default function ReportCard(pageProps: ReportProps) {
                                         return (
                                             <TableRow key={row.subject}>
                                                 <TableCell className="font-medium">{row.subject}</TableCell>
+                                                {report.creditBased ? (
+                                                    <TableCell className="text-center">
+                                                        {row.credits != null ? row.credits : '—'}
+                                                    </TableCell>
+                                                ) : null}
                                                 <TableCell className="text-center">{row.maxMarks}</TableCell>
                                                 <TableCell className="text-center">{row.passingMarks}</TableCell>
                                                 <TableCell className="text-center">
@@ -595,6 +603,14 @@ export default function ReportCard(pageProps: ReportProps) {
                                         <p className="font-semibold text-slate-900">
                                             {report.overallGrade ?? '—'}{' '}
                                             {report.overallGradePoint ? `(${report.overallGradePoint})` : ''}
+                                        </p>
+                                    </div>
+                                ) : null}
+                                {report.creditBased ? (
+                                    <div>
+                                        <p className="text-xs font-medium uppercase text-slate-400">{t('SGPA / CGPA')}</p>
+                                        <p className="font-semibold text-slate-900">
+                                            {report.sgpa ?? '—'} <span className="text-sm text-slate-500">({t('Credits')}: {report.totalCredits})</span>
                                         </p>
                                     </div>
                                 ) : null}

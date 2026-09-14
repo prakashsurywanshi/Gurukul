@@ -83,6 +83,7 @@ interface ReportsAnalyticsProps {
     accessToken?: string;
     classOptions: { id: number; name: string; section: string }[];
     sessionOptions: { value: string; label: string; isCurrent: boolean }[];
+    semesterOptions: { value: string; label: string }[];
     monthOptions: { value: string; label: string }[];
     selectedFilters: {
         class: string;
@@ -90,6 +91,7 @@ interface ReportsAnalyticsProps {
         session: string;
         module: string;
         search: string;
+        semester: string;
     };
     moduleReports: ModuleReport[];
     metrics: Metrics;
@@ -192,6 +194,7 @@ export default function ReportsAnalytics({
     accessToken,
     classOptions,
     sessionOptions,
+    semesterOptions,
     monthOptions,
     selectedFilters,
     moduleReports,
@@ -215,6 +218,7 @@ export default function ReportsAnalytics({
     const [selectedSection, setSelectedSection] = useState(initialSection);
     const [selectedMonth, setSelectedMonth] = useState(selectedFilters.month);
     const [selectedSession, setSelectedSession] = useState(selectedFilters.session);
+    const [selectedSemester, setSelectedSemester] = useState(selectedFilters.semester ?? 'all');
     const [activeModule, setActiveModule] = useState(selectedFilters.module || 'overview');
     const [searchQuery, setSearchQuery] = useState(selectedFilters.search || '');
     const [dateFrom, setDateFrom] = useState('');
@@ -263,6 +267,7 @@ export default function ReportsAnalytics({
                     class: selectedClassId,
                     month: selectedMonth,
                     session: selectedSession,
+                    semester: selectedSemester,
                     module: activeModule,
                     search: searchQuery || undefined,
                 },
@@ -279,10 +284,11 @@ export default function ReportsAnalytics({
         [activeModule, moduleReports],
     );
 
-    const applyFilters = (nextMonth: string, nextSession: string, nextModule = activeModule) => {
+    const applyFilters = (nextMonth: string, nextSession: string, nextModule = activeModule, nextSemester = selectedSemester) => {
         setSelectedMonth(nextMonth);
         setSelectedSession(nextSession);
         setActiveModule(nextModule);
+        setSelectedSemester(nextSemester);
 
         router.get(
             '/reports',
@@ -290,6 +296,7 @@ export default function ReportsAnalytics({
                 class: selectedClassId,
                 month: nextMonth,
                 session: nextSession,
+                semester: nextSemester,
                 module: nextModule,
                 search: searchQuery || undefined,
             },
@@ -308,6 +315,7 @@ export default function ReportsAnalytics({
                 class: selectedClassId,
                 month: selectedMonth,
                 session: selectedSession,
+                semester: selectedSemester,
                 module: nextModule,
                 search: searchQuery || undefined,
             },
@@ -326,6 +334,7 @@ export default function ReportsAnalytics({
                 class: selectedClassId,
                 month: selectedMonth,
                 session: selectedSession,
+                semester: selectedSemester,
                 module: activeModule,
                 search: searchQuery || undefined,
                 page,
@@ -344,6 +353,7 @@ export default function ReportsAnalytics({
                 class: selectedClassId,
                 month: selectedMonth,
                 session: selectedSession,
+                semester: selectedSemester,
                 module: activeModule,
                 search: searchQuery || undefined,
             },
@@ -369,6 +379,7 @@ export default function ReportsAnalytics({
             month: selectedMonth,
             session: selectedSession,
         });
+        if (selectedSemester && selectedSemester !== 'all') params.set('semester', selectedSemester);
         if (searchQuery) params.set('search', searchQuery);
 
         window.location.href = `/reports/export-pdf?${params.toString()}`;
@@ -382,6 +393,7 @@ export default function ReportsAnalytics({
             month: selectedMonth,
             session: selectedSession,
         });
+        if (selectedSemester && selectedSemester !== 'all') params.set('semester', selectedSemester);
         if (searchQuery) params.set('search', searchQuery);
 
         window.location.href = `/reports/export-xlsx?${params.toString()}`;
@@ -484,6 +496,25 @@ export default function ReportsAnalytics({
                             </SelectContent>
                         </Select>
 
+                        {semesterOptions.length > 0 && (
+                            <Select
+                                value={selectedSemester}
+                                onValueChange={(value) => applyFilters(selectedMonth, selectedSession, activeModule, value)}
+                            >
+                                <SelectTrigger className="w-44 bg-white">
+                                    <SelectValue placeholder={t('Select semester')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('All Semesters')}</SelectItem>
+                                    {semesterOptions.map((option) => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+
                         <Select value={selectedMonth} onValueChange={(value) => applyFilters(value, selectedSession)}>
                             <SelectTrigger className="w-36 bg-white">
                                 <SelectValue placeholder={t('Select month')} />
@@ -554,6 +585,7 @@ export default function ReportsAnalytics({
                                                         class: selectedClassId,
                                                         month: selectedMonth,
                                                         session: selectedSession,
+                                                        semester: selectedSemester,
                                                         module: activeModule,
                                                         search: searchQuery || undefined,
                                                         date_from: dateFrom || undefined,
@@ -582,6 +614,7 @@ export default function ReportsAnalytics({
                                                         class: selectedClassId,
                                                         month: selectedMonth,
                                                         session: selectedSession,
+                                                        semester: selectedSemester,
                                                         module: activeModule,
                                                         search: searchQuery || undefined,
                                                     },

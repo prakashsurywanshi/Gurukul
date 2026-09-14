@@ -34,6 +34,7 @@ interface ReportBuilderProps {
     modules: ModuleOption[];
     classOptions: LabeledOption[];
     sessionOptions: LabeledOption[];
+    semesterOptions: LabeledOption[];
     monthOptions: LabeledOption[];
     selectedSession: string;
     savedReports: SavedReport[];
@@ -63,6 +64,7 @@ export default function ReportBuilder({
     modules,
     classOptions,
     sessionOptions,
+    semesterOptions,
     monthOptions,
     selectedSession,
     savedReports,
@@ -74,6 +76,7 @@ export default function ReportBuilder({
     const [module, setModule] = useState<string>(modules[0]?.value ?? 'students');
     const [className, setClassName] = useState<string>('all');
     const [session, setSession] = useState<string>(selectedSession);
+    const [semester, setSemester] = useState<string>('all');
     const [month, setMonth] = useState<string>('all');
     const [search, setSearch] = useState('');
     const [dateFrom, setDateFrom] = useState('');
@@ -106,6 +109,7 @@ export default function ReportBuilder({
         const filters: Record<string, string> = {};
         if (className && className !== 'all') filters.class = className;
         if (session) filters.session = session;
+        if (semester && semester !== 'all') filters.semester = semester;
         if (month && month !== 'all') filters.month = month;
         if (search.trim()) filters.search = search.trim();
         if (dateFrom) filters.date_from = dateFrom;
@@ -167,6 +171,14 @@ export default function ReportBuilder({
         if (filters.class) {
             const option = classOptions.find((o) => o.value === filters.class);
             parts.push(option ? option.label : filters.class);
+        }
+        if (filters.session) {
+            const option = sessionOptions.find((o) => o.value === filters.session);
+            parts.push(option ? option.label : filters.session);
+        }
+        if (filters.semester) {
+            const option = semesterOptions.find((o) => o.value === filters.semester);
+            parts.push(option ? option.label : filters.semester);
         }
         if (filters.month) {
             const option = monthOptions.find((o) => o.value === filters.month);
@@ -253,6 +265,24 @@ export default function ReportBuilder({
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    {semesterOptions.length > 0 && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-slate-700">{t('Semester')}</label>
+                                            <Select value={semester} onValueChange={setSemester}>
+                                                <SelectTrigger className="w-full bg-white">
+                                                    <SelectValue placeholder={t('Select semester')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">{t('All Semesters')}</SelectItem>
+                                                    {semesterOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium text-slate-700">{t('Month')}</label>
                                         <Select value={month} onValueChange={setMonth}>

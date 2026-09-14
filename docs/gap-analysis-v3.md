@@ -119,7 +119,10 @@
 - `organizations.type` (`school/college/coaching/university`) is now **wired end-to-end**: selectable/editable on the Settings page, persisted by `SettingsController@update` (`orgType`, `Rule::in`), exposed via `SettingsController@index` (`organization.type`) and **shared on every Inertia page** (`HandleInertiaRequests → orgType`).
 - **Semesters foundation**: new `semesters` table (`2026_09_14_000006_create_semesters_table`, org + academic_year scoped, `sem_no` auto-unique per year, `is_current` flag) + `Semester` model; `AcademicYear::semesters()`; `Organization::currentSemester()` (prefers `is_current` true, else highest `sem_no`, always within the selected academic year).
 - `SemesterController` (index/store/update/destroy/setCurrent) at `/semesters`, gated by the existing `Sessions` permission family, org-isolated (403 cross-org). New `dashboard/SemesterSettings` page (numbered listing, Current badge, Mark Current, delete, add form auto-numbered with session-bounded dates). Settings page shows a "Semesters (College Mode)" card linking there for `college/coaching/university` orgs.
-- Remaining (deferred to later P6 phases): cross-module semester filters (exams/attendance/fees/reports), credits/CBCS grading, lecture-mode timetables, course/batch CRUD, per-type terminology in reports.
+### P6.1e (CORRECTED — semester filters + credits shipped)
+- Cross-module **semester filters** shipped: `?semester` on Reports Center + exports with date-window bounded exams/attendance/fees module reports and attendance/fee/exam charts; saved reports persist & hydrate `semester` (`SavedReportController` whitelist + Report Builder select).
+- **Credits/CBCS grading** shipped: `subjects.credits` + subject form/validation; report card emits `credits`, `creditBased`, `totalCredits`, `sgpa`/`cgpa` (credit-weighted grade points). Pure-marks cards unchanged (non-credit-based).
+- Remaining (deferred to later P6 phases): lecture-mode timetables, course/batch CRUD, per-type terminology in reports, semester-aware exam term grouping.
 
 ## 8. Tracking
 

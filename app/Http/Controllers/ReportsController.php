@@ -31,6 +31,7 @@ use App\Models\Message;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\SavedReport;
+use App\Models\Semester;
 use App\Models\StaffAttendance;
 use App\Models\StaffPayrollEntry;
 use App\Models\Student;
@@ -67,31 +68,37 @@ class ReportsController extends Controller
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
         abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
 
-        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
         $activeModule = $request->string('module')->value() ?: 'students';
         $page = max(1, (int) $request->input('page', 1));
         $search = $request->string('search')->value() ?: '';
         $dateFrom = $request->input('date_from') ?: null;
         $dateTo = $request->input('date_to') ?: null;
 
+        $selectedSemester = $this->resolveSelectedSemester($organization, $selectedAcademicYear, $request->input('semester'));
+        $periodStart = $selectedSemester ? $selectedSemester->start_date : $selectedAcademicYear->start_date;
+        $periodEnd = $selectedSemester ? $selectedSemester->end_date : $selectedAcademicYear->end_date;
+        $selectedMonth = $this->resolveSelectedMonth($periodStart, $periodEnd, $request->input('month'));
+
         return Inertia::render('dashboard/ReportsAnalytics', [
             'user' => $user,
             'classOptions' => $this->getClassOptions($organization),
             'sessionOptions' => $this->sessionOptions($organization),
+            'semesterOptions' => $this->semesterOptions($selectedAcademicYear),
             'selectedFilters' => [
                 'class' => $selectedClass,
                 'month' => $selectedMonth,
                 'session' => (string) $selectedAcademicYear->id,
                 'module' => $activeModule,
                 'search' => $search,
+                'semester' => (string) ($selectedSemester?->id ?? 'all'),
             ],
-            'attendanceData' => $this->attendanceData($organization, $selectedClass, $selectedAcademicYear),
-            'feeCollectionData' => $this->feeCollectionData($organization, $selectedClass, $selectedAcademicYear),
+            'attendanceData' => $this->attendanceData($organization, $selectedClass, $selectedAcademicYear, $selectedSemester),
+            'feeCollectionData' => $this->feeCollectionData($organization, $selectedClass, $selectedAcademicYear, $selectedSemester),
             'studentDistribution' => $this->studentDistribution($organization),
-            'examPerformance' => $this->examPerformance($organization, $selectedClass, $selectedAcademicYear),
+            'examPerformance' => $this->examPerformance($organization, $selectedClass, $selectedAcademicYear, $selectedSemester),
             'metrics' => $this->metrics($organization, $selectedClass, $selectedMonth, $selectedAcademicYear),
-            'moduleReports' => $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $dateFrom, $dateTo),
-            'monthOptions' => $this->monthOptions($selectedAcademicYear),
+            'moduleReports' => $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $dateFrom, $dateTo, $selectedSemester),
+            'monthOptions' => $this->monthOptionsFor($periodStart, $periodEnd),
         ]);
     }
 
@@ -108,11 +115,13 @@ class ReportsController extends Controller
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
         abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
 
-        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
+        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear->start_date, $selectedAcademicYear->end_date, $request->input('month'));
         $module = $request->string('module')->value() ?: 'students';
         $search = $request->string('search')->value() ?: '';
 
-        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, 1, $search);
+        $selectedSemester = $this->resolveSelectedSemester($organization, $selectedAcademicYear, $request->input('semester'));
+
+        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, 1, $search, null, null, $selectedSemester);
         $report = collect($reports)->firstWhere('id', $module) ?? $reports[0];
 
         $html = view('reports.pdf-export', [
@@ -141,11 +150,13 @@ class ReportsController extends Controller
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
         abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
 
-        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
+        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear->start_date, $selectedAcademicYear->end_date, $request->input('month'));
         $module = $request->string('module')->value() ?: 'students';
         $search = $request->string('search')->value() ?: '';
 
-        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $request->integer('page', 1), $search);
+        $selectedSemester = $this->resolveSelectedSemester($organization, $selectedAcademicYear, $request->input('semester'));
+
+        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $request->integer('page', 1), $search, null, null, $selectedSemester);
         $report = collect($reports)->firstWhere('id', $module) ?? $reports[0];
 
         $filename = str_replace(' ', '-', $report['label']) . '-Report-' . now()->format('Y-m-d') . '.csv';
@@ -176,11 +187,13 @@ class ReportsController extends Controller
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
         abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
 
-        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
+        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear->start_date, $selectedAcademicYear->end_date, $request->input('month'));
         $module = $request->string('module')->value() ?: 'students';
         $search = $request->string('search')->value() ?: '';
 
-        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $request->integer('page', 1), $search);
+        $selectedSemester = $this->resolveSelectedSemester($organization, $selectedAcademicYear, $request->input('semester'));
+
+        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $request->integer('page', 1), $search, null, null, $selectedSemester);
         $report = collect($reports)->firstWhere('id', $module) ?? $reports[0];
 
         $filename = str_replace(' ', '-', $report['label']) . '-Report-' . now()->format('Y-m-d') . '.xlsx';
@@ -206,7 +219,7 @@ class ReportsController extends Controller
 
         $request->merge([
             'module' => $savedReport->module,
-            ...array_intersect_key($savedReport->filters, array_flip(['class', 'session', 'month', 'search', 'date_from', 'date_to'])),
+            ...array_intersect_key($savedReport->filters, array_flip(['class', 'session', 'month', 'search', 'date_from', 'date_to', 'semester'])),
         ]);
     }
 
@@ -220,18 +233,21 @@ class ReportsController extends Controller
             ->get(['id', 'name', 'section']);
     }
 
-    private function attendanceData(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear): Collection
+    private function attendanceData(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear, ?Semester $semester = null): Collection
     {
+        $periodStart = $semester ? $semester->start_date->copy()->startOfMonth() : $selectedAcademicYear->start_date->copy()->startOfMonth();
+        $periodEnd = $semester ? $semester->end_date->copy()->startOfMonth() : $selectedAcademicYear->end_date->copy()->startOfMonth();
+
         $attendance = Attendance::query()
             ->where('organization_id', $organization->id)
             ->whereBetween('date', [
-                $selectedAcademicYear->start_date->toDateString(),
-                $selectedAcademicYear->end_date->toDateString(),
+                $periodStart->toDateString(),
+                $periodEnd->copy()->endOfMonth()->toDateString(),
             ])
             ->when($selectedClass !== 'all', fn ($query) => $query->where('class_id', $selectedClass))
             ->get(['date', 'status']);
 
-        return $this->monthSequence($selectedAcademicYear)->map(function (Carbon $monthStart) use ($attendance) {
+        return $this->monthSequenceBetween($periodStart, $periodEnd)->map(function (Carbon $monthStart) use ($attendance) {
             $monthEntries = $attendance->filter(
                 fn ($entry) => optional($entry->date)?->format('Y-m') === $monthStart->format('Y-m')
             );
@@ -247,13 +263,16 @@ class ReportsController extends Controller
         })->values();
     }
 
-    private function feeCollectionData(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear): Collection
+    private function feeCollectionData(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear, ?Semester $semester = null): Collection
     {
+        $periodStart = $semester ? $semester->start_date->copy()->startOfMonth() : $selectedAcademicYear->start_date->copy()->startOfMonth();
+        $periodEnd = $semester ? $semester->end_date->copy()->startOfMonth() : $selectedAcademicYear->end_date->copy()->startOfMonth();
+
         $payments = FeePayment::query()
             ->where('organization_id', $organization->id)
             ->whereBetween('payment_date', [
-                $selectedAcademicYear->start_date->toDateString(),
-                $selectedAcademicYear->end_date->toDateString(),
+                $periodStart->toDateString(),
+                $periodEnd->copy()->endOfMonth()->toDateString(),
             ])
             ->whereIn('status', ['completed', 'success'])
             ->when($selectedClass !== 'all', function ($query) use ($selectedClass) {
@@ -269,7 +288,7 @@ class ReportsController extends Controller
             })
             ->get(['net_amount', 'balance', 'month', 'year']);
 
-        return $this->monthSequence($selectedAcademicYear)->map(function (Carbon $monthStart) use ($payments, $studentFees) {
+        return $this->monthSequenceBetween($periodStart, $periodEnd)->map(function (Carbon $monthStart) use ($payments, $studentFees) {
             $collected = $payments
                 ->filter(fn ($payment) => optional($payment->payment_date)?->format('Y-m') === $monthStart->format('Y-m'))
                 ->sum(fn ($payment) => (float) $payment->amount);
@@ -315,14 +334,17 @@ class ReportsController extends Controller
         })->values();
     }
 
-    private function examPerformance(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear): Collection
+    private function examPerformance(Organization $organization, string $selectedClass, AcademicYear $selectedAcademicYear, ?Semester $semester = null): Collection
     {
+        $periodStart = $semester ? $semester->start_date : $selectedAcademicYear->start_date;
+        $periodEnd = $semester ? $semester->end_date : $selectedAcademicYear->end_date;
+
         return ExamResult::query()
             ->where('organization_id', $organization->id)
-            ->whereHas('examSchedule', function ($query) use ($selectedClass, $selectedAcademicYear) {
+            ->whereHas('examSchedule', function ($query) use ($selectedClass, $periodStart, $periodEnd) {
                 $query->whereBetween('exam_date', [
-                    $selectedAcademicYear->start_date->toDateString(),
-                    $selectedAcademicYear->end_date->toDateString(),
+                    $periodStart->toDateString(),
+                    $periodEnd->toDateString(),
                 ])
                     ->when($selectedClass !== 'all', fn ($scheduleQuery) => $scheduleQuery->where('class_id', $selectedClass));
             })
@@ -397,13 +419,13 @@ class ReportsController extends Controller
         ];
     }
 
-    private function moduleReports(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?string $dateFrom = null, ?string $dateTo = null): array
+    private function moduleReports(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?string $dateFrom = null, ?string $dateTo = null, ?Semester $semester = null): array
     {
         return [
             $this->studentModuleReport($organization, $selectedClass, $page, $search),
-            $this->attendanceModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
-            $this->feesModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
-            $this->examsModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
+            $this->attendanceModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $semester),
+            $this->feesModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $semester),
+            $this->examsModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $semester),
             $this->libraryModuleReport($organization, $selectedMonth, $page, $search),
             $this->transportModuleReport($organization, $selectedClass, $page, $search),
             $this->hostelModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search),
@@ -461,14 +483,17 @@ class ReportsController extends Controller
         ];
     }
 
-    private function attendanceModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
+    private function attendanceModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?Semester $semester = null): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+        $periodStart = $semester ? $semester->start_date : $selectedMonthDate->copy()->startOfMonth();
+        $periodEnd = $semester ? $semester->end_date : $selectedMonthDate->copy()->endOfMonth();
+
         $query = Attendance::query()
             ->where('organization_id', $organization->id)
             ->whereBetween('date', [
-                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
-                $selectedMonthDate->copy()->endOfMonth()->toDateString(),
+                $periodStart->toDateString(),
+                $periodEnd->toDateString(),
             ])
             ->when($selectedClass !== 'all', fn ($builder) => $builder->where('class_id', $selectedClass));
 
@@ -529,14 +554,20 @@ class ReportsController extends Controller
         ];
     }
 
-    private function feesModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
+    private function feesModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?Semester $semester = null): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+        $periodStart = $semester ? $semester->start_date : $selectedMonthDate->copy()->startOfMonth();
+        $periodEnd = $semester ? $semester->end_date : $selectedMonthDate->copy()->endOfMonth();
+
         $query = StudentFee::query()
             ->where('organization_id', $organization->id)
             ->where('academic_year_id', $selectedAcademicYear->id)
-            ->where('year', (int) $selectedMonthDate->format('Y'))
-            ->where('month', (int) $selectedMonthDate->format('n'))
+            ->when(!$semester, fn ($builder) => $builder->where('year', (int) $selectedMonthDate->format('Y'))->where('month', (int) $selectedMonthDate->format('n')))
+            ->whereBetween('due_date', [
+                $periodStart->toDateString(),
+                $periodEnd->toDateString(),
+            ])
             ->when($selectedClass !== 'all', function ($builder) use ($selectedClass) {
                 $builder->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $selectedClass));
             })
@@ -550,8 +581,8 @@ class ReportsController extends Controller
         $paymentsQuery = FeePayment::query()
             ->where('organization_id', $organization->id)
             ->whereBetween('payment_date', [
-                $selectedMonthDate->copy()->startOfMonth()->toDateString(),
-                $selectedMonthDate->copy()->endOfMonth()->toDateString(),
+                $periodStart->toDateString(),
+                $periodEnd->toDateString(),
             ])
             ->whereIn('status', ['completed', 'success'])
             ->when($selectedClass !== 'all', function ($builder) use ($selectedClass) {
@@ -587,15 +618,18 @@ class ReportsController extends Controller
         ];
     }
 
-    private function examsModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = ''): array
+    private function examsModuleReport(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?Semester $semester = null): array
     {
         $selectedMonthDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+        $periodStart = $semester ? $semester->start_date : $selectedMonthDate->copy()->startOfMonth();
+        $periodEnd = $semester ? $semester->end_date : $selectedMonthDate->copy()->endOfMonth();
+
         $query = ExamResult::query()
             ->where('organization_id', $organization->id)
-            ->whereHas('examSchedule', function ($builder) use ($selectedClass, $selectedMonthDate) {
+            ->whereHas('examSchedule', function ($builder) use ($selectedClass, $periodStart, $periodEnd) {
                 $builder->whereBetween('exam_date', [
-                    $selectedMonthDate->copy()->startOfMonth()->toDateString(),
-                    $selectedMonthDate->copy()->endOfMonth()->toDateString(),
+                    $periodStart->toDateString(),
+                    $periodEnd->toDateString(),
                 ])
                     ->when($selectedClass !== 'all', fn ($scheduleQuery) => $scheduleQuery->where('class_id', $selectedClass));
             })
@@ -1362,9 +1396,9 @@ class ReportsController extends Controller
             ->values();
     }
 
-    private function monthOptions(AcademicYear $selectedAcademicYear): Collection
+    private function monthOptionsFor(Carbon $start, Carbon $end): Collection
     {
-        return $this->monthSequence($selectedAcademicYear)
+        return $this->monthSequenceBetween($start, $end)
             ->map(fn (Carbon $month) => [
                 'value' => $month->format('Y-m'),
                 'label' => $month->format('M Y'),
@@ -1372,18 +1406,44 @@ class ReportsController extends Controller
             ->values();
     }
 
-    private function monthSequence(AcademicYear $selectedAcademicYear): Collection
+    private function monthSequenceBetween(Carbon $start, Carbon $end): Collection
     {
         $months = collect();
-        $cursor = $selectedAcademicYear->start_date->copy()->startOfMonth();
-        $end = $selectedAcademicYear->end_date->copy()->startOfMonth();
+        $cursor = $start->copy()->startOfMonth();
+        $endCursor = $end->copy()->startOfMonth();
 
-        while ($cursor->lte($end)) {
+        while ($cursor->lte($endCursor)) {
             $months->push($cursor->copy());
             $cursor->addMonth();
         }
 
         return $months;
+    }
+
+    private function semesterOptions(AcademicYear $selectedAcademicYear): Collection
+    {
+        return Semester::query()
+            ->where('organization_id', $selectedAcademicYear->organization_id)
+            ->where('academic_year_id', $selectedAcademicYear->id)
+            ->orderBy('sem_no')
+            ->get(['id', 'name'])
+            ->map(fn (Semester $semester) => [
+                'value' => (string) $semester->id,
+                'label' => $semester->name,
+            ])
+            ->values();
+    }
+
+    private function resolveSelectedSemester(Organization $organization, AcademicYear $selectedAcademicYear, mixed $input): ?Semester
+    {
+        if (!$input || $input === 'all') {
+            return null;
+        }
+
+        return Semester::query()
+            ->where('organization_id', $organization->id)
+            ->where('academic_year_id', $selectedAcademicYear->id)
+            ->find($input);
     }
 
     private function resolveSelectedAcademicYear(Organization $organization, mixed $selectedSession): ?AcademicYear
@@ -1401,9 +1461,9 @@ class ReportsController extends Controller
             ?? (clone $query)->orderByDesc('start_date')->first();
     }
 
-    private function resolveSelectedMonth(AcademicYear $selectedAcademicYear, mixed $selectedMonth): string
+    private function resolveSelectedMonth(Carbon $periodStart, Carbon $periodEnd, mixed $selectedMonth): string
     {
-        $validMonths = $this->monthOptions($selectedAcademicYear)->pluck('value');
+        $validMonths = $this->monthOptionsFor($periodStart, $periodEnd)->pluck('value');
 
         if ($selectedMonth && $validMonths->contains((string) $selectedMonth)) {
             return (string) $selectedMonth;

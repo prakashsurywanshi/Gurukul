@@ -17,7 +17,12 @@ class Subject extends Model
         'name',
         'code',
         'type',
+        'credits',
         'description',
+    ];
+
+    protected $casts = [
+        'credits' => 'float',
     ];
 
     public function classes(): BelongsToMany

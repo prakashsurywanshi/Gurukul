@@ -30,6 +30,7 @@ class SubjectsController extends Controller
                         'name' => $subject->localized('name'),
                         'code' => $subject->code,
                         'type' => $subject->type,
+                        'credits' => $subject->credits,
                         'description' => $subject->description,
                         'created_at' => optional($subject->created_at)?->toDateTimeString(),
                     ])
@@ -48,15 +49,17 @@ class SubjectsController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'code' => ['nullable', 'string', 'max:50'],
             'type' => ['required', Rule::in(['theory', 'practical', 'both'])],
+            'credits' => ['nullable', 'numeric', 'min:0', 'max:50'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         Subject::query()->create([
             'organization_id' => $organization->id,
             'name' => $validated['name'],
-            'code' => $validated['code'] ?: null,
+            'code' => $validated['code'] ?? null,
             'type' => $validated['type'],
-            'description' => $validated['description'] ?: null,
+            'credits' => $validated['credits'] ?? null,
+            'description' => $validated['description'] ?? null,
         ]);
 
         return redirect()->route('subjects')->with('success', 'Subject created successfully.');
@@ -72,14 +75,16 @@ class SubjectsController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'code' => ['nullable', 'string', 'max:50'],
             'type' => ['required', Rule::in(['theory', 'practical', 'both'])],
+            'credits' => ['nullable', 'numeric', 'min:0', 'max:50'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $subject->update([
             'name' => $validated['name'],
-            'code' => $validated['code'] ?: null,
+            'code' => $validated['code'] ?? null,
             'type' => $validated['type'],
-            'description' => $validated['description'] ?: null,
+            'credits' => $validated['credits'] ?? null,
+            'description' => $validated['description'] ?? null,
         ]);
 
         return redirect()->route('subjects')->with('success', 'Subject updated successfully.');
