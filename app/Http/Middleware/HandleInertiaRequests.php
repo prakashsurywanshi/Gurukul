@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\AppearanceService;
 use App\Services\StaffPermissionService;
 use App\Support\ModuleRegistry;
 use Illuminate\Http\Request;
@@ -51,6 +52,7 @@ class HandleInertiaRequests extends Middleware
             'activeSession' => fn () => $this->resolveActiveSession($request),
             'schoolName' => fn () => $this->resolveSchoolName($request),
             'schoolLogo' => fn () => $this->resolveSchoolLogo($request),
+            'panelAppearance' => fn () => $this->resolvePanelAppearance($request),
             'subscriptionNotice' => fn () => $this->resolveSubscriptionNotice($request),
             'staffPermissions' => fn () => app(StaffPermissionService::class)->featurePermissionsFor($request->user()),
             'modules' => fn () => $this->resolveModules($request),
@@ -223,6 +225,23 @@ class HandleInertiaRequests extends Middleware
         return Organization::query()
             ->whereKey($organizationId)
             ->value('logo');
+    }
+
+    private function resolvePanelAppearance(Request $request): array
+    {
+        $organizationId = $this->resolveOrganizationId($request);
+
+        if (! $organizationId) {
+            return app(AppearanceService::class)->panelDefaults();
+        }
+
+        $organization = Organization::query()->find($organizationId);
+
+        if (! $organization) {
+            return app(AppearanceService::class)->panelDefaults();
+        }
+
+        return app(AppearanceService::class)->normalizePanelForOrganization($organization);
     }
 
     private function resolveOrganizationId(Request $request): ?int

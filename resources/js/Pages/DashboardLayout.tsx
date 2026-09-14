@@ -19,10 +19,11 @@ import ChatBell from '../components/header/ChatBell';
 import NotificationBell from '../components/header/NotificationBell';
 import TodoBell from '../components/header/TodoBell';
 import { useLanguage } from '../i18n/LanguageProvider';
+import { panelStyleVars, type PanelAppearance } from '../lib/panelTheme';
 
-export default function DashboardLayout({ user, activeTab, onLogout, children }: any) {
+export default function DashboardLayout({ user, activeTab, onLogout, appearance, children }: any) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { activeSession, subscriptionNotice, impersonation, staffPermissions, headerNotifications, chatUnread } =
+    const { activeSession, subscriptionNotice, impersonation, staffPermissions, headerNotifications, chatUnread, panelAppearance } =
         usePage<{
             activeSession?: string | null;
             staffPermissions?: Record<string, Record<string, boolean>>;
@@ -51,6 +52,7 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
                 unreadCount: number;
             } | null;
             chatUnread?: number;
+            panelAppearance?: PanelAppearance | null;
         }>().props;
     const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user?.role);
     const canViewTodo = user?.role === 'super_admin' || (isManagedStaffRole && Boolean(staffPermissions?.Todo?.view));
@@ -88,7 +90,7 @@ export default function DashboardLayout({ user, activeTab, onLogout, children }:
     }, []);
 
     return (
-        <div className="dashboard-theme flex h-screen bg-[var(--background)]">
+        <div className="dashboard-theme flex h-screen bg-[var(--background)]" style={panelStyleVars(appearance ?? panelAppearance)}>
             <div className="lg:hidden fixed top-4 left-4 z-50">
                 <Button
                     variant="outline"

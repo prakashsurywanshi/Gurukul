@@ -68,7 +68,7 @@
 - [x] P4.1 Field-builder v2 + public admission rendering
 - [x] P4.2 Generic approval-chain engine + migrate 3 modules (746 tests, 5838 assertions)
 - [x] P4.3 Notification rule engine + digests + websocket bell (756 tests, 5865 assertions)
-- [ ] P4.4 Panel theming/branding engine
+- [x] P4.4 Panel theming/branding engine (762 tests, 5897 assertions)
 - [ ] P5.1 Report builder + export center + i18n/RTL polish
 - [ ] P6.1 College/Institute org-type mode
 - [ ] P6.2 Platform: branch-admin + superadmin billing/analytics

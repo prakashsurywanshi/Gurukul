@@ -960,6 +960,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::post('/apps/question-paper', [AppsCenterController::class, 'questionPaper'])->middleware('staff.permission:Apps Center,add', 'module.enabled:apps-center')->name('apps-center.question-paper');
     Route::get('/settings/themes', [DashboardThemesController::class, 'index'])->middleware('staff.permission:General Setting,view', 'module.enabled:dashboard-themes')->name('settings.themes');
     Route::patch('/settings/themes', [DashboardThemesController::class, 'updateTheme'])->middleware('staff.permission:General Setting,edit', 'module.enabled:dashboard-themes')->name('settings.themes.update');
+    Route::patch('/settings/themes/appearance', [DashboardThemesController::class, 'updateAppearance'])->middleware('staff.permission:General Setting,edit', 'module.enabled:dashboard-themes')->name('settings.themes.appearance');
     Route::get('/face-search', [FaceSearchController::class, 'index'])->middleware('staff.permission:Search Students,view', 'module.enabled:face-search')->name('face-search');
     Route::get('/face-search/kiosk', [FaceSearchController::class, 'kioskIndex'])->middleware('staff.permission:Search Students,view', 'module.enabled:face-search')->name('face-search.kiosk.index');
     Route::post('/face-search', [FaceSearchController::class, 'search'])->middleware('staff.permission:Search Students,add', 'module.enabled:face-search')->name('face-search.search');
