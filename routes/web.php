@@ -49,6 +49,7 @@ use App\Http\Controllers\TimeSlotsController;
 use App\Http\Controllers\EventsController;
 use App\Http\Controllers\ErpNavigatorController;
 use App\Http\Controllers\NotificationCenterController;
+use App\Http\Controllers\NotificationRuleController;
 use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\HelpdeskController;
 use App\Http\Controllers\OnlineClassController;
@@ -174,6 +175,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('staff.permission:Dashboard Home,view')->name('dashboard');
     Route::get('/explore', [ErpNavigatorController::class, 'index'])->middleware('staff.permission:Dashboard Home,view')->name('erp-navigator');
     Route::get('/notifications', [NotificationCenterController::class, 'index'])->name('notifications');
+    Route::get('/notifications/recent', [NotificationCenterController::class, 'recent'])->name('notifications.recent');
     Route::post('/notifications/read-all', [NotificationCenterController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('/notifications/{notification}/read', [NotificationCenterController::class, 'markRead'])->name('notifications.read');
     Route::get('/fees/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'fees')->middleware('staff.permission:Fees Management,view')->name('domain.dashboard.fees');
@@ -270,6 +272,10 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/transport/drivers', [TransportDriversController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('transport-drivers');
     Route::get('/settings/notification', [NotificationSettingsController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('notification-settings');
     Route::patch('/settings/notification', [NotificationSettingsController::class, 'update'])->middleware('staff.permission:General Setting,edit')->name('notification-settings.update');
+    Route::get('/settings/notification-rules', [NotificationRuleController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('notification-rules');
+    Route::post('/settings/notification-rules', [NotificationRuleController::class, 'store'])->middleware('staff.permission:General Setting,edit')->name('notification-rules.store');
+    Route::post('/settings/notification-rules/{notificationRule}/toggle', [NotificationRuleController::class, 'toggle'])->middleware('staff.permission:General Setting,edit')->name('notification-rules.toggle');
+    Route::delete('/settings/notification-rules/{notificationRule}', [NotificationRuleController::class, 'destroy'])->middleware('staff.permission:General Setting,edit')->name('notification-rules.destroy');
     Route::get('/online-admission', [AdmissionInquiryController::class, 'index'])->middleware('staff.permission:Online Admission,view')->name('online-admission');
     Route::post('/online-admission/{admissionInquiry}/enroll', [AdmissionInquiryController::class, 'enroll'])->middleware('staff.permission:Online Admission,add')->name('online-admission.enroll');
     Route::patch('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'update'])->middleware('staff.permission:Online Admission,edit')->name('online-admission.update');

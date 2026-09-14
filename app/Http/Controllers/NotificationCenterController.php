@@ -41,6 +41,27 @@ class NotificationCenterController extends Controller
         ]);
     }
 
+    public function recent(): JsonResponse
+    {
+        $user = Auth::user();
+
+        $items = SystemNotification::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->limit(8)
+            ->get()
+            ->map(fn (SystemNotification $notification) => $this->payload($notification))
+            ->all();
+
+        return response()->json([
+            'items' => $items,
+            'unread' => SystemNotification::query()
+                ->where('user_id', $user->id)
+                ->where('is_read', false)
+                ->count(),
+        ]);
+    }
+
     public function markAllRead(): JsonResponse
     {
         $user = Auth::user();

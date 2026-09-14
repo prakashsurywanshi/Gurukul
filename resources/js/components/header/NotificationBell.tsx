@@ -1,10 +1,42 @@
 import { router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { Bell, CheckCheck, ChevronRight, Circle } from 'lucide-react';
+import {
+    Bell,
+    BellRing,
+    CalendarCheck,
+    CalendarX,
+    CheckCheck,
+    ChevronRight,
+    ClipboardCheck,
+    Circle,
+    FileCheck,
+    Info,
+    MessageSquareWarning,
+    Target,
+    UserPlus,
+    Wallet,
+    type LucideIcon,
+} from 'lucide-react';
 import { createEcho } from '../../lib/echo';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { Badge } from '../../Pages/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '../../Pages/ui/popover';
+
+const POLL_MS = 30000;
+
+const TYPE_ICONS: Record<string, LucideIcon> = {
+    leave_request: CalendarX,
+    admit_card: FileCheck,
+    admission_enquiry: UserPlus,
+    lead: Target,
+    complaint: MessageSquareWarning,
+    attendance_correction: CalendarCheck,
+    fee_concession: Wallet,
+    fee_due: Wallet,
+    daily_digest: BellRing,
+    approval_request: ClipboardCheck,
+    info: Info,
+};
 
 interface NotificationItem {
     id: string;
@@ -54,6 +86,21 @@ export default function NotificationBell({ headerNotifications, userId }: Notifi
         setItems(headerNotifications?.items ?? []);
         setUnread(headerNotifications?.unreadCount ?? 0);
     }, [headerNotifications]);
+
+    const refresh = () => {
+        fetch('/notifications/recent', { headers: { Accept: 'application/json' } })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data?.items) setItems(data.items.slice(0, 8));
+                if (typeof data?.unread === 'number') setUnread(data.unread);
+            })
+            .catch(() => {});
+    };
+
+    useEffect(() => {
+        const timer = setInterval(refresh, POLL_MS);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         if (!userId) return;
@@ -195,7 +242,10 @@ export default function NotificationBell({ headerNotifications, userId }: Notifi
                                         {unreadItem ? (
                                             <Circle className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
                                         ) : (
-                                            <Bell className="h-4 w-4 text-[var(--muted-foreground)]" />
+                                            (() => {
+                                                const TypeIcon = TYPE_ICONS[item.type ?? ''] ?? Bell;
+                                                return <TypeIcon className="h-4 w-4 text-[var(--muted-foreground)]" />;
+                                            })()
                                         )}
                                     </span>
                                     <span className="min-w-0 flex-1">

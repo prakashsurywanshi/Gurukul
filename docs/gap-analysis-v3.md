@@ -90,7 +90,13 @@
   `show_in_admission` wired into Create/EditStudent **and rendered + validated on the public admission form**
   (`custom_data` JSON on `AdmissionInquiry`, copied to the student on enroll).
 - **Notifications:** DB-first `SystemNotification` + FCM HTTP v1 push (FirebaseCloudMessagingService, device tokens);
-  realtime libs installed (Pusher/Echo) but bell not websocket-driven.
+  forward to **CORRECTED (P4.3)**: realtime bell via Reverb/Echo + 30s polling fallback (`/notifications/recent` JSON),
+  type icons in bell dropdown; notification rule engine (`notification_rules` per org/event: channels, recipient roles,
+  is_active, digest summary) enforced in `SystemNotificationService::notifyAdmins` + lazily defaulted; org
+  `notification_settings` gates (push/attendance/fee-due/events/digest) now enforced per event type (was only
+  `push_notifications`); daily digest command `notifications:digest` scheduled 07:00 with unread summary + per-type
+  breakdown and per-org `daily_digest` opt-out; admin config page `/settings/notification-rules` + sidebar
+  "Notification Rules".
 - **Approvals:** ~~per-module ad-hoc (FeeConcession, AttendanceCorrection, LessonPlan) — no generic engine.~~ **CORRECTED (P4.2):** generic approval-chain engine (`approval_flows`, `approval_flow_steps`, `approval_requests`, `approval_request_steps`). Config `/approvals` (per-module chains, role/user actors, enable/disable), action center `/approvals/action-center` + submitted `/approvals/submitted` with approve/reject/cancel; lazy default single-admin step preserves legacy behavior; `ensureForRecord` backfills legacy records; handlers migrated — FeeConcession (discount+applied_amount+ActivityLog), AttendanceCorrection (attendance updateOrCreate+ActivityLog), LessonPlan (approved_by/approved_at + auto-submit on plan creation when `require_approval`).
 - **API:** `routes/api.php` 332 routes / 24 controllers, Sanctum, per-feature gates, parent portal endpoints; README
   declares REST for the Flutter companion (`flutter_gurukul` at `../flutter_gurukul`, `ApiService._baseUrl =

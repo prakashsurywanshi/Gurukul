@@ -1135,6 +1135,7 @@ export const sidebarConfig: {
             'dashboard-themes',
             'branch-admin',
             'notification-settings',
+            'notification-rules',
         ],
         items: [
             {
@@ -1296,6 +1297,14 @@ export const sidebarConfig: {
                 label: 'Notification Settings',
                 icon: BellRing,
                 href: '/settings/notification',
+                roles: ['admin'],
+                feature: 'General Setting',
+            },
+            {
+                id: 'notification-rules',
+                label: 'Notification Rules',
+                icon: SlidersHorizontal,
+                href: '/settings/notification-rules',
                 roles: ['admin'],
                 feature: 'General Setting',
             },
