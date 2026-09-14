@@ -91,7 +91,7 @@
   (`custom_data` JSON on `AdmissionInquiry`, copied to the student on enroll).
 - **Notifications:** DB-first `SystemNotification` + FCM HTTP v1 push (FirebaseCloudMessagingService, device tokens);
   realtime libs installed (Pusher/Echo) but bell not websocket-driven.
-- **Approvals:** per-module ad-hoc (FeeConcession, AttendanceCorrection, LessonPlan) — no generic engine.
+- **Approvals:** ~~per-module ad-hoc (FeeConcession, AttendanceCorrection, LessonPlan) — no generic engine.~~ **CORRECTED (P4.2):** generic approval-chain engine (`approval_flows`, `approval_flow_steps`, `approval_requests`, `approval_request_steps`). Config `/approvals` (per-module chains, role/user actors, enable/disable), action center `/approvals/action-center` + submitted `/approvals/submitted` with approve/reject/cancel; lazy default single-admin step preserves legacy behavior; `ensureForRecord` backfills legacy records; handlers migrated — FeeConcession (discount+applied_amount+ActivityLog), AttendanceCorrection (attendance updateOrCreate+ActivityLog), LessonPlan (approved_by/approved_at + auto-submit on plan creation when `require_approval`).
 - **API:** `routes/api.php` 332 routes / 24 controllers, Sanctum, per-feature gates, parent portal endpoints; README
   declares REST for the Flutter companion (`flutter_gurukul` at `../flutter_gurukul`, `ApiService._baseUrl =
   https://qgurukul.qodeigence.com/api`).

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
 use App\Models\FeeConcessionRequest;
 use App\Models\Organization;
 use App\Models\Student;
-use App\Models\StudentFee;
 use App\Models\User;
+use App\Services\Approvals\ApprovalEngine;
 use App\Services\SystemNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +19,12 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class FeeConcessionController extends Controller
 {
     public const STATUSES = ['pending', 'approved', 'rejected'];
+
+    public function __construct(
+        private readonly ApprovalEngine $approvalEngine,
+        private readonly SystemNotificationService $notificationService,
+    ) {
+    }
 
     public function index(Request $request): Response
     {
@@ -82,13 +87,15 @@ class FeeConcessionController extends Controller
             'requested_by' => $user->id,
         ]);
 
-        $this->notificationService()->notifyAdmins(
-            $organization,
-            NotificationCenterController::TYPE_FEE_CONCESSION,
-            'New fee concession request',
-            'A fee concession of '.number_format((float) $validated['amount'], 2).' has been requested.',
-            ['action_label' => 'Review', 'action_url' => '/fees/concession-requests'],
-        );
+        $record = FeeConcessionRequest::query()
+            ->where('organization_id', $organization->id)
+            ->latest('id')
+            ->firstOrFail();
+
+        $student = $record->student;
+        $summary = 'Fee concession of '.number_format((float) $record->amount, 2).' for '.trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+
+        $this->approvalEngine->submit('fee_concession', $user, $record, $summary);
 
         return redirect()->route('fee-concession-requests')->with('success', 'Fee concession requested successfully.');
     }
@@ -102,10 +109,6 @@ class FeeConcessionController extends Controller
             abort(403);
         }
 
-        if (! in_array($user->role, ['admin', 'super_admin'], true)) {
-            throw new HttpException(403, 'Only admins can review fee concession requests.');
-        }
-
         $validated = $request->validate([
             'action' => ['required', Rule::in(['approve', 'reject'])],
             'review_note' => ['nullable', 'string', 'max:1000'],
@@ -115,106 +118,27 @@ class FeeConcessionController extends Controller
             return back()->with('error', 'This request has already been reviewed.');
         }
 
-        $appliedAmount = 0;
+        $student = $feeConcessionRequest->student;
+        $summary = 'Fee concession of '.number_format((float) $feeConcessionRequest->amount, 2).' for '.trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
 
-        if ($validated['action'] === 'approve') {
-            $appliedAmount = $this->applyConcession($organization, $feeConcessionRequest);
-        }
-
-        $note = $validated['review_note'] ?? null;
-        if ($validated['action'] === 'approve' && $appliedAmount < (float) $feeConcessionRequest->amount) {
-            $note = trim(($note ? $note."\n" : '').'Applied amount: '.number_format($appliedAmount, 2));
-        }
-
-        $feeConcessionRequest->forceFill([
-            'status' => $validated['action'] === 'approve' ? 'approved' : 'rejected',
-            'applied_amount' => $appliedAmount,
-            'reviewed_by' => $user->id,
-            'reviewed_at' => now(),
-            'review_note' => $note,
-        ])->save();
-
-        if ($validated['action'] === 'approve') {
-            ActivityLog::query()->create([
-                'organization_id' => $organization->id,
-                'user_id' => $user->id,
-                'action' => 'Approved',
-                'module' => 'Fee Concession',
-                'record_type' => FeeConcessionRequest::class,
-                'record_id' => $feeConcessionRequest->id,
-                'description' => 'Approved fee concession of '.$feeConcessionRequest->amount.' for student #'.$feeConcessionRequest->student_id,
-            ]);
-        }
-
-        $this->notificationService()->notifyUser(
-            $feeConcessionRequest->requester,
-            $organization,
-            NotificationCenterController::TYPE_FEE_CONCESSION,
-            $validated['action'] === 'approve' ? 'Fee concession approved' : 'Fee concession rejected',
-            'The fee concession request was '.($validated['action'] === 'approve' ? 'approved' : 'rejected').'.',
-            ['action_label' => 'View', 'action_url' => '/fees/concession-requests'],
+        $approval = $this->approvalEngine->ensureForRecord(
+            'fee_concession',
+            $feeConcessionRequest->requester ?: $user,
+            $feeConcessionRequest,
+            $summary
         );
 
+        try {
+            if ($validated['action'] === 'approve') {
+                $this->approvalEngine->approve($approval, $user, $validated['review_note'] ?? null);
+            } else {
+                $this->approvalEngine->reject($approval, $user, $validated['review_note'] ?? null);
+            }
+        } catch (HttpException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
         return redirect()->route('fee-concession-requests')->with('success', 'Concession request '.$validated['action'].'d successfully.');
-    }
-
-    private function applyConcession(Organization $organization, FeeConcessionRequest $request): float
-    {
-        $studentId = $request->student_id;
-        $remaining = (float) $request->amount;
-        $applied = 0;
-
-        $rows = StudentFee::query()
-            ->where('organization_id', $organization->id)
-            ->where('student_id', $studentId)
-            ->whereIn('status', ['pending', 'partial', 'overdue'])
-            ->where('balance', '>', 0)
-            ->orderBy('due_date')
-            ->orderBy('id')
-            ->get();
-
-        if ($rows->isEmpty()) {
-            return 0;
-        }
-
-        foreach ($rows as $row) {
-            if ($remaining <= 0) {
-                break;
-            }
-
-            $cap = max(0.0, (float) $row->balance);
-            if ($cap <= 0) {
-                continue;
-            }
-
-            $apply = min($remaining, $cap);
-            $apply = round($apply, 2);
-            if ($apply <= 0) {
-                continue;
-            }
-
-            $currentDiscount = max(0.0, (float) $row->discount);
-            $newDiscount = round($currentDiscount + $apply, 2);
-            $amount = (float) $row->amount;
-            $fine = (float) $row->fine;
-            $netAmount = round(max(0, $amount + $fine - $newDiscount), 2);
-            $paidAmount = max(0.0, (float) $row->paid_amount);
-            $newBalance = round(max(0, $netAmount - $paidAmount), 2);
-
-            $row->update([
-                'discount' => $newDiscount,
-                'net_amount' => $netAmount,
-                'balance' => $newBalance,
-                'status' => $newBalance <= 0
-                    ? 'paid'
-                    : ($paidAmount > 0 ? 'partial' : $row->status),
-            ]);
-
-            $applied = round($applied + $apply, 2);
-            $remaining = round($remaining - $apply, 2);
-        }
-
-        return $applied;
     }
 
     private function serialize(FeeConcessionRequest $concession): array
@@ -264,11 +188,6 @@ class FeeConcessionController extends Controller
             })
             ->values()
             ->all();
-    }
-
-    private function notificationService(): SystemNotificationService
-    {
-        return app(SystemNotificationService::class);
     }
 
     private function resolveOrganizationForUser(User $user): ?Organization

@@ -23,6 +23,8 @@ use App\Http\Controllers\NotificationSettingsController;
 use App\Http\Controllers\LiveClassSettingsController;
 use App\Http\Controllers\BookCategoriesController;
 use App\Http\Controllers\CardDesignController;
+use App\Http\Controllers\ApprovalFlowController;
+use App\Http\Controllers\ApprovalInboxController;
 
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AdmissionSettingsController;
@@ -1000,6 +1002,18 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::post('/profile/email/verify-otp', [ProfileController::class, 'verifyEmailOtp'])->middleware('staff.permission:Edit Profile,edit')->name('profile.email.verify-otp');
     Route::post('/profile/email/resend-otp', [ProfileController::class, 'resendEmailOtp'])->middleware('staff.permission:Edit Profile,edit')->name('profile.email.resend-otp');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('staff.permission:Edit Profile,edit')->name('profile.password');
+
+    // Approval Chain Config + Inbox (P4.2)
+    Route::get('/approvals', [ApprovalFlowController::class, 'index'])->name('approval-flows');
+    Route::post('/approvals/store', [ApprovalFlowController::class, 'store'])->name('approval-flows.store');
+    Route::post('/approvals/{approvalFlow}/steps', [ApprovalFlowController::class, 'storeSteps'])->name('approval-flows.steps.store');
+    Route::patch('/approvals/{approvalFlow}/toggle', [ApprovalFlowController::class, 'toggle'])->name('approval-flows.toggle');
+    Route::get('/approvals/action-center', [ApprovalInboxController::class, 'actionCenter'])->name('approvals.action-center');
+    Route::get('/approvals/submitted', [ApprovalInboxController::class, 'submitted'])->name('approvals.submitted');
+    Route::post('/approvals/{approvalRequest}/approve', [ApprovalInboxController::class, 'approve'])->name('approvals.approve');
+    Route::post('/approvals/{approvalRequest}/reject', [ApprovalInboxController::class, 'reject'])->name('approvals.reject');
+    Route::post('/approvals/{approvalRequest}/cancel', [ApprovalInboxController::class, 'cancel'])->name('approvals.cancel');
+
     Route::group(['prefix' => 'superadmin'], function () {
         Route::get('/', [DashboardController::class, 'index'])->name('superadmin.dashboard');
     });

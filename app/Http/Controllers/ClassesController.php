@@ -10,14 +10,20 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Timetable;
 use App\Models\User;
+use App\Services\Approvals\ApprovalEngine;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ClassesController extends Controller
 {
+    public function __construct(
+        private readonly ApprovalEngine $approvalEngine,
+    ) {
+    }
     public function index() {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
@@ -477,7 +483,7 @@ class ClassesController extends Controller
             ->findOrFail((int) $validated['timetableEntryId']);
         $this->abortUnlessCanManageLessonPlanForTimetable($user, $timetable);
 
-        LessonPlan::query()->create([
+        $plan = LessonPlan::query()->create([
             'organization_id' => $organization->id,
             'timetable_id' => $timetable->id,
             'class_id' => $timetable->class_id,
@@ -491,6 +497,20 @@ class ClassesController extends Controller
             'created_by' => $user->id,
             'updated_by' => $user->id,
         ]);
+
+        $settings = array_replace_recursive(
+            $this->defaultLessonPlannerSettings(),
+            $organization->settings['lesson_planner_settings'] ?? []
+        );
+
+        if (! empty($settings['require_approval'])) {
+            $this->approvalEngine->submit(
+                'lesson_plan',
+                $user,
+                $plan,
+                'Lesson plan approval for '.$plan->lesson_title.' ('.$plan->lesson_date->format('Y-m-d').')'
+            );
+        }
 
         return redirect()->route('lesson-plan')->with('success', 'Lesson plan created successfully.');
     }
@@ -547,13 +567,37 @@ class ClassesController extends Controller
             'approved' => ['required', 'boolean'],
         ]);
 
-        if (filter_var($validated['approved'], FILTER_VALIDATE_BOOLEAN)) {
-            $lessonPlan->update([
-                'approved_by' => $user->id,
-                'approved_at' => now(),
-            ]);
+        $requester = $lessonPlan->teacher ?: ($lessonPlan->created_by ? User::query()->find($lessonPlan->created_by) : null) ?: $user;
 
-            return redirect()->route('lesson-plan')->with('success', 'Lesson plan approved.');
+        if (filter_var($validated['approved'], FILTER_VALIDATE_BOOLEAN)) {
+            $approval = $this->approvalEngine->ensureForRecord(
+                'lesson_plan',
+                $requester,
+                $lessonPlan,
+                'Lesson plan approval for '.$lessonPlan->lesson_title.' ('.optional($lessonPlan->lesson_date)->format('Y-m-d').')'
+            );
+
+            try {
+                $this->approvalEngine->approve($approval, $user);
+            } catch (HttpException $exception) {
+                return back()->with('error', $exception->getMessage());
+            }
+
+            return $approval->status === 'approved'
+                ? redirect()->route('lesson-plan')->with('success', 'Lesson plan approved.')
+                : back()->with('error', 'Lesson plan is still awaiting approval.');
+        }
+
+        $approval = $this->approvalEngine->forRecord(LessonPlan::class, $lessonPlan->id);
+
+        if ($approval && $approval->status === 'pending') {
+            try {
+                $this->approvalEngine->reject($approval, $user, 'Withdrawn by approver.');
+            } catch (HttpException $exception) {
+                return back()->with('error', $exception->getMessage());
+            }
+
+            return redirect()->route('lesson-plan')->with('success', 'Lesson plan approval withdrawn.');
         }
 
         $lessonPlan->update([

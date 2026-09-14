@@ -4958,5 +4958,9 @@ const en = {
     'Open Search Students': 'Open Search Students',
     'Open Student Hub': 'Open Student Hub',
     'Manage the full student list for this class from the search.': 'Manage the full student list for this class from the search.',
+    Approvals: 'Approvals',
+    'Approval Action Center': 'Approval Action Center',
+    'My Submissions': 'My Submissions',
+    'Approval Flow Config': 'Approval Flow Config',
 };
 export default en;

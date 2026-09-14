@@ -4975,5 +4975,9 @@ const hi = {
     'Open Search Students': 'छात्र खोज खोलें',
     'Open Student Hub': 'छात्र हब खोलें',
     'Manage the full student list for this class from the search.': 'खोज से इस कक्षा की पूरी छात्र सूची प्रबंधित करें।',
+    Approvals: 'अनुमोदन',
+    'Approval Action Center': 'अनुमोदन कार्य केंद्र',
+    'My Submissions': 'मेरी सबमिशन',
+    'Approval Flow Config': 'अनुमोदन फ़्लो कॉन्फ़िग',
 };
 export default hi;

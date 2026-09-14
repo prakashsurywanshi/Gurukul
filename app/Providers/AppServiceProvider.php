@@ -18,6 +18,7 @@ use App\Models\StudentFee;
 use App\Models\TransportAssignment;
 use App\Models\User;
 use App\Observers\AuditTrailObserver;
+use App\Services\Approvals\ApprovalModuleRegistry;
 use App\Services\SmtpSettingsService;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
@@ -29,7 +30,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ApprovalModuleRegistry::class, function () {
+            return new ApprovalModuleRegistry(config('approvals.modules', []));
+        });
     }
 
     /**

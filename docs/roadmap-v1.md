@@ -66,7 +66,7 @@
 - [x] P3.2 Staff 360 + Class 360 + Fee 360 hubs + breadcrumbs/deep links
 - [x] P3.3 GlobalSearch entity wiring
 - [x] P4.1 Field-builder v2 + public admission rendering
-- [ ] P4.2 Generic approval-chain engine + migrate 3 modules
+- [x] P4.2 Generic approval-chain engine + migrate 3 modules (746 tests, 5838 assertions)
 - [ ] P4.3 Notification rule engine + digests + websocket bell
 - [ ] P4.4 Panel theming/branding engine
 - [ ] P5.1 Report builder + export center + i18n/RTL polish

@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
 use App\Models\Attendance;
 use App\Models\AttendanceCorrection;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Approvals\ApprovalEngine;
 use App\Services\StudentAcademicHistoryService;
-use App\Services\SystemNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +24,7 @@ class AttendanceCorrectionController extends Controller
 
     public function __construct(
         private readonly StudentAcademicHistoryService $studentAcademicHistoryService,
-        private readonly SystemNotificationService $notificationService,
+        private readonly ApprovalEngine $approvalEngine,
     ) {
     }
 
@@ -115,13 +114,15 @@ class AttendanceCorrectionController extends Controller
             'requested_by' => $user->id,
         ]);
 
-        $this->notificationService->notifyAdmins(
-            $organization,
-            NotificationCenterController::TYPE_ATTENDANCE_CORRECTION,
-            'New attendance correction request',
-            'A attendance correction has been requested for '.$validated['date'].'.',
-            ['action_label' => 'Review', 'action_url' => '/attendance-corrections'],
-        );
+        $record = AttendanceCorrection::query()
+            ->where('organization_id', $organization->id)
+            ->latest('id')
+            ->firstOrFail();
+
+        $student = $record->student;
+        $summary = 'Attendance correction: '.trim(($student->first_name ?? '').' '.($student->last_name ?? '')).' '.$record->date->format('Y-m-d').' '.$record->current_status.' → '.$record->requested_status;
+
+        $this->approvalEngine->submit('attendance_correction', $user, $record, $summary);
 
         return redirect()->route('attendance-corrections')->with('success', 'Attendance correction requested successfully.');
     }
@@ -135,10 +136,6 @@ class AttendanceCorrectionController extends Controller
             abort(403);
         }
 
-        if (! in_array($user->role, ['admin', 'super_admin'], true)) {
-            throw new HttpException(403, 'Only admins can review attendance corrections.');
-        }
-
         $validated = $request->validate([
             'action' => ['required', Rule::in(['approve', 'reject'])],
             'review_note' => ['nullable', 'string', 'max:1000'],
@@ -148,47 +145,25 @@ class AttendanceCorrectionController extends Controller
             return back()->with('error', 'This correction has already been reviewed.');
         }
 
-        if ($validated['action'] === 'approve') {
-            Attendance::query()->updateOrCreate(
-                [
-                    'student_id' => $attendanceCorrection->student_id,
-                    'date' => $attendanceCorrection->date->toDateString(),
-                ],
-                [
-                    'organization_id' => $organization->id,
-                    'class_id' => $attendanceCorrection->class_id ?: Student::query()->whereKey($attendanceCorrection->student_id)->value('class_id'),
-                    'status' => $attendanceCorrection->requested_status,
-                    'remarks' => 'Updated via correction #'.$attendanceCorrection->id,
-                    'marked_by' => $user->id,
-                ]
-            );
+        $student = $attendanceCorrection->student;
+        $summary = 'Attendance correction: '.trim(($student->first_name ?? '').' '.($student->last_name ?? '')).' '.$attendanceCorrection->date->format('Y-m-d').' '.$attendanceCorrection->current_status.' → '.$attendanceCorrection->requested_status;
 
-            ActivityLog::query()->create([
-                'organization_id' => $organization->id,
-                'user_id' => $user->id,
-                'action' => 'Approved',
-                'module' => 'Attendance Correction',
-                'record_type' => AttendanceCorrection::class,
-                'record_id' => $attendanceCorrection->id,
-                'description' => 'Approved attendance correction for student #'.$attendanceCorrection->student_id.' on '.$attendanceCorrection->date->toDateString(),
-            ]);
-        }
-
-        $attendanceCorrection->forceFill([
-            'status' => $validated['action'] === 'approve' ? 'approved' : 'rejected',
-            'reviewed_by' => $user->id,
-            'reviewed_at' => now(),
-            'review_note' => $validated['review_note'] ?? null,
-        ])->save();
-
-        $this->notificationService->notifyUser(
-            $attendanceCorrection->requester,
-            $organization,
-            NotificationCenterController::TYPE_ATTENDANCE_CORRECTION,
-            $validated['action'] === 'approve' ? 'Attendance correction approved' : 'Attendance correction rejected',
-            'Correction for '.$attendanceCorrection->date->toDateString().' was '.($validated['action'] === 'approve' ? 'approved' : 'rejected').'.',
-            ['action_label' => 'View', 'action_url' => '/attendance-corrections'],
+        $approval = $this->approvalEngine->ensureForRecord(
+            'attendance_correction',
+            $attendanceCorrection->requester ?: $user,
+            $attendanceCorrection,
+            $summary
         );
+
+        try {
+            if ($validated['action'] === 'approve') {
+                $this->approvalEngine->approve($approval, $user, $validated['review_note'] ?? null);
+            } else {
+                $this->approvalEngine->reject($approval, $user, $validated['review_note'] ?? null);
+            }
+        } catch (HttpException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('attendance-corrections')->with('success', 'Correction '.$validated['action'].'d successfully.');
     }

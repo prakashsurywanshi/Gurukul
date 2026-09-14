@@ -4967,5 +4967,9 @@ const mr = {
     'Open Search Students': 'विद्यार्थी शोध उघडा',
     'Open Student Hub': 'विद्यार्थी हब उघडा',
     'Manage the full student list for this class from the search.': 'शोधावरून या वर्गाची संपूर्ण विद्यार्थी यादी व्यवस्थापित करा.',
+    Approvals: 'मंजुर्या',
+    'Approval Action Center': 'मंजुरी कृती केंद्र',
+    'My Submissions': 'माझी सबमिशन',
+    'Approval Flow Config': 'मंजुरी फ्लो कॉन्फिग',
 };
 export default mr;
