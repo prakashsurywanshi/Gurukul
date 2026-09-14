@@ -62,7 +62,7 @@
 - [x] P2.2 Designer → student+staff ID cards; wire CardDesigns; previews
 - [x] P2.3 Designer → report-card + HPC appearance
 - [x] P2.4 PDF service (dompdf + Chromium + print fallback) + print-center + tests
-- [ ] P3.1 Student 360 hub
+- [x] P3.1 Student 360 hub
 - [ ] P3.2 Staff 360 + Class 360 + Fee 360 hubs + breadcrumbs/deep links
 - [ ] P3.3 GlobalSearch entity wiring
 - [ ] P4.1 Field-builder v2 + public admission rendering
@@ -89,3 +89,4 @@
   - P2.4 — `config/pdf.php` + `App\Services\PdfService` (drivers: `dompdf` default, `chromium` headless w/ dompdf fallback, `browser` print page); migrated 5 existing PDF endpoints (payroll payslip, reports export, fee challan batch + single + due slip) onto the service; new **Print & Export Center** hub (`GET /print-center`, sidebar Reports group). `PdfServiceAndPrintCenterTest` 6 tests / 27 asserts.
   - Gates: full suite **719 tests, 5326 asserts pass** (baseline was 664 tests); i18n 0 bad (4437 keys ×3), tsc clean, prod build OK.
 - Gate baseline note: coverage grew 664 → 719 across P1+P2 (+ ~55 tests).
+- **P3.1 (done)**: Student details page (`dashboard/students/StudentDetails`) upgraded into a **tabbed Student 360 hub** — permission-gated tabs (Overview / Fees / Attendance / Exams / Certificates / Behaviour / Health / Exit-TC) gated by `staffPermissions` (super_admin + non-managed roles bypass), breadcrumbs, and per-slice summary panels with deep links to the full staff pages (`/fees?tab=collection`, `/attendance`, `/exams/report-card?student=..&exam=..`, `/certificates`, `/student-behavior?student_id=`, `/student-health?student_id=`, `/student-exits`); server aggregation added in `StudentsController::show` → `hub` prop (`buildStudentHub()`) covering fees (bills/outstanding/paid/pending), attendance status counts, latest exam result + report-card exam id, issued certificates, behavior incidents (open/resolved/latest), latest health record, latest exit/TC record, and enrollment status. `Student360HubTest` 4 tests / 113 asserts (full summaries, empty defaults, cross-org isolation, permission denial). Gates: full suite **723 tests, 5439 asserts pass**; i18n 0 bad (4474 keys ×3); tsc clean; prod build OK.

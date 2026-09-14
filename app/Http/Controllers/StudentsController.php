@@ -6,12 +6,19 @@ use App\Jobs\ImportStudentsJob;
 use App\Mail\StudentWelcomeCredentialsMail;
 use App\Models\AcademicYear;
 use App\Models\AlumniRecord;
+use App\Models\Attendance;
 use App\Models\CustomFieldDefinition;
 use App\Models\CustomFieldValue;
+use App\Models\ExamResult;
+use App\Models\HealthRecord;
+use App\Models\Incident;
+use App\Models\IssuedCertificate;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentAcademicHistory;
+use App\Models\StudentExit;
+use App\Models\StudentFee;
 use App\Models\StudentImport;
 use App\Models\User;
 use App\Services\SmtpSettingsService;
@@ -187,6 +194,7 @@ class StudentsController extends Controller
             'student' => $this->serializeStudent($student, null, true),
             'siblings' => $this->buildSiblings($organization, $student),
             'studentRecords' => $this->buildStudentDetailsRecords($organization, $student),
+            'hub' => $this->buildStudentHub($organization, $student),
             'academicHistory' => $this->studentAcademicHistoryService
                 ->getStudentHistory($student)
                 ->map(fn ($history) => [
@@ -272,6 +280,159 @@ class StudentsController extends Controller
             ->all();
 
         return $siblings;
+    }
+
+    private function buildStudentHub(Organization $organization, Student $student): array
+    {
+        $studentId = $student->id;
+        $academicYearId = $student->schoolClass?->academic_year_id;
+
+        $feesQuery = StudentFee::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->when($academicYearId, fn ($q) => $q->where('academic_year_id', $academicYearId));
+
+        $feeBills = (clone $feesQuery)->get();
+        $feeSummary = [
+            'academic_year_id' => $academicYearId,
+            'bill_count' => $feeBills->count(),
+            'outstanding_bills' => $feeBills->whereIn('status', ['pending', 'partial', 'overdue'])->count(),
+            'total_paid' => round((float) $feeBills->sum('paid_amount'), 2),
+            'total_pending' => round((float) $feeBills->sum('balance'), 2),
+        ];
+
+        $attendance = Attendance::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->get(['status']);
+
+        $attendanceSummary = [
+            'present' => $attendance->where('status', 'present')->count(),
+            'absent' => $attendance->where('status', 'absent')->count(),
+            'late' => $attendance->where('status', 'late')->count(),
+            'half_day' => $attendance->where('status', 'half_day')->count(),
+            'leave' => $attendance->where('status', 'leave')->count(),
+            'total' => $attendance->count(),
+        ];
+
+        $latestResult = ExamResult::query()
+            ->with(['examSchedule.exam:id,name'])
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->orderByDesc('id')
+            ->first();
+
+        $examSummary = [
+            'exam_count' => ExamResult::query()
+                ->where('organization_id', $organization->id)
+                ->where('student_id', $studentId)
+                ->distinct('exam_schedule_id')
+                ->count('exam_schedule_id'),
+            'exam_id' => $latestResult?->examSchedule?->exam_id,
+            'exam_name' => $latestResult?->examSchedule?->exam?->name,
+            'obtained' => $latestResult ? round((float) $latestResult->obtained_marks, 2) : null,
+            'max' => $latestResult ? round((float) $latestResult->total_marks, 2) : null,
+            'grade' => $latestResult?->grade,
+        ];
+
+        $certificateCount = IssuedCertificate::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->count();
+
+        $latestCertificates = IssuedCertificate::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->orderByDesc('issue_date')
+            ->limit(3)
+            ->get();
+
+        $certificateSummary = [
+            'count' => $certificateCount,
+            'latest' => $latestCertificates->map(fn ($cert) => [
+                'id' => (string) $cert->id,
+                'certificate_number' => $cert->certificate_number,
+                'class' => $cert->class,
+                'section' => $cert->section,
+                'reason' => $cert->reason,
+                'issue_date' => optional($cert->issue_date)->format('Y-m-d'),
+            ])->values()->all(),
+        ];
+
+        $behaviorCount = Incident::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->where('type', 'behavior');
+
+        $behaviorStatusCounts = (clone $behaviorCount)
+            ->selectRaw("status, COUNT(*) as total")
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $behaviorRecords = (clone $behaviorCount)
+            ->orderByDesc('incident_date')
+            ->limit(5)
+            ->get();
+
+        $behaviorSummary = [
+            'total' => (int) (clone $behaviorCount)->count(),
+            'open' => (int) ($behaviorStatusCounts['open'] ?? 0),
+            'resolved' => (int) ($behaviorStatusCounts['resolved'] ?? 0),
+            'latest' => $behaviorRecords->first() ? [
+                'id' => (string) $behaviorRecords->first()->id,
+                'title' => $behaviorRecords->first()->title,
+                'incident_date' => optional($behaviorRecords->first()->incident_date)->format('Y-m-d'),
+                'status' => $behaviorRecords->first()->status,
+            ] : null,
+        ];
+
+        $latestHealth = HealthRecord::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->orderByDesc('record_date')
+            ->first();
+
+        $healthSummary = [
+            'count' => HealthRecord::query()->where('organization_id', $organization->id)->where('student_id', $studentId)->count(),
+            'latest' => $latestHealth ? [
+                'id' => (string) $latestHealth->id,
+                'record_date' => optional($latestHealth->record_date)->format('Y-m-d'),
+                'blood_group' => $latestHealth->blood_group,
+                'height_cm' => $latestHealth->height_cm,
+                'weight_kg' => $latestHealth->weight_kg,
+                'blood_pressure' => $latestHealth->blood_pressure,
+                'medical_conditions' => $latestHealth->medical_conditions,
+                'allergies' => $latestHealth->allergies,
+            ] : null,
+        ];
+
+        $latestExit = StudentExit::query()
+            ->where('organization_id', $organization->id)
+            ->where('student_id', $studentId)
+            ->orderByDesc('id')
+            ->first();
+
+        $exitSummary = $latestExit ? [
+            'id' => (string) $latestExit->id,
+            'type' => $latestExit->type,
+            'status' => $latestExit->status,
+            'reason' => $latestExit->reason,
+            'exit_date' => optional($latestExit->exit_date)->format('Y-m-d'),
+            'tc_number' => $latestExit->tc_number,
+            'tc_issued_date' => optional($latestExit->tc_issued_date)->format('Y-m-d'),
+            'note' => $latestExit->note,
+        ] : null;
+
+        return [
+            'fees' => $feeSummary,
+            'attendance' => $attendanceSummary,
+            'exam' => $examSummary,
+            'certificates' => $certificateSummary,
+            'behavior' => $behaviorSummary,
+            'health' => $healthSummary,
+            'exit' => $exitSummary,
+            'enrollment_status' => $student->enrollment_status ?? 'active',
+        ];
     }
 
     public function edit(Student $student)

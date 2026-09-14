@@ -98,9 +98,7 @@
 
 1. ~~**Dead designer config:** `id_card_design` written/read only in `CardDesignController`; never passed to card generators.~~ **CORRECTED (P2.2):** wiring shipped — `IdCardDesignService` + `CardFace.tsx` drive designer, student and staff card pages; adds `layouts` default + 8-field settings consumed everywhere.
 2. ~~**AuditTrail UI orphaned:** `AuditTrail.tsx` exists but no web route renders it.~~ **CORRECTED (P1.8):** `AuditTrail` is fully wired — route `/audit-trail` (`web.php:916`), sidebar id `reports-audit-trail` (`sidebarMenu.ts:3354`, module `audit-trail`), controller renders `dashboard/AuditTrail`, export + clear actions present.
-3. **List-first entities:** many modules lack a "360 hub" detail view with cross-links (student profile →
-   fees/attendance/exams/documents/behaviour/TC/siblings; staff → salary/leave/appraisal/documents; class → timetable/
-   subjects/students; fee → payments/dues/concessions).
+3. **List-first entities:** many modules lack a "360 hub" detail view with cross-links. — **P3.1 PARTIAL:** the **student** leg shipped as a tabbed Student 360 hub (`StudentsController::show` adds a `hub` prop: fees, attendance, latest exam + report-card deep link, issued certificates, behaviour, health, exit/TC, enrollment status; `StudentDetails.tsx` gains permission-gated tabs + breadcrumbs + per-slice deep links). Staff → salary/leave/appraisal/documents, class → timetable/subjects/students, and fee → payments/dues/concessions hubs remain for P3.2.
 4. **GlobalSearch** (cmdk) not wired to entity search; breadcrumbs inconsistent across pages.
 5. **Detail rows** generally lack deep-link actions (e.g. fee row → student card, attendance row → student card).
 
