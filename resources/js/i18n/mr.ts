@@ -5018,5 +5018,31 @@ const mr = {
     Surface: 'पृष्ठभाग',
     'muted surface': 'मंद पृष्ठभाग',
     Primary: 'प्राथमिक',
+    'Report Builder': 'अहवाल बिल्डर',
+    Module: 'मॉड्यूल',
+    'Date from': 'दिनांक पासून',
+    'Date to': 'दिनांक पर्यंत',
+    'All Months': 'सर्व महिने',
+    Run: 'चालवा',
+    'All records': 'सर्व नोंदी',
+    'Select module': 'मॉड्यूल निवडा',
+    'Save report': 'अहवाल सेव्ह करा',
+    'Saved reports': 'सेव्ह केलेले अहवाल',
+    'Create report': 'अहवाल तयार करा',
+    'Report name': 'अहवालाचे नाव',
+    'Name, roll no...': 'नाव, रोल क्र...',
+    'Monthly fee collection summary': 'मासिक शुल्क वसुली सारांश',
+    'Save reusable report definitions with filters, then run or export them anytime.':
+        'फिल्टरसह पुन्हा वापरता येणारी अहवाल व्याख्या सेव्ह करा, नंतर केव्हाही चालवा किंवा निर्यात करा.',
+    'Define a report and its default filters.': 'एक अहवाल आणि त्याचे डीफॉल्ट फिल्टर परिभाषित करा.',
+    'Run a report in the Reports Center, or export it as PDF or CSV.':
+        'अहवाल केंद्रात अहवाल चालवा किंवा तो PDF किंवा CSV म्हणून निर्यात करा.',
+    'No saved reports yet. Create your first report on the left.':
+        'अजून कोणताही सेव्ह केलेला अहवाल नाही. डावीकडे तुमचा पहिला अहवाल तयार करा.',
+    'Enter a name for the report.': 'अहवालासाठी नाव प्रविष्ट करा.',
+    'Saved report created.': 'अहवाल सेव्ह झाला.',
+    'Failed to save report.': 'अहवाल सेव्ह करण्यात अयशस्वी.',
+    'Delete this saved report?': 'हा सेव्ह केलेला अहवाल हटवायचा?',
+    '(Current)': '(सध्याचा)',
 };
 export default mr;

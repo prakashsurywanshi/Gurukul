@@ -5009,5 +5009,31 @@ const en = {
     Surface: 'Surface',
     'muted surface': 'muted surface',
     Primary: 'Primary',
+    'Report Builder': 'Report Builder',
+    Module: 'Module',
+    'Date from': 'Date from',
+    'Date to': 'Date to',
+    'All Months': 'All Months',
+    Run: 'Run',
+    'All records': 'All records',
+    'Select module': 'Select module',
+    'Save report': 'Save report',
+    'Saved reports': 'Saved reports',
+    'Create report': 'Create report',
+    'Report name': 'Report name',
+    'Name, roll no...': 'Name, roll no...',
+    'Monthly fee collection summary': 'Monthly fee collection summary',
+    'Save reusable report definitions with filters, then run or export them anytime.':
+        'Save reusable report definitions with filters, then run or export them anytime.',
+    'Define a report and its default filters.': 'Define a report and its default filters.',
+    'Run a report in the Reports Center, or export it as PDF or CSV.':
+        'Run a report in the Reports Center, or export it as PDF or CSV.',
+    'No saved reports yet. Create your first report on the left.':
+        'No saved reports yet. Create your first report on the left.',
+    'Enter a name for the report.': 'Enter a name for the report.',
+    'Saved report created.': 'Saved report created.',
+    'Failed to save report.': 'Failed to save report.',
+    'Delete this saved report?': 'Delete this saved report?',
+    '(Current)': '(Current)',
 };
 export default en;

@@ -5026,5 +5026,31 @@ const hi = {
     Surface: 'सतह',
     'muted surface': 'मंद सतह',
     Primary: 'प्राथमिक',
+    'Report Builder': 'रिपोर्ट बिल्डर',
+    Module: 'मॉड्यूल',
+    'Date from': 'दिनांक से',
+    'Date to': 'दिनांक तक',
+    'All Months': 'सभी महीने',
+    Run: 'चलाएं',
+    'All records': 'सभी रिकॉर्ड',
+    'Select module': 'मॉड्यूल चुनें',
+    'Save report': 'रिपोर्ट सहेजें',
+    'Saved reports': 'सहेजी गई रिपोर्टें',
+    'Create report': 'रिपोर्ट बनाएं',
+    'Report name': 'रिपोर्ट का नाम',
+    'Name, roll no...': 'नाम, रोल नं...',
+    'Monthly fee collection summary': 'मासिक शुल्क संग्रह सारांश',
+    'Save reusable report definitions with filters, then run or export them anytime.':
+        'फ़िल्टर के साथ फिर से उपयोग योग्य रिपोर्ट परिभाषाएं सहेजें, फिर कभी भी चलाएं या निर्यात करें।',
+    'Define a report and its default filters.': 'एक रिपोर्ट और उसके डिफ़ॉल्ट फ़िल्टर परिभाषित करें।',
+    'Run a report in the Reports Center, or export it as PDF or CSV.':
+        'रिपोर्ट्स सेंटर में रिपोर्ट चलाएं, या इसे PDF या CSV के रूप में निर्यात करें।',
+    'No saved reports yet. Create your first report on the left.':
+        'अभी तक कोई सहेजी गई रिपोर्ट नहीं। बाईं ओर अपनी पहली रिपोर्ट बनाएं।',
+    'Enter a name for the report.': 'रिपोर्ट के लिए एक नाम दर्ज करें।',
+    'Saved report created.': 'रिपोर्ट सहेज ली गई।',
+    'Failed to save report.': 'रिपोर्ट सहेजने में विफल।',
+    'Delete this saved report?': 'इस सहेजी गई रिपोर्ट को हटाएं?',
+    '(Current)': '(वर्तमान)',
 };
 export default hi;

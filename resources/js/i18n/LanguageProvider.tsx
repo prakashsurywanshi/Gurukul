@@ -102,6 +102,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         document.documentElement.lang = locale;
+
+        // RTL-safe layout readiness: every current locale is a left-to-right
+        // script, but the document direction is always set explicitly so that
+        // future right-to-left locales (Arabic, Urdu, ...) can be added here
+        // without touching the rest of the UI.
+        const RTL_LOCALES: Record<string, boolean> = {
+            ar: true,
+            ur: true,
+            fa: true,
+        };
+        document.documentElement.dir = RTL_LOCALES[locale] ? 'rtl' : 'ltr';
     }, [locale]);
 
     const value = useMemo<LanguageContextValue>(

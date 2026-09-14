@@ -271,7 +271,7 @@ class RolePermissionCatalog
                 'Student Health' => self::featurePermissions(true, true, true, true),
                 'PTM' => self::featurePermissions(true, true, true, true),
                 'TC & Exit' => self::featurePermissions(true, true, true, true),
-                'Reports & Analytics' => self::featurePermissions(true),
+                'Reports & Analytics' => self::featurePermissions(true, true, true, true),
                 'Audit Trail' => self::featurePermissions(true),
                 'Inspections' => self::featurePermissions(true, true, true, true),
                 'Asset Management' => self::featurePermissions(true, true, true, true),

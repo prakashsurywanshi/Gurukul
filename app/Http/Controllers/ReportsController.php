@@ -30,6 +30,7 @@ use App\Models\LibraryCirculation;
 use App\Models\Message;
 use App\Models\Organization;
 use App\Models\SchoolClass;
+use App\Models\SavedReport;
 use App\Models\StaffAttendance;
 use App\Models\StaffPayrollEntry;
 use App\Models\Student;
@@ -58,6 +59,8 @@ class ReportsController extends Controller
         $organization = $this->resolveOrganizationForUser($user);
 
         abort_unless($organization, 403);
+
+        $this->applySavedReport($request, $organization);
 
         $selectedClass = $request->string('class')->value() ?: 'all';
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
@@ -98,6 +101,8 @@ class ReportsController extends Controller
 
         abort_unless($organization, 403);
 
+        $this->applySavedReport($request, $organization);
+
         $selectedClass = $request->string('class')->value() ?: 'all';
         $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
         abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
@@ -120,6 +125,62 @@ class ReportsController extends Controller
             "{$report['label']}-Report-" . now()->format('Y-m-d') . '.pdf',
             ['orientation' => 'landscape']
         );
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $this->applySavedReport($request, $organization);
+
+        $selectedClass = $request->string('class')->value() ?: 'all';
+        $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
+        abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
+
+        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
+        $module = $request->string('module')->value() ?: 'students';
+        $search = $request->string('search')->value() ?: '';
+
+        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $request->integer('page', 1), $search);
+        $report = collect($reports)->firstWhere('id', $module) ?? $reports[0];
+
+        $filename = str_replace(' ', '-', $report['label']) . '-Report-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($report) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, $report['columns']);
+
+            foreach ($report['rows'] as $row) {
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    private function applySavedReport(Request $request, Organization $organization): void
+    {
+        $savedReportId = $request->input('saved_report_id');
+
+        if (!$savedReportId) {
+            return;
+        }
+
+        $savedReport = SavedReport::query()
+            ->where('organization_id', $organization->id)
+            ->where('is_active', true)
+            ->find($savedReportId);
+
+        abort_unless($savedReport, 403);
+
+        $request->merge([
+            'module' => $savedReport->module,
+            ...array_intersect_key($savedReport->filters, array_flip(['class', 'session', 'month', 'search', 'date_from', 'date_to'])),
+        ]);
     }
 
     private function getClassOptions(Organization $organization): Collection

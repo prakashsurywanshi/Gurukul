@@ -69,7 +69,8 @@
 - [x] P4.2 Generic approval-chain engine + migrate 3 modules (746 tests, 5838 assertions)
 - [x] P4.3 Notification rule engine + digests + websocket bell (756 tests, 5865 assertions)
 - [x] P4.4 Panel theming/branding engine (762 tests, 5897 assertions)
-- [ ] P5.1 Report builder + export center + i18n/RTL polish
+- [x] P5.1 Report builder + export center + i18n/RTL polish (771 tests, 5942 assertions)
+- [ ] P5.2 —
 - [ ] P6.1 College/Institute org-type mode
 - [ ] P6.2 Platform: branch-admin + superadmin billing/analytics
 - [ ] P6.3 Flutter API completeness + versioning + contract tests
@@ -106,3 +107,9 @@
   - **Public admission rendering**: `SettingsController@publicAdmissionForm` passes `admissionCustomFields`; `AdmissionInquiryController@store` validates + persists them as `custom_data` (rejects non-admission fields), `@enroll` copies them into the student's `custom_field_values`; `PublicAdmissionForm.tsx` renders them (all 13 types, incl. multi-select) and submits as `custom_fields`.
   - Frontend: `CustomFields.tsx` rewritten (validation-rule editor dialog, 6 entity cards + selector, options editor); `AdmissionCustomFields.tsx` rewritten for `string | string[]` values and all new types; `CreateStudent/EditStudent` typed for the new value record.
   - Tests: `CustomFieldsTest` 10 → **14 tests / 248 asserts** (new-type normalization, pattern/min/max/length rules incl. custom pattern message, all-entity dashboard listing + per-entity value scoping, public admission expose/store + enroll copy). Gates: full suite **737 tests, 5757 asserts pass**; i18n 0 bad (4513 keys ×3); tsc clean; prod build OK.
+- **P5.1 (done)**: Saved-query **Report Builder** + CSV export + i18n/RTL polish:
+  - `saved_reports` table + `SavedReport` model; `SavedReportController` (`GET/POST /reports/builder`, `PATCH …/toggle`, `DELETE …/{id}`, org-scoped, `filters` whitelisted to class/session/month/search/date_from/date_to).
+  - `ReportsController` now hydrates filters from a saved report (`applySavedReport()`) at `index` and `exportPdf`, and gains **`exportCsv`** (`/reports/export-csv`, streamed `fputcsv` from the shared module-report rows).
+  - `dashboard/ReportBuilder.tsx` page (create default-filtered reports; Run → Reports Center, Export PDF, Export CSV, enable/disable/delete) + sidebar "Report Builder" item; admin granted full CRUD on `Reports & Analytics` in `RolePermissionCatalog`.
+  - **RTL-safe layout readiness**: `LanguageProvider` sets `document.documentElement.dir` (`ltr` now; `ar/ur/fa` hook present).
+  - Tests: `SavedReportBuilderFeatureTest` 9 tests / 45 asserts (page loads, create, validation, filter hydration at run, CSV stream, PDF export, delete, cross-org delete/run forbidden). Gates: full suite **771 tests, 5942 asserts pass**; i18n 0 bad (4587 keys ×3); tsc clean; prod build OK.

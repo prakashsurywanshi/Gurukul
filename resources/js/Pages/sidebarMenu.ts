@@ -3262,6 +3262,7 @@ export const sidebarConfig: {
             'reports-audit-trail',
             'regulator-reports',
             'qr-scan-audit',
+            'report-builder',
             'print-center',
         ],
         items: [
@@ -3417,6 +3418,14 @@ export const sidebarConfig: {
                 href: '/qr-scan-audit',
                 roles: ['super_admin', 'admin'],
                 feature: 'QR Code Attendance',
+            },
+            {
+                id: 'report-builder',
+                label: 'Report Builder',
+                icon: FilePlus2,
+                href: '/reports/builder',
+                roles: ['super_admin', 'admin'],
+                feature: 'Reports & Analytics',
             },
             {
                 id: 'print-center',
