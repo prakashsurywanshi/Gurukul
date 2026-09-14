@@ -30,6 +30,40 @@ class ClassesController extends Controller
         ]);
     }
 
+    public function show(SchoolClass $schoolClass)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+        abort_unless($schoolClass->organization_id === $organization->id, 404);
+
+        $schoolClass->load('teacher:id,name');
+        $schoolClass->loadCount([
+            'studentAcademicHistories as student_count' => fn ($query) => $query
+                ->where('is_current', true)
+                ->where('status', 'active')
+                ->whereHas('student', fn ($studentQuery) => $studentQuery->where('status', 'active')),
+        ]);
+
+        return inertia('dashboard/classes/ClassDetails', [
+            'user' => $user,
+            'classId' => (string) $schoolClass->id,
+            'classInfo' => [
+                'id' => (string) $schoolClass->id,
+                'name' => $schoolClass->name,
+                'section' => $schoolClass->section,
+                'room_number' => $schoolClass->room_number,
+                'capacity' => $schoolClass->capacity,
+                'status' => $schoolClass->status,
+                'teacher_id' => $schoolClass->class_teacher_id ? (string) $schoolClass->class_teacher_id : null,
+                'teacher_name' => $schoolClass->teacher?->name,
+                'student_count' => (int) $schoolClass->student_count,
+                'academic_year' => $schoolClass->academicYear?->name,
+            ],
+            'hub' => $this->buildClassHub($organization->id, $schoolClass),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
@@ -576,6 +610,35 @@ class ClassesController extends Controller
         $organization = Organization::query()->find($organizationId);
 
         return $organization?->selectedAcademicYear()?->id;
+    }
+
+    private function buildClassHub(int $organizationId, SchoolClass $schoolClass): array
+    {
+        $classId = $schoolClass->id;
+
+        $subjects = Subject::query()
+            ->join('class_subject', 'class_subject.subject_id', '=', 'subjects.id')
+            ->leftJoin('users', 'users.id', '=', 'class_subject.teacher_id')
+            ->where('class_subject.class_id', $classId)
+            ->orderBy('subjects.name')
+            ->get(['subjects.id', 'subjects.name', 'subjects.code', 'class_subject.teacher_id', 'users.name as teacher_name'])
+            ->map(fn ($subjectRow) => [
+                'id' => (string) $subjectRow->id,
+                'name' => $subjectRow->name,
+                'code' => $subjectRow->code,
+                'teacher_id' => $subjectRow->teacher_id ? (string) $subjectRow->teacher_id : null,
+                'teacher_name' => $subjectRow->teacher_name,
+            ])
+            ->values();
+
+        $timetable = collect($this->getTimetableEntries($organizationId))
+            ->where('classId', (string) $classId)
+            ->values();
+
+        return [
+            'subjects' => $subjects,
+            'timetable' => $timetable,
+        ];
     }
 
     private function getClassRecords(int $organizationId): array

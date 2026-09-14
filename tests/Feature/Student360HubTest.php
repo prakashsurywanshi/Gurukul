@@ -332,6 +332,35 @@ class Student360HubTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_tab_query_param_is_validated_and_passed_to_hub(): void
+    {
+        $organization = $this->createOrganization('Gurukul Hub Tab');
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        [$student] = $this->seedStudent($organization);
+
+        $this->actingAs($admin)
+            ->get('/students/'.$student->id.'?tab=fees')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tab', 'fees')
+            );
+
+        $this->actingAs($admin)
+            ->get('/students/'.$student->id.'?tab=invalid')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tab', 'overview')
+            );
+
+        $this->actingAs($admin)
+            ->get('/students/'.$student->id)
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('tab', 'overview')
+            );
+    }
+
     private function createOrganization(string $name): Organization
     {
         static $counter = 0;

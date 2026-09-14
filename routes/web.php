@@ -371,6 +371,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/classes', [ClassesController::class, 'store'])->middleware('staff.permission:Class / Section,add')->name('classes.store');
     Route::patch('/classes/{schoolClass}', [ClassesController::class, 'update'])->middleware('staff.permission:Class / Section,edit')->name('classes.update');
     Route::delete('/classes/{schoolClass}', [ClassesController::class, 'destroy'])->middleware('staff.permission:Class / Section,delete')->name('classes.destroy');
+    Route::get('/classes/{schoolClass}', [ClassesController::class, 'show'])->middleware('staff.permission:Class / Section,view')->name('classes.show');
     Route::post('/classes/sections', [ClassesController::class, 'storeSection'])->middleware('staff.permission:Class / Section,add')->name('classes.sections.store');
     Route::patch('/classes/sections/{section}', [ClassesController::class, 'updateSection'])->middleware('staff.permission:Class / Section,edit')->name('classes.sections.update');
     Route::delete('/classes/sections/{section}', [ClassesController::class, 'destroySection'])->middleware('staff.permission:Class / Section,delete')->name('classes.sections.destroy');
@@ -890,6 +891,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::patch('/teacher-evaluations/{teacherEvaluation}', [TeacherEvaluationController::class, 'update'])->middleware('staff.permission:Teacher Evaluations,edit')->name('teacher-evaluations.update');
     Route::delete('/teacher-evaluations/{teacherEvaluation}', [TeacherEvaluationController::class, 'destroy'])->middleware('staff.permission:Teacher Evaluations,delete')->name('teacher-evaluations.destroy');
     Route::get('/staff/id-cards', [StaffIdCardController::class, 'index'])->middleware('staff.permission:Staff ID Cards,view')->name('staff-id-cards');
+    Route::get('/staff/{managedUser}', [UsersController::class, 'show'])->middleware('staff.permission:User Management,view')->name('users.show');
     Route::get('/print-center', [PrintCenterController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('print-center');
     Route::get('/recruitment', [RecruitmentController::class, 'index'])->middleware('staff.permission:Recruitment & Hiring,view')->name('recruitment');
     Route::post('/recruitment', [RecruitmentController::class, 'store'])->middleware('staff.permission:Recruitment & Hiring,add')->name('recruitment.store');

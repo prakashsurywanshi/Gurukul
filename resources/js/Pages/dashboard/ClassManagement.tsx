@@ -1,6 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,7 +8,7 @@ import { Label } from '../ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Badge } from '../ui/badge';
-import { Pencil, Plus, School, Trash2 } from 'lucide-react';
+import { ExternalLink, Pencil, Plus, School, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import DashboardLayout from '../DashboardLayout';
@@ -500,7 +500,15 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
                                         <TableBody>
                                             {classes.map((classItem) => (
                                                 <TableRow key={classItem.id}>
-                                                    <TableCell className="font-medium">{classItem.name}</TableCell>
+                                                    <TableCell className="font-medium">
+                                                            <Link
+                                                                href={`/classes/${classItem.id}`}
+                                                                className="inline-flex items-center gap-1.5 rounded underline-offset-4 hover:underline"
+                                                            >
+                                                                {classItem.name}
+                                                                <ExternalLink className="h-3.5 w-3.5 text-blue-600" />
+                                                            </Link>
+                                                        </TableCell>
                                                     <TableCell>
                                                         <Badge variant="outline">
                                                             {t('Section')}

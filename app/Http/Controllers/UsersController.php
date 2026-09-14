@@ -8,7 +8,10 @@ use App\Models\SuperAdminSetting;
 use App\Models\LeaveRequest;
 use App\Models\Organization;
 use App\Models\Role;
+use App\Models\StaffAppraisal;
 use App\Models\StaffAttendance;
+use App\Models\StaffLeaveBalance;
+use App\Models\StaffLoan;
 use App\Models\StaffPayrollEntry;
 use App\Models\User;
 use App\Services\LeaveBalanceService;
@@ -50,6 +53,29 @@ class UsersController extends Controller
             'roleOptions' => $roleRecords,
             'designations' => $organization ? Designation::where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name']) : [],
             'departments' => $organization ? Department::where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name']) : [],
+        ]);
+    }
+
+    public function show(User $managedUser): Response
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization !== null, 403);
+
+        $roleSlugs = collect($this->roleRecordsForOrganization($organization))->pluck('slug')->all();
+        abort_unless(
+            $managedUser->organization_id === $organization->id && in_array($managedUser->role, $roleSlugs, true),
+            404,
+        );
+
+        $managedUser->load(['designation', 'department']);
+
+        return Inertia::render('dashboard/staff/StaffDetails', [
+            'user' => $user,
+            'staffId' => (string) $managedUser->id,
+            'staff' => $this->serializeStaffProfile($managedUser),
+            'hub' => $this->buildStaffHub($organization, $managedUser),
         ]);
     }
 
@@ -793,6 +819,116 @@ class UsersController extends Controller
             'department_id' => $managedUser->department_id,
             'designation_name' => $managedUser->relationLoaded('designation') ? $managedUser->designation?->name : null,
             'department_name' => $managedUser->relationLoaded('department') ? $managedUser->department?->name : null,
+        ];
+    }
+
+    private function serializeStaffProfile(User $managedUser): array
+    {
+        return [
+            'id' => $managedUser->id,
+            'name' => $managedUser->name,
+            'email' => $managedUser->email,
+            'phone' => $managedUser->phone,
+            'address' => $managedUser->address,
+            'city' => $managedUser->city,
+            'state' => $managedUser->state,
+            'pincode' => $managedUser->pincode,
+            'role' => $managedUser->role,
+            'status' => $managedUser->status === 'inactive' ? 'inactive' : 'active',
+            'employee_id' => $managedUser->employee_id,
+            'gender' => $managedUser->gender,
+            'date_of_birth' => optional($managedUser->date_of_birth)->format('Y-m-d'),
+            'joining_date' => optional($managedUser->joining_date)->format('Y-m-d'),
+            'blood_group' => $managedUser->blood_group,
+            'emergency_contact' => $managedUser->emergency_contact,
+            'profile_photo' => $managedUser->profile_photo,
+            'designation_id' => $managedUser->designation_id,
+            'department_id' => $managedUser->department_id,
+            'designation_name' => optional($managedUser->designation)->name,
+            'department_name' => optional($managedUser->department)->name,
+        ];
+    }
+
+    private function buildStaffHub(Organization $organization, User $staff): array
+    {
+        $thisMonth = Carbon::now()->format('Y-m');
+
+        $attendance = StaffAttendance::where('organization_id', $organization->id)
+            ->where('user_id', $staff->id)
+            ->get();
+
+        $payroll = StaffPayrollEntry::where('organization_id', $organization->id)
+            ->where('user_id', $staff->id)
+            ->orderByDesc('payroll_month')
+            ->get();
+        $latestPayroll = $payroll->first();
+
+        $leaveYear = (int) Carbon::now()->year;
+        $balances = StaffLeaveBalance::where('organization_id', $organization->id)
+            ->where('user_id', $staff->id)
+            ->where('year', $leaveYear)
+            ->get(['leave_type', 'entitled_days']);
+        $leaveRequests = LeaveRequest::where('organization_id', $organization->id)
+            ->where('user_id', $staff->id)
+            ->get();
+
+        $appraisals = StaffAppraisal::where('organization_id', $organization->id)
+            ->where('staff_user_id', $staff->id)
+            ->with('cycle:id,name')
+            ->orderByDesc('review_date')
+            ->get();
+        $latestAppraisal = $appraisals->first();
+
+        $loans = StaffLoan::where('organization_id', $organization->id)
+            ->where('staff_user_id', $staff->id)
+            ->get();
+
+        return [
+            'attendance' => [
+                'total' => $attendance->count(),
+                'present' => $attendance->where('status', 'present')->count(),
+                'absent' => $attendance->where('status', 'absent')->count(),
+                'late' => $attendance->where('status', 'late')->count(),
+                'leave' => $attendance->where('status', 'leave')->count(),
+                'this_month_present' => $attendance->filter(
+                    fn (StaffAttendance $record) => optional($record->date)->format('Y-m') === $thisMonth
+                        && $record->status === 'present',
+                )->count(),
+            ],
+            'payroll' => [
+                'total_entries' => $payroll->count(),
+                'latest_month' => optional($latestPayroll?->payroll_month)->format('Y-m'),
+                'base_pay' => $latestPayroll ? (float) $latestPayroll->base_pay : 0,
+                'allowance' => $latestPayroll ? (float) $latestPayroll->allowance : 0,
+                'deduction' => $latestPayroll ? (float) $latestPayroll->deduction : 0,
+                'net_pay' => $latestPayroll
+                    ? (float) ($latestPayroll->base_pay + $latestPayroll->allowance - $latestPayroll->deduction)
+                    : 0,
+                'status' => $latestPayroll?->status,
+            ],
+            'leave' => [
+                'balances' => $balances->map(fn (StaffLeaveBalance $balance) => [
+                    'leave_type' => $balance->leave_type,
+                    'entitled_days' => (float) $balance->entitled_days,
+                ])->values(),
+                'pending' => $leaveRequests->where('status', 'pending')->count(),
+                'approved_days' => (float) $leaveRequests->where('status', 'approved')->sum('total_days'),
+            ],
+            'appraisals' => [
+                'total' => $appraisals->count(),
+                'latest_score' => $latestAppraisal?->overall_score,
+                'latest_rating' => $latestAppraisal?->rating,
+                'latest_cycle' => $latestAppraisal?->cycle?->name,
+                'latest_review_date' => optional($latestAppraisal?->review_date)->format('Y-m-d'),
+                'latest_status' => $latestAppraisal?->status,
+            ],
+            'loans' => [
+                'total' => $loans->count(),
+                'active' => $loans->where('status', 'active')->count(),
+                'outstanding' => (float) $loans
+                    ->where('status', 'active')
+                    ->sum(fn (StaffLoan $loan) => max(0, ((float) $loan->principal_amount) - ((int) $loan->paid_emis * (float) $loan->monthly_emi))),
+            ],
         ];
     }
 

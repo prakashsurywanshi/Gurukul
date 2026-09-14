@@ -39,7 +39,7 @@ class StaffAppraisal extends Model
 
     public function cycle(): BelongsTo
     {
-        return $this->belongsTo(AppraisalCycle::class);
+        return $this->belongsTo(AppraisalCycle::class, 'appraisal_cycle_id');
     }
 
     public function reviewer(): BelongsTo

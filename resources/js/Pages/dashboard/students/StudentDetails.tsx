@@ -1,6 +1,6 @@
 import { useLanguage } from '../../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Award,
@@ -46,6 +46,7 @@ interface StudentDetailsProps {
     siblings?: Sibling[];
     studentRecords?: any[];
     hub?: StudentHub;
+    tab?: string;
     academicHistory?: {
         id: string;
         session?: string | null;
@@ -177,6 +178,7 @@ export default function StudentDetails({
     siblings = [],
     studentRecords = [],
     hub,
+    tab = 'overview',
     academicHistory = [],
 }: StudentDetailsProps) {
     const { t } = useLanguage();
@@ -186,6 +188,11 @@ export default function StudentDetails({
     const [student, setStudent] = useState<any>(initialStudent ?? null);
     const [selectedClass, setSelectedClass] = useState('all');
     const [selectedSection, setSelectedSection] = useState('all');
+    const [activeTab, setActiveTab] = useState<string>(tab);
+
+    useEffect(() => {
+        setActiveTab(tab);
+    }, [tab]);
 
     useEffect(() => {
         setStudent(initialStudent ?? null);
@@ -262,6 +269,8 @@ export default function StudentDetails({
         { id: 'health', label: t('Health'), icon: HeartPulse, enabled: can('Student Health') },
         { id: 'exit', label: t('Exit & TC'), icon: DoorOpen, enabled: can('Exit & TC') },
     ].filter((tab) => tab.enabled);
+
+    const enabledTabIds = hubTabs.map((hubTab) => hubTab.id);
 
     if (!student) {
         return (
@@ -364,7 +373,12 @@ export default function StudentDetails({
                         </div>
                     </div>
 
-                    <Tabs defaultValue="overview">
+                    <Tabs value={enabledTabIds.includes(activeTab) ? activeTab : (enabledTabIds[0] ?? 'overview')}
+                        onValueChange={(value) => {
+                            setActiveTab(value);
+                            router.get(`/students/${studentId}`, { tab: value }, { preserveState: true, preserveScroll: true });
+                        }}
+                    >
                         <div className="overflow-x-auto">
                             <TabsList className="h-10">
                                 {hubTabs.map((tab) => (

@@ -55,6 +55,7 @@ class StaffDirectoryController extends Controller
 
         $staff = $query->orderBy('name')->get()->map(fn ($user) => [
             'id' => $user->id,
+            'id' => (string) $user->id,
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,

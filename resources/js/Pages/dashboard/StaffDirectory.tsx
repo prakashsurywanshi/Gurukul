@@ -1,9 +1,10 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState } from 'react';
-import { router } from '@inertiajs/react';
-import { Contact, Mail, Phone, Search, Users } from 'lucide-react';
+import { router, Link } from '@inertiajs/react';
+import { Contact, ExternalLink, Mail, Phone, Search, Users } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Input } from '../ui/input';
@@ -196,12 +197,13 @@ export default function StaffDirectory({
                                             <TableHead>{t('Designation')}</TableHead>
                                             <TableHead>{t('Contact')}</TableHead>
                                             <TableHead>{t('Joined')}</TableHead>
+                                            <TableHead className="text-right">{t('Action')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {staff.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="h-24 text-center text-slate-500">
+                                                <TableCell colSpan={8} className="h-24 text-center text-slate-500">
                                                     {t('No staff members match your filters.')}
                                                 </TableCell>
                                             </TableRow>
@@ -254,6 +256,13 @@ export default function StaffDirectory({
                                                         {member.joiningDate ?? (
                                                             <span className="text-slate-400">-</span>
                                                         )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button asChild variant="ghost" size="sm" title={t('Open Staff Hub')}>
+                                                            <Link href={`/staff/${member.id}`}>
+                                                                <ExternalLink className="h-4 w-4 text-blue-600" />
+                                                            </Link>
+                                                        </Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))

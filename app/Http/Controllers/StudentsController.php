@@ -179,7 +179,7 @@ class StudentsController extends Controller
         return back()->with('success', 'Import history entry deleted.');
     }
 
-    public function show(string $studentId)
+    public function show(Request $request, string $studentId)
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
@@ -188,6 +188,10 @@ class StudentsController extends Controller
         abort_unless($organization, 403);
         $this->ensureStudentBelongsToOrganization($student, $organization->id);
 
+        $hubTabs = ['overview', 'fees', 'attendance', 'exams', 'certificates', 'behavior', 'health', 'exit'];
+        $tab = $request->query('tab');
+        $tab = is_string($tab) && in_array($tab, $hubTabs, true) ? $tab : 'overview';
+
         return Inertia::render('dashboard/students/StudentDetails', [
             'user' => $user,
             'studentId' => (string) $student->id,
@@ -195,6 +199,7 @@ class StudentsController extends Controller
             'siblings' => $this->buildSiblings($organization, $student),
             'studentRecords' => $this->buildStudentDetailsRecords($organization, $student),
             'hub' => $this->buildStudentHub($organization, $student),
+            'tab' => $tab,
             'academicHistory' => $this->studentAcademicHistoryService
                 ->getStudentHistory($student)
                 ->map(fn ($history) => [

@@ -1,6 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router, Link, usePage } from '@inertiajs/react';
 import type { RequestPayload } from '@inertiajs/core';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -18,6 +18,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Badge } from '../ui/badge';
 import {
+    CheckCircle,
+    ExternalLink,
     IndianRupee,
     Plus,
     Search,
@@ -28,7 +30,6 @@ import {
     Pencil,
     Trash2,
     Copy,
-    CheckCircle,
     Upload,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -2000,9 +2001,19 @@ ADM-1002, Tuition Fee, 2026-08-10, 5000, 2000, August, 2026`}
                                                             : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
                                                     }`}
                                                 >
-                                                    <p className="font-medium text-sm">
-                                                        {student.first_name} {student.last_name}
-                                                    </p>
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <p className="font-medium text-sm">
+                                                            {student.first_name} {student.last_name}
+                                                        </p>
+                                                        <Link
+                                                            href={`/students/${student.id}?tab=fees`}
+                                                            onClick={(event) => event.stopPropagation()}
+                                                            className="inline-flex shrink-0 items-center gap-1 rounded p-1 text-blue-600 hover:bg-blue-100"
+                                                            title={t('Open Student Hub')}
+                                                        >
+                                                            <ExternalLink className="h-4 w-4" />
+                                                        </Link>
+                                                    </div>
                                                     <p className="text-xs text-gray-600">{student.admission_no}</p>
                                                     <p className="text-xs text-gray-600">
                                                         {student.class}-{student.section}

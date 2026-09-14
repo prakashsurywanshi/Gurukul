@@ -1,10 +1,11 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useMemo, useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     Plus,
     Search,
     Edit,
+    ExternalLink,
     Trash2,
     Users,
     UserCheck,
@@ -571,6 +572,15 @@ export default function UserManagement({
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
+                                                        <Button asChild
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            title={t('Open Staff Hub')}
+                                                        >
+                                                            <Link href={`/staff/${managedUser.id}`}>
+                                                                <ExternalLink className="h-4 w-4 text-blue-600" />
+                                                            </Link>
+                                                        </Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
