@@ -8,6 +8,7 @@ import {
     CalendarDays,
     DollarSign,
     Download,
+    FileSpreadsheet,
     FileText,
     Library,
     Search,
@@ -372,6 +373,19 @@ export default function ReportsAnalytics({
 
         window.location.href = `/reports/export-pdf?${params.toString()}`;
         toast.success(`${module.label} PDF export started`);
+    };
+
+    const exportModuleExcel = (module: ModuleReport) => {
+        const params = new URLSearchParams({
+            module: module.id,
+            class: selectedClassId,
+            month: selectedMonth,
+            session: selectedSession,
+        });
+        if (searchQuery) params.set('search', searchQuery);
+
+        window.location.href = `/reports/export-xlsx?${params.toString()}`;
+        toast.success(`${module.label} Excel export started`);
     };
 
     const handleSetCurrentSession = () => {
@@ -893,6 +907,15 @@ export default function ReportsAnalytics({
                                             >
                                                 <FileText className="h-4 w-4" />
                                                 {t('Export PDF')}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="gap-2"
+                                                onClick={() => exportModuleExcel(module)}
+                                            >
+                                                <FileSpreadsheet className="h-4 w-4" />
+                                                {t('Export Excel')}
                                             </Button>
                                         </div>
                                     </div>

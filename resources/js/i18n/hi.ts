@@ -5052,5 +5052,6 @@ const hi = {
     'Failed to save report.': 'रिपोर्ट सहेजने में विफल।',
     'Delete this saved report?': 'इस सहेजी गई रिपोर्ट को हटाएं?',
     '(Current)': '(वर्तमान)',
+    'Export Excel': 'एक्सेल में निर्यात करें',
 };
 export default hi;

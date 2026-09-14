@@ -1,7 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { FilePlus2, FileSpreadsheet, FileText, Play, Power, Trash2 } from 'lucide-react';
+import { FilePlus2, FileSpreadsheet, FileText, Play, Power, Sheet, Trash2 } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -139,6 +139,10 @@ export default function ReportBuilder({
 
     const exportCsv = (report: SavedReport) => {
         window.open(`/reports/export-csv?${buildQuery(report)}`, '_blank');
+    };
+
+    const exportExcel = (report: SavedReport) => {
+        window.open(`/reports/export-xlsx?${buildQuery(report)}`, '_blank');
     };
 
     const toggle = (report: SavedReport) => {
@@ -368,6 +372,16 @@ export default function ReportBuilder({
                                                         title={t('Export CSV')}
                                                     >
                                                         <FileSpreadsheet className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="bg-white"
+                                                        onClick={() => exportExcel(report)}
+                                                        disabled={report.is_active === false}
+                                                        title={t('Export Excel')}
+                                                    >
+                                                        <Sheet className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         size="sm"

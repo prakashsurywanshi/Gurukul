@@ -5044,5 +5044,6 @@ const mr = {
     'Failed to save report.': 'अहवाल सेव्ह करण्यात अयशस्वी.',
     'Delete this saved report?': 'हा सेव्ह केलेला अहवाल हटवायचा?',
     '(Current)': '(सध्याचा)',
+    'Export Excel': 'एक्सेल निर्यात करा',
 };
 export default mr;

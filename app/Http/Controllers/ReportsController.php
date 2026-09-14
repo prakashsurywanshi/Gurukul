@@ -48,6 +48,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use App\Services\PdfService;
+use App\Services\XlsxExportService;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -160,6 +161,32 @@ class ReportsController extends Controller
 
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    public function exportXlsx(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $this->applySavedReport($request, $organization);
+
+        $selectedClass = $request->string('class')->value() ?: 'all';
+        $selectedAcademicYear = $this->resolveSelectedAcademicYear($organization, $request->input('session'));
+        abort_unless($selectedAcademicYear, 403, 'Create and activate an academic session first.');
+
+        $selectedMonth = $this->resolveSelectedMonth($selectedAcademicYear, $request->input('month'));
+        $module = $request->string('module')->value() ?: 'students';
+        $search = $request->string('search')->value() ?: '';
+
+        $reports = $this->moduleReports($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $request->integer('page', 1), $search);
+        $report = collect($reports)->firstWhere('id', $module) ?? $reports[0];
+
+        $filename = str_replace(' ', '-', $report['label']) . '-Report-' . now()->format('Y-m-d') . '.xlsx';
+        $binary = app(XlsxExportService::class)->build($report['columns'], $report['rows']);
+
+        return app(XlsxExportService::class)->download($binary, $filename);
     }
 
     private function applySavedReport(Request $request, Organization $organization): void

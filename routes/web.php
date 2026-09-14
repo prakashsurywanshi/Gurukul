@@ -743,6 +743,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/reports', [ReportsController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('reports');
     Route::get('/reports/export-pdf', [ReportsController::class, 'exportPdf'])->middleware('staff.permission:Reports & Analytics,view')->name('reports.export-pdf');
     Route::get('/reports/export-csv', [ReportsController::class, 'exportCsv'])->middleware('staff.permission:Reports & Analytics,view')->name('reports.export-csv');
+    Route::get('/reports/export-xlsx', [ReportsController::class, 'exportXlsx'])->middleware('staff.permission:Reports & Analytics,view')->name('reports.export-xlsx');
     Route::get('/reports/builder', [SavedReportController::class, 'index'])->middleware('staff.permission:Reports & Analytics,view')->name('reports.builder');
     Route::post('/reports/builder', [SavedReportController::class, 'store'])->middleware('staff.permission:Reports & Analytics,add')->name('reports.builder.store');
     Route::get('/reports/builder/{savedReport}/filters', [SavedReportController::class, 'filters'])->middleware('staff.permission:Reports & Analytics,view')->name('reports.builder.filters');

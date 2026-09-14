@@ -193,6 +193,62 @@ class SavedReportBuilderFeatureTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_saved_report_xlsx_export_streams_workbook(): void
+    {
+        [$adminId, $organization, $academicYearId, $classId] = $this->seedContext();
+
+        $studentId = DB::table('students')->insertGetId([
+            'organization_id' => $organization,
+            'first_name' => 'Excel',
+            'last_name' => 'Student',
+            'email' => 'excel@builder.test',
+            'class_id' => $classId,
+            'status' => 'active',
+            'admission_no' => 'XLS-2001',
+            'admission_date' => now()->toDateString(),
+            'roll_number' => '1',
+            'gender' => 'male',
+            'date_of_birth' => now()->subYears(15)->toDateString(),
+            'guardian_name' => 'Excel Guardian',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('student_academic_histories')->insert([
+            'organization_id' => $organization,
+            'student_id' => $studentId,
+            'class_id' => $classId,
+            'academic_year_id' => $academicYearId,
+            'is_current' => true,
+            'status' => 'active',
+            'entry_type' => 'admission',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs(\App\Models\User::query()->find($adminId))
+            ->get('/reports/export-xlsx?module=students')
+            ->assertOk();
+
+        $this->assertStringContainsString(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            $response->headers->get('content-type'),
+        );
+        $this->assertStringContainsString('.xlsx', $response->headers->get('content-disposition'));
+
+        $binary = $response->getContent();
+        $this->assertStringStartsWith('PK', $binary);
+
+        $path = tempnam(sys_get_temp_dir(), 'xlsxtest');
+        file_put_contents($path, $binary);
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($path) === true);
+        $this->assertStringContainsString('Excel', $zip->getFromName('xl/worksheets/sheet1.xml'));
+        $this->assertSame(true, $zip->getFromName('[Content_Types].xml') !== false);
+        $zip->close();
+        @unlink($path);
+    }
+
     public function test_admin_can_delete_saved_report(): void
     {
         [$adminId, $organization] = $this->seedContext();

@@ -5035,5 +5035,6 @@ const en = {
     'Failed to save report.': 'Failed to save report.',
     'Delete this saved report?': 'Delete this saved report?',
     '(Current)': '(Current)',
+    'Export Excel': 'Export Excel',
 };
 export default en;
