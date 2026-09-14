@@ -19,6 +19,7 @@ class DemoLoginController extends Controller
         'accountant' => 'accountant',
         'receptionist' => 'receptionist',
         'librarian' => 'librarian',
+        'driver' => 'driver',
         'parent' => 'student',
         'student' => 'student',
     ];

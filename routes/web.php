@@ -155,7 +155,7 @@ Route::get('/pages/{slug}', [WebsitePageController::class, 'show'])->name('websi
 Route::get('/login', [LoginController::class, 'viewLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/demo-login/{role}', DemoLoginController::class)
-    ->whereIn('role', ['schooladmin', 'superadmin', 'admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'parent', 'student'])
+    ->whereIn('role', ['schooladmin', 'superadmin', 'admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'driver', 'parent', 'student'])
     ->name('demo-login');
 Route::get('/sso/status', [SsoController::class, 'status'])->name('sso.status');
 if (filter_var(env('SSO_ENABLED', false), FILTER_VALIDATE_BOOL)) {

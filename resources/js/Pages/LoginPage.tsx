@@ -11,6 +11,10 @@ import {
     ShieldCheck,
     Users,
     Briefcase,
+    Wallet,
+    Headset,
+    BookOpen,
+    Bus,
     Eye,
     EyeOff,
     ExternalLink,
@@ -21,7 +25,7 @@ import {
 import { toast } from 'sonner';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
-type LoginPortal = 'student_parent' | 'admin' | 'super_admin' | 'staff' | 'teacher';
+type LoginPortal = 'student_parent' | 'super_admin' | 'admin' | 'teacher' | 'accountant' | 'receptionist' | 'librarian' | 'driver' | 'staff';
 
 const portalOptions: Array<{
     id: LoginPortal;
@@ -40,8 +44,18 @@ const portalOptions: Array<{
         description: 'Access attendance, exams, fees, messages, and school updates.',
         icon: Users,
         helper: 'Use a student or parent account email and password.',
-        demoEmail: 'tejasphirake30@gmail.com',
-        demoPassword: '12345678',
+        demoEmail: 'student@gurukul.com',
+        demoPassword: 'student123',
+    },
+    {
+        id: 'super_admin',
+        label: 'Super Admin Login',
+        title: 'Super Admin Portal',
+        description: 'Platform-wide oversight, billing and privileged administration.',
+        icon: ShieldCheck,
+        helper: 'Use your superadmin credentials for full access.',
+        demoEmail: 'superadmin@gurukul.com',
+        demoPassword: 'superadmin123',
     },
     {
         id: 'admin',
@@ -50,8 +64,8 @@ const portalOptions: Array<{
         description: 'For admins',
         icon: Briefcase,
         helper: 'Use your staff credentials to continue.',
-        demoEmail: 'admin@qodeigence.com',
-        demoPassword: '12345678',
+        demoEmail: 'admin@gurukul.com',
+        demoPassword: 'admin123',
     },
     {
         id: 'teacher',
@@ -60,19 +74,49 @@ const portalOptions: Array<{
         description: 'For teachers',
         icon: Briefcase,
         helper: 'Use your Teacher credentials to continue.',
-        demoEmail: 'teacher@qodeigence.com',
-        demoPassword: '12345678',
+        demoEmail: 'teacher@gurukul.com',
+        demoPassword: 'teacher123',
     },
-    // {
-    //   id: 'super_admin',
-    //   label: 'Superadmin Login',
-    //   title: 'Superadmin Portal',
-    //   description: 'For organization-wide oversight and privileged administration.',
-    //   icon: ShieldCheck,
-    //   helper: 'Use your superadmin credentials for full access.',
-    //   demoEmail: 'hello@qodeigence.com',
-    //   demoPassword: '12345678',
-    // },
+    {
+        id: 'accountant',
+        label: 'Accountant Login',
+        title: 'Accountant Portal',
+        description: 'For accountants',
+        icon: Wallet,
+        helper: 'Use your accountant credentials to continue.',
+        demoEmail: 'accountant@gurukul.com',
+        demoPassword: 'accountant123',
+    },
+    {
+        id: 'receptionist',
+        label: 'Receptionist Login',
+        title: 'Receptionist Portal',
+        description: 'For receptionists',
+        icon: Headset,
+        helper: 'Use your receptionist credentials to continue.',
+        demoEmail: 'receptionist@gurukul.com',
+        demoPassword: 'receptionist123',
+    },
+    {
+        id: 'librarian',
+        label: 'Librarian Login',
+        title: 'Librarian Portal',
+        description: 'For librarians',
+        icon: BookOpen,
+        helper: 'Use your librarian credentials to continue.',
+        demoEmail: 'librarian@gurukul.com',
+        demoPassword: 'librarian123',
+    },
+    {
+        id: 'driver',
+        label: 'Driver Login',
+        title: 'Driver Portal',
+        description: 'For transport staff',
+        icon: Bus,
+        helper: 'Use your driver credentials to continue.',
+        demoEmail: 'driver@gurukul.com',
+        demoPassword: 'driver123',
+    },
 ];
 
 interface LoginPageProps {
@@ -369,21 +413,28 @@ export default function LoginPage(_: LoginPageProps) {
                                             </p>
                                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                                 {[
+                                                    { role: 'superadmin', label: t('Super Admin') },
                                                     { role: 'schooladmin', label: t('School Admin') },
                                                     { role: 'teacher', label: t('Teacher') },
                                                     { role: 'accountant', label: t('Accountant') },
-                                                    { role: 'parent', label: t('Parent') },
+                                                    { role: 'receptionist', label: t('Receptionist') },
+                                                    { role: 'librarian', label: t('Librarian') },
+                                                    { role: 'driver', label: t('Driver') },
+                                                    { role: 'parent', label: t('Parent / Student') },
                                                 ].map((item) => (
                                                     <button
                                                         key={item.role}
                                                         type="button"
                                                         onClick={() => router.visit(`/demo-login/${item.role}`)}
-                                                        className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                                                        className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
                                                     >
                                                         {item.label}
                                                     </button>
                                                 ))}
                                             </div>
+                                            <p className="text-center text-[11px] text-slate-400">
+                                                {t('One-click demo access to each role.')}
+                                            </p>
                                         </div>
                                     ) : null}
 
