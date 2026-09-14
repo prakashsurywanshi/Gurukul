@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AcademicYear;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -48,6 +49,19 @@ class StudentSeeder extends Seeder
             ->where('email', 'admin@gurukul.com')
             ->update(['organization_id' => $organization->id]);
 
+        $academicYear = AcademicYear::query()->firstOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'name' => '2025-2026',
+            ],
+            [
+                'start_date' => '2025-04-01',
+                'end_date' => '2026-03-31',
+                'is_current' => true,
+                'status' => 'active',
+            ]
+        );
+
         $students = [
             ['A001', 'Aarav', 'Sharma', '10', 'A', '101', 'male'],
             ['A002', 'Diya', 'Verma', '10', 'A', '102', 'female'],
@@ -72,7 +86,7 @@ class StudentSeeder extends Seeder
                     'section' => $section,
                 ],
                 [
-                    'academic_year_id' => null,
+                    'academic_year_id' => $academicYear->id,
                     'status' => 'active',
                 ]
             );

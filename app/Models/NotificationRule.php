@@ -28,6 +28,10 @@ class NotificationRule extends Model
         'conditions' => 'array',
     ];
 
+    protected $attributes = [
+        'channels' => '["bell"]',
+    ];
+
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);

@@ -24,6 +24,10 @@ class SavedReport extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $attributes = [
+        'filters' => '{}',
+    ];
+
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);

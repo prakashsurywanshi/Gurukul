@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('event_type', 80);
             $table->string('label', 120);
             $table->boolean('is_active')->default(true);
-            $table->json('channels')->default('["bell"]');
+            $table->json('channels')->nullable();
             $table->json('recipient_roles')->nullable();
             $table->json('conditions')->nullable();
             $table->text('digest_summary')->nullable();
