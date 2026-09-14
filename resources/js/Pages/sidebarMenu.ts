@@ -1117,6 +1117,7 @@ export const sidebarConfig: {
         tabs: [
             'subscription',
             'payment-history',
+            'billing-center',
             'profile',
             'settings',
             'language-settings',
@@ -1153,6 +1154,13 @@ export const sidebarConfig: {
                 href: '/payment-history',
                 roles: ['super_admin', 'admin'],
                 feature: 'Subscription Management',
+            },
+            {
+                id: 'billing-center',
+                label: 'Billing Center',
+                icon: CreditCard,
+                href: '/billing-center',
+                roles: ['super_admin'],
             },
             {
                 id: 'profile',

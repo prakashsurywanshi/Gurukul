@@ -137,6 +137,7 @@ use App\Http\Controllers\AppsCenterController;
 use App\Http\Controllers\DashboardThemesController;
 use App\Http\Controllers\FaceSearchController;
 use App\Http\Controllers\BranchAdminController;
+use App\Http\Controllers\BillingCenterController;
 use App\Http\Controllers\TransportManagementController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UsersController;
@@ -1041,6 +1042,10 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/branch-admin', [BranchAdminController::class, 'index'])
         ->middleware('staff.permission:Branch Admin,view', 'module.enabled:branch-admin')
         ->name('branch-admin');
+    Route::get('/billing-center', [BillingCenterController::class, 'index'])->name('billing-center');
+    Route::post('/billing-center/organizations/{organization}/payments', [BillingCenterController::class, 'recordPayment'])->name('billing.payments.store');
+    Route::patch('/billing-center/organizations/{organization}', [BillingCenterController::class, 'updateSubscription'])->name('billing.organizations.update');
+    Route::post('/billing-center/organizations/{organization}/toggle-status', [BillingCenterController::class, 'toggleStatus'])->name('billing.organizations.toggle-status');
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();

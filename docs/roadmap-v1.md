@@ -73,13 +73,14 @@
 - [x] P5.2 Excel (.xlsx) export center (772 tests, 5949 assertions)
 - [x] P6.1 College/Institute org-type mode (784 tests, 6024 assertions)
 - [x] P6.1e Semester filters + credits/CBCS grading (795 tests, 6136 assertions)
-- [ ] P6.2 Platform: branch-admin + superadmin billing/analytics
+- [x] P6.2 Platform: superadmin Billing Center (org billing/analytics; branch-admin role deferred per decision)
 - [ ] P6.3 Flutter API completeness + versioning + contract tests
 - [ ] P6.4 Full regression gates (700+ tests)
 
 ## Notes & decisions log
 - PDF engine question → user chose "all of above": dompdf + headless Chromium + browser print fallback.
 - Platform scope → include branch-admin/superadmin billing; Flutter app exists at `../flutter_gurukul`; API-first.
+- P6.2 scope decision → user chose "Billing Center only"; `branch_admin` role deferred (kept on roadmap later phases if needed).
 - Status updated as phases ship; gate results recorded next to each phase.
 
 ## Phase gate results (recorded as we ship)
@@ -124,3 +125,8 @@
   - **Reports Center semester filter**: `?semester=` on all report surfaces; `ReportsController` resolves the semester against the selected session and bounds exams/attendance/fees module reports + attendance + fee charts + exam performance to the semester's date window (no semester ⇒ prior month-year behavior, byte-identical). New helpers `semesterOptions`/`resolveSelectedSemester`/`monthOptionsFor(Carbon, Carbon)`/`monthSequenceBetween`; `resolveSelectedMonth` now goes off the resolved period window. Saved reports whitelist gains `semester` (builder filter, run-time hydration, PDF/CSV/Excel exports honor it). `SavedReportController` + `ReportsAnalytics.tsx` + `ReportBuilder.tsx` semester selects (`semesterOptions` prop, `All Semesters` default).
   - **Credits/CBCS**: `subjects.credits` (`2026_09_14_000007_add_credits_to_subjects_table`, decimal 4,2) + `Subject` cast/fillable; subject create/update validation (`numeric, min 0, max 50`); `SubjectsManagement.tsx` Credits input + table column. `ReportCardController::buildStudentReport` eager-loads credits, emits per-subject `credits` + `creditBased`/`totalCredits`/`sgpa`/`cgpa` (credit-weighted grade points; failed/absent⇒0 point; single-exam SGPA=CGPA; pure-marks cards stay non-credit-based); `ReportCard.tsx` Credits column + SGPA/CGPA chip.
   - Tests: `SemesterFiltersCreditsFeatureTest` 11 tests / 112 asserts (semester options/hydration/default, semester-bounded attendance CSV export excludes out-of-window records, saved-report semester persist + run hydration, subject credits create/validate/update, credit-based SGPA math 3.85, non-credit fallback). Gates: full suite **795 tests, 6136 asserts pass**; i18n 0 bad (4616 keys ×3); tsc clean; prod build OK.
+- **P6.2 (done)**: **Superadmin Billing Center** (per scope decision, branch-admin role deferred; billing/analytics shipped):
+  - `BillingCenterController` (`GET /billing-center` name `billing-center`, superadmin-gated `.index`) → `dashboard/BillingCenter`: KPI row (total/active/expiring-soon/expired orgs, total + this-month collections, payment count), organizations table (plan, status badge via `hasActiveAccess`/`subscriptionIsExpired`, subscription period, days left, student/staff counts, last payment), expiring-soon banner, recent-payments table.
+  - Actions: `POST …/organizations/{org}/payments` **record payment** (`subscription_payments` row, `status=completed`, payment_method enum `upi|card|bank_transfer|cash|other`; `renew_months` extends end date from current end, or from today after lapse); `PATCH …/organizations/{org}` **edit subscription** (plan/status/start/end/max_students/max_staff); `POST …/organizations/{org}/toggle-status` **suspend/activate**. All superadmin-only (403 otherwise); reuse `Organization` billing helpers.
+  - Sidebar "Billing Center" item (settings group, `super_admin` only, CreditCard icon); i18n +36 keys ×3 (en/hi/mr, 4652 keys each, 0 bad).
+  - Tests: `BillingCenterFeatureTest` 10 tests / 116 asserts (page render w/ KPIs+orgs+payments, expiring/expired KPI math, non-superadmin 403 on view+record, renew-from-current-end + renew-after-lapse + no-renewal-untouched, payment validation, subscription update, suspend→activate, suspended org status + count). Gates: full suite **805 tests, 6252 asserts pass**; i18n 0 bad (4652 keys ×3); tsc clean; prod build OK.
