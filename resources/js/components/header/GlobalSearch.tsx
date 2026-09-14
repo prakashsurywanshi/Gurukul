@@ -1,33 +1,72 @@
 import { router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import { Loader2, Search, GraduationCap, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { GraduationCap, Users, School, Wallet, ShieldAlert, HeartPulse, Search } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { Popover, PopoverContent, PopoverTrigger } from '../../Pages/ui/popover';
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../Pages/ui/command';
 
 interface SearchResult {
     id: string;
-    type: 'student' | 'staff';
+    type: string;
     name: string;
     subtitle: string;
     href: string;
 }
 
-type ResultGroups = { students: SearchResult[]; staff: SearchResult[] };
+type ResultGroups = Record<string, SearchResult[]>;
+
+const GROUP_KEYS = ['students', 'staff', 'classes', 'fees', 'behavior', 'health'] as const;
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+    student: GraduationCap,
+    staff: Users,
+    class: School,
+    fee: Wallet,
+    behavior: ShieldAlert,
+    health: HeartPulse,
+};
+
+const GROUP_LABELS: Record<string, string> = {
+    students: 'Students',
+    staff: 'Staff',
+    classes: 'Classes',
+    fees: 'Fees',
+    behavior: 'Behavior',
+    health: 'Health',
+};
+
+const emptyGroups = (): ResultGroups => Object.fromEntries(GROUP_KEYS.map((k) => [k, []])) as ResultGroups;
 
 export default function GlobalSearch() {
     const { t } = useLanguage();
     const [q, setQ] = useState('');
-    const [results, setResults] = useState<ResultGroups>({ students: [], staff: [] });
-    const [loading, setLoading] = useState(false);
+    const [results, setResults] = useState<ResultGroups>(emptyGroups);
     const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const visit = useCallback((href: string) => {
+        setOpen(false);
+        setQ('');
+        router.visit(href);
+    }, []);
+
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setOpen((prev) => !prev);
+            }
+        };
+
+        document.addEventListener('keydown', down);
+        return () => document.removeEventListener('keydown', down);
+    }, []);
 
     useEffect(() => {
         const query = q.trim();
 
-        if (query.length < 1) {
-            setResults({ students: [], staff: [] });
+        if (!open || query.length < 1) {
+            setResults(emptyGroups());
             setLoading(false);
-
             return;
         }
 
@@ -40,124 +79,78 @@ export default function GlobalSearch() {
                     setResults({
                         students: data.students ?? [],
                         staff: data.staff ?? [],
+                        classes: data.classes ?? [],
+                        fees: data.fees ?? [],
+                        behavior: data.behavior ?? [],
+                        health: data.health ?? [],
                     });
                 })
                 .catch(() => {
-                    setResults({ students: [], staff: [] });
+                    setResults(emptyGroups());
                 })
                 .finally(() => setLoading(false));
         }, 250);
 
         return () => clearTimeout(timer);
-    }, [q]);
+    }, [q, open]);
 
-    useEffect(() => {
-        setOpen(q.trim().length >= 1);
-    }, [q]);
-
-    const visit = (href: string) => {
-        setOpen(false);
-        setQ('');
-        router.visit(href);
-    };
-
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const first = results.students[0] ?? results.staff[0];
-        if (first) {
-            visit(first.href);
-        }
-    };
-
-    const hasResults = results.students.length > 0 || results.staff.length > 0;
-
-    const renderResult = (item: SearchResult) => (
-        <button
-            key={item.type + item.id}
-            type="button"
-            onClick={() => visit(item.href)}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-[var(--accent)]"
-        >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--secondary)] text-[var(--primary)]">
-                {item.type === 'student' ? <GraduationCap className="h-4 w-4" /> : <Users className="h-4 w-4" />}
-            </span>
-            <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-[var(--foreground)]">{item.name}</span>
-                <span className="block truncate text-xs text-[var(--muted-foreground)]">{item.subtitle}</span>
-            </span>
-        </button>
-    );
+    const totalResults = GROUP_KEYS.reduce((sum, key) => sum + (results[key]?.length ?? 0), 0);
 
     return (
-        <Popover open={open} onOpenChange={setOpen} modal={false}>
-            <PopoverTrigger asChild>
-                <form
-                    onSubmit={submit}
-                    className="flex w-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 shadow-sm transition hover:bg-[var(--accent)] md:w-64 lg:w-80"
-                >
-                    <Search className="h-4 w-4 shrink-0 text-[var(--primary)]" />
-                    <input
-                        type="text"
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        onFocus={() => setOpen(true)}
-                        placeholder={t('Search students / staff')}
-                        aria-label={t('Search students / staff')}
-                        className="hidden w-full bg-transparent text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)] md:block"
-                    />
-                </form>
-            </PopoverTrigger>
+        <>
+            <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 shadow-sm transition hover:bg-[var(--accent)] md:w-64 lg:w-80"
+            >
+                <Search className="h-4 w-4 shrink-0 text-[var(--primary)]" />
+                <span className="hidden w-full text-left text-sm text-[var(--muted-foreground)] md:inline">
+                    {t('Search students / staff')}
+                </span>
+                <kbd className="pointer-events-none ml-auto hidden select-none rounded-md border border-[var(--border)] bg-[var(--background)] px-1.5 text-[10px] font-medium text-[var(--muted-foreground)] md:inline">
+                    Ctrl+K
+                </kbd>
+            </button>
 
-            <PopoverContent align="end" sideOffset={8} className="w-[calc(100vw-2rem)] max-w-md p-2">
-                <div className="space-y-1">
-                    <div className="md:hidden">
-                        <form
-                            onSubmit={submit}
-                            className="flex items-center gap-2 rounded-lg bg-[var(--secondary)] px-3 py-2"
-                        >
-                            <Search className="h-4 w-4 shrink-0 text-[var(--primary)]" />
-                            <input
-                                type="text"
-                                value={q}
-                                onChange={(e) => setQ(e.target.value)}
-                                placeholder={t('Search students / staff')}
-                                autoFocus
-                                className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-foreground)]"
-                            />
-                        </form>
-                    </div>
+            <CommandDialog open={open} onOpenChange={setOpen}>
+                <CommandInput
+                    placeholder={t('Search students / staff')}
+                    value={q}
+                    onValueChange={setQ}
+                />
+                <CommandList>
+                    <CommandEmpty>
+                        {loading ? '' : t('No results found.')}
+                    </CommandEmpty>
 
-                    {loading && (
-                        <div className="flex items-center gap-2 px-3 py-3 text-sm text-[var(--muted-foreground)]">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                    )}
+                    {GROUP_KEYS.map((groupKey) => {
+                        const items = results[groupKey];
+                        if (!items?.length) return null;
 
-                    {!loading && q.trim().length >= 1 && !hasResults && (
-                        <div className="px-3 py-4 text-center text-sm text-[var(--muted-foreground)]">
-                            {t('No results found.')}
-                        </div>
-                    )}
+                        const Icon = ICON_MAP[groupKey.replace(/s$/, '')] ?? Search;
 
-                    {!loading && results.students.length > 0 && (
-                        <div>
-                            <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                                {t('Students')}
-                            </p>
-                            {results.students.map(renderResult)}
-                        </div>
-                    )}
-
-                    {!loading && results.staff.length > 0 && (
-                        <div>
-                            <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-foreground)]">
-                                {t('Staff')}
-                            </p>
-                            {results.staff.map(renderResult)}
-                        </div>
-                    )}
-                </div>
-            </PopoverContent>
-        </Popover>
+                        return (
+                            <CommandGroup key={groupKey} heading={t(GROUP_LABELS[groupKey])}>
+                                {items.map((item) => (
+                                    <CommandItem
+                                        key={`${item.type}-${item.id}`}
+                                        value={`${item.name} ${item.subtitle}`}
+                                        onSelect={() => visit(item.href)}
+                                    >
+                                        <Icon className="h-4 w-4 shrink-0 opacity-60" />
+                                        <span className="min-w-0 flex-1 truncate">
+                                            <span className="font-medium text-[var(--foreground)]">{item.name}</span>
+                                            {item.subtitle && (
+                                                <span className="ml-2 text-xs text-[var(--muted-foreground)]">{item.subtitle}</span>
+                                            )}
+                                        </span>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        );
+                    })}
+                </CommandList>
+            </CommandDialog>
+        </>
     );
 }

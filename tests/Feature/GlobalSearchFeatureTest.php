@@ -2,8 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
+use App\Models\FeeStructure;
+use App\Models\HealthRecord;
+use App\Models\Incident;
 use App\Models\Organization;
+use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\StudentFee;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -60,12 +66,128 @@ class GlobalSearchFeatureTest extends TestCase
             ->assertOk()
             ->assertJsonPath('staff.0.type', 'staff')
             ->assertJsonPath('staff.0.name', 'Amit Deshmukh')
-            ->assertJsonPath('staff.0.href', '/staff');
+            ->assertJsonPath('staff.0.href', '/staff/' . User::query()->where('email', 'amit@school.test')->first()->id);
     }
 
-    public function test_teacher_sees_students_but_not_staff_results(): void
+    public function test_admin_sees_all_six_entity_types(): void
     {
         $org = $this->seedOrganization();
+        $year = AcademicYear::query()->create([
+            'organization_id' => $org->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-04-01',
+            'end_date' => '2027-03-31',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        $admin = User::factory()->create([
+            'organization_id' => $org->id,
+            'role' => 'admin',
+            'name' => 'Admin Search',
+            'email' => 'admin-search@school.test',
+        ]);
+
+        $student = Student::query()->create([
+            'organization_id' => $org->id,
+            'admission_no' => 'ADM-4001',
+            'first_name' => 'Kiran',
+            'last_name' => 'Naik',
+            'date_of_birth' => '2012-05-10',
+            'gender' => 'male',
+            'admission_date' => '2026-04-10',
+            'status' => 'active',
+        ]);
+
+        User::factory()->create([
+            'organization_id' => $org->id,
+            'role' => 'teacher',
+            'name' => 'Kiran Bhat',
+            'email' => 'kiran-bhat@school.test',
+        ]);
+
+        $class = SchoolClass::query()->create([
+            'organization_id' => $org->id,
+            'academic_year_id' => $year->id,
+            'name' => 'Kiran House',
+            'section' => 'A',
+            'capacity' => 30,
+            'status' => 'active',
+        ]);
+
+        $feeStructure = FeeStructure::query()->create([
+            'organization_id' => $org->id,
+            'academic_year_id' => $year->id,
+            'class_id' => $class->id,
+            'fee_type' => 'tuition',
+            'amount' => 5000,
+            'frequency' => 'monthly',
+            'status' => 'active',
+        ]);
+
+        StudentFee::query()->create([
+            'organization_id' => $org->id,
+            'student_id' => $student->id,
+            'fee_structure_id' => $feeStructure->id,
+            'academic_year_id' => $year->id,
+            'month' => 'April',
+            'year' => 2026,
+            'amount' => 5000,
+            'discount' => 0,
+            'fine' => 0,
+            'net_amount' => 5000,
+            'paid_amount' => 0,
+            'balance' => 5000,
+            'due_date' => '2026-04-10',
+            'status' => 'pending',
+        ]);
+
+        Incident::query()->create([
+            'organization_id' => $org->id,
+            'student_id' => $student->id,
+            'type' => 'behavior',
+            'title' => 'Kiran behavioral issue',
+            'incident_date' => '2026-05-01',
+            'status' => 'open',
+            'created_by' => $admin->id,
+        ]);
+
+        HealthRecord::query()->create([
+            'organization_id' => $org->id,
+            'student_id' => $student->id,
+            'record_date' => '2026-06-01',
+            'blood_group' => 'B+',
+            'recorded_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)->getJson('/global-search?q=kiran')
+            ->assertOk()
+            ->assertJsonCount(1, 'students')
+            ->assertJsonCount(1, 'staff')
+            ->assertJsonCount(1, 'classes')
+            ->assertJsonCount(1, 'fees')
+            ->assertJsonCount(1, 'behavior')
+            ->assertJsonCount(1, 'health')
+            ->assertJsonPath('students.0.href', '/students/' . $student->id)
+            ->assertJsonPath('staff.0.href', '/staff/' . User::query()->where('email', 'kiran-bhat@school.test')->first()->id)
+            ->assertJsonPath('classes.0.href', '/classes/' . $class->id)
+            ->assertJsonPath('classes.0.name', 'Kiran House - A')
+            ->assertJsonPath('fees.0.href', '/students/' . $student->id . '?tab=fees')
+            ->assertJsonPath('behavior.0.href', '/student-behavior?student_id=' . $student->id)
+            ->assertJsonPath('health.0.href', '/student-health?student_id=' . $student->id);
+    }
+
+    public function test_teacher_sees_students_but_not_staff_or_gated_types(): void
+    {
+        $org = $this->seedOrganization();
+        $year = AcademicYear::query()->create([
+            'organization_id' => $org->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-04-01',
+            'end_date' => '2027-03-31',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
 
         $teacher = User::factory()->create([
             'organization_id' => $org->id,
@@ -81,7 +203,7 @@ class GlobalSearchFeatureTest extends TestCase
             'email' => 'nilesh@school.test',
         ]);
 
-        Student::query()->create([
+        $student = Student::query()->create([
             'organization_id' => $org->id,
             'admission_no' => 'ADM-2001',
             'first_name' => 'Tejas',
@@ -92,16 +214,50 @@ class GlobalSearchFeatureTest extends TestCase
             'status' => 'active',
         ]);
 
+        $class = SchoolClass::query()->create([
+            'organization_id' => $org->id,
+            'academic_year_id' => $year->id,
+            'name' => '10',
+            'section' => 'B',
+            'status' => 'active',
+        ]);
+
+        $feeStructure = FeeStructure::query()->create([
+            'organization_id' => $org->id,
+            'academic_year_id' => $year->id,
+            'class_id' => $class->id,
+            'fee_type' => 'tuition',
+            'amount' => 3000,
+            'frequency' => 'monthly',
+            'status' => 'active',
+        ]);
+
+        StudentFee::query()->create([
+            'organization_id' => $org->id,
+            'student_id' => $student->id,
+            'fee_structure_id' => $feeStructure->id,
+            'academic_year_id' => $year->id,
+            'month' => 'April',
+            'year' => 2026,
+            'amount' => 3000,
+            'discount' => 0,
+            'fine' => 0,
+            'net_amount' => 3000,
+            'paid_amount' => 0,
+            'balance' => 3000,
+            'due_date' => '2026-04-10',
+            'status' => 'pending',
+        ]);
+
         $this->actingAs($teacher)
             ->getJson('/global-search?q=tejas')
             ->assertOk()
             ->assertJsonCount(1, 'students')
-            ->assertJsonCount(0, 'staff');
-
-        $this->actingAs($teacher)
-            ->getJson('/global-search?q=nilesh')
-            ->assertOk()
-            ->assertJsonCount(0, 'staff');
+            ->assertJsonCount(0, 'staff')
+            ->assertJsonCount(0, 'classes')
+            ->assertJsonCount(0, 'fees')
+            ->assertJsonCount(0, 'behavior')
+            ->assertJsonCount(0, 'health');
     }
 
     public function test_student_search_is_scoped_to_the_current_organization(): void
@@ -116,7 +272,41 @@ class GlobalSearchFeatureTest extends TestCase
             'email' => 'admin@school.test',
         ]);
 
-        Student::query()->create([
+        $year = AcademicYear::query()->create([
+            'organization_id' => $org->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-04-01',
+            'end_date' => '2027-03-31',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        $otherYear = AcademicYear::query()->create([
+            'organization_id' => $otherOrg->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-04-01',
+            'end_date' => '2027-03-31',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        $class = SchoolClass::query()->create([
+            'organization_id' => $org->id,
+            'academic_year_id' => $year->id,
+            'name' => 'Sneha Class',
+            'section' => 'A',
+            'status' => 'active',
+        ]);
+
+        SchoolClass::query()->create([
+            'organization_id' => $otherOrg->id,
+            'academic_year_id' => $otherYear->id,
+            'name' => 'Sneha Class',
+            'section' => 'A',
+            'status' => 'active',
+        ]);
+
+        $student = Student::query()->create([
             'organization_id' => $org->id,
             'admission_no' => 'ADM-3001',
             'first_name' => 'Sneha',
@@ -142,7 +332,8 @@ class GlobalSearchFeatureTest extends TestCase
             ->getJson('/global-search?q=sneha')
             ->assertOk()
             ->assertJsonCount(1, 'students')
-            ->assertJsonPath('students.0.href', '/students/' . Student::query()->where('organization_id', $org->id)->first()->id);
+            ->assertJsonPath('students.0.href', '/students/' . $student->id)
+            ->assertJsonCount(1, 'classes');
     }
 
     public function test_blank_query_returns_empty_results(): void
@@ -160,7 +351,11 @@ class GlobalSearchFeatureTest extends TestCase
             ->getJson('/global-search?q=')
             ->assertOk()
             ->assertJsonCount(0, 'students')
-            ->assertJsonCount(0, 'staff');
+            ->assertJsonCount(0, 'staff')
+            ->assertJsonCount(0, 'classes')
+            ->assertJsonCount(0, 'fees')
+            ->assertJsonCount(0, 'behavior')
+            ->assertJsonCount(0, 'health');
     }
 
     public function test_dashboard_shares_header_notification_props(): void
