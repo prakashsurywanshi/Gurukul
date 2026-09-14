@@ -5036,5 +5036,33 @@ const en = {
     'Delete this saved report?': 'Delete this saved report?',
     '(Current)': '(Current)',
     'Export Excel': 'Export Excel',
+    'Institution Type': 'Institution Type',
+    'Select institution type': 'Select institution type',
+    'School': 'School',
+    'College': 'College',
+    'Coaching Center': 'Coaching Center',
+    'University': 'University',
+    'Colleges, coaching centers and universities get semester-based academic management.':
+        'Colleges, coaching centers and universities get semester-based academic management.',
+    'Semesters (College Mode)': 'Semesters (College Mode)',
+    'Manage Semesters': 'Manage Semesters',
+    'Semester': 'Semester',
+    'Semesters': 'Semesters',
+    'Semester Number': 'Semester Number',
+    'Semester Name': 'Semester Name',
+    'Mark Current': 'Mark Current',
+    'Add Semester': 'Add Semester',
+    'No semesters created yet for this session.':
+        'No semesters created yet for this session.',
+    'Semesters are numbered automatically. Set the dates within the academic session.':
+        'Semesters are numbered automatically. Set the dates within the academic session.',
+    'Divide the current academic session into semesters and manage which one is active.':
+        'Divide the current academic session into semesters and manage which one is active.',
+    'Delete this semester? This cannot be undone.':
+        'Delete this semester? This cannot be undone.',
+    'Semester created.': 'Semester created.',
+    'Semester updated.': 'Semester updated.',
+    'Semester deleted.': 'Semester deleted.',
+    'Current semester updated.': 'Current semester updated.',
 };
 export default en;

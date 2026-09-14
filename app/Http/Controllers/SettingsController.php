@@ -64,6 +64,7 @@ class SettingsController extends Controller
                     'pincode',
                     'website',
                     'logo',
+                    'type',
                     'settings',
                 ]);
 
@@ -112,6 +113,7 @@ class SettingsController extends Controller
             ],
             'dateFormat' => ['required', Rule::in(['DD-MM-YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'])],
             'logo' => ['nullable', 'string'],
+            'orgType' => ['sometimes', 'required', Rule::in(['school', 'college', 'coaching', 'university'])],
         ]);
 
         $sessionNames = AcademicYear::query()
@@ -161,6 +163,7 @@ class SettingsController extends Controller
             'pincode' => $validated['pincode'],
             'website' => $validated['website'],
             'logo' => $logo,
+            'type' => $validated['orgType'] ?? $organization->type,
             'settings' => $settings,
         ]);
 

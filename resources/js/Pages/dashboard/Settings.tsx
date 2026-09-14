@@ -1,7 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Image as ImageIcon, Pencil, Save, Sun, Moon, Monitor } from 'lucide-react';
+import { Image as ImageIcon, Pencil, Save, Sun, Moon, Monitor, GraduationCap, ArrowRight } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -27,6 +27,7 @@ interface SettingsProps {
         pincode: string | null;
         website: string | null;
         logo: string | null;
+        type?: string | null;
         settings?: {
             session?: string;
             sessions?: string[];
@@ -54,6 +55,7 @@ const defaultSettingsForm = {
     academicSession: '',
     dateFormat: 'DD-MM-YYYY',
     logo: '',
+    orgType: 'school',
 };
 
 const dateFormatOptions = ['DD-MM-YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'];
@@ -96,6 +98,7 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                 '',
             dateFormat: organization?.settings?.date_format || defaultSettingsForm.dateFormat,
             logo: organization?.logo || '',
+            orgType: organization?.type || defaultSettingsForm.orgType,
         });
     }, [activeSession, organization, sessionRecords]);
 
@@ -136,6 +139,7 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                 academicSession: formData.academicSession,
                 dateFormat: formData.dateFormat,
                 logo: formData.logo,
+                orgType: formData.orgType,
             },
             {
                 preserveScroll: true,
@@ -472,6 +476,35 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                                     </div>
 
                                     <div className="space-y-2">
+                                        <Label>{t('Institution Type')}</Label>
+                                        <Select
+                                            value={formData.orgType}
+                                            onValueChange={(value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    orgType: value,
+                                                })
+                                            }
+                                            disabled={!isEditing}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t('Select institution type')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="school">{t('School')}</SelectItem>
+                                                <SelectItem value="college">{t('College')}</SelectItem>
+                                                <SelectItem value="coaching">{t('Coaching Center')}</SelectItem>
+                                                <SelectItem value="university">{t('University')}</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-xs text-slate-500 dark:text-[var(--muted-foreground)]">
+                                            {t(
+                                                'Colleges, coaching centers and universities get semester-based academic management.',
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <Label>{t('Academic Session')}</Label>
                                         <Select
                                             value={selectedAcademicSession}
@@ -638,6 +671,32 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                             </form>
                         </CardContent>
                     </Card>
+
+                    {(['college', 'coaching', 'university'] as string[]).includes(formData.orgType) && (
+                        <Card className="border-slate-200 shadow-sm dark:border-[var(--border)] dark:bg-[var(--card)]">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-[var(--foreground)]">
+                                    <GraduationCap className="h-5 w-5 text-blue-500" />
+                                    {t('Semesters (College Mode)')}
+                                </CardTitle>
+                                <CardDescription>
+                                    {t(
+                                        'Divide the current academic session into semesters and manage which one is active.',
+                                    )}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Button
+                                    type="button"
+                                    onClick={() => router.get('/semesters')}
+                                    className="bg-blue-600 text-white hover:bg-blue-700"
+                                >
+                                    {t('Manage Semesters')}
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </DashboardLayout>

@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
             'activeSession' => fn () => $this->resolveActiveSession($request),
             'schoolName' => fn () => $this->resolveSchoolName($request),
             'schoolLogo' => fn () => $this->resolveSchoolLogo($request),
+            'orgType' => fn () => $this->resolveOrgType($request),
             'panelAppearance' => fn () => $this->resolvePanelAppearance($request),
             'subscriptionNotice' => fn () => $this->resolveSubscriptionNotice($request),
             'staffPermissions' => fn () => app(StaffPermissionService::class)->featurePermissionsFor($request->user()),
@@ -61,6 +62,14 @@ class HandleInertiaRequests extends Middleware
             'headerNotifications' => fn () => $this->resolveHeaderNotifications($request),
             'chatUnread' => fn () => $this->resolveChatUnread($request),
         ];
+    }
+
+    private function resolveOrgType(Request $request): string
+    {
+        $organizationId = $this->resolveOrganizationId($request);
+        $organization = $organizationId ? Organization::query()->find($organizationId) : null;
+
+        return $organization->type ?? 'school';
     }
 
     private function resolveModules(Request $request): array

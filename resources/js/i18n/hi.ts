@@ -5053,5 +5053,33 @@ const hi = {
     'Delete this saved report?': 'इस सहेजी गई रिपोर्ट को हटाएं?',
     '(Current)': '(वर्तमान)',
     'Export Excel': 'एक्सेल में निर्यात करें',
+    'Institution Type': 'संस्था प्रकार',
+    'Select institution type': 'संस्था का प्रकार चुनें',
+    'School': 'विद्यालय',
+    'College': 'कॉलेज',
+    'Coaching Center': 'कोचिंग सेंटर',
+    'University': 'विश्वविद्यालय',
+    'Colleges, coaching centers and universities get semester-based academic management.':
+        'कॉलेज, कोचिंग सेंटर और विश्वविद्यालयों को सेमेस्टर-आधारित शैक्षणिक प्रबंधन मिलता है।',
+    'Semesters (College Mode)': 'सेमेस्टर (कॉलेज मोड)',
+    'Manage Semesters': 'सेमेस्टर प्रबंधित करें',
+    'Semester': 'सेमेस्टर',
+    'Semesters': 'सेमेस्टर',
+    'Semester Number': 'सेमेस्टर संख्या',
+    'Semester Name': 'सेमेस्टर का नाम',
+    'Mark Current': 'वर्तमान बनाएं',
+    'Add Semester': 'सेमेस्टर जोड़ें',
+    'No semesters created yet for this session.':
+        'इस सत्र के लिए अभी तक कोई सेमेस्टर नहीं बनाया गया है।',
+    'Semesters are numbered automatically. Set the dates within the academic session.':
+        'सेमेस्टर स्वतः क्रमांकित होते हैं। दिनांक शैक्षणिक सत्र के भीतर निर्धारित करें।',
+    'Divide the current academic session into semesters and manage which one is active.':
+        'वर्तमान शैक्षणिक सत्र को सेमेस्टर में विभाजित करें और कौन सा सक्रिय है उसे प्रबंधित करें।',
+    'Delete this semester? This cannot be undone.':
+        'इस सेमेस्टर को हटाएं? इसे पूर्ववत नहीं किया जा सकता।',
+    'Semester created.': 'सेमेस्टर बनाया गया।',
+    'Semester updated.': 'सेमेस्टर अपडेट किया गया।',
+    'Semester deleted.': 'सेमेस्टर हटाया गया।',
+    'Current semester updated.': 'वर्तमान सेमेस्टर अपडेट हो गया।',
 };
 export default hi;

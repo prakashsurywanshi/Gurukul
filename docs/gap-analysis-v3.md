@@ -115,8 +115,11 @@
 
 ## 7. College / Institute mode gap
 
-- `organizations.type` supports `school/college/coaching/university` but the UI and terminology are school-flavored:
-  no course/batch/semester/lecture/credit/CBCS mode, no per-type grading/attendance/fee semantics.
+### P6.1 (CORRECTED — foundation shipped)
+- `organizations.type` (`school/college/coaching/university`) is now **wired end-to-end**: selectable/editable on the Settings page, persisted by `SettingsController@update` (`orgType`, `Rule::in`), exposed via `SettingsController@index` (`organization.type`) and **shared on every Inertia page** (`HandleInertiaRequests → orgType`).
+- **Semesters foundation**: new `semesters` table (`2026_09_14_000006_create_semesters_table`, org + academic_year scoped, `sem_no` auto-unique per year, `is_current` flag) + `Semester` model; `AcademicYear::semesters()`; `Organization::currentSemester()` (prefers `is_current` true, else highest `sem_no`, always within the selected academic year).
+- `SemesterController` (index/store/update/destroy/setCurrent) at `/semesters`, gated by the existing `Sessions` permission family, org-isolated (403 cross-org). New `dashboard/SemesterSettings` page (numbered listing, Current badge, Mark Current, delete, add form auto-numbered with session-bounded dates). Settings page shows a "Semesters (College Mode)" card linking there for `college/coaching/university` orgs.
+- Remaining (deferred to later P6 phases): cross-module semester filters (exams/attendance/fees/reports), credits/CBCS grading, lecture-mode timetables, course/batch CRUD, per-type terminology in reports.
 
 ## 8. Tracking
 

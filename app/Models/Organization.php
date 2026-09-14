@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -124,6 +125,26 @@ class Organization extends Model
     public function selectedAcademicYear(): ?AcademicYear
     {
         return $this->selectedAcademicYearQuery()->first();
+    }
+
+    public function currentSemester(): ?Semester
+    {
+        $year = $this->selectedAcademicYear();
+
+        if (!$year) {
+            return null;
+        }
+
+        return Semester::query()
+            ->where('organization_id', $this->id)
+            ->where('academic_year_id', $year->id)
+            ->where('is_current', true)
+            ->first()
+            ?? Semester::query()
+                ->where('organization_id', $this->id)
+                ->where('academic_year_id', $year->id)
+                ->orderByDesc('sem_no')
+                ->first();
     }
 
     public function subscriptionIsExpired(?Carbon $referenceDate = null): bool
