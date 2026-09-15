@@ -3,12 +3,19 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\FeePayment;
+use App\Models\FeeStructure;
+use App\Models\Message;
 use App\Models\Organization;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\StudentAcademicHistory;
+use App\Models\StudentFee;
+use App\Models\TransportAssignment;
+use App\Models\TransportRoute;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -242,6 +249,185 @@ class ApiContractTest extends TestCase
         foreach ($endpoints as $endpoint) {
             $this->getJson($endpoint)->assertOk($endpoint);
         }
+    }
+
+    public function test_transport_fee_collection_contract(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $academicYear = AcademicYear::query()->where('organization_id', $this->organization->id)->firstOrFail();
+
+        $class = SchoolClass::query()->create([
+            'organization_id' => $this->organization->id,
+            'academic_year_id' => $academicYear->id,
+            'name' => '10',
+            'section' => 'A',
+            'room_number' => '101',
+            'capacity' => 40,
+            'status' => 'active',
+        ]);
+
+        $student = Student::query()->create([
+            'organization_id' => $this->organization->id,
+            'class_id' => $class->id,
+            'admission_no' => 'ADM-2026-0001',
+            'roll_number' => '1',
+            'first_name' => 'Rahul',
+            'last_name' => 'Kumar',
+            'email' => 'rahul@gurukul.test',
+            'date_of_birth' => '2012-05-10',
+            'gender' => 'male',
+            'admission_date' => '2026-04-10',
+            'status' => 'active',
+        ]);
+
+        $route = TransportRoute::query()->create([
+            'organization_id' => $this->organization->id,
+            'route_name' => 'Demo Route',
+            'route_number' => 'R-001',
+            'fare' => 500,
+            'status' => 'active',
+        ]);
+
+        $assignment = TransportAssignment::query()->create([
+            'organization_id' => $this->organization->id,
+            'student_id' => $student->id,
+            'route_id' => $route->id,
+            'pickup_point' => 'Main Road',
+            'status' => 'active',
+        ]);
+
+        $feeStructure = FeeStructure::query()->create([
+            'organization_id' => $this->organization->id,
+            'academic_year_id' => $academicYear->id,
+            'class_id' => $class->id,
+            'fee_type' => 'Transport Fee - Demo Route / Main Road',
+            'amount' => 1000,
+            'frequency' => 'monthly',
+        ]);
+
+        $studentFee = StudentFee::query()->create([
+            'organization_id' => $this->organization->id,
+            'student_id' => $student->id,
+            'fee_structure_id' => $feeStructure->id,
+            'academic_year_id' => $academicYear->id,
+            'month' => 'January',
+            'year' => 2026,
+            'amount' => 1000,
+            'net_amount' => 1000,
+            'paid_amount' => 0,
+            'balance' => 1000,
+            'due_date' => '2026-01-10',
+            'transport_assignment_id' => $assignment->id,
+            'status' => 'pending',
+        ]);
+
+        $list = $this->getJson('/api/transport/fee-collection')
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['data', 'summary', 'classes']);
+
+        $list->assertJsonCount(1, 'data');
+
+        $payment = $this->postJson('/api/transport/fee-collection/payments', [
+            'student_fee_id' => $studentFee->id,
+            'amount' => 400,
+            'payment_method' => 'upi',
+        ])->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['data' => ['id', 'receiptNumber', 'amount']]);
+
+        $paymentId = $payment->json('data.id');
+
+        $this->assertSame(600.0, (float) $studentFee->refresh()->balance);
+
+        $this->postJson('/api/transport/fee-collection/payments/'.$paymentId.'/revert', [
+            'reason' => 'Test revert',
+        ])->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertSame(1000.0, (float) $studentFee->refresh()->balance);
+        $this->assertSame('refunded', FeePayment::findOrFail($paymentId)->status);
+    }
+
+    public function test_whatsapp_bridge_api_contracts(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        Http::fake(['*' => Http::response(['status' => 'disconnected', 'account' => null, 'message' => 'ok'], 200)]);
+
+        $status = $this->getJson('/api/communication/send-whatsapp/status')
+            ->assertOk()
+            ->assertJsonStructure(['configured', 'connected', 'status', 'queueWorkerStatus']);
+
+        $this->getJson('/api/communication/send-whatsapp')
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['data' => []]);
+
+        $this->postJson('/api/communication/send-whatsapp', [
+            'audience_type' => 'staff',
+            'staff_roles' => [],
+            'subject' => 'Test campaign',
+            'message' => 'Hello staff',
+        ])->assertStatus(422)
+            ->assertJsonPath('success', false);
+
+        $message = Message::query()->create([
+            'organization_id' => $this->organization->id,
+            'sender_id' => $this->admin->id,
+            'subject' => 'Old campaign',
+            'message' => 'Old content',
+            'attachments' => [
+                'channel' => 'whatsapp',
+                'whatsapp' => [
+                    'recipient_summary' => 'All Staff',
+                    'recipient_count' => 1,
+                    'recipient_numbers' => ['9999999999'],
+                    'status' => 'sent',
+                    'successful_count' => 1,
+                    'failed_count' => 0,
+                    'pending_count' => 0,
+                ],
+            ],
+            'priority' => 'normal',
+            'is_announcement' => false,
+        ]);
+
+        $this->deleteJson('/api/communication/send-whatsapp/'.$message->id)
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseMissing('messages', ['id' => $message->id]);
+    }
+
+    public function test_versioned_api_prefix_aliases_unversioned_api(): void
+    {
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'admin@gurukul.test',
+            'password' => 'password',
+        ])
+            ->assertOk()
+            ->assertJsonStructure(['user' => ['id', 'name', 'email', 'role'], 'token']);
+
+        Sanctum::actingAs($this->admin);
+
+        foreach (['/api/v1/auth/user', '/api/v1/todo', '/api/v1/sessions', '/api/v1/knowledge-base', '/api/v1/roles/permissions'] as $endpoint) {
+            $this->getJson($endpoint)->assertOk($endpoint);
+        }
+
+        $this->getJson('/api/v1/transport/fee-collection')->assertOk();
+        $this->getJson('/api/v1/communication/send-whatsapp/status')->assertOk();
+    }
+
+    public function test_trailing_slash_paths_resolve(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $this->getJson('/api/knowledge-base/')->assertOk();
+        $this->getJson('/api/v1/knowledge-base/')->assertOk();
+        $this->getJson('/api/sessions/')->assertOk();
+        $this->getJson('/api/v1/sessions/')->assertOk();
     }
 
     public function test_certificates_api_contracts(): void

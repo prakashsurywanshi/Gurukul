@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AttendanceApiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateApiController;
 use App\Http\Controllers\Api\CommunicationApiController;
+use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\Api\ExamApiController;
 use App\Http\Controllers\Api\FeedbackApiController;
 use App\Http\Controllers\Api\FeesApiController;
@@ -209,6 +210,14 @@ Route::middleware(['auth:sanctum', 'staff.permission:Messages,view'])->prefix('c
         Route::get('/shares/{share}/download', [CommunicationApiController::class, 'downloadDownloadCenterContent']);
         Route::delete('/shares/{id}', [CommunicationApiController::class, 'deleteDownloadCenterShare'])->middleware('staff.permission:Download Center,delete');
     });
+
+    Route::prefix('send-whatsapp')->middleware('staff.permission:Send Whatsapp,view')->group(function () {
+        Route::get('/', [CommunicationApiController::class, 'indexWhatsapp']);
+        Route::post('/', [CommunicationApiController::class, 'storeWhatsapp'])->middleware('staff.permission:Send Whatsapp,add');
+        Route::delete('/{message}', [CommunicationApiController::class, 'destroyWhatsapp'])->middleware('staff.permission:Send Whatsapp,delete');
+        Route::get('/status', [CommunicationController::class, 'whatsappBridgeStatus']);
+        Route::post('/disconnect', [CommunicationController::class, 'disconnectWhatsapp'])->middleware('staff.permission:Send Whatsapp,edit');
+    });
 });
 
 Route::middleware(['auth:sanctum', 'staff.permission:Hostel Management,view'])->prefix('hostel')->group(function () {
@@ -278,6 +287,12 @@ Route::middleware(['auth:sanctum', 'staff.permission:Transport Management,view']
         Route::post('/', [TransportApiController::class, 'storeTrip'])->middleware('staff.permission:Transport Management,add');
         Route::put('/{trip}', [TransportApiController::class, 'updateTrip'])->middleware('staff.permission:Transport Management,edit');
         Route::delete('/{trip}', [TransportApiController::class, 'destroyTrip'])->middleware('staff.permission:Transport Management,delete');
+    });
+
+    Route::prefix('fee-collection')->middleware('staff.permission:Transport Fee Collection,view')->group(function () {
+        Route::get('/', [TransportApiController::class, 'indexFeeCollection']);
+        Route::post('/payments', [TransportApiController::class, 'collectPayment'])->middleware('staff.permission:Transport Fee Collection,add');
+        Route::post('/payments/{feePayment}/revert', [TransportApiController::class, 'revertPayment'])->middleware('staff.permission:Transport Fee Collection,edit');
     });
 });
 

@@ -780,31 +780,45 @@ class CommunicationController extends Controller
             'content' => ['required', 'string', 'max:10000'],
         ]);
 
+        $result = $this->launchWhatsappCampaign($organization, $user, $validated);
+
+        if (! $result['success']) {
+            return back()->withErrors($result['errors']);
+        }
+
+        return redirect()
+            ->route('communication.send-whatsapp')
+            ->with('success', $result['message']);
+    }
+
+    public function launchWhatsappCampaign(Organization $organization, User $user, array $validated): array
+    {
         [$recipientContacts, $recipientSummary] = $this->resolveVoiceRecipients($organization, $validated);
 
         if ($recipientContacts->isEmpty()) {
-            return back()->withErrors([
-                'whatsapp_recipients' => 'No valid WhatsApp recipients found for the selected audience.',
-            ]);
+            $message = 'No valid WhatsApp recipients found for the selected audience.';
+
+            return ['success' => false, 'message' => $message, 'errors' => ['whatsapp_recipients' => $message]];
         }
 
         $bridgeStatus = $this->bridgeStatusPayload($organization);
 
         if (! ($bridgeStatus['configured'] ?? false)) {
-            return back()->withErrors([
-                'whatsapp_delivery' => 'WhatsApp bridge URL is not configured.',
-            ]);
+            $message = 'WhatsApp bridge URL is not configured.';
+
+            return ['success' => false, 'message' => $message, 'errors' => ['whatsapp_delivery' => $message]];
         }
 
         if (! ($bridgeStatus['connected'] ?? false)) {
-            return back()->withErrors([
-                'whatsapp_delivery' => 'WhatsApp is not connected. Scan the QR code from the setup panel first.',
-            ]);
+            $message = 'WhatsApp is not connected. Scan the QR code from the setup panel first.';
+
+            return ['success' => false, 'message' => $message, 'errors' => ['whatsapp_delivery' => $message]];
         }
 
         $session = $this->currentWhatsappBridgeSession($organization);
         $accountNumber = $this->extractWhatsappAccountNumber($bridgeStatus['account'] ?? null);
         $recipientCount = $recipientContacts->count();
+        $successMessage = sprintf('WhatsApp campaign queued for %d recipient(s). A queue worker will send messages gradually in the background.', $recipientCount);
         $delayMin = max(1, (int) config('services.whatsapp_bridge.send_delay_min_seconds', 3));
         $delayMax = max($delayMin, (int) config('services.whatsapp_bridge.send_delay_max_seconds', 6));
         $delayCursor = 0;
@@ -870,9 +884,7 @@ class CommunicationController extends Controller
             )->onQueue('whatsapp')->delay($recipient['scheduled_at']);
         }
 
-        return redirect()
-            ->route('communication.send-whatsapp')
-            ->with('success', sprintf('WhatsApp campaign queued for %d recipient(s). A queue worker will send messages gradually in the background.', $recipientCount));
+        return ['success' => true, 'message' => $successMessage, 'errors' => []];
     }
 
     public function whatsappBridgeStatus(): JsonResponse
@@ -1865,7 +1877,7 @@ class CommunicationController extends Controller
             ->all();
     }
 
-    private function whatsappHistoryPayload(Organization $organization, User $user): array
+    public function whatsappHistoryPayload(Organization $organization, User $user): array
     {
         if (! Schema::hasTable('messages')) {
             return [];
@@ -2241,7 +2253,7 @@ class CommunicationController extends Controller
         return $organization->settings['communication_settings']['sms'] ?? [];
     }
 
-    private function isWhatsappMessage(Message $message): bool
+    public function isWhatsappMessage(Message $message): bool
     {
         return ($message->attachments['channel'] ?? null) === 'whatsapp';
     }

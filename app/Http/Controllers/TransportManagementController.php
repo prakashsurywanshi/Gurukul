@@ -1406,7 +1406,7 @@ class TransportManagementController extends Controller
         return array_values(array_filter(array_map('trim', explode(',', $stops))));
     }
 
-    private function syncOrganizationTransportFees(Organization $organization, ?int $academicYearId = null): void
+    public function syncOrganizationTransportFees(Organization $organization, ?int $academicYearId = null): void
     {
         $academicYearId ??= $this->getActiveAcademicYearId($organization);
 
@@ -1533,7 +1533,7 @@ class TransportManagementController extends Controller
         return $feeStructure;
     }
 
-    private function getTransportFeeRecords(Organization $organization, ?int $academicYearId = null): array
+    public function getTransportFeeRecords(Organization $organization, ?int $academicYearId = null): array
     {
         return StudentFee::query()
             ->where('organization_id', $organization->id)
@@ -1548,9 +1548,9 @@ class TransportManagementController extends Controller
                 'payments' => fn ($query) => $query->with('collector:id,name')->orderByDesc('payment_date')->orderByDesc('id'),
             ])
             ->orderBy('year')
-            ->orderByRaw("FIELD(month, 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')")
             ->orderBy('student_id')
             ->get()
+            ->sortBy(fn (StudentFee $fee) => $this->transportFeeMonthOrdinal($fee->month))
             ->map(function (StudentFee $fee) {
                 $latestActivePayment = $fee->payments->firstWhere('status', 'success');
                 $assignment = $fee->transportAssignment;
@@ -1601,7 +1601,7 @@ class TransportManagementController extends Controller
             ->all();
     }
 
-    private function getTransportFeeClassRecords(Organization $organization, ?int $academicYearId = null): array
+    public function getTransportFeeClassRecords(Organization $organization, ?int $academicYearId = null): array
     {
         return Student::query()
             ->where('organization_id', $organization->id)
@@ -1680,7 +1680,14 @@ class TransportManagementController extends Controller
             : $defaultDueDate;
     }
 
-    private function determineFeeStatus(float $balance, Carbon|string|null $dueDate, float $paidAmount): string
+    private function transportFeeMonthOrdinal(?string $month): int
+    {
+        static $months = ['January' => 1, 'February' => 2, 'March' => 3, 'April' => 4, 'May' => 5, 'June' => 6, 'July' => 7, 'August' => 8, 'September' => 9, 'October' => 10, 'November' => 11, 'December' => 12];
+
+        return $months[$month ?? ''] ?? 0;
+    }
+
+    public function determineFeeStatus(float $balance, Carbon|string|null $dueDate, float $paidAmount): string
     {
         if ($balance <= 0) {
             return 'paid';
@@ -1746,7 +1753,7 @@ class TransportManagementController extends Controller
         return $organization;
     }
 
-    private function generateReceiptNumber(): string
+    public function generateReceiptNumber(): string
     {
         do {
             $receipt = 'RCT-' . now()->format('Ymd') . '-' . random_int(1000, 9999);
@@ -1755,7 +1762,7 @@ class TransportManagementController extends Controller
         return $receipt;
     }
 
-    private function generateBatchReference(): string
+    public function generateBatchReference(): string
     {
         do {
             $reference = 'TRN-BATCH-' . now()->format('Ymd') . '-' . random_int(1000, 9999);

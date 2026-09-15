@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DailyTrip;
+use App\Models\FeePayment;
 use App\Models\Organization;
 use App\Models\Student;
 use App\Models\StudentFee;
@@ -711,6 +712,178 @@ class TransportApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Daily trip removed',
+        ]);
+    }
+
+    public function indexFeeCollection(Request $request): JsonResponse
+    {
+        $organization = $this->requireOrganization();
+        $transport = app(\App\Http\Controllers\TransportManagementController::class);
+
+        $transport->syncOrganizationTransportFees($organization);
+
+        $classFilter = (string) $request->input('class', '');
+        $sectionFilter = (string) $request->input('section', '');
+        $statusFilter = (string) $request->input('status', '');
+        $search = trim((string) $request->input('search', ''));
+
+        $records = collect($transport->getTransportFeeRecords($organization))
+            ->filter(function (array $record) use ($classFilter, $sectionFilter, $statusFilter, $search) {
+                if ($classFilter !== '' && ($record['class'] !== $classFilter || ($sectionFilter !== '' && $record['section'] !== $sectionFilter))) {
+                    return false;
+                }
+
+                if ($statusFilter !== '' && $record['status'] !== $statusFilter) {
+                    return false;
+                }
+
+                if ($search !== '' && ! str_contains(strtolower((string) $record['studentName']), strtolower($search))
+                    && ! str_contains(strtolower((string) $record['admissionNumber']), strtolower($search))) {
+                    return false;
+                }
+
+                return true;
+            })
+            ->values()
+            ->all();
+
+        $records = collect($records);
+
+        return response()->json([
+            'success' => true,
+            'data' => $records->values()->all(),
+            'classes' => $transport->getTransportFeeClassRecords($organization),
+            'summary' => [
+                'totalRecords' => $records->count(),
+                'totalAmount' => round($records->sum('amount'), 2),
+                'totalPaidAmount' => round($records->sum('paidAmount'), 2),
+                'totalDueAmount' => round($records->sum('dueAmount'), 2),
+                'paidCount' => $records->where('status', 'paid')->count(),
+                'partialCount' => $records->where('status', 'partial')->count(),
+                'pendingCount' => $records->where('status', 'pending')->count(),
+            ],
+            'message' => 'Transport fee records loaded',
+        ]);
+    }
+
+    public function collectPayment(Request $request): JsonResponse
+    {
+        $organization = $this->requireOrganization();
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'student_fee_id' => ['required', 'integer'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_method' => ['required', Rule::in(['cash', 'card', 'upi', 'cheque', 'bank_transfer', 'online'])],
+            'transaction_id' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $feeRecord = StudentFee::query()
+            ->where('organization_id', $organization->id)
+            ->whereNotNull('transport_assignment_id')
+            ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'like', '%Transport Fee - %'))
+            ->find($validated['student_fee_id']);
+
+        if (! $feeRecord) {
+            return response()->json(['success' => false, 'message' => 'Transport fee record not found.'], 404);
+        }
+
+        if ((float) $feeRecord->balance <= 0 || $feeRecord->status === 'waived') {
+            return response()->json(['success' => false, 'message' => 'Transport fee record does not have a pending balance.'], 422);
+        }
+
+        $transport = app(\App\Http\Controllers\TransportManagementController::class);
+
+        $payment = DB::transaction(function () use ($feeRecord, $validated, $organization, $user, $transport) {
+            $payment = FeePayment::query()->create([
+                'organization_id' => $organization->id,
+                'student_fee_id' => $feeRecord->id,
+                'student_id' => $feeRecord->student_id,
+                'receipt_number' => $transport->generateReceiptNumber(),
+                'amount' => (float) $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'transaction_id' => $validated['transaction_id'] ?? null,
+                'payment_date' => now()->toDateString(),
+                'collected_by' => $user->id,
+                'remarks' => sprintf('Transport fee collection for %s %s.', $feeRecord->month, $feeRecord->year),
+                'status' => 'success',
+            ]);
+
+            $paidAmount = (float) $feeRecord->paid_amount + (float) $validated['amount'];
+            $balance = max(0, (float) $feeRecord->net_amount - $paidAmount);
+
+            $feeRecord->update([
+                'paid_amount' => $paidAmount,
+                'balance' => $balance,
+                'status' => $transport->determineFeeStatus($balance, $feeRecord->due_date, $paidAmount),
+            ]);
+
+            return $payment;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => (string) $payment->id,
+                'receiptNumber' => $payment->receipt_number,
+                'amount' => (float) $payment->amount,
+                'paymentDate' => $payment->payment_date?->format('Y-m-d'),
+                'studentFeeId' => (string) $payment->student_fee_id,
+                'balance' => (float) $feeRecord->balance,
+            ],
+            'message' => 'Transport fee payment recorded successfully.',
+        ], 201);
+    }
+
+    public function revertPayment(Request $request, FeePayment $feePayment): JsonResponse
+    {
+        $organization = $this->requireOrganization();
+
+        if ($feePayment->organization_id !== $organization->id) {
+            return response()->json(['success' => false, 'message' => 'Payment does not belong to this organization.'], 403);
+        }
+
+        if ($feePayment->status === 'refunded') {
+            return response()->json(['success' => false, 'message' => 'Payment has already been reverted.'], 422);
+        }
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+            'reverted_at' => ['nullable', 'date'],
+        ]);
+
+        $transport = app(\App\Http\Controllers\TransportManagementController::class);
+
+        $studentFee = StudentFee::query()
+            ->where('organization_id', $organization->id)
+            ->whereNotNull('transport_assignment_id')
+            ->whereHas('feeStructure', fn ($query) => $query->where('fee_type', 'like', '%Transport Fee - %'))
+            ->find($feePayment->student_fee_id);
+
+        if (! $studentFee) {
+            return response()->json(['success' => false, 'message' => 'Linked transport fee record was not found.'], 404);
+        }
+
+        DB::transaction(function () use ($feePayment, $studentFee, $validated, $transport) {
+            $updatedPaidAmount = max(0, (float) $studentFee->paid_amount - (float) $feePayment->amount);
+            $updatedBalance = min((float) $studentFee->net_amount, max(0, (float) $studentFee->net_amount - $updatedPaidAmount));
+
+            $studentFee->update([
+                'paid_amount' => $updatedPaidAmount,
+                'balance' => $updatedBalance,
+                'status' => $transport->determineFeeStatus($updatedBalance, $studentFee->due_date, $updatedPaidAmount),
+            ]);
+
+            $feePayment->update([
+                'status' => 'refunded',
+                'revert_reason' => $validated['reason'],
+                'reverted_at' => ($validated['reverted_at'] ?? null) ? Carbon::parse($validated['reverted_at'])->toDateTimeString() : now(),
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Transport fee payment reverted successfully.',
         ]);
     }
 

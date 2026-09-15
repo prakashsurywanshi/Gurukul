@@ -985,6 +985,89 @@ class CommunicationApiController extends Controller
         return response()->json(['success' => true, 'message' => 'Share deleted.']);
     }
 
+    // ==================== WHATSAPP BRIDGE ====================
+
+    public function indexWhatsapp(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $communication = app(\App\Http\Controllers\CommunicationController::class);
+
+        return response()->json([
+            'success' => true,
+            'data' => $communication->whatsappHistoryPayload($organization, $user),
+            'message' => 'WhatsApp history loaded',
+        ]);
+    }
+
+    public function storeWhatsapp(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $validated = $request->validate([
+            'audience_type' => ['required', Rule::in(['staff', 'students', 'class_section'])],
+            'staff_roles' => ['nullable', 'array'],
+            'staff_roles.*' => ['string'],
+            'class_sections' => ['nullable', 'array'],
+            'class_sections.*' => ['string'],
+            'all_students' => ['nullable', 'boolean'],
+            'subject' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:10000'],
+        ]);
+
+        $audienceType = filter_var($validated['all_students'] ?? false, FILTER_VALIDATE_BOOLEAN)
+            ? 'students'
+            : $validated['audience_type'];
+
+        $communication = app(\App\Http\Controllers\CommunicationController::class);
+
+        $result = $communication->launchWhatsappCampaign($organization, $user, [
+            'audienceType' => $audienceType,
+            'selectedStaffRoles' => $validated['staff_roles'] ?? [],
+            'selectedGroups' => $validated['class_sections'] ?? [],
+            'subject' => $validated['subject'],
+            'content' => $validated['message'],
+        ]);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+        ], $result['success'] ? 201 : 422);
+    }
+
+    public function destroyWhatsapp(Message $message)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $communication = app(\App\Http\Controllers\CommunicationController::class);
+
+        if ((int) $message->organization_id !== (int) $organization->id
+            || (int) $message->sender_id !== (int) $user->id
+            || ! $communication->isWhatsappMessage($message)) {
+            return response()->json(['success' => false, 'message' => 'WhatsApp history entry not found.'], 404);
+        }
+
+        $message->recipients()->delete();
+        $message->delete();
+
+        return response()->json(['success' => true, 'message' => 'WhatsApp history entry deleted successfully.']);
+    }
+
     // ==================== AUDIENCE OPTIONS ====================
 
     public function getAudienceOptions(Request $request)
