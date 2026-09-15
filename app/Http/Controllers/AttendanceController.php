@@ -26,12 +26,46 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
 
+        $semesterId = $organization ? $this->resolveSemesterFilter($organization) : null;
+
         return Inertia::render('dashboard/AttendanceManagement', [
             'user' => $user,
             'classRecords' => $organization ? $this->getClassRecords($organization, $user) : collect(),
             'studentRecords' => $organization ? $this->getStudentRecords($organization, $user) : collect(),
-            'attendanceRecords' => $organization ? $this->getAttendanceRecords($organization, $user) : collect(),
+            'attendanceRecords' => $organization ? $this->getAttendanceRecords($organization, $user, $semesterId) : collect(),
+            'semesters' => $organization ? $this->getSemesterOptions($organization) : [],
+            'selectedSemester' => $semesterId,
         ]);
+    }
+
+    private function resolveSemesterFilter(Organization $organization): ?int
+    {
+        $requested = request()->integer('semester');
+
+        if ($requested) {
+            $exists = \App\Models\Semester::query()
+                ->where('organization_id', $organization->id)
+                ->where('id', $requested)
+                ->exists();
+
+            return $exists ? $requested : null;
+        }
+
+        return null;
+    }
+
+    private function getSemesterOptions(Organization $organization): array
+    {
+        return \App\Models\Semester::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('sem_no')
+            ->get(['id', 'name', 'sem_no'])
+            ->map(fn (\App\Models\Semester $semester) => [
+                'id' => $semester->id,
+                'name' => $semester->name,
+                'sem_no' => $semester->sem_no,
+            ])
+            ->all();
     }
 
     public function store(Request $request): RedirectResponse
@@ -51,6 +85,7 @@ class AttendanceController extends Controller
                 ),
             ],
             'date' => ['required', 'date'],
+            'semester_id' => ['nullable', 'integer'],
             'entries' => ['required', 'array', 'min:1'],
             'entries.*.student_id' => [
                 'required',
@@ -61,9 +96,24 @@ class AttendanceController extends Controller
             'entries.*.status' => ['required', Rule::in(['present', 'absent', 'late', 'half_day'])],
         ]);
 
+        if (! empty($validated['semester_id'])) {
+            $semesterExists = \App\Models\Semester::query()
+                ->where('organization_id', $organization->id)
+                ->where('id', $validated['semester_id'])
+                ->exists();
+
+            if (! $semesterExists) {
+                return back()->with('error', 'Selected semester is not valid for this organization.');
+            }
+        }
+
         $this->ensureTeacherCanAccessClass($user, $organization, (int) $validated['class_id']);
 
         $activeAcademicYearId = $organization->selectedAcademicYear()?->id;
+
+        $semesterId = ! empty($validated['semester_id'])
+            ? (int) $validated['semester_id']
+            : $organization->currentSemester()?->id;
 
         $students = $this->studentAcademicHistoryService
             ->getSessionEnrollmentQuery($organization->id, $activeAcademicYearId)
@@ -86,6 +136,7 @@ class AttendanceController extends Controller
                 [
                     'organization_id' => $organization->id,
                     'class_id' => $validated['class_id'],
+                    'semester_id' => $semesterId,
                     'status' => $entry['status'],
                     'marked_by' => $user->id,
                 ]
@@ -143,13 +194,14 @@ class AttendanceController extends Controller
             ->values();
     }
 
-    private function getAttendanceRecords(Organization $organization, User $user)
+    private function getAttendanceRecords(Organization $organization, User $user, ?int $semesterId = null)
     {
         $allowedClassIds = $this->allowedClassIds($organization, $user);
 
         return Attendance::query()
             ->where('organization_id', $organization->id)
             ->whereHas('schoolClass', fn ($query) => $query->forCurrentSession($organization->id))
+            ->when($semesterId, fn ($query) => $query->where('semester_id', $semesterId))
             ->when(
                 $user->role === 'teacher',
                 fn ($query) => $query->whereIn('class_id', $allowedClassIds)

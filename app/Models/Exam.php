@@ -16,6 +16,7 @@ class Exam extends Model
     protected $fillable = [
         'organization_id',
         'academic_year_id',
+        'semester_id',
         'name',
         'exam_type',
         'publish_status',
@@ -39,5 +40,10 @@ class Exam extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class, 'academic_year_id');
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
     }
 }

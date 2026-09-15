@@ -725,6 +725,8 @@ class FeesController extends Controller
             return redirect()->route('fees')->with('error', 'Create and activate an academic session first.');
         }
 
+        $currentSemesterId = $organization->currentSemester()?->id;
+
         $validated = $request->validate([
             'entries' => ['required', 'array', 'min:1'],
             'entries.*.studentIdentifier' => ['required', 'string', 'max:100'],
@@ -805,6 +807,7 @@ class FeesController extends Controller
                     'student_id' => $student->id,
                     'fee_structure_id' => $structure->id,
                     'academic_year_id' => $activeAcademicYearId,
+                    'semester_id' => $currentSemesterId,
                     'month' => $month,
                     'year' => $year,
                     'amount' => $amount,
@@ -869,6 +872,8 @@ class FeesController extends Controller
             return redirect()->route('fees')->with('error', 'Both source and target academic sessions must belong to this school.');
         }
 
+        $targetSemesterId = $organization->currentSemester()?->id;
+
         $sourceFees = StudentFee::query()
             ->where('organization_id', $organization->id)
             ->where('academic_year_id', $fromYear->id)
@@ -890,7 +895,11 @@ class FeesController extends Controller
         $skipped = 0;
         $totalCarried = 0.0;
 
-        DB::transaction(function () use ($sourceFees, $targetStructures, $organization, $toYear, &$carried, &$skipped, &$totalCarried) {
+        $targetSemesterId = $toYear->semesters()
+            ->where('is_current', true)
+            ->value('id');
+
+        DB::transaction(function () use ($sourceFees, $targetStructures, $organization, $toYear, $targetSemesterId, &$carried, &$skipped, &$totalCarried) {
             foreach ($sourceFees as $sourceFee) {
                 $targetStructure = $targetStructures->first(
                     fn (FeeStructure $structure) => $structure->class_id === $sourceFee->feeStructure?->class_id
@@ -935,6 +944,7 @@ class FeesController extends Controller
                     'student_id' => $sourceFee->student_id,
                     'fee_structure_id' => $targetStructure->id,
                     'academic_year_id' => $toYear->id,
+                    'semester_id' => $targetSemesterId,
                     'month' => $sourceFee->month,
                     'year' => $carriedYear,
                     'amount' => $balance,

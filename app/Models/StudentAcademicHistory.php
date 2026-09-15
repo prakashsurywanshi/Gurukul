@@ -15,6 +15,9 @@ class StudentAcademicHistory extends Model
         'student_id',
         'academic_year_id',
         'class_id',
+        'course_id',
+        'batch_id',
+        'semester_id',
         'session',
         'roll_number',
         'status',
@@ -42,5 +45,20 @@ class StudentAcademicHistory extends Model
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function course(): BelongsTo
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(Batch::class);
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
     }
 }

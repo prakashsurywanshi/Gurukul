@@ -23,6 +23,7 @@ class ExamController extends Controller
 {
     public function index() {
         $user = Auth::user();
+
         return inertia('dashboard/ExamManagement', $this->buildExamPageProps($user));
     }
 
@@ -82,6 +83,7 @@ class ExamController extends Controller
             'publishStatus' => ['required', Rule::in(['draft', 'published'])],
             'className' => ['required', 'string', 'max:255'],
             'section' => ['required', 'string', 'max:255'],
+            'semesterId' => ['nullable', 'integer'],
         ]);
 
         $schoolClass = $this->findClass($organization, $validated['className'], $validated['section']);
@@ -90,9 +92,12 @@ class ExamController extends Controller
             return redirect()->route('exams')->with('error', 'Selected class and section do not exist.');
         }
 
+        $semesterId = $this->resolveStoredSemester($organization, $validated['semesterId'] ?? null);
+
         Exam::query()->create([
             'organization_id' => $organization->id,
             'academic_year_id' => $academicYearId,
+            'semester_id' => $semesterId,
             'name' => $validated['name'],
             'exam_type' => 'general',
             'publish_status' => $validated['publishStatus'],
@@ -236,10 +241,11 @@ class ExamController extends Controller
         return redirect()->route('exams')->with('success', 'Exam deleted successfully!');
     }
 
-    private function getExamGroups(Organization $organization): array
+    private function getExamGroups(Organization $organization, ?int $semesterId = null): array
     {
         return Exam::query()
             ->where('organization_id', $organization->id)
+            ->when($semesterId, fn ($query) => $query->where('semester_id', $semesterId))
             ->with([
                 'schedules.subject:id,name,name_mr,name_hi',
                 'schedules.results.student:id,first_name,last_name,class_id,roll_number',
@@ -287,6 +293,8 @@ class ExamController extends Controller
     {
         $organization = $this->resolveOrganizationForUser($user);
 
+        $semesterId = $organization ? $this->resolveSemesterFilter($organization) : null;
+
         return [
             'user' => $user,
             'organization' => $organization ? [
@@ -297,8 +305,54 @@ class ExamController extends Controller
             'students' => $organization ? $this->getStudents($organization) : [],
             'classOptions' => $organization ? $this->getClassOptions($organization) : [],
             'subjectOptions' => $organization ? $this->getSubjectOptions($organization) : [],
-            'examGroups' => $organization ? $this->getExamGroups($organization) : [],
+            'semesters' => $organization ? $this->getSemesterOptions($organization) : [],
+            'selectedSemester' => $semesterId,
+            'examGroups' => $organization ? $this->getExamGroups($organization, $semesterId) : [],
         ];
+    }
+
+    private function resolveSemesterFilter(Organization $organization): ?int
+    {
+        $requested = request()->integer('semester');
+
+        if ($requested) {
+            $exists = \App\Models\Semester::query()
+                ->where('organization_id', $organization->id)
+                ->where('id', $requested)
+                ->exists();
+
+            return $exists ? $requested : null;
+        }
+
+        return null;
+    }
+
+    private function resolveStoredSemester(Organization $organization, ?int $semesterId): ?int
+    {
+        if (! $semesterId) {
+            return null;
+        }
+
+        $semester = \App\Models\Semester::query()
+            ->where('organization_id', $organization->id)
+            ->where('id', $semesterId)
+            ->first();
+
+        return $semester ? $semester->id : null;
+    }
+
+    private function getSemesterOptions(Organization $organization): array
+    {
+        return \App\Models\Semester::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('sem_no')
+            ->get(['id', 'name', 'sem_no'])
+            ->map(fn (\App\Models\Semester $semester) => [
+                'id' => $semester->id,
+                'name' => $semester->name,
+                'sem_no' => $semester->sem_no,
+            ])
+            ->all();
     }
 
     private function getStudentExamGroups(Organization $organization, Student $student): array

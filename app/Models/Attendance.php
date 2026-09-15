@@ -16,6 +16,7 @@ class Attendance extends Model
         'organization_id',
         'student_id',
         'class_id',
+        'semester_id',
         'date',
         'status',
         'check_in_time',
@@ -36,6 +37,11 @@ class Attendance extends Model
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
     }
 
     public function markedBy(): BelongsTo

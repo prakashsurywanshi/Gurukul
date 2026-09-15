@@ -2529,6 +2529,22 @@ export const sidebarConfig: {
                 feature: 'Auto Timetable',
             },
             {
+                id: 'college-courses',
+                label: 'Courses & Batches',
+                icon: GraduationCap,
+                href: '/college/courses',
+                roles: ['super_admin', 'admin'],
+                feature: 'Class / Section',
+            },
+            {
+                id: 'college-lectures',
+                label: 'Lecture Timetable',
+                icon: Clock3,
+                href: '/college/lectures',
+                roles: ['super_admin', 'admin'],
+                feature: 'Class / Section',
+            },
+            {
                 id: 'teacher-time-table',
                 label: 'My Timetable',
                 icon: Clock3,

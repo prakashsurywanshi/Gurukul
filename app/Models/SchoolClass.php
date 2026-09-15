@@ -48,6 +48,11 @@ class SchoolClass extends Model
         return $this->hasMany(StudentAcademicHistory::class, 'class_id');
     }
 
+    public function lectures(): HasMany
+    {
+        return $this->hasMany(Lecture::class, 'class_id');
+    }
+
     public function scopeForCurrentSession(Builder $query, int $organizationId): Builder
     {
         $organization = Organization::query()->find($organizationId);

@@ -19,6 +19,7 @@ class StudentFee extends Model
         'hostel_allocation_id',
         'transport_assignment_id',
         'academic_year_id',
+        'semester_id',
         'month',
         'year',
         'amount',
@@ -65,5 +66,10 @@ class StudentFee extends Model
     public function transportAssignment(): BelongsTo
     {
         return $this->belongsTo(TransportAssignment::class);
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
     }
 }
