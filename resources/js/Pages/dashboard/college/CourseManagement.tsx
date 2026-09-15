@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { Building2, ChevronDown, ChevronRight, Loader2, Plus, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import DashboardLayout from '../../DashboardLayout';
+import { useLanguage } from '../../../i18n/LanguageProvider';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
@@ -45,6 +46,7 @@ interface CourseManagementProps {
 
 export default function CourseManagement(pageProps: CourseManagementProps) {
     const { courses, academicYears, selectedSessionId } = pageProps;
+    const { t } = useLanguage();
 
     const [showCourseForm, setShowCourseForm] = useState(false);
     const [editingCourseId, setEditingCourseId] = useState<number | null>(null);
@@ -118,7 +120,7 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
     };
 
     const deleteCourse = (course: Course) => {
-        if (!window.confirm(`Delete "${course.name}"? Batches will also be deleted.`)) {
+        if (!window.confirm(t('Delete "{name}"? Batches will also be deleted.', { name: course.name }))) {
             return;
         }
         router.delete(`/college/courses/${course.id}`, { preserveScroll: true });
@@ -150,7 +152,7 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
     };
 
     const deleteBatch = (courseId: number, batchId: number) => {
-        if (!window.confirm('Delete this batch?')) {
+        if (!window.confirm(t('Delete this batch?'))) {
             return;
         }
         router.delete(`/college/batches/${batchId}`, { preserveScroll: true });
@@ -167,10 +169,10 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <Building2 className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Courses &amp; Batches
+                            {t('Courses & Batches')}
                         </h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Manage courses and their batches for the current academic session.
+                            {t('Manage courses and their batches for the current academic session.')}
                         </p>
                     </div>
                     <Button
@@ -181,39 +183,39 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                         }}
                     >
                         <Plus className="mr-2 h-4 w-4" />
-                        {showCourseForm ? 'Close' : 'New Course'}
+                        {showCourseForm ? t('Close') : t('New Course')}
                     </Button>
                 </div>
 
                 {showCourseForm && (
                     <form onSubmit={submitCourse} className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
                         <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                            {editingCourseId !== null ? 'Edit Course' : 'New Course'}
+                            {editingCourseId !== null ? t('Edit Course') : t('New Course')}
                         </h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <div className="space-y-1">
-                                <Label>Course Name *</Label>
+                                <Label>{t('Course Name *')}</Label>
                                 <Input value={courseName} onChange={(e) => setCourseName(e.target.value)} required />
                             </div>
                             <div className="space-y-1">
-                                <Label>Code</Label>
-                                <Input value={courseCode} onChange={(e) => setCourseCode(e.target.value)} placeholder="e.g. BSC-CS" />
+                                <Label>{t('Code')}</Label>
+                                <Input value={courseCode} onChange={(e) => setCourseCode(e.target.value)} placeholder={t('e.g. BSC-CS')} />
                             </div>
                             <div className="space-y-1">
-                                <Label>Department</Label>
+                                <Label>{t('Department')}</Label>
                                 <Input value={courseDept} onChange={(e) => setCourseDept(e.target.value)} />
                             </div>
                             <div className="space-y-1">
-                                <Label>Duration (years)</Label>
+                                <Label>{t('Duration (years)')}</Label>
                                 <Input type="number" min="1" max="8" value={courseDuration} onChange={(e) => setCourseDuration(e.target.value)} />
                             </div>
                             <div className="space-y-1">
-                                <Label>Total Semesters</Label>
+                                <Label>{t('Total Semesters')}</Label>
                                 <Input type="number" min="1" max="12" value={courseTotalSems} onChange={(e) => setCourseTotalSems(e.target.value)} />
                             </div>
                         </div>
                         <div className="mt-4 space-y-1">
-                            <Label>Description</Label>
+                            <Label>{t('Description')}</Label>
                             <Textarea value={courseDesc} onChange={(e) => setCourseDesc(e.target.value)} rows={2} />
                         </div>
                         <div className="mt-4 flex justify-end">
@@ -221,12 +223,12 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                 {saving ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Saving…
+                                        {t('Saving…')}
                                     </>
                                 ) : editingCourseId !== null ? (
-                                    'Update'
+                                    t('Update')
                                 ) : (
-                                    'Create'
+                                    t('Create')
                                 )}
                             </Button>
                         </div>
@@ -235,7 +237,7 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
 
                 {courses.length === 0 ? (
                     <p className="rounded-lg border bg-card p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No courses created yet. Add your first course above.
+                        {t('No courses created yet. Add your first course above.')}
                     </p>
                 ) : (
                     courses.map((course) => {
@@ -257,14 +259,14 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 {course.department && <>{course.department} · </>}
-                                                {course.batches_count} batch{course.batches_count !== 1 ? 'es' : ''}
-                                                {course.total_semesters && <> · {course.total_semesters} semesters</>}
+                                                {t('{count} batch(es)', { count: course.batches_count })}
+                                                {course.total_semesters && <> · {t('{count} semesters', { count: course.total_semesters })}</>}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button variant="ghost" size="sm" onClick={() => editCourse(course)}>
-                                            Edit
+                                            {t('Edit')}
                                         </Button>
                                         <Button variant="ghost" size="icon" onClick={() => deleteCourse(course)}>
                                             <Trash2 className="h-4 w-4 text-red-500" />
@@ -274,25 +276,25 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                 {isExpanded && (
                                     <div className="border-t px-6 py-4">
                                         <div className="mb-2 flex items-center justify-between">
-                                            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Batches</h3>
+                                            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('Batches')}</h3>
                                             <Button variant="outline" size="sm" onClick={() => setAddingBatchToCourseId(add => add === course.id ? null : course.id)}>
-                                                <Plus className="mr-1 h-3.5 w-3.5" /> Add Batch
+                                                <Plus className="mr-1 h-3.5 w-3.5" /> {t('Add Batch')}
                                             </Button>
                                         </div>
                                         {addingBatchToCourseId === course.id && (
                                             <form onSubmit={submitBatch} className="mb-4 flex items-end gap-3 rounded border p-3">
                                                 <div className="flex-1 space-y-1">
-                                                    <Label className="text-xs">Batch Name *</Label>
+                                                    <Label className="text-xs">{t('Batch Name *')}</Label>
                                                     <Input
                                                         value={batchName}
                                                         onChange={(e) => setBatchName(e.target.value)}
-                                                        placeholder="e.g. FY 2026"
+                                                        placeholder={t('e.g. FY 2026')}
                                                         required
                                                         className="h-8 text-sm"
                                                     />
                                                 </div>
                                                 <div className="w-40 space-y-1">
-                                                    <Label className="text-xs">Start Date</Label>
+                                                    <Label className="text-xs">{t('Start Date')}</Label>
                                                     <Input
                                                         type="date"
                                                         value={batchStartDate}
@@ -301,12 +303,12 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                                     />
                                                 </div>
                                                 <Button type="submit" size="sm" disabled={batchSaving || !batchName} className="h-8">
-                                                    {batchSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
+                                                    {batchSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t('Save')}
                                                 </Button>
                                             </form>
                                         )}
                                         {course.batches.length === 0 ? (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">No batches yet.</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('No batches yet.')}</p>
                                         ) : (
                                             <ul className="divide-y text-sm">
                                                 {course.batches.map((batch) => (
@@ -314,7 +316,7 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                                         <div>
                                                             <span className="font-medium text-gray-800 dark:text-gray-200">{batch.name}</span>
                                                             {batch.start_date && (
-                                                                <span className="ml-2 text-xs text-gray-500">Started {batch.start_date}</span>
+                                                                <span className="ml-2 text-xs text-gray-500">{t('Started')} {batch.start_date}</span>
                                                             )}
                                                         </div>
                                                         <Button variant="ghost" size="icon" onClick={() => deleteBatch(course.id, batch.id)}>

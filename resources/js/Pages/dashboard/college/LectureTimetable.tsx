@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { CalendarDays, Loader2, Plus, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import DashboardLayout from '../../DashboardLayout';
+import { useLanguage } from '../../../i18n/LanguageProvider';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
@@ -62,6 +63,7 @@ const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:
 
 export default function LectureTimetable(pageProps: LectureTimetableProps) {
     const { classes, selectedClassId, selectedClassName, lectures, subjects, teachers, semester, daysOfWeek } = pageProps;
+    const { t } = useLanguage();
 
     const [classId, setClassId] = useState(selectedClassId?.toString() ?? '');
     const [showForm, setShowForm] = useState(false);
@@ -117,7 +119,7 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
     };
 
     const deleteLecture = (lecture: Lecture) => {
-        if (!window.confirm('Remove this lecture?')) {
+        if (!window.confirm(t('Remove this lecture?'))) {
             return;
         }
         router.delete(`/college/lectures/${lecture.id}`, { preserveScroll: true });
@@ -142,10 +144,10 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <CalendarDays className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Lecture Timetable
+                            {t('Lecture Timetable')}
                         </h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Weekly lecture schedule per class.
+                            {t('Weekly lecture schedule per class.')}
                             {semester && (
                                 <Badge variant="outline" className="ml-2">
                                     {semester.name}
@@ -157,12 +159,12 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
 
                 <div className="flex items-center gap-4">
                     <div className="w-64 space-y-1">
-                        <Label>Class</Label>
+                        <Label>{t('Class')}</Label>
                         <Select
                             value={classId}
                             onValueChange={switchClass}
                         >
-                            <option value="">Select class…</option>
+                            <option value="">{t('Select class…')}</option>
                             {classes.map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name}{c.section ? ` ${c.section}` : ''}
@@ -180,19 +182,19 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                             }}
                         >
                             <Plus className="mr-2 h-4 w-4" />
-                            {showForm ? 'Close' : 'Add Lecture'}
+                            {showForm ? t('Close') : t('Add Lecture')}
                         </Button>
                     )}
                 </div>
 
                 {showForm && selectedClassId && (
                     <form onSubmit={submitLecture} className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
-                        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">New Lecture</h2>
+                        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">{t('New Lecture')}</h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                             <div className="space-y-1">
-                                <Label>Day *</Label>
+                                <Label>{t('Day *')}</Label>
                                 <Select value={formDay} onValueChange={setFormDay} required>
-                                    <option value="">Select day…</option>
+                                    <option value="">{t('Select day…')}</option>
                                     {daysOfWeek.map((d) => (
                                         <option key={d.value} value={d.value}>
                                             {d.label}
@@ -201,14 +203,14 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                 </Select>
                             </div>
                             <div className="space-y-1">
-                                <Label>Start Time *</Label>
+                                <Label>{t('Start Time *')}</Label>
                                 <select
                                     className="w-full rounded-md border bg-white px-2 py-2 text-sm dark:bg-gray-800"
                                     value={formStart}
                                     onChange={(e) => setFormStart(e.target.value)}
                                     required
                                 >
-                                    <option value="">Select…</option>
+                                    <option value="">{t('Select…')}</option>
                                     {TIME_SLOTS.map((t) => (
                                         <option key={t} value={t}>
                                             {t}
@@ -217,14 +219,14 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <Label>End Time *</Label>
+                                <Label>{t('End Time *')}</Label>
                                 <select
                                     className="w-full rounded-md border bg-white px-2 py-2 text-sm dark:bg-gray-800"
                                     value={formEnd}
                                     onChange={(e) => setFormEnd(e.target.value)}
                                     required
                                 >
-                                    <option value="">Select…</option>
+                                    <option value="">{t('Select…')}</option>
                                     {TIME_SLOTS.map((t) => (
                                         <option key={t} value={t}>
                                             {t}
@@ -233,13 +235,13 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <Label>Room</Label>
-                                <Input value={formRoom} onChange={(e) => setFormRoom(e.target.value)} placeholder="e.g. Lab 2" />
+                                <Label>{t('Room')}</Label>
+                                <Input value={formRoom} onChange={(e) => setFormRoom(e.target.value)} placeholder={t('e.g. Lab 2')} />
                             </div>
                             <div className="space-y-1">
-                                <Label>Subject</Label>
+                                <Label>{t('Subject')}</Label>
                                 <Select value={formSubject} onValueChange={setFormSubject}>
-                                    <option value="">None</option>
+                                    <option value="">{t('None')}</option>
                                     {subjects.map((s) => (
                                         <option key={s.id} value={s.id}>
                                             {s.name}{s.code ? ` (${s.code})` : ''}
@@ -248,9 +250,9 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                 </Select>
                             </div>
                             <div className="space-y-1">
-                                <Label>Teacher</Label>
+                                <Label>{t('Teacher')}</Label>
                                 <Select value={formTeacher} onValueChange={setFormTeacher}>
-                                    <option value="">None</option>
+                                    <option value="">{t('None')}</option>
                                     {teachers.map((t) => (
                                         <option key={t.id} value={t.id}>
                                             {t.name}
@@ -264,10 +266,10 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                 {saving ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Saving…
+                                        {t('Saving…')}
                                     </>
                                 ) : (
-                                    'Add Lecture'
+                                    t('Add Lecture')
                                 )}
                             </Button>
                         </div>
@@ -276,11 +278,11 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
 
                 {!selectedClassId ? (
                     <p className="rounded-lg border bg-card p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        Select a class to view its weekly timetable.
+                        {t('Select a class to view its weekly timetable.')}
                     </p>
                 ) : lectures.length === 0 ? (
                     <p className="rounded-lg border bg-card p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No lectures scheduled for this class yet.
+                        {t('No lectures scheduled for this class yet.')}
                     </p>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -290,7 +292,7 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                 <div key={day.value} className="rounded-lg border bg-card text-card-foreground shadow-sm">
                                     <div className="border-b px-4 py-2">
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{day.label}</h3>
-                                        <p className="text-xs text-gray-500">{dayLectures.length} lecture{dayLectures.length !== 1 ? 's' : ''}</p>
+                                        <p className="text-xs text-gray-500">{t('{count} lecture(s)', { count: dayLectures.length })}</p>
                                     </div>
                                     <ul className="divide-y">
                                         {dayLectures.map((lecture) => (
@@ -310,14 +312,14 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                                 <button
                                                     className="ml-2 mt-0.5 text-red-400 hover:text-red-600"
                                                     onClick={() => deleteLecture(lecture)}
-                                                    title="Remove"
+                                                    title={t('Remove')}
                                                 >
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </button>
                                             </li>
                                         ))}
                                         {dayLectures.length === 0 && (
-                                            <li className="px-4 py-4 text-xs text-gray-400">No lectures</li>
+                                            <li className="px-4 py-4 text-xs text-gray-400">{t('No lectures')}</li>
                                         )}
                                     </ul>
                                 </div>
