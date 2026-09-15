@@ -74,8 +74,8 @@
 - [x] P6.1 College/Institute org-type mode (784 tests, 6024 assertions)
 - [x] P6.1e Semester filters + credits/CBCS grading (795 tests, 6136 assertions)
 - [x] P6.2 Platform: superadmin Billing Center (org billing/analytics; branch-admin role deferred per decision)
-- [ ] P6.3 Flutter API completeness + versioning + contract tests
-- [ ] P6.4 Full regression gates (700+ tests)
+- [x] P6.3 Flutter API completeness + versioning + contract tests (814 tests, 6363 assertions)
+- [x] P6.4 Full regression gates — final: 814 tests, 6363 assertions, 0 failures; i18n 4669 keys ×3, 0 bad; tsc clean; prod build OK
 
 ## Notes & decisions log
 - PDF engine question → user chose "all of above": dompdf + headless Chromium + browser print fallback.
