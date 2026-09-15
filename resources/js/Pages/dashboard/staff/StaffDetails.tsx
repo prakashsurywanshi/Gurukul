@@ -79,8 +79,8 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
     const { props } = usePage();
     const { staffPermissions } = props as any;
 
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user?.role);
-    const can = (feature: string) => !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
+    const can = (feature: string) => user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
 
     const attendance = hub?.attendance;
     const payroll = hub?.payroll;

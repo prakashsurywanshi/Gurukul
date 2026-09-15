@@ -295,7 +295,7 @@ class DashboardExtrasController extends Controller
 
         $staffNoEmail = User::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('role', ['admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'branch_admin', 'super_admin'])
+            ->whereIn('role', ['admin', 'teacher', 'accountant', 'receptionist', 'librarian'])
             ->where('status', 'active')
             ->where(fn ($query) => $query->whereNull('email')->orWhere('email', ''))
             ->get(['id', 'name', 'role']);

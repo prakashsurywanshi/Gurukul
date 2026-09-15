@@ -17,13 +17,17 @@ class BillingCenterController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        abort_unless($user instanceof User && $user->role === 'super_admin', 403);
+        abort_unless($user instanceof User && in_array($user->role, ['super_admin', 'branch_admin'], true), 403);
+
+        $isBranchAdmin = $user->role === 'branch_admin';
 
         $organizations = Organization::query()
+            ->when($isBranchAdmin, fn ($query) => $query->whereIn('id', array_map('intval', $user->managedOrganizations()->pluck('organizations.id')->all())))
             ->orderBy('name')
             ->get();
 
         $payments = SubscriptionPayment::query()
+            ->when($isBranchAdmin, fn ($query) => $query->whereIn('organization_id', array_map('intval', $user->managedOrganizations()->pluck('organizations.id')->all())))
             ->with('organization:id,name')
             ->orderByDesc('payment_date')
             ->limit(50)
@@ -39,6 +43,7 @@ class BillingCenterController extends Controller
 
         return Inertia::render('dashboard/BillingCenter', [
             'user' => $user,
+            'isBranchAdmin' => $isBranchAdmin,
             'kpis' => $this->buildKpis($organizations, $payments),
             'organizations' => $organizations->map(fn (Organization $organization) => [
                 'id' => $organization->id,

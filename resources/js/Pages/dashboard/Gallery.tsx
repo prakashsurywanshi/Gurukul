@@ -42,7 +42,7 @@ export default function Gallery(pageProps: GalleryProps) {
     const [form, setForm] = useState({ title: '', description: '', is_published: true });
     const [coverFile, setCoverFile] = useState<File | null>(null);
 
-    const canManage = ['admin', 'super_admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(
+    const canManage = ['admin', 'super_admin', 'branch_admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(
         pageProps.user?.role,
     );
 

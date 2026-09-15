@@ -128,7 +128,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => ({}));
 
     const hasPermission = (feature: string) => {
-        if (user.role === 'super_admin') {
+        if (['super_admin', 'branch_admin'].includes(user.role)) {
             return true;
         }
 
@@ -148,7 +148,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             return false;
         }
 
-        if (['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user.role)) {
+        if (['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user.role)) {
             const isPortalOnlyItem = roles.every((role) => ['student', 'parent'].includes(role));
 
             if (isPortalOnlyItem) {

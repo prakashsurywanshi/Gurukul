@@ -1042,6 +1042,21 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/branch-admin', [BranchAdminController::class, 'index'])
         ->middleware('staff.permission:Branch Admin,view', 'module.enabled:branch-admin')
         ->name('branch-admin');
+    Route::post('/branch-admin/users', [BranchAdminController::class, 'storeBranchAdmin'])
+        ->middleware('staff.permission:Branch Admin,add', 'module.enabled:branch-admin')
+        ->name('branch-admin.users.store');
+    Route::patch('/branch-admin/users/{user}/organizations', [BranchAdminController::class, 'updateAssignments'])
+        ->middleware('staff.permission:Branch Admin,edit', 'module.enabled:branch-admin')
+        ->name('branch-admin.users.assign');
+    Route::delete('/branch-admin/users/{user}', [BranchAdminController::class, 'destroy'])
+        ->middleware('staff.permission:Branch Admin,delete', 'module.enabled:branch-admin')
+        ->name('branch-admin.users.destroy');
+    Route::post('/branch-admin/switch/{organization}', [BranchAdminController::class, 'switchBranch'])
+        ->middleware('auth', 'staff.permission:Branch Admin,view')
+        ->name('branch-admin.switch');
+    Route::post('/branch-admin/leave', [BranchAdminController::class, 'leaveBranch'])
+        ->middleware('auth', 'staff.permission:Branch Admin,view')
+        ->name('branch-admin.leave');
     Route::get('/billing-center', [BillingCenterController::class, 'index'])->name('billing-center');
     Route::post('/billing-center/organizations/{organization}/payments', [BillingCenterController::class, 'recordPayment'])->name('billing.payments.store');
     Route::patch('/billing-center/organizations/{organization}', [BillingCenterController::class, 'updateSubscription'])->name('billing.organizations.update');

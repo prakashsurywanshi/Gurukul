@@ -501,7 +501,7 @@ export default function LibraryManagement({
         setRequests(propRequests);
     }, [propRequests]);
 
-    const canManageLibrary = ['super_admin', 'admin', 'librarian'].includes(user?.role || '');
+    const canManageLibrary = ['super_admin', 'branch_admin', 'admin', 'librarian'].includes(user?.role || '');
 
     const catalog = useMemo(() => {
         const query = catalogSearch.trim().toLowerCase();

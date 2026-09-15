@@ -248,8 +248,8 @@ export default function StudentDetails({
             ? relatedStudents[currentStudentIndex + 1]
             : null;
 
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user?.role);
-    const can = (feature: string) => !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
+    const can = (feature: string) => user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
 
     const fees = hub?.fees;
     const attendance = hub?.attendance;

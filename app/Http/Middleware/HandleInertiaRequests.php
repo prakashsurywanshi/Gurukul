@@ -255,32 +255,7 @@ class HandleInertiaRequests extends Middleware
 
     private function resolveOrganizationId(Request $request): ?int
     {
-        $user = $request->user();
-
-        if (!$user) {
-            $organization = Organization::query()->first();
-
-            return $organization ? (int) $organization->id : null;
-        }
-
-        $organizationId = $user->organization_id;
-
-        if (!$organizationId && $user->role === 'admin') {
-            $organization = Organization::query()
-                ->where('email', $user->email)
-                ->first();
-
-            if (!$organization && Organization::query()->count() === 1) {
-                $organization = Organization::query()->first();
-            }
-
-            if ($organization) {
-                $user->forceFill(['organization_id' => $organization->id])->save();
-                $organizationId = $organization->id;
-            }
-        }
-
-        return $organizationId ? (int) $organizationId : null;
+        return app(\App\Services\ActiveOrgResolver::class)->resolveForRequest($request);
     }
 
     private function resolveSubscriptionNotice(Request $request): ?array

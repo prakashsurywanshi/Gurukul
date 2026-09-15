@@ -1296,7 +1296,7 @@ export const sidebarConfig: {
                 label: 'Branch Admin',
                 icon: Network,
                 href: '/branch-admin',
-                roles: ['super_admin'],
+                roles: ['super_admin', 'branch_admin'],
                 feature: 'Branch Admin',
                 module: 'branch-admin',
             },

@@ -131,6 +131,14 @@ class RolePermissionCatalog
         ];
     }
 
+    public static function platformRoles(): array
+    {
+        return [
+            'super_admin' => 'Super Admin',
+            'branch_admin' => 'Branch Admin',
+        ];
+    }
+
     public static function staffRoleSlugs(): array
     {
         return array_keys(self::staffRoles());

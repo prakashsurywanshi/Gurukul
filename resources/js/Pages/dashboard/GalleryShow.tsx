@@ -56,7 +56,7 @@ export default function GalleryShow(pageProps: GalleryShowProps) {
     const [captionDraft, setCaptionDraft] = useState('');
     const [savingCaption, setSavingCaption] = useState(false);
 
-    const canManage = ['admin', 'super_admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(
+    const canManage = ['admin', 'super_admin', 'branch_admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(
         pageProps.user?.role,
     );
 

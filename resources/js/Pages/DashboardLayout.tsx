@@ -54,9 +54,9 @@ export default function DashboardLayout({ user, activeTab, onLogout, appearance,
             chatUnread?: number;
             panelAppearance?: PanelAppearance | null;
         }>().props;
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user?.role);
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
     const canViewTodo = user?.role === 'super_admin' || (isManagedStaffRole && Boolean(staffPermissions?.Todo?.view));
-    const canSearchPeople = user?.role === 'super_admin' || Boolean(staffPermissions?.['Search Students']?.view);
+    const canSearchPeople = ['super_admin', 'branch_admin'].includes(user?.role) || Boolean(staffPermissions?.['Search Students']?.view);
     const { t } = useLanguage();
 
     const formatRole = (role: string) =>

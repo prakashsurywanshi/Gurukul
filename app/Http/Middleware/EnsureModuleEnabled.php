@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Organization;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -23,21 +22,12 @@ class EnsureModuleEnabled
 
     private function moduleEnabledForUser(User $user, string $module): bool
     {
-        if ($user->role === 'super_admin') {
+        if (in_array($user->role, ['super_admin', 'branch_admin'], true)) {
             return true;
         }
 
-        $organization = $this->resolveOrganizationForUser($user);
+        $organization = app(\App\Services\StaffPermissionService::class)->resolveOrganizationForUser($user);
 
         return $organization?->moduleEnabled($module) ?? false;
-    }
-
-    private function resolveOrganizationForUser(User $user): ?Organization
-    {
-        if ($user->organization_id) {
-            return Organization::query()->find($user->organization_id);
-        }
-
-        return null;
     }
 }

@@ -89,6 +89,10 @@ class StaffPermissionService
             return '/dashboard';
         }
 
+        if ($user->role === 'branch_admin') {
+            return '/dashboard';
+        }
+
         if ($user->role === 'student') {
             return '/dashboard';
         }
@@ -154,6 +158,10 @@ class StaffPermissionService
             return true;
         }
 
+        if ($user->role === 'branch_admin') {
+            return $this->allowsBranchAdmin($user);
+        }
+
         if ($user->role === 'student') {
             return $this->allowsStudentFeature($feature, $action);
         }
@@ -204,6 +212,17 @@ class StaffPermissionService
             return [];
         }
 
+        if ($user->role === 'branch_admin') {
+            return collect(RolePermissionCatalog::features())
+                ->mapWithKeys(fn (array $item) => [$item['feature'] => [
+                    'view' => true,
+                    'add' => true,
+                    'edit' => true,
+                    'delete' => true,
+                ]])
+                ->all();
+        }
+
         $organization = $this->resolveOrganizationForUser($user);
 
         if (!$organization) {
@@ -245,12 +264,19 @@ class StaffPermissionService
 
     public function resolveOrganizationForUser(User $user): ?Organization
     {
-        if ($user->organization_id) {
-            return Organization::query()->find($user->organization_id);
+        if ($user->role === 'branch_admin') {
+            return $this->resolveActiveBranchFor($user);
         }
 
-        if ($user->role === 'super_admin') {
-            return Organization::query()->first();
+        $orgId = $this->resolveForUser($user);
+
+        return $orgId ? Organization::query()->find($orgId) : null;
+    }
+
+    private function resolveForUser(User $user): ?int
+    {
+        if ($user->organization_id) {
+            return (int) $user->organization_id;
         }
 
         if ($user->role !== 'admin') {
@@ -267,10 +293,45 @@ class StaffPermissionService
 
         if ($organization) {
             $user->forceFill(['organization_id' => $organization->id])->save();
-            $user->organization_id = $organization->id;
+
+            return (int) $organization->id;
+        }
+
+        return null;
+    }
+
+    private function resolveActiveBranchFor(User $user): ?Organization
+    {
+        $activeOrgId = session('branch_admin_active_org_id');
+
+        if ($activeOrgId) {
+            $activeOrg = Organization::query()->find($activeOrgId);
+
+            if ($activeOrg && $user->managedOrganizations()->whereKey($activeOrg->id)->exists()) {
+                return $activeOrg;
+            }
+
+            session()->forget('branch_admin_active_org_id');
+        }
+
+        $organization = $user->managedOrganizations()->first();
+
+        if ($organization) {
+            session(['branch_admin_active_org_id' => (int) $organization->id]);
         }
 
         return $organization;
+    }
+
+    private function allowsBranchAdmin(User $user): bool
+    {
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return false;
+        }
+
+        return $user->managedOrganizations()->whereKey($organization->id)->exists();
     }
 
     public function isManagedStaffRole(?string $role): bool
