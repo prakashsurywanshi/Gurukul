@@ -327,6 +327,17 @@ export default function TemplateOneHome({
                                         </span>
                                     </h1>
 
+                                    {(() => {
+                                        const orgType = cmsContent.type ?? '';
+                                        if (orgType === 'school' || orgType === '') return null;
+                                        const labelKey = orgType === 'coaching' ? 'Coaching Center' : orgType === 'university' ? 'University' : orgType === 'college' ? 'College' : 'School';
+                                        return (
+                                            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-sky-300/40 bg-sky-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 dark:border-slate-700 dark:bg-slate-800/90 dark:text-sky-300">
+                                                {t(labelKey)}
+                                            </span>
+                                        );
+                                    })()}
+
                                     <p className={`mt-6 max-w-xl text-lg leading-8 sm:text-xl ${bodyTextClass}`}>
                                         {renderEditOrText(
                                             'heroDescription',

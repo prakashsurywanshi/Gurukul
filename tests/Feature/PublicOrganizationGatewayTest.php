@@ -86,7 +86,8 @@ class PublicOrganizationGatewayTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Home')
-                ->where('websiteContent.schoolName', 'Career College'));
+                ->where('websiteContent.schoolName', 'Career College')
+                ->where('websiteContent.type', 'college'));
 
         $this->assertSame('college', app(ActiveOrgResolver::class)
             ->resolvePublicOrganization()?->type);
@@ -129,7 +130,8 @@ class PublicOrganizationGatewayTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('LoginPage')
-                ->where('schoolName', 'Career College'));
+                ->where('schoolName', 'Career College')
+                ->where('orgType', 'college'));
 
         $this->assertSame('college', app(ActiveOrgResolver::class)
             ->resolvePublicOrganization()?->type);
@@ -144,7 +146,8 @@ class PublicOrganizationGatewayTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Home')
-                ->where('websiteContent.schoolName', 'Career College'));
+                ->where('websiteContent.schoolName', 'Career College')
+                ->where('websiteContent.type', 'college'));
 
         $this->assertSame('college', app(ActiveOrgResolver::class)
             ->resolvePublicOrganization()?->type);

@@ -617,12 +617,14 @@ class SettingsController extends Controller
 
         return [
             ...$content,
+            'type' => $organization->type,
             'brandLogo' => $organization->logo,
             'schoolName' => $organization->name,
             'shared' => [
                 ...($content['shared'] ?? []),
                 'brandLogo' => $organization->logo,
                 'schoolName' => $organization->name,
+                'type' => $organization->type,
             ],
         ];
     }

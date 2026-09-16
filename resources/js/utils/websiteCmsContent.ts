@@ -97,6 +97,7 @@ export type WebsiteThemeKey = 'white' | 'aurora' | 'sunrise' | 'emerald';
 export type WebsiteTemplateKey = 'template1' | 'template2' | 'template3' | 'template4' | 'template5';
 
 export type WebsiteContent = {
+    type?: string;
     activeTemplate: WebsiteTemplateKey;
     theme: WebsiteThemeKey;
     sliderImages: string[];

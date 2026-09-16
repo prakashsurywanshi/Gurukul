@@ -23,11 +23,12 @@ class LoginController extends Controller
             return redirect($this->staffPermissionService->landingPathFor(Auth::user()));
         }
 
-        $organization = $this->orgResolver->resolvePublicOrganization(null, ['name', 'logo']);
+        $organization = $this->orgResolver->resolvePublicOrganization(null, ['name', 'logo', 'type']);
 
         return inertia('LoginPage', [
             'schoolName' => $organization?->name,
             'schoolLogo' => $organization?->logo,
+            'orgType' => $organization?->type,
             'demoLogin' => (bool) config('app.demo_login'),
         ]);
     }

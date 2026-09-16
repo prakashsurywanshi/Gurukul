@@ -192,6 +192,7 @@ export default function LoginPage(_: LoginPageProps) {
         flash?: { success?: string };
         schoolName?: string | null;
         schoolLogo?: string | null;
+        orgType?: string | null;
         demoLogin?: boolean;
     }>();
 
@@ -200,6 +201,7 @@ export default function LoginPage(_: LoginPageProps) {
     const error = page.props.errors?.email || page.props.errors?.password || '';
     const schoolName = page.props.schoolName || 'Gurukul';
     const schoolLogo = page.props.schoolLogo || '';
+    const orgType = page.props.orgType;
     const portal = portalOptions.find((item) => item.id === selectedPortal) || portalOptions[1];
     const PortalIcon = portal.icon;
 
@@ -263,6 +265,11 @@ export default function LoginPage(_: LoginPageProps) {
                                 </div>
                                 <div>
                                     <h1 className="text-4xl font-bold tracking-tight text-[#93c5fd]">{schoolName}</h1>
+                            {orgType && orgType !== 'school' && (
+                                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[rgba(147,197,253,0.35)] bg-[rgba(147,197,253,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#bfdbfe]">
+                                    {t(orgType === 'coaching' ? 'Coaching Center' : orgType === 'university' ? 'University' : orgType === 'college' ? 'College' : 'School')}
+                                </span>
+                            )}
                                     <p className="text-sm uppercase tracking-[0.24em] text-[rgba(226,232,240,0.72)]">
                                         {t('Educational Institution Management System')}
                                     </p>
