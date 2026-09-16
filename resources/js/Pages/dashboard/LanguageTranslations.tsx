@@ -15,8 +15,8 @@ import { Label } from '../ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { toast } from 'sonner';
 
-const DICTIONARIES: Record<string, Record<string, string>> = { mr, hi };
-const TARGET_LOCALES = ['mr', 'hi'] as const;
+const DICTIONARIES: Record<string, Record<string, string>> = { en, mr, hi };
+const EDITABLE_LOCALES = ['en', 'mr', 'hi'] as const;
 const PAGE_SIZE = 100;
 
 interface LanguageTranslationsProps {
@@ -28,6 +28,7 @@ interface LanguageTranslationsProps {
 }
 
 interface EditEntry {
+    en?: string;
     mr?: string;
     hi?: string;
 }
@@ -49,7 +50,7 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
             .map((key) => ({
                 key,
                 values: {
-                    en: en[key] ?? key,
+                    en: overrides.en?.[key] ?? en[key] ?? key,
                     mr: overrides.mr?.[key] ?? mr[key] ?? '',
                     hi: overrides.hi?.[key] ?? hi[key] ?? '',
                 },
@@ -60,7 +61,7 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
         const needle = query.trim().toLowerCase();
         return rows.filter((row) => {
             if (missingOnly) {
-                const missing = TARGET_LOCALES.some((locale) => row.values[locale] === '');
+                const missing = EDITABLE_LOCALES.some((locale) => row.values[locale] === '');
                 if (!missing) return false;
             }
             if (!needle) return true;
@@ -76,33 +77,33 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
     const rangeStart = filtered.length === 0 ? 0 : safePage * PAGE_SIZE + 1;
     const rangeEnd = Math.min((safePage + 1) * PAGE_SIZE, filtered.length);
     const modifiedCount = Object.values(edits).reduce((count, entry) => {
-        return count + (entry.mr !== undefined ? 1 : 0) + (entry.hi !== undefined ? 1 : 0);
+        return count + (entry.en !== undefined ? 1 : 0) + (entry.mr !== undefined ? 1 : 0) + (entry.hi !== undefined ? 1 : 0);
     }, 0);
 
     useEffect(() => {
         setPage(0);
     }, [query, missingOnly]);
 
-    const setEdit = (key: string, locale: 'mr' | 'hi', value: string) => {
+    const setEdit = (key: string, locale: typeof EDITABLE_LOCALES[number], value: string) => {
         setEdits((current) => {
             const next = { ...(current[key] ?? {}), [locale]: value };
             return { ...current, [key]: next };
         });
     };
 
-    const displayValue = (key: string, locale: 'mr' | 'hi'): string => {
+    const displayValue = (key: string, locale: typeof EDITABLE_LOCALES[number]): string => {
         return edits[key]?.[locale] ?? overrides[locale]?.[key] ?? DICTIONARIES[locale][key] ?? '';
     };
 
-    const isModified = (key: string, locale: 'mr' | 'hi'): boolean => edits[key]?.[locale] !== undefined;
+    const isModified = (key: string, locale: typeof EDITABLE_LOCALES[number]): boolean => edits[key]?.[locale] !== undefined;
 
     const saveTranslations = () => {
         const changes: { locale: string; key: string; value: string }[] = [];
 
         Object.entries(edits).forEach(([key, entry]) => {
-            (TARGET_LOCALES as readonly string[]).forEach((locale) => {
-                const editValue = (entry[locale as 'mr' | 'hi'] ?? '').trim();
-                const defaultValue = DICTIONARIES[locale][key] ?? '';
+            EDITABLE_LOCALES.forEach((locale) => {
+                const editValue = (entry[locale] ?? '').trim();
+                const defaultValue = DICTIONARIES[locale][key] ?? (locale === 'en' ? key : '');
                 const overrideValue = overrides[locale]?.[key];
                 const baseValue = overrideValue !== undefined ? overrideValue : defaultValue;
                 const hasOverride = overrideValue !== undefined;
@@ -212,14 +213,13 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
                     </div>
 
                     <Card>
-                        <CardContent className="overflow-x-auto p-0">
-                            <Table className="min-w-[900px]">
+                        <CardContent className="p-0">
+                            <Table>
                                 <TableHeader>
                                     <TableRow className="bg-slate-50 dark:bg-slate-900">
                                         <TableHead className="w-[22%] px-4 py-3">{t('KEYs')}</TableHead>
-                                        <TableHead className="w-[28%] px-4 py-3">{languages.en ?? 'English'}</TableHead>
-                                        {TARGET_LOCALES.map((locale) => (
-                                            <TableHead key={locale} className="w-[25%] px-4 py-3">
+                                        {EDITABLE_LOCALES.map((locale) => (
+                                            <TableHead key={locale} className="px-4 py-3">
                                                 {languages[locale] ?? locale}
                                                 <span className="ml-1 font-normal text-slate-400">
                                                     ({overrides[locale] ? Object.keys(overrides[locale]).length : 0})
@@ -246,15 +246,7 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
                                                         {row.key}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="px-4 py-2 align-top">
-                                                    <div
-                                                        title={row.values.en}
-                                                        className="truncate text-[13px] text-slate-700 dark:text-slate-300"
-                                                    >
-                                                        {row.values.en}
-                                                    </div>
-                                                </TableCell>
-                                                {TARGET_LOCALES.map((locale) => {
+                                                {EDITABLE_LOCALES.map((locale) => {
                                                     const modified = isModified(row.key, locale);
                                                     const baseIsMissing =
                                                         (overrides[locale]?.[row.key] ??
