@@ -18,6 +18,7 @@ type OrganizationRecord = {
     pincode: string;
     website?: string | null;
     logo?: string | null;
+    type?: 'school' | 'college' | 'coaching' | 'university';
     subscription_plan: 'free' | 'basic' | 'premium' | 'enterprise';
     subscription_status: 'active' | 'inactive' | 'suspended';
     subscription_start_date?: string | null;
@@ -28,6 +29,7 @@ type OrganizationRecord = {
         academic_year_start?: string;
         currency?: string;
         timezone?: string;
+        portal_routing?: 'session' | 'path' | 'subdomain';
     } | null;
     admin_user?: {
         id: number;
@@ -410,9 +412,14 @@ export default function SuperAdminDashboard({
                                                 <div className="text-sm text-gray-500">{org.email}</div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900">{org.city}</div>
-                                            <div className="text-sm text-gray-500">{org.state}</div>
+<td className="px-6 py-4">
+                                            <div className="font-medium text-gray-900">{org.name}</div>
+                                            <div className="text-sm text-gray-500">{org.email}</div>
+                                            {org.type && (
+                                                <span className="inline-flex mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                    {t(capitalizeType(org.type))}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-900">
                                             {formatDate(org.subscription_end_date, 'No expiry')}
@@ -550,6 +557,8 @@ function OrganizationForm({
         pincode: string;
         phone: string;
         email: string;
+        type: 'school' | 'college' | 'coaching' | 'university';
+        portal_routing: 'session' | 'path' | 'subdomain';
         subscription_plan: 'free' | 'basic' | 'premium' | 'enterprise';
         subscription_status: 'active' | 'inactive' | 'suspended';
         subscription_end_date: string;
@@ -568,6 +577,8 @@ function OrganizationForm({
         pincode: organization?.pincode || '',
         phone: organization?.phone || '',
         email: organization?.email || '',
+        type: organization?.type || 'school',
+        portal_routing: (organization?.settings as any)?.portal_routing || 'session',
         subscription_plan: organization?.subscription_plan || 'basic',
         subscription_status: organization?.subscription_status || 'active',
         subscription_end_date: organization?.subscription_end_date || '',
@@ -732,6 +743,39 @@ function OrganizationForm({
                                 />
                             </Field>
                         )}
+                        <Field label={t('Organization Type *')}>
+                            <select
+                                value={formData.type}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        type: e.target.value as any,
+                                    })
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="school">{t('School')}</option>
+                                <option value="college">{t('College')}</option>
+                                <option value="coaching">{t('Coaching Center')}</option>
+                                <option value="university">{t('University')}</option>
+                            </select>
+                        </Field>
+                        <Field label={t('Portal Routing')}>
+                            <select
+                                value={formData.portal_routing}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        portal_routing: e.target.value as any,
+                                    })
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="session">{t('Session-based organization picker')}</option>
+                                <option value="path">{t('URL path (domain.com/slug)')}</option>
+                                <option value="subdomain">{t('Subdomain (slug.domain.com)')}</option>
+                            </select>
+                        </Field>
                         <Field label={t('Subscription Plan *')}>
                             <select
                                 value={formData.subscription_plan}
@@ -812,6 +856,10 @@ function OrganizationForm({
             </div>
         </div>
     );
+}
+
+function capitalizeType(type: string): string {
+    return { school: 'School', college: 'College', coaching: 'Coaching Center', university: 'University' }[type] ?? type;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

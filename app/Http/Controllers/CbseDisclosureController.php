@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\ActiveOrgResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -72,9 +73,7 @@ class CbseDisclosureController extends Controller
 
     public function publicDisplay()
     {
-        $organization = Organization::query()
-            ->orderBy('id')
-            ->first();
+        $organization = app(ActiveOrgResolver::class)->resolvePublicOrganization();
 
         return Inertia::render('CbseDisclosure', [
             'websiteContent' => $this->publicWebsiteContent($organization),

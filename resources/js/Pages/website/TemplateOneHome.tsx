@@ -31,6 +31,7 @@ import InlineArrayEditor from '../../components/website/InlineArrayEditor';
 import SectionEditBar from '../../components/website/SectionEditBar';
 import TopWebsite3DImageSlider from './TopWebsite3DImageSlider';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import OrgSwitchLink from '../../components/OrgSwitchLink';
 
 const featureIcons = [BookOpen, FlaskConical, LibraryBig, Globe];
 const pillarIcons = [ShieldCheck, Bus, Trophy, HeartHandshake];
@@ -234,6 +235,10 @@ export default function TemplateOneHome({
                                 className={`${isLightTheme ? 'border-slate-200 bg-white/85 text-slate-800 hover:border-slate-300 hover:bg-white' : 'border-white/15 bg-white/5 text-slate-100 hover:border-white/30 hover:bg-white/10'}`}
                             />
 
+                            <OrgSwitchLink
+                                user={user}
+                                className={isLightTheme ? 'text-slate-700 hover:text-indigo-600' : 'text-slate-200 hover:text-white'}
+                            />
                             <Link
                                 href="/login"
                                 className={`inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold backdrop-blur-xl transition ${isLightTheme ? 'border-slate-200 bg-white/85 text-slate-800 hover:border-slate-300 hover:bg-white' : 'border-white/15 bg-white/5 text-slate-100 hover:border-white/30 hover:bg-white/10'}`}

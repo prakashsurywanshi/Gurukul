@@ -12,6 +12,7 @@ use App\Models\WebsiteSetting;
 use App\Services\DevanagariTransliterationService;
 use App\Services\KnowledgeBaseService;
 use App\Services\LanguageService;
+use App\Services\ActiveOrgResolver;
 use App\Services\OnlinePaymentService;
 use App\Services\QwaService;
 use App\Services\SmsService;
@@ -114,6 +115,7 @@ class SettingsController extends Controller
             'dateFormat' => ['required', Rule::in(['DD-MM-YYYY', 'MM-DD-YYYY', 'YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'])],
             'logo' => ['nullable', 'string'],
             'orgType' => ['sometimes', 'required', Rule::in(['school', 'college', 'coaching', 'university'])],
+            'portalRouting' => ['sometimes', 'required', Rule::in(['session', 'path', 'subdomain'])],
         ]);
 
         $sessionNames = AcademicYear::query()
@@ -129,6 +131,10 @@ class SettingsController extends Controller
             'sessions' => $sessionNames,
             'date_format' => $validated['dateFormat'],
         ];
+
+        if (isset($validated['portalRouting'])) {
+            $settings['portal_routing'] = $validated['portalRouting'];
+        }
 
         $languageSettings = \App\Support\LanguageCatalog::normalize($organization->settings['language_settings'] ?? null);
 
@@ -489,9 +495,7 @@ class SettingsController extends Controller
 
     public function publicHome()
     {
-        $organization = Organization::query()
-            ->orderBy('id')
-            ->first();
+        $organization = app(ActiveOrgResolver::class)->resolvePublicOrganization();
 
         $user = Auth::user();
 
@@ -531,9 +535,7 @@ class SettingsController extends Controller
 
     public function publicAdmissionForm()
     {
-        $organization = Organization::query()
-            ->orderBy('id')
-            ->first();
+        $organization = app(ActiveOrgResolver::class)->resolvePublicOrganization();
 
         $user = Auth::user();
 
@@ -595,9 +597,7 @@ class SettingsController extends Controller
 
     public function publicPrivacyPolicy()
     {
-        $organization = Organization::query()
-            ->orderBy('id')
-            ->first();
+        $organization = app(ActiveOrgResolver::class)->resolvePublicOrganization();
 
         $user = Auth::user();
 

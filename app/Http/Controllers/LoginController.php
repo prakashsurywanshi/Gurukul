@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Organization;
+use App\Services\ActiveOrgResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\StaffPermissionService;
 
 class LoginController extends Controller
 {
-    public function __construct(private readonly StaffPermissionService $staffPermissionService)
-    {
+    public function __construct(
+        private readonly StaffPermissionService $staffPermissionService,
+        private readonly ActiveOrgResolver $orgResolver
+    ) {
     }
 
     public function viewLogin()
@@ -20,9 +23,7 @@ class LoginController extends Controller
             return redirect($this->staffPermissionService->landingPathFor(Auth::user()));
         }
 
-        $organization = Organization::query()
-            ->orderBy('id')
-            ->first(['name', 'logo']);
+        $organization = $this->orgResolver->resolvePublicOrganization(null, ['name', 'logo']);
 
         return inertia('LoginPage', [
             'schoolName' => $organization?->name,

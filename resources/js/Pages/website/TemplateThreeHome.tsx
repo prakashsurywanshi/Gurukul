@@ -21,6 +21,7 @@ import { WebsiteContent } from '../../utils/websiteCmsContent';
 import type { PublishedPage, CurrentUser } from '../Home';
 import InlineEditField from '../../components/website/InlineEditField';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import OrgSwitchLink from '../../components/OrgSwitchLink';
 import InlineArrayEditor from '../../components/website/InlineArrayEditor';
 import SectionEditBar from '../../components/website/SectionEditBar';
 
@@ -262,6 +263,7 @@ export default function TemplateThreeHome({
 
                         <div className="hidden items-center gap-3 lg:flex">
                             <LanguageSwitcher variant="site" />
+                            <OrgSwitchLink user={user} className="text-stone-600 hover:text-stone-950" />
                             <Link
                                 href="/login"
                                 className="rounded-full border border-stone-300 bg-white/80 px-5 py-2.5 text-sm font-semibold text-stone-800 shadow-sm transition hover:bg-white"

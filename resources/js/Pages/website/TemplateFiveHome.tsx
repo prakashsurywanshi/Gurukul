@@ -38,6 +38,7 @@ import SectionEditBar from '../../components/website/SectionEditBar';
 import ImageUpload from '../../components/website/ImageUpload';
 import ImageLightbox from '../../components/website/ImageLightbox';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import OrgSwitchLink from '../../components/OrgSwitchLink';
 
 interface TemplateFiveHomeProps {
     cmsContent: WebsiteContent;
@@ -659,6 +660,10 @@ export default function TemplateFiveHome({
                                     </div>
                                 </div>
                             )}
+                            <OrgSwitchLink
+                                user={user}
+                                className="text-[#002147] hover:underline"
+                            />
                             <Link
                                 href="/login"
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-[#002147]/20 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#002147] transition hover:bg-[#002147] hover:text-white"

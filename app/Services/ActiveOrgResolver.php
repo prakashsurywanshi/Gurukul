@@ -129,4 +129,128 @@ class ActiveOrgResolver
 
         return $user->managedOrganizations()->pluck('organizations.id')->map(fn ($id) => (int) $id)->all();
     }
+
+    public function resolvePublicOrganization(?Request $request = null, array $columns = ['*']): ?Organization
+    {
+        $request ??= request();
+
+        $organization = $this->resolveDeepLinkOrganization($request, $columns);
+
+        if ($organization) {
+            $this->setPublicOrganization((int) $organization->id);
+
+            return $organization;
+        }
+
+        $sessionOrgId = (int) session('public_active_org_id', 0);
+
+        if ($sessionOrgId) {
+            $organization = Organization::query()
+                ->where('id', $sessionOrgId)
+                ->where('status', 'active')
+                ->first($columns);
+
+            if ($organization) {
+                return $organization;
+            }
+        }
+
+        $organization = Organization::query()
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->first($columns);
+
+        if ($organization) {
+            $this->setPublicOrganization((int) $organization->id);
+        }
+
+        return $organization;
+    }
+
+    public function resolveDeepLinkOrganization(Request $request, array $columns = ['*']): ?Organization
+    {
+        $organization = $this->organizationFromQueryParam($request, $columns);
+
+        if ($organization) {
+            return $organization;
+        }
+
+        $organization = $this->organizationFromFirstPathSegment($request, $columns);
+
+        if ($organization) {
+            return $organization;
+        }
+
+        return $this->organizationFromSubdomain($request, $columns);
+    }
+
+    public function organizationFromQueryParam(Request $request, array $columns = ['*']): ?Organization
+    {
+        $slug = (string) $request->query('org');
+
+        if ($slug === '') {
+            return null;
+        }
+
+        return $this->organizationBySlug($slug, $columns);
+    }
+
+    public function organizationFromFirstPathSegment(Request $request, array $columns = ['*']): ?Organization
+    {
+        $segments = collect(explode('/', (string) $request->path()))
+            ->filter(fn ($segment) => $segment !== '' && $segment !== 'select-organization')
+            ->values();
+
+        if ($segments->isEmpty()) {
+            return null;
+        }
+
+        return $this->organizationBySlug((string) $segments->first(), $columns);
+    }
+
+    public function organizationFromSubdomain(Request $request, array $columns = ['*']): ?Organization
+    {
+        $subdomain = $this->subdomainFromHost((string) $request->getHost());
+
+        if (! $subdomain) {
+            return null;
+        }
+
+        return $this->organizationBySlug($subdomain, $columns);
+    }
+
+    public function subdomainFromHost(?string $host): ?string
+    {
+        if ($host === null) {
+            return null;
+        }
+
+        $parts = explode('.', $host);
+
+        if (count($parts) < 3) {
+            return null;
+        }
+
+        $subdomain = (string) array_shift($parts);
+
+        if ($subdomain === '' || $subdomain === 'www' || $subdomain === 'localhost') {
+            return null;
+        }
+
+        return $subdomain;
+    }
+
+    public function organizationBySlug(string $slug, array $columns = ['*']): ?Organization
+    {
+        return Organization::query()
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->first($columns);
+    }
+
+    public function setPublicOrganization(int $organizationId): void
+    {
+        session(['public_active_org_id' => (int) $organizationId]);
+    }
+
 }

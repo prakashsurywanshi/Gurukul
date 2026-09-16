@@ -19,6 +19,7 @@ import InlineEditField from '../../components/website/InlineEditField';
 import InlineArrayEditor from '../../components/website/InlineArrayEditor';
 import SectionEditBar from '../../components/website/SectionEditBar';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import OrgSwitchLink from '../../components/OrgSwitchLink';
 
 interface TemplateFourHomeProps {
     cmsContent: WebsiteContent;
@@ -251,6 +252,7 @@ export default function TemplateFourHome({
                                 className="border-slate-200 bg-white text-stone-800 hover:border-blue-200 hover:bg-blue-50"
                             />
 
+                            <OrgSwitchLink user={user} className="text-stone-600 hover:text-blue-700" />
                             <Link
                                 href="/login"
                                 className="rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"

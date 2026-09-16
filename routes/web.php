@@ -20,6 +20,7 @@ use App\Http\Controllers\CocurricularController;
 use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\ComplianceProfileController;use App\Http\Controllers\TransportDriversController;
 use App\Http\Controllers\NotificationSettingsController;
+use App\Http\Controllers\OrganizationGatewayController;
 use App\Http\Controllers\LiveClassSettingsController;
 use App\Http\Controllers\BookCategoriesController;
 use App\Http\Controllers\CardDesignController;
@@ -149,7 +150,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return app(SettingsController::class)->publicHome();
-});
+})->name('home');
+Route::get('/select-organization', [OrganizationGatewayController::class, 'index'])->name('select-organization');
+Route::post('/select-organization/{organization}', [OrganizationGatewayController::class, 'select'])->name('select-organization.choose');
 Route::get('/privacy-policy', [SettingsController::class, 'publicPrivacyPolicy'])->name('privacy-policy');
 Route::get('/disclosure', [CbseDisclosureController::class, 'publicDisplay'])->name('disclosure');
 Route::get('/admissions/apply', [SettingsController::class, 'publicAdmissionForm'])->name('admissions.apply');
@@ -160,6 +163,31 @@ Route::get('/demo-login/{role}', DemoLoginController::class)
     ->whereIn('role', ['schooladmin', 'superadmin', 'admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'driver', 'parent', 'student'])
     ->name('demo-login');
 Route::get('/sso/status', [SsoController::class, 'status'])->name('sso.status');
+Route::get('/{orgSlug}/privacy-policy', function (string $orgSlug) {
+    abort_unless(\App\Models\Organization::query()->where('slug', $orgSlug)->where('status', '!=', 'suspended')->exists(), 404);
+
+    return app(SettingsController::class)->publicPrivacyPolicy();
+})->where('orgSlug', '[a-z0-9-]+')->name('org.privacy-policy');
+Route::get('/{orgSlug}/disclosure', function (string $orgSlug) {
+    abort_unless(\App\Models\Organization::query()->where('slug', $orgSlug)->where('status', '!=', 'suspended')->exists(), 404);
+
+    return app(CbseDisclosureController::class)->publicDisplay();
+})->where('orgSlug', '[a-z0-9-]+')->name('org.disclosure');
+Route::get('/{orgSlug}/admissions/apply', function (string $orgSlug) {
+    abort_unless(\App\Models\Organization::query()->where('slug', $orgSlug)->where('status', '!=', 'suspended')->exists(), 404);
+
+    return app(SettingsController::class)->publicAdmissionForm();
+})->where('orgSlug', '[a-z0-9-]+')->name('org.admissions.apply');
+Route::get('/{orgSlug}/pages/{pageSlug}', function (string $orgSlug, string $pageSlug) {
+    abort_unless(\App\Models\Organization::query()->where('slug', $orgSlug)->where('status', '!=', 'suspended')->exists(), 404);
+
+    return app(WebsitePageController::class)->show($pageSlug);
+})->where('orgSlug', '[a-z0-9-]+')->name('org.website-pages.show');
+Route::get('/{orgSlug}/login', function (string $orgSlug) {
+    abort_unless(\App\Models\Organization::query()->where('slug', $orgSlug)->where('status', '!=', 'suspended')->exists(), 404);
+
+    return app(LoginController::class)->viewLogin();
+})->where('orgSlug', '[a-z0-9-]+')->name('org.login');
 if (filter_var(env('SSO_ENABLED', false), FILTER_VALIDATE_BOOL)) {
     Route::get('/auth/sso/{provider}', [SsoController::class, 'redirect'])->name('sso.redirect');
     Route::get('/auth/sso/{provider}/callback', [SsoController::class, 'callback'])->name('sso.callback');

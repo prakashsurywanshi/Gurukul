@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Models\WebsitePage;
 use App\Models\WebsiteSetting;
+use App\Services\ActiveOrgResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -183,7 +184,7 @@ class WebsitePageController extends Controller
 
     public function show(string $slug)
     {
-        $organization = Organization::query()->first();
+        $organization = app(ActiveOrgResolver::class)->resolvePublicOrganization();
 
         if (!$organization) {
             abort(404);

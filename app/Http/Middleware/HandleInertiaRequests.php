@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
             'schoolName' => fn () => $this->resolveSchoolName($request),
             'schoolLogo' => fn () => $this->resolveSchoolLogo($request),
             'orgType' => fn () => $this->resolveOrgType($request),
+            'activeOrganizationCount' => fn () => Organization::query()->where('status', 'active')->count(),
             'panelAppearance' => fn () => $this->resolvePanelAppearance($request),
             'subscriptionNotice' => fn () => $this->resolveSubscriptionNotice($request),
             'staffPermissions' => fn () => app(StaffPermissionService::class)->featurePermissionsFor($request->user()),

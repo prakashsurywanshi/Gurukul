@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\ActiveOrgResolver;
 use App\Services\StaffPermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +25,10 @@ class DemoLoginController extends Controller
         'student' => 'student',
     ];
 
-    public function __construct(private readonly StaffPermissionService $staffPermissionService)
-    {
+    public function __construct(
+        private readonly StaffPermissionService $staffPermissionService,
+        private readonly ActiveOrgResolver $orgResolver
+    ) {
     }
 
     public function __invoke(Request $request, string $role)
@@ -78,7 +81,7 @@ class DemoLoginController extends Controller
                 ->first();
         }
 
-        $organization = Organization::query()->orderBy('id')->first();
+        $organization = $this->orgResolver->resolvePublicOrganization();
 
         if (! $organization) {
             return null;

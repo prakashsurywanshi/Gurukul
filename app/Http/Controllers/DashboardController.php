@@ -195,6 +195,8 @@ class DashboardController extends Controller
                     }
                 },
             ],
+            'type' => ['sometimes', 'required', Rule::in(['school', 'college', 'coaching', 'university'])],
+            'portal_routing' => ['sometimes', 'nullable', Rule::in(['session', 'path', 'subdomain'])],
             'subscription_plan' => ['required', Rule::in(['free', 'basic', 'premium', 'enterprise'])],
             'subscription_status' => ['required', Rule::in(['active', 'inactive', 'suspended'])],
             'subscription_end_date' => ['required', 'date'],
@@ -216,7 +218,7 @@ class DashboardController extends Controller
                 'subscription_start_date' => now()->toDateString(),
                 'subscription_end_date' => $validated['subscription_end_date'],
                 'country' => 'India',
-                'type' => 'school',
+                'type' => $validated['type'] ?? 'school',
                 'status' => $validated['subscription_status'],
                 'max_students' => $validated['max_students'],
                 'max_staff' => 10,
@@ -226,6 +228,7 @@ class DashboardController extends Controller
                     'timezone' => 'Asia/Kolkata',
                     'session' => '2025-2026',
                     'sessions' => ['2024-2025', '2025-2026'],
+                    'portal_routing' => $validated['portal_routing'] ?? 'session',
                 ],
             ]);
 
@@ -257,17 +260,29 @@ class DashboardController extends Controller
             'pincode' => ['required', 'string', 'max:20'],
             'phone' => ['required', 'string', 'max:30'],
             'email' => ['required', 'email', 'max:255', Rule::unique('organizations', 'email')->ignore($organization->id)],
+            'type' => ['sometimes', 'required', Rule::in(['school', 'college', 'coaching', 'university'])],
+            'portal_routing' => ['sometimes', 'nullable', Rule::in(['session', 'path', 'subdomain'])],
             'subscription_plan' => ['required', Rule::in(['free', 'basic', 'premium', 'enterprise'])],
             'subscription_status' => ['required', Rule::in(['active', 'inactive', 'suspended'])],
             'subscription_end_date' => ['required', 'date'],
             'max_students' => ['required', 'integer', 'min:1'],
         ]);
 
+        $portalRouting = $validated['portal_routing'] ?? null;
+
+        if ($portalRouting) {
+            unset($validated['portal_routing']);
+        }
+
         $organization->update([
             ...$validated,
             'slug' => Str::slug($validated['slug']),
             'status' => $validated['subscription_status'],
             'subscription_start_date' => $organization->subscription_start_date ?? now()->toDateString(),
+            'settings' => array_merge(
+                $organization->settings ?? [],
+                $portalRouting ? ['portal_routing' => $portalRouting] : [],
+            ),
         ]);
 
         return redirect()->route('dashboard')->with('success', 'Organization updated successfully.');
@@ -500,6 +515,7 @@ class DashboardController extends Controller
                     'pincode' => $organization->pincode,
                     'website' => $organization->website,
                     'logo' => $organization->logo,
+                    'type' => $organization->type,
                     'subscription_plan' => $organization->subscription_plan,
                     'subscription_status' => $organization->status,
                     'subscription_start_date' => optional($organization->subscription_start_date)->toDateString(),
