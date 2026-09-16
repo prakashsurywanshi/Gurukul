@@ -415,6 +415,7 @@ const en = {
     'The languages offered in the dashboard language selector and on the website. English is always included.':
         'The languages offered in the dashboard language selector and on the website. English is always included.',
     'Total Keys': 'Total Keys',
+    'KEYs': 'KEYs',
     'Translations saved successfully.': 'Translations saved successfully.',
     Regional: 'Regional',
     Pages: 'Pages',

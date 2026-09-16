@@ -212,13 +212,14 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
                     </div>
 
                     <Card>
-                        <CardContent className="p-0">
-                            <Table>
+                        <CardContent className="overflow-x-auto p-0">
+                            <Table className="min-w-[900px]">
                                 <TableHeader>
                                     <TableRow className="bg-slate-50 dark:bg-slate-900">
-                                        <TableHead className="w-[38%] px-4 py-3">{languages.en ?? 'English'}</TableHead>
+                                        <TableHead className="w-[22%] px-4 py-3">{t('KEYs')}</TableHead>
+                                        <TableHead className="w-[28%] px-4 py-3">{languages.en ?? 'English'}</TableHead>
                                         {TARGET_LOCALES.map((locale) => (
-                                            <TableHead key={locale} className="px-4 py-3">
+                                            <TableHead key={locale} className="w-[25%] px-4 py-3">
                                                 {languages[locale] ?? locale}
                                                 <span className="ml-1 font-normal text-slate-400">
                                                     ({overrides[locale] ? Object.keys(overrides[locale]).length : 0})
@@ -230,7 +231,7 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
                                 <TableBody>
                                     {visibleRows.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={3} className="px-4 py-10 text-center text-slate-500">
+                                            <TableCell colSpan={4} className="px-4 py-10 text-center text-slate-500">
                                                 {t('No translations found.')}
                                             </TableCell>
                                         </TableRow>
@@ -240,11 +241,18 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
                                                 <TableCell className="px-4 py-2 align-top">
                                                     <div
                                                         title={row.key}
+                                                        className="truncate text-[13px] font-medium text-slate-700 dark:text-slate-300"
+                                                    >
+                                                        {row.key}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="px-4 py-2 align-top">
+                                                    <div
+                                                        title={row.values.en}
                                                         className="truncate text-[13px] text-slate-700 dark:text-slate-300"
                                                     >
                                                         {row.values.en}
                                                     </div>
-                                                    <div className="truncate text-[11px] text-slate-400">{row.key}</div>
                                                 </TableCell>
                                                 {TARGET_LOCALES.map((locale) => {
                                                     const modified = isModified(row.key, locale);

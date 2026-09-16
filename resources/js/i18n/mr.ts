@@ -413,6 +413,7 @@ const mr = {
     'The languages offered in the dashboard language selector and on the website. English is always included.':
         'डॅशबोर्ड भाषा निवडक आणि वेबसाइटवर उपलब्ध असलेल्या भाषा. इंग्रजी नेहमी समाविष्ट आहे.',
     'Total Keys': 'एकूण कळ',
+    'KEYs': 'कळ',
     'Translations saved successfully.': 'भाषांतरे यशस्वीरित्या जतन केली.',
     Regional: 'प्रादेशिक',
     Pages: 'पृष्ठे',

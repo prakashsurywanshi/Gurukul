@@ -417,6 +417,7 @@ const hi = {
     'The languages offered in the dashboard language selector and on the website. English is always included.':
         'डैशबोर्ड भाषा चयनकर्ता और वेबसाइट पर उपलब्ध भाषाएं। अंग्रेजी हमेशा शामिल होती है।',
     'Total Keys': 'कुल कुंजियाँ',
+    'KEYs': 'कुंजियाँ',
     'Translations saved successfully.': 'अनुवाद सफलतापूर्वक सहेजे गए।',
     Regional: 'क्षेत्रीय',
     Pages: 'पृष्ठ',
