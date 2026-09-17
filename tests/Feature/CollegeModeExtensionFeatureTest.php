@@ -210,6 +210,25 @@ class CollegeModeExtensionFeatureTest extends TestCase
             ->assertStatus(403);
     }
 
+    public function test_school_org_gets_403_on_semesters_page(): void
+    {
+        [$org, $admin] = $this->createSchoolOrgWithAdmin();
+
+        $this->actingAs($admin)
+            ->get('/semesters')
+            ->assertStatus(403);
+    }
+
+    public function test_college_admin_can_view_semesters_page(): void
+    {
+        [$org, $admin] = $this->createCollegeOrgWithAdmin();
+
+        $this->actingAs($admin)
+            ->get('/semesters')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('dashboard/SemesterSettings'));
+    }
+
     public function test_college_admin_can_view_lectures_page(): void
     {
         [$org, $admin] = $this->createCollegeOrgWithAdmin();
@@ -391,6 +410,128 @@ class CollegeModeExtensionFeatureTest extends TestCase
         $exam = Exam::query()->where('organization_id', $org->id)->latest()->first();
         $this->assertNotNull($exam);
         $this->assertEquals($semester->id, $exam->semester_id);
+    }
+
+    public function test_coaching_org_maps_weekly_and_mock_test_kinds(): void
+    {
+        [$org, $admin] = $this->createCoachingOrgWithAdmin();
+
+        SchoolClass::query()->create([
+            'organization_id' => $org->id,
+            'name' => 'Batch A',
+            'section' => 'A',
+            'academic_year_id' => $org->selectedAcademicYear()?->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->post('/exams', [
+                'name' => 'Weekly Test 1',
+                'publishStatus' => 'draft',
+                'className' => 'Batch A',
+                'section' => 'A',
+                'testKind' => 'weekly',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('exams', [
+            'organization_id' => $org->id,
+            'name' => 'Weekly Test 1',
+            'exam_type' => 'weekly_test',
+        ]);
+
+        $this->actingAs($admin)
+            ->post('/exams', [
+                'name' => 'Full Mock 1',
+                'publishStatus' => 'draft',
+                'className' => 'Batch A',
+                'section' => 'A',
+                'testKind' => 'mock',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('exams', [
+            'organization_id' => $org->id,
+            'name' => 'Full Mock 1',
+            'exam_type' => 'mock_test',
+        ]);
+    }
+
+    public function test_school_org_forces_general_exam_type_regardless_of_test_kind(): void
+    {
+        [$org, $admin] = $this->createSchoolOrgWithAdmin();
+
+        SchoolClass::query()->create([
+            'organization_id' => $org->id,
+            'name' => 'Class 10',
+            'section' => 'A',
+            'academic_year_id' => $org->selectedAcademicYear()?->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->post('/exams', [
+                'name' => 'Term Test',
+                'publishStatus' => 'draft',
+                'className' => 'Class 10',
+                'section' => 'A',
+                'testKind' => 'mock',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('exams', [
+            'organization_id' => $org->id,
+            'name' => 'Term Test',
+            'exam_type' => 'general',
+        ]);
+    }
+
+    public function test_student_can_be_created_with_course_and_batch(): void
+    {
+        [$org, $admin] = $this->createCollegeOrgWithAdmin();
+
+        $year = $org->selectedAcademicYear();
+
+        $class = SchoolClass::query()->create([
+            'organization_id' => $org->id,
+            'name' => 'FY',
+            'section' => 'A',
+            'academic_year_id' => $year?->id,
+        ]);
+
+        $course = Course::query()->create([
+            'organization_id' => $org->id,
+            'name' => 'B.Sc Computer Science',
+            'code' => 'BSC-CS',
+        ]);
+
+        $batch = Batch::query()->create([
+            'organization_id' => $org->id,
+            'course_id' => $course->id,
+            'academic_year_id' => $year?->id,
+            'name' => 'Morning Batch',
+        ]);
+
+        $this->actingAs($admin)
+            ->post('/students', [
+                'first_name' => 'Riya',
+                'middle_name' => 'Anand',
+                'last_name' => 'Sharma',
+                'first_name_mr' => 'रिया',
+                'middle_name_mr' => 'आनंद',
+                'last_name_mr' => 'शर्मा',
+                'date_of_birth' => '2005-06-01',
+                'gender' => 'female',
+                'class' => $class->name,
+                'section' => $class->section,
+                'course_id' => (string) $course->id,
+                'batch_id' => (string) $batch->id,
+                'admission_date' => '2026-06-01',
+                'roll_number' => '1',
+            ])
+            ->assertRedirect();
+
+        $student = Student::query()->where('organization_id', $org->id)->firstOrFail();
+        $this->assertEquals($course->id, $student->course_id);
+        $this->assertEquals($batch->id, $student->batch_id);
     }
 
     public function test_exam_index_exposes_semesters_prop(): void
@@ -717,6 +858,44 @@ class CollegeModeExtensionFeatureTest extends TestCase
             'semester_id' => $semester->id,
             'amount' => 10000,
         ]);
+    }
+
+    private function createCoachingOrgWithAdmin(): array
+    {
+        $org = Organization::query()->create([
+            'name' => 'Shine Test Prep Academy',
+            'slug' => 'shine-test-prep-academy',
+            'email' => 'admin@shine.test',
+            'phone' => '9999000001',
+            'address' => 'Coaching Road',
+            'city' => 'Pune',
+            'state' => 'Maharashtra',
+            'country' => 'India',
+            'pincode' => '411001',
+            'type' => 'coaching',
+            'status' => 'active',
+            'subscription_plan' => 'premium',
+            'subscription_start_date' => now()->subMonth()->toDateString(),
+            'subscription_end_date' => now()->addMonth()->toDateString(),
+            'max_students' => 1000,
+            'max_staff' => 100,
+            'settings' => [],
+        ]);
+
+        AcademicYear::query()->create([
+            'organization_id' => $org->id,
+            'name' => '2026-2027',
+            'start_date' => now()->startOfYear()->toDateString(),
+            'end_date' => now()->endOfYear()->toDateString(),
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        $admin = $this->createStaff($org, 'admin');
+
+        app(StaffPermissionService::class)->ensureRolesExist($org);
+
+        return [$org, $admin];
     }
 
     private function createCollegeOrgWithAdmin(): array

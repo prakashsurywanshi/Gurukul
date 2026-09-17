@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\AppearanceService;
 use App\Services\GradingScaleService;
+use App\Services\OrgTypePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,10 @@ use Throwable;
 
 class ReportCardController extends Controller
 {
+    public function __construct(private readonly OrgTypePolicy $orgTypePolicy)
+    {
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -95,6 +100,7 @@ class ReportCardController extends Controller
         $exam = Exam::query()
             ->where('organization_id', $organization->id)
             ->with([
+                'semester:id,name',
                 'schedules.subject:id,name,name_mr,name_hi,credits',
                 'schedules.results' => fn ($query) => $query->where('student_id', $studentId),
             ])
@@ -105,7 +111,7 @@ class ReportCardController extends Controller
         }
 
         $student = Student::query()
-            ->with('schoolClass:id,name,section')
+            ->with(['schoolClass:id,name,section', 'course:id,name', 'batch:id,name'])
             ->where('organization_id', $organization->id)
             ->find($studentId);
 
@@ -185,10 +191,13 @@ class ReportCardController extends Controller
                 'last_name_mr' => $student->last_name_mr,
                 'class' => $student->schoolClass?->name,
                 'section' => $student->schoolClass?->section,
+                'course' => $student->course?->name,
+                'batch' => $student->batch?->name,
             ],
             'exam' => [
                 'id' => (string) $exam->id,
                 'name' => $exam->localized('name'),
+                'semester' => $exam->semester?->name,
                 'startDate' => optional($exam->start_date)->format('d M Y'),
                 'endDate' => optional($exam->end_date)->format('d M Y'),
             ],
@@ -205,8 +214,61 @@ class ReportCardController extends Controller
             'creditBased' => $creditBased,
             'totalCredits' => $totalCredits,
             'sgpa' => $sgpa,
-            'cgpa' => $sgpa,
+            'cgpa' => $this->resolveCumulativeCgpa($organization, $student, $sgpa),
         ];
+    }
+
+    private function resolveCumulativeCgpa(Organization $organization, Student $student, ?float $currentSgpa): ?float
+    {
+        if (! $this->orgTypePolicy->supportsSemesters($organization)) {
+            return $currentSgpa;
+        }
+
+        $results = ExamResult::query()
+            ->where('student_id', $student->id)
+            ->where('organization_id', $organization->id)
+            ->where('is_absent', false)
+            ->with('examSchedule.subject:id,credits')
+            ->get()
+            ->filter(fn ($result) => $result->examSchedule
+                && $result->examSchedule->subject
+                && (float) $result->examSchedule->subject->credits > 0);
+
+        if ($results->isEmpty()) {
+            return $currentSgpa;
+        }
+
+        $perExam = $results
+            ->groupBy(fn ($result) => $result->examSchedule->exam_id)
+            ->map(function ($examResults) use ($organization) {
+                $credits = 0.0;
+                $weighted = 0.0;
+
+                foreach ($examResults as $result) {
+                    $schedule = $result->examSchedule;
+                    $max = (float) $schedule->max_marks;
+                    $percentage = $max > 0 ? (((float) $result->obtained_marks / $max) * 100) : 0;
+                    $grade = GradingScaleService::gradeFor($percentage, $organization) ?? ['point' => null];
+                    $credit = (float) $schedule->subject->credits;
+
+                    $credits += $credit;
+                    $weighted += ((float) ($grade['point'] ?? 0)) * $credit;
+                }
+
+                return $credits > 0 ? ['sgpa' => $weighted / $credits, 'credits' => $credits] : null;
+            })
+            ->filter()
+            ->values();
+
+        $totalCredits = $perExam->sum('credits');
+
+        if ($totalCredits <= 0) {
+            return $currentSgpa;
+        }
+
+        $cgpa = $perExam->sum(fn ($row) => $row['sgpa'] * $row['credits']) / $totalCredits;
+
+        return round($cgpa, 2);
     }
 
     private function resolveRank(int $examId, int $studentId): ?int

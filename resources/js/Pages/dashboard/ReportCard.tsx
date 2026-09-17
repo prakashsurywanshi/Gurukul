@@ -2,6 +2,7 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useMemo, useState } from 'react';
 import { Award, FileText, GraduationCap, Loader2, Palette, Printer, Save, Sparkles } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
+import { orgTypeFeatures } from '../../lib/orgTypeConfig';
 import type { RequestPayload } from '@inertiajs/core';
 import { toast } from 'sonner';
 import DashboardLayout from '../DashboardLayout';
@@ -57,6 +58,8 @@ interface ReportProps {
 
 export default function ReportCard(pageProps: ReportProps) {
     const { t } = useLanguage();
+    const orgType = usePage<{ orgType?: string }>().props.orgType;
+    const orgFeatures = orgTypeFeatures(orgType);
     const { props } = usePage();
     const { errors } = props as any;
 
@@ -509,14 +512,22 @@ export default function ReportCard(pageProps: ReportProps) {
                                 <p className="font-semibold text-slate-900">{report.student.admission_no || '—'}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-medium uppercase text-slate-400">{t('Class & Section')}</p>
+                                <p className="text-xs font-medium uppercase text-slate-400">{t(orgFeatures.groupWordKey)}</p>
                                 <p className="font-semibold text-slate-900">
-                                    {report.student.class} {report.student.section ?? ''}
+                                    {report.student.course ?? report.student.class ?? '—'}
+                                    {report.student.batch
+                                        ? ` · ${report.student.batch}`
+                                        : report.student.section
+                                          ? ` · ${report.student.section}`
+                                          : ''}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-xs font-medium uppercase text-slate-400">{t('Exam')}</p>
-                                <p className="font-semibold text-slate-900">{report.exam.name}</p>
+                                <p className="font-semibold text-slate-900">
+                                    {report.exam.name}
+                                    {report.exam.semester ? ` · ${report.exam.semester}` : ''}
+                                </p>
                             </div>
                         </div>
 
@@ -610,7 +621,9 @@ export default function ReportCard(pageProps: ReportProps) {
                                     <div>
                                         <p className="text-xs font-medium uppercase text-slate-400">{t('SGPA / CGPA')}</p>
                                         <p className="font-semibold text-slate-900">
-                                            {report.sgpa ?? '—'} <span className="text-sm text-slate-500">({t('Credits')}: {report.totalCredits})</span>
+                                            {report.sgpa ?? '—'}
+                                            {report.cgpa !== null && report.cgpa !== undefined ? ` / ${report.cgpa}` : ''}{' '}
+                                            <span className="text-sm text-slate-500">({t('Credits')}: {report.totalCredits})</span>
                                         </p>
                                     </div>
                                 ) : null}

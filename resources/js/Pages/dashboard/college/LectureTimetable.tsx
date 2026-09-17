@@ -1,8 +1,9 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { CalendarDays, Loader2, Plus, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import DashboardLayout from '../../DashboardLayout';
 import { useLanguage } from '../../../i18n/LanguageProvider';
+import { orgTypeFeatures } from '../../../lib/orgTypeConfig';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
@@ -64,6 +65,9 @@ const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:
 export default function LectureTimetable(pageProps: LectureTimetableProps) {
     const { classes, selectedClassId, selectedClassName, lectures, subjects, teachers, semester, daysOfWeek } = pageProps;
     const { t } = useLanguage();
+    const { orgType } = usePage<{ orgType?: string }>().props;
+    const features = orgTypeFeatures(orgType);
+    const groupWord = t(features.groupWordKey);
 
     const [classId, setClassId] = useState(selectedClassId?.toString() ?? '');
     const [showForm, setShowForm] = useState(false);
@@ -144,7 +148,7 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <CalendarDays className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            {t('Lecture Timetable')}
+                            {t(features.timetableWordKey)}
                         </h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {t('Weekly lecture schedule per class.')}
@@ -159,12 +163,12 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
 
                 <div className="flex items-center gap-4">
                     <div className="w-64 space-y-1">
-                        <Label>{t('Class')}</Label>
+                        <Label>{groupWord}</Label>
                         <Select
                             value={classId}
                             onValueChange={switchClass}
                         >
-                            <option value="">{t('Select class…')}</option>
+                            <option value="">{t('Select {group}…', { group: groupWord })}</option>
                             {classes.map((c) => (
                                 <option key={c.id} value={c.id}>
                                     {c.name}{c.section ? ` ${c.section}` : ''}
@@ -278,11 +282,11 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
 
                 {!selectedClassId ? (
                     <p className="rounded-lg border bg-card p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        {t('Select a class to view its weekly timetable.')}
+                        {t('Select a {group} to view its weekly timetable.', { group: groupWord.toLowerCase() })}
                     </p>
                 ) : lectures.length === 0 ? (
                     <p className="rounded-lg border bg-card p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                        {t('No lectures scheduled for this class yet.')}
+                        {t('No lectures scheduled for this {group} yet.', { group: groupWord.toLowerCase() })}
                     </p>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

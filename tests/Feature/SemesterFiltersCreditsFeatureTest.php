@@ -12,6 +12,7 @@ use App\Models\Student;
 use App\Models\StudentAcademicHistory;
 use App\Models\Subject;
 use App\Models\User;
+use App\Services\GradingScaleService;
 use App\Services\StaffPermissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -442,6 +443,158 @@ class SemesterFiltersCreditsFeatureTest extends TestCase
                 ->where('report.subjects.0.credits', 4)
                 ->where('report.subjects.1.subject', 'Mathematics')
                 ->where('report.subjects.1.credits', 4)
+            );
+    }
+
+    public function test_report_card_cgpa_is_cumulative_across_exams(): void
+    {
+        [$organization, $admin] = $this->seedOrganizationUser('college', 'cumulative');
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+
+        $year = AcademicYear::query()->create([
+            'organization_id' => $organization->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-06-01',
+            'end_date' => '2027-04-30',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        $class = SchoolClass::query()->create([
+            'organization_id' => $organization->id,
+            'academic_year_id' => $year->id,
+            'name' => 'FY',
+            'section' => 'A',
+            'status' => 'active',
+        ]);
+
+        $student = Student::query()->create([
+            'organization_id' => $organization->id,
+            'class_id' => $class->id,
+            'admission_no' => 'CUM-1001',
+            'roll_number' => '1',
+            'first_name' => 'Cumulative',
+            'last_name' => 'Student',
+            'date_of_birth' => '2005-04-01',
+            'gender' => 'female',
+            'admission_date' => '2026-06-01',
+            'status' => 'active',
+        ]);
+
+        StudentAcademicHistory::query()->create([
+            'organization_id' => $organization->id,
+            'student_id' => $student->id,
+            'class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_current' => true,
+            'status' => 'active',
+            'entry_type' => 'admission',
+        ]);
+
+        $physics = Subject::query()->create([
+            'organization_id' => $organization->id,
+            'name' => 'Physics',
+            'code' => 'PHY101',
+            'type' => 'theory',
+            'credits' => 4,
+        ]);
+
+        $maths = Subject::query()->create([
+            'organization_id' => $organization->id,
+            'name' => 'Mathematics',
+            'code' => 'MATH101',
+            'type' => 'theory',
+            'credits' => 4,
+        ]);
+
+        $semesterOne = Exam::query()->create([
+            'organization_id' => $organization->id,
+            'academic_year_id' => $year->id,
+            'name' => 'Semester 1',
+            'exam_type' => 'term_exam',
+            'publish_status' => 'published',
+            'start_date' => '2026-09-10',
+            'end_date' => '2026-09-25',
+            'status' => 'scheduled',
+        ]);
+
+        foreach ([[$physics, 90], [$maths, 80]] as [$subject, $marks]) {
+            $schedule = ExamSchedule::query()->create([
+                'exam_id' => $semesterOne->id,
+                'class_id' => $class->id,
+                'subject_id' => $subject->id,
+                'exam_date' => '2026-09-14',
+                'start_time' => '08:30:00',
+                'end_time' => '10:30:00',
+                'max_marks' => 100,
+                'passing_marks' => 33,
+            ]);
+
+            ExamResult::query()->create([
+                'exam_schedule_id' => $schedule->id,
+                'student_id' => $student->id,
+                'organization_id' => $organization->id,
+                'total_marks' => 100,
+                'obtained_marks' => $marks,
+                'grade' => 'A',
+                'is_absent' => false,
+                'entered_by' => $admin->id,
+            ]);
+        }
+
+        $chemistry = Subject::query()->create([
+            'organization_id' => $organization->id,
+            'name' => 'Chemistry',
+            'code' => 'CHEM101',
+            'type' => 'theory',
+            'credits' => 2,
+        ]);
+
+        $semesterTwo = Exam::query()->create([
+            'organization_id' => $organization->id,
+            'academic_year_id' => $year->id,
+            'name' => 'Semester 2',
+            'exam_type' => 'term_exam',
+            'publish_status' => 'published',
+            'start_date' => '2027-02-10',
+            'end_date' => '2027-02-25',
+            'status' => 'scheduled',
+        ]);
+
+        $scheduleTwo = ExamSchedule::query()->create([
+            'exam_id' => $semesterTwo->id,
+            'class_id' => $class->id,
+            'subject_id' => $chemistry->id,
+            'exam_date' => '2027-02-14',
+            'start_time' => '08:30:00',
+            'end_time' => '10:30:00',
+            'max_marks' => 100,
+            'passing_marks' => 33,
+        ]);
+
+        ExamResult::query()->create([
+            'exam_schedule_id' => $scheduleTwo->id,
+            'student_id' => $student->id,
+            'organization_id' => $organization->id,
+            'total_marks' => 100,
+            'obtained_marks' => 100,
+            'grade' => 'A+',
+            'is_absent' => false,
+            'entered_by' => $admin->id,
+        ]);
+
+        $semesterTwoPoint = (float) (GradingScaleService::gradeFor(100, $organization)['point'] ?? 0);
+        $expectedCgpa = round(((3.85 * 8) + ($semesterTwoPoint * 2)) / 10, 2);
+
+        $this->assertNotEquals(3.85, $expectedCgpa);
+
+        $this->actingAs($admin)
+            ->get('/exams/report-card?student='.$student->id.'&exam='.$semesterOne->id)
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/ReportCard')
+                ->where('report.sgpa', 3.85)
+                ->where('report.cgpa', $expectedCgpa)
             );
     }
 

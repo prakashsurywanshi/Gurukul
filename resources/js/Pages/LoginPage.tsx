@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { orgTypeLabel } from '../lib/orgTypeConfig';
 
 type LoginPortal = 'student_parent' | 'super_admin' | 'admin' | 'teacher' | 'accountant' | 'receptionist' | 'librarian' | 'driver' | 'staff';
 
@@ -119,11 +120,16 @@ const portalOptions: Array<{
     },
 ];
 
+const demoCredentials: Array<{ org: string; type: string; email: string; password: string }> = [
+    { org: 'Gurukul Public School', type: 'School', email: 'admin@gurukul.com', password: 'admin123' },
+    { org: 'Nova College of Science', type: 'College', email: 'admin@college.gurukul.com', password: 'college123' },
+    { org: 'Shine Test Prep Academy', type: 'Coaching Center', email: 'admin@coaching.gurukul.com', password: 'coaching123' },
+    { org: 'Sarvamaya University', type: 'University', email: 'admin@university.gurukul.com', password: 'university123' },
+];
+
 interface LoginPageProps {
     onLogin?: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-}
-
-interface SsoStatus {
+}interface SsoStatus {
     enabled: boolean;
     providers: string[];
     installed?: boolean;
@@ -267,7 +273,7 @@ export default function LoginPage(_: LoginPageProps) {
                                     <h1 className="text-4xl font-bold tracking-tight text-[#93c5fd]">{schoolName}</h1>
                             {orgType && orgType !== 'school' && (
                                 <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[rgba(147,197,253,0.35)] bg-[rgba(147,197,253,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#bfdbfe]">
-                                    {t(orgType === 'coaching' ? 'Coaching Center' : orgType === 'university' ? 'University' : orgType === 'college' ? 'College' : 'School')}
+                                    {t(orgTypeLabel(orgType))}
                                 </span>
                             )}
                                     <p className="text-sm uppercase tracking-[0.24em] text-[rgba(226,232,240,0.72)]">
@@ -447,6 +453,41 @@ export default function LoginPage(_: LoginPageProps) {
 
                                     <SSOButtons />
                                 </form>
+
+                                <div className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-800">{t('Demo Credentials')}</p>
+                                        <p className="text-xs text-slate-500">
+                                            {t('Use these accounts to preview each organization type.')}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {demoCredentials.map((credential) => (
+                                            <button
+                                                key={credential.email}
+                                                type="button"
+                                                onClick={() => {
+                                                    setLoginEmail(credential.email);
+                                                    setLoginPassword(credential.password);
+                                                }}
+                                                className="flex w-full flex-col gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs transition hover:border-blue-300 hover:bg-blue-50"
+                                            >
+                                                <span className="flex items-center justify-between gap-2">
+                                                    <span className="font-medium text-slate-700">{credential.org}</span>
+                                                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                                        {t(credential.type)}
+                                                    </span>
+                                                </span>
+                                                <span className="text-slate-500">
+                                                    {credential.email} · {credential.password}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-center text-[11px] text-slate-400">
+                                        {t('Click an account to fill the login form.')}
+                                    </p>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

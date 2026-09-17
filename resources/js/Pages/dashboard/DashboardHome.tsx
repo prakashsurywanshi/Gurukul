@@ -1,5 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { orgTypeFeatures } from '../../lib/orgTypeConfig';
 import {
     AlertTriangle,
     ArrowRight,
@@ -40,6 +41,8 @@ interface DashboardHomeProps {
         rollNumber: string;
         className: string;
         section: string;
+        courseName?: string | null;
+        batchName?: string | null;
     } | null;
     studentChildren?: {
         id: string;
@@ -154,7 +157,9 @@ export function DashboardHome({
                             </h1>
                             <p className="mt-2 text-sm text-slate-500">
                                 {isStudent
-                                    ? `${studentRecord?.className || '-'} / Section ${studentRecord?.section || '-'}`
+                                    ? studentRecord?.courseName
+                                        ? `${studentRecord.courseName}${studentRecord.batchName ? ` · ${studentRecord.batchName}` : ''}`
+                                        : `${studentRecord?.className || '-'} / Section ${studentRecord?.section || '-'}`
                                     : t(
                                           'A live operational snapshot of students, academics, fees, and campus activity for the selected session.',
                                       )}
@@ -238,6 +243,8 @@ function AdminDashboard({
     upcomingEvents: SchoolEventCardData[];
 }) {
     const { t } = useLanguage();
+    const orgType = usePage<{ orgType?: string }>().props.orgType;
+    const orgFeatures = orgTypeFeatures(orgType);
     const cards = [
         {
             title: 'Students',
@@ -277,7 +284,10 @@ function AdminDashboard({
         {
             title: 'Active Staff',
             value: stats?.staff?.active || 0,
-            helper: `${stats?.classes?.total || 0} active classes`,
+            helper: t('{count} active {unit}', {
+                count: stats?.classes?.total || 0,
+                unit: t(orgFeatures.groupWordKey),
+            }),
             icon: School,
             color: 'bg-rose-600',
         },
@@ -450,7 +460,7 @@ function AdminDashboard({
                 />
 
                 <AdminListCard
-                    title={t('Upcoming Exams')}
+                    title={orgFeatures.supportsMockTests ? t(orgFeatures.testsWordKey) : t('Upcoming Exams')}
                     description="Near-term exam schedule overview."
                     icon={CalendarDays}
                     emptyLabel="No upcoming exams scheduled."

@@ -141,6 +141,8 @@ import {
     Wrench,
 } from 'lucide-react';
 
+export type OrgType = 'school' | 'college' | 'coaching' | 'university';
+
 export type SidebarMenuItem = {
     id: string;
     label: string;
@@ -149,6 +151,7 @@ export type SidebarMenuItem = {
     roles?: string[];
     feature?: string;
     module?: string;
+    orgTypes?: OrgType[];
     href?: string;
     activeMatch?: string[];
     items?: SidebarMenuItem[];
@@ -2535,6 +2538,7 @@ export const sidebarConfig: {
                 href: '/college/courses',
                 roles: ['super_admin', 'admin'],
                 feature: 'Class / Section',
+                orgTypes: ['college', 'coaching', 'university'],
             },
             {
                 id: 'college-lectures',
@@ -2543,6 +2547,7 @@ export const sidebarConfig: {
                 href: '/college/lectures',
                 roles: ['super_admin', 'admin'],
                 feature: 'Class / Section',
+                orgTypes: ['college', 'coaching', 'university'],
             },
             {
                 id: 'teacher-time-table',
@@ -2587,6 +2592,7 @@ export const sidebarConfig: {
                 icon: ArrowUpCircle,
                 roles: ['admin'],
                 feature: 'Promote Students',
+                orgTypes: ['school'],
             },
             {
                 id: 'report-card-setups',

@@ -464,8 +464,9 @@ export default function ExamManagement({
     examGroups,
 }: ExamManagementProps) {
     const { t } = useLanguage();
-    const page = usePage<{ flash?: { success?: string; error?: string } }>();
+    const page = usePage<{ flash?: { success?: string; error?: string }; orgType?: string }>();
     const flash = page.props.flash ?? {};
+    const isCoachingOrg = page.props.orgType === 'coaching';
     const [showDetailsDialog, setShowDetailsDialog] = useState(false);
     const [viewGroup, setViewGroup] = useState<GroupedExam | null>(null);
     const [activePanel, setActivePanel] = useState<'create' | 'subjects' | 'evaluation' | null>('create');
@@ -491,6 +492,7 @@ export default function ExamManagement({
         publishStatus: 'draft',
         className: defaultExamClassSelection.className,
         section: defaultExamClassSelection.section,
+        testKind: 'general',
     });
 
     const [subjectRows, setSubjectRows] = useState<SubjectFormRow[]>([createSubjectRow()]);
@@ -703,6 +705,7 @@ export default function ExamManagement({
             publishStatus: 'draft',
             className: defaultExamClassSelection.className,
             section: defaultExamClassSelection.section,
+            testKind: 'general',
         });
         setActivePanel('create');
         setSelectedGroupId(null);
@@ -748,6 +751,7 @@ export default function ExamManagement({
             publishStatus: group.publishStatus,
             className: group.className || '',
             section: group.section || '',
+            testKind: 'general',
         });
         setActivePanel('create');
         scrollToPanel(createFormRef);
@@ -771,6 +775,7 @@ export default function ExamManagement({
                         publishStatus: 'draft',
                         className: defaultExamClassSelection.className,
                         section: defaultExamClassSelection.section,
+                        testKind: 'general',
                     });
                 },
             });
@@ -787,6 +792,7 @@ export default function ExamManagement({
                     publishStatus: 'draft',
                     className: defaultExamClassSelection.className,
                     section: defaultExamClassSelection.section,
+                    testKind: 'general',
                 });
             },
         });
@@ -1287,6 +1293,29 @@ export default function ExamManagement({
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    {isCoachingOrg && (
+                                        <div className="space-y-2">
+                                            <Label>{t('Test Type')}</Label>
+                                            <Select
+                                                value={createForm.testKind}
+                                                onValueChange={(value) =>
+                                                    setCreateForm({
+                                                        ...createForm,
+                                                        testKind: value,
+                                                    })
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t('Select test type')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="general">{t('Regular Test')}</SelectItem>
+                                                    <SelectItem value="weekly">{t('Weekly Test')}</SelectItem>
+                                                    <SelectItem value="mock">{t('Mock Test')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                     <div className="md:col-span-2 flex justify-end">
                                         <Button type="submit">
                                             {selectedGroupId ? t('Update Record') : t('Create Record')}
@@ -1764,7 +1793,14 @@ export default function ExamManagement({
                     </CardHeader>
                     <CardContent className="pt-0">
                         {filteredGroups.length === 0 ? (
-                            <div className="text-center py-12 text-slate-500">{t('No exam records found.')}</div>
+                            <div className="py-12 text-center text-slate-500">
+                                <p>{t('No exam records found.')}</p>
+                                {isCoachingOrg && (
+                                    <p className="mt-2 text-sm text-slate-400">
+                                        {t('Create weekly tests and full mock tests per batch to track chapter-wise progress.')}
+                                    </p>
+                                )}
+                            </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <Table>

@@ -32,6 +32,7 @@ import SectionEditBar from '../../components/website/SectionEditBar';
 import TopWebsite3DImageSlider from './TopWebsite3DImageSlider';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import OrgSwitchLink from '../../components/OrgSwitchLink';
+import { orgTypeLabel } from '../../lib/orgTypeConfig';
 
 const featureIcons = [BookOpen, FlaskConical, LibraryBig, Globe];
 const pillarIcons = [ShieldCheck, Bus, Trophy, HeartHandshake];
@@ -330,7 +331,7 @@ export default function TemplateOneHome({
                                     {(() => {
                                         const orgType = cmsContent.type ?? '';
                                         if (orgType === 'school' || orgType === '') return null;
-                                        const labelKey = orgType === 'coaching' ? 'Coaching Center' : orgType === 'university' ? 'University' : orgType === 'college' ? 'College' : 'School';
+                                        const labelKey = orgTypeLabel(orgType);
                                         return (
                                             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-sky-300/40 bg-sky-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700 dark:border-slate-700 dark:bg-slate-800/90 dark:text-sky-300">
                                                 {t(labelKey)}

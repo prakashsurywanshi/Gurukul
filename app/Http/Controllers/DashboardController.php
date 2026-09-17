@@ -1079,6 +1079,8 @@ class DashboardController extends Controller
             'rollNumber' => $studentEnrollment?->roll_number ?: $student->roll_number,
             'className' => $studentEnrollment?->schoolClass?->name ?? $student->schoolClass?->name ?? '-',
             'section' => $studentEnrollment?->schoolClass?->section ?? $student->schoolClass?->section ?? '-',
+            'courseName' => $student->course?->name,
+            'batchName' => $student->batch?->name,
         ];
     }
 

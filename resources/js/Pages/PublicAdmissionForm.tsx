@@ -9,6 +9,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { normalizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
+import { orgTypeFeatures } from '../lib/orgTypeConfig';
+import type { OrgType } from './sidebarMenu';
 import TemplateFiveLayout from './website/TemplateFiveLayout';
 import AdmissionCustomFields, { AdmissionCustomField } from './dashboard/students/AdmissionCustomFields';
 import type { CurrentUser } from './Home';
@@ -32,6 +34,14 @@ export default function PublicAdmissionForm({
     const page = usePage<{ flash?: { success?: string; error?: string } }>();
     const cmsContent = useMemo(() => normalizeWebsiteContent(websiteContent), [websiteContent]);
     const theme = websiteThemes[cmsContent.theme];
+    const orgType = (websiteContent?.type ?? 'school') as OrgType;
+    const orgFeatures = orgTypeFeatures(orgType);
+    const isSchoolOrg = orgType === 'school';
+    const programPlaceholder = orgType === 'coaching'
+        ? t('e.g. NEET 2027')
+        : orgType === 'university'
+          ? t('e.g. B.A. Economics')
+          : t('e.g. B.Sc Computer Science');
     const isLightTheme = true;
     const headingTextClass = isLightTheme ? 'text-slate-950' : 'text-white';
     const bodyTextClass = isLightTheme ? 'text-slate-600' : 'text-slate-300';
@@ -396,26 +406,36 @@ export default function PublicAdmissionForm({
                                                 htmlFor="public-admission-program-interest"
                                                 className={isLightTheme ? 'text-slate-700' : 'text-slate-200'}
                                             >
-                                                {t('Class')}
+                                                {t(orgFeatures.groupWordKey)}
 
                                                 <span className="text-red-400">*</span>
                                             </Label>
-                                            <select
-                                                id="public-admission-program-interest"
-                                                value={data.program_interest}
-                                                onChange={(event) => setData('program_interest', event.target.value)}
-                                                className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm outline-none ${isLightTheme ? 'border-slate-300 bg-white text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500/20' : 'border-white/20 bg-white/95 text-slate-900 shadow-lg shadow-slate-950/10 focus:border-blue-400'}`}
-                                            >
-                                                <option value="">{t('Select class')}</option>
-                                                {Array.from({ length: 12 }, (_, index) => {
-                                                    const classNumber = String(index + 1);
-                                                    return (
-                                                        <option key={classNumber} value={classNumber}>
-                                                            {classNumber}
-                                                        </option>
-                                                    );
-                                                })}
-                                            </select>
+                                            {isSchoolOrg ? (
+                                                <select
+                                                    id="public-admission-program-interest"
+                                                    value={data.program_interest}
+                                                    onChange={(event) => setData('program_interest', event.target.value)}
+                                                    className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm outline-none ${isLightTheme ? 'border-slate-300 bg-white text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500/20' : 'border-white/20 bg-white/95 text-slate-900 shadow-lg shadow-slate-950/10 focus:border-blue-400'}`}
+                                                >
+                                                    <option value="">{t('Select class')}</option>
+                                                    {Array.from({ length: 12 }, (_, index) => {
+                                                        const classNumber = String(index + 1);
+                                                        return (
+                                                            <option key={classNumber} value={classNumber}>
+                                                                {classNumber}
+                                                            </option>
+                                                        );
+                                                    })}
+                                                </select>
+                                            ) : (
+                                                <Input
+                                                    id="public-admission-program-interest"
+                                                    value={data.program_interest}
+                                                    onChange={(event) => setData('program_interest', event.target.value)}
+                                                    placeholder={programPlaceholder}
+                                                    className={inputClass}
+                                                />
+                                            )}
                                             {errors.program_interest && (
                                                 <p className="text-sm text-red-500">{errors.program_interest}</p>
                                             )}

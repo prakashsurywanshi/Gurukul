@@ -11,9 +11,10 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\User;
+use App\Services\GradingScaleService;
+use App\Services\OrgTypePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Services\GradingScaleService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,6 +22,10 @@ use Illuminate\Validation\Rule;
 
 class ExamController extends Controller
 {
+    public function __construct(private readonly OrgTypePolicy $orgTypePolicy)
+    {
+    }
+
     public function index() {
         $user = Auth::user();
 
@@ -84,6 +89,7 @@ class ExamController extends Controller
             'className' => ['required', 'string', 'max:255'],
             'section' => ['required', 'string', 'max:255'],
             'semesterId' => ['nullable', 'integer'],
+            'testKind' => ['nullable', Rule::in(['general', 'weekly', 'mock'])],
         ]);
 
         $schoolClass = $this->findClass($organization, $validated['className'], $validated['section']);
@@ -94,12 +100,22 @@ class ExamController extends Controller
 
         $semesterId = $this->resolveStoredSemester($organization, $validated['semesterId'] ?? null);
 
+        $examType = 'general';
+
+        if ($this->orgTypePolicy->supportsMockTests($organization)) {
+            $examType = match ($validated['testKind'] ?? 'general') {
+                'weekly' => 'weekly_test',
+                'mock' => 'mock_test',
+                default => 'general',
+            };
+        }
+
         Exam::query()->create([
             'organization_id' => $organization->id,
             'academic_year_id' => $academicYearId,
             'semester_id' => $semesterId,
             'name' => $validated['name'],
-            'exam_type' => 'general',
+            'exam_type' => $examType,
             'publish_status' => $validated['publishStatus'],
             'start_date' => now()->toDateString(),
             'end_date' => now()->toDateString(),

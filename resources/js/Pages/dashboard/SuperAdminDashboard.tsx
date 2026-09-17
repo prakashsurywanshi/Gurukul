@@ -4,6 +4,7 @@ import { router, usePage } from '@inertiajs/react';
 import { Activity, Building2, Edit, Eye, LogIn, Plus, Search, Trash2, TrendingUp, Users } from 'lucide-react';
 import { OrganizationDetails } from './OrganizationDetails';
 import { formatDate } from '../ui/utils';
+import { orgTypeFeatures, orgTypeLabel } from '../../lib/orgTypeConfig';
 
 type OrganizationRecord = {
     id: number;
@@ -760,6 +761,28 @@ function OrganizationForm({
                                 <option value="university">{t('University')}</option>
                             </select>
                         </Field>
+                        {(() => {
+                            const features = orgTypeFeatures(formData.type);
+
+                            return (
+                                <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-900">
+                                    <p className="mb-1 font-semibold">{t('Recommended setup for this type')}</p>
+                                    <ul className="list-inside list-disc space-y-0.5">
+                                        <li>{t('Organizing unit: {unit}', { unit: t(features.groupWordKey) })}</li>
+                                        <li>{t('Academic structure: {unit}', { unit: t(features.academicUnitKey) })}</li>
+                                        <li>{t('Timetable: {unit}', { unit: t(features.timetableWordKey) })}</li>
+                                        <li>{t('Assessments: {unit}', { unit: t(features.testsWordKey) })}</li>
+                                        <li>
+                                            {features.supportsSemesters
+                                                ? t('Semesters can be configured from Settings.')
+                                                : features.supportsMockTests
+                                                  ? t('Weekly and mock tests can be scheduled per batch.')
+                                                  : t('Class promotion is available at the end of the session.')}
+                                        </li>
+                                    </ul>
+                                </div>
+                            );
+                        })()}
                         <Field label={t('Portal Routing')}>
                             <select
                                 value={formData.portal_routing}
@@ -859,7 +882,7 @@ function OrganizationForm({
 }
 
 function capitalizeType(type: string): string {
-    return { school: 'School', college: 'College', coaching: 'Coaching Center', university: 'University' }[type] ?? type;
+    return orgTypeLabel(type);
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

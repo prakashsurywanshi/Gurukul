@@ -18,6 +18,8 @@ class Student extends Model
         'organization_id',
         'user_id',
         'class_id',
+        'course_id',
+        'batch_id',
         'admission_no',
         'roll_number',
         'qr_token',
@@ -113,6 +115,16 @@ class Student extends Model
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function course(): BelongsTo
+    {
+        return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(Batch::class, 'batch_id');
     }
 
     public function user(): BelongsTo

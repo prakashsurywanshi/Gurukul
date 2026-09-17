@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\Semester;
 use App\Models\Subject;
 use App\Models\User;
+use App\Services\OrgTypePolicy;
 use App\Services\StaffPermissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,8 +19,10 @@ use Inertia\Response;
 
 class LectureController extends Controller
 {
-    public function __construct(private readonly StaffPermissionService $staffPermissionService)
-    {
+    public function __construct(
+        private readonly StaffPermissionService $staffPermissionService,
+        private readonly OrgTypePolicy $orgTypePolicy
+    ) {
     }
 
     public function index(Request $request): Response
@@ -216,8 +219,6 @@ class LectureController extends Controller
 
     private function abortUnlessCollegeMode(Organization $organization): void
     {
-        if (! in_array($organization->type, ['college', 'coaching', 'university'], true)) {
-            abort(403, 'College mode is not enabled for this organization.');
-        }
+        $this->orgTypePolicy->assertSupportsCourses($organization);
     }
 }

@@ -3,7 +3,7 @@ import { useLanguage } from '../i18n/LanguageProvider';
 import { Button } from './ui/button';
 import { ChevronDown, ChevronRight, GraduationCap } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
-import { sidebarConfig, type SidebarMenuItem } from './sidebarMenu';
+import { sidebarConfig, type OrgType, type SidebarMenuItem } from './sidebarMenu';
 
 interface SidebarChildItem {
     id: string;
@@ -115,11 +115,12 @@ interface SidebarGroupEntry {
 }
 
 export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
-    const { schoolName, schoolLogo, staffPermissions, modules } = usePage<{
+    const { schoolName, schoolLogo, staffPermissions, modules, orgType } = usePage<{
         schoolName?: string | null;
         schoolLogo?: string | null;
         staffPermissions?: Record<string, Record<string, boolean>>;
         modules?: Record<string, boolean>;
+        orgType?: string;
     }>().props;
     const { t } = useLanguage();
     const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
@@ -139,7 +140,11 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
         return Boolean(staffPermissions?.[feature]?.view);
     };
 
-    const canAccessItem = (roles: string[], feature: string, module?: string) => {
+    const canAccessItem = (roles: string[], feature: string, module?: string, orgTypes?: OrgType[]) => {
+        if (orgTypes && orgTypes.length > 0 && !orgTypes.includes(orgType as OrgType)) {
+            return false;
+        }
+
         if (user.role === 'super_admin') {
             return roles.includes('super_admin');
         }
@@ -168,7 +173,9 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
             icon: group.icon,
             navMode: group.navMode,
             tabs: group.tabs,
-            items: group.items.filter((item) => canAccessItem(item.roles ?? [], item.feature ?? '', item.module)),
+            items: group.items.filter((item) =>
+                canAccessItem(item.roles ?? [], item.feature ?? '', item.module, item.orgTypes),
+            ),
         }))
         .filter((group) => group.items.length > 0);
 

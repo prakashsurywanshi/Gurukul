@@ -857,6 +857,8 @@ class StudentsController extends Controller
             'blood_group' => ['nullable', 'string', 'max:20'],
             'class' => ['required', 'string', 'max:255'],
             'section' => ['required', 'string', 'max:255'],
+            'course_id' => ['nullable', 'integer', Rule::exists('courses', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id))],
+            'batch_id' => ['nullable', 'integer', Rule::exists('batches', 'id')->where(fn ($query) => $query->where('organization_id', $organization->id))],
             'roll_number' => ['nullable', 'string', 'max:50'],
             'admission_date' => ['required', 'date'],
             'father_name' => ['nullable', 'string', 'max:255'],
@@ -1057,6 +1059,8 @@ class StudentsController extends Controller
         $attributes = [
             'organization_id' => $organization->id,
             'class_id' => $validated['class_id'],
+            'course_id' => $validated['course_id'] ?? null,
+            'batch_id' => $validated['batch_id'] ?? null,
             'admission_no' => $admissionNumber,
             'roll_number' => $validated['roll_number'] ?? null,
             'first_name' => $validated['first_name'],

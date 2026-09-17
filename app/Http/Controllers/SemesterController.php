@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\Organization;
 use App\Models\Semester;
+use App\Services\OrgTypePolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -12,12 +13,18 @@ use Inertia\Response as InertiaResponse;
 
 class SemesterController extends Controller
 {
+    public function __construct(private readonly OrgTypePolicy $orgTypePolicy)
+    {
+    }
+
     public function index(Request $request): InertiaResponse
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
 
         abort_unless($organization, 403);
+
+        $this->abortUnlessCollegeMode($organization);
 
         $academicYear = $organization->selectedAcademicYear();
 
@@ -62,6 +69,8 @@ class SemesterController extends Controller
 
         abort_unless($organization, 403);
 
+        $this->abortUnlessCollegeMode($organization);
+
         $academicYear = $organization->selectedAcademicYear();
 
         abort_unless($academicYear, 403, 'No active academic session found.');
@@ -97,6 +106,8 @@ class SemesterController extends Controller
 
         abort_unless($organization && $semester->organization_id === $organization->id, 403);
 
+        $this->abortUnlessCollegeMode($organization);
+
         Semester::query()
             ->where('organization_id', $organization->id)
             ->where('academic_year_id', $semester->academic_year_id)
@@ -114,6 +125,8 @@ class SemesterController extends Controller
         $organization = $this->resolveOrganizationForUser($user);
 
         abort_unless($organization && $semester->organization_id === $organization->id, 403);
+
+        $this->abortUnlessCollegeMode($organization);
 
         $validated = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:120'],
@@ -134,12 +147,19 @@ class SemesterController extends Controller
 
         abort_unless($organization && $semester->organization_id === $organization->id, 403);
 
+        $this->abortUnlessCollegeMode($organization);
+
         $semester->delete();
 
         return $request->wantsJson()
             ? response()->json(['ok' => true])
             : redirect()->route('semesters.index')
                 ->with('success', 'Semester deleted.');
+    }
+
+    private function abortUnlessCollegeMode(Organization $organization): void
+    {
+        $this->orgTypePolicy->assertSupportsCourses($organization);
     }
 
     private function resolveOrganizationForUser(?\App\Models\User $user): ?Organization
