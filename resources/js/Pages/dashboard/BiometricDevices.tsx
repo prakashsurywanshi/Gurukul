@@ -144,9 +144,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
     const statusBadge = (log: LogEntry) => {
         if (log.logType === 'agent') {
             return log.matched ? (
-                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-                    Sync OK
-                </Badge>
+                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">{t('Sync OK')}</Badge>
             ) : (
                 <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">{t('Failed')}</Badge>
             );
@@ -210,22 +208,14 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Biometric Devices
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Devices, attendance logs, face monitoring and agent sync status.
-                        </p>
+                            <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Biometric Devices')}</h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Devices, attendance logs, face monitoring and agent sync status.')}</p>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={startLogForm}>
-                            <ListChecks className="mr-2 h-4 w-4" />
-                            Add Log
-                        </Button>
+                            <ListChecks className="mr-2 h-4 w-4" />{t('Add Log')}</Button>
                         <Button onClick={() => setCreating(true)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Device
-                        </Button>
+                            <Plus className="mr-2 h-4 w-4" />{t('Add Device')}</Button>
                     </div>
                 </div>
 
@@ -273,18 +263,15 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
 
                 <Tabs defaultValue="devices">
                     <TabsList>
-                        <TabsTrigger value="devices">All Devices ({devices.length})</TabsTrigger>
-                        <TabsTrigger value="attendance">Attendance Logs ({attendanceLogs.length})</TabsTrigger>
-                        <TabsTrigger value="face">Face Monitoring ({faceLogs.length})</TabsTrigger>
-                        <TabsTrigger value="agent">Agent Logs ({agentLogs.length})</TabsTrigger>
+                        <TabsTrigger value="devices">{t('All Devices (')}{devices.length})</TabsTrigger>
+                        <TabsTrigger value="attendance">{t('Attendance Logs (')}{attendanceLogs.length})</TabsTrigger>
+                        <TabsTrigger value="face">{t('Face Monitoring (')}{faceLogs.length})</TabsTrigger>
+                        <TabsTrigger value="agent">{t('Agent Logs (')}{agentLogs.length})</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="devices" className="mt-4">
                         {devices.length === 0 ? (
-                            <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-gray-400 dark:bg-slate-800">
-                                No biometric devices registered yet. Add your first device to start capturing attendance
-                                logs.
-                            </p>
+                            <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-gray-400 dark:bg-slate-800">{t('No biometric devices registered yet. Add your first device to start capturing attendance logs.')}</p>
                         ) : (
                             <Card>
                                 <CardContent className="p-0">

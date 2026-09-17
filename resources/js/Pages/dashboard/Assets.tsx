@@ -342,12 +342,8 @@ export default function Assets(pageProps: AssetsProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <Warehouse className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Asset Management
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Track fixed assets, depreciation, maintenance and disposals.
-                        </p>
+                            <Warehouse className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Asset Management')}</h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Track fixed assets, depreciation, maintenance and disposals.')}</p>
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
@@ -434,9 +430,7 @@ export default function Assets(pageProps: AssetsProps) {
                                     </Card>
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Total Cost (Assigned)
-                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Total Cost (Assigned)')}</p>
                                             <p className="text-lg font-semibold">
                                                 ₹
                                                 {assignedAssets
@@ -495,17 +489,13 @@ export default function Assets(pageProps: AssetsProps) {
                                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Depreciating Assets
-                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Depreciating Assets')}</p>
                                             <p className="text-lg font-semibold">{depreciatedAssets.length}</p>
                                         </CardContent>
                                     </Card>
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Annual Depreciation (Year 1)
-                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Annual Depreciation (Year 1)')}</p>
                                             <p className="text-lg font-semibold">
                                                 ₹
                                                 {totalAnnualDepreciation.toLocaleString('en-IN', {
@@ -525,9 +515,7 @@ export default function Assets(pageProps: AssetsProps) {
                                                         <TableHead>{t('Rate')}</TableHead>
                                                         <TableHead className="text-right">{t('Purchase Cost')}</TableHead>
                                                         <TableHead className="text-right">{t('Current Value')}</TableHead>
-                                                        <TableHead className="text-right">
-                                                            Annual Depreciation
-                                                        </TableHead>
+                                                        <TableHead className="text-right">{t('Annual Depreciation')}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -558,9 +546,7 @@ export default function Assets(pageProps: AssetsProps) {
                                         </CardContent>
                                     </Card>
                                 ) : (
-                                    <p className="py-8 text-center text-sm text-gray-400">
-                                        No depreciation rates set on assets.
-                                    </p>
+                                    <p className="py-8 text-center text-sm text-gray-400">{t('No depreciation rates set on assets.')}</p>
                                 )}
                             </>
                         )}
@@ -638,9 +624,7 @@ export default function Assets(pageProps: AssetsProps) {
                                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Maintenance Records
-                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Maintenance Records')}</p>
                                             <p className="text-lg font-semibold">{auditLogs.length}</p>
                                         </CardContent>
                                     </Card>
@@ -683,9 +667,7 @@ export default function Assets(pageProps: AssetsProps) {
                                         </CardContent>
                                     </Card>
                                 ) : (
-                                    <p className="py-8 text-center text-sm text-gray-400">
-                                        No maintenance / audit records yet.
-                                    </p>
+                                    <p className="py-8 text-center text-sm text-gray-400">{t('No maintenance / audit records yet.')}</p>
                                 )}
                             </>
                         )}
@@ -726,9 +708,7 @@ export default function Assets(pageProps: AssetsProps) {
                                             ))}
                                             {categoryReports.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">
-                                                        No categories to show.
-                                                    </TableCell>
+                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">{t('No categories to show.')}</TableCell>
                                                 </TableRow>
                                             )}
                                         </TableBody>
@@ -772,9 +752,7 @@ export default function Assets(pageProps: AssetsProps) {
                                             ))}
                                             {categoryReports.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">
-                                                        No assets to report.
-                                                    </TableCell>
+                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">{t('No assets to report.')}</TableCell>
                                                 </TableRow>
                                             )}
                                         </TableBody>
@@ -789,7 +767,7 @@ export default function Assets(pageProps: AssetsProps) {
                     <>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Assets ({filteredAssets.length})</CardTitle>
+                                <CardTitle className="text-base">{t('Assets (')}{filteredAssets.length})</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -797,7 +775,7 @@ export default function Assets(pageProps: AssetsProps) {
                                         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                         <Input
                                             className="pl-9"
-                                            placeholder="Search name or code…"
+                                            placeholder={t('Search name or code…')}
                                             value={search}
                                             onChange={(event) => setSearch(event.target.value)}
                                             onKeyDown={(event) => {
@@ -863,9 +841,7 @@ export default function Assets(pageProps: AssetsProps) {
                                     <TableBody>
                                         {filteredAssets.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={8} className="py-10 text-center text-gray-400">
-                                                    No assets found.
-                                                </TableCell>
+                                                <TableCell colSpan={8} className="py-10 text-center text-gray-400">{t('No assets found.')}</TableCell>
                                             </TableRow>
                                         )}
                                         {filteredAssets.map((asset) => (
@@ -979,7 +955,7 @@ export default function Assets(pageProps: AssetsProps) {
                                     value={form.category}
                                     onChange={(e) => setField('category', e.target.value)}
                                     required
-                                    placeholder="e.g. Furniture"
+                                    placeholder={t('e.g. Furniture')}
                                 />
                             </div>
                             <div>
@@ -1186,8 +1162,7 @@ export default function Assets(pageProps: AssetsProps) {
                                 </dl>
 
                                 <div>
-                                    <h4 className="mb-2 text-sm font-semibold">
-                                        Maintenance History ({details.maintenance_count})
+                                    <h4 className="mb-2 text-sm font-semibold">{t('Maintenance History (')}{details.maintenance_count})
                                     </h4>
                                     {details.maintenance_logs.length === 0 ? (
                                         <p className="text-sm text-gray-400">{t('No maintenance recorded.')}</p>
@@ -1295,9 +1270,7 @@ export default function Assets(pageProps: AssetsProps) {
                             <div className="flex items-center justify-end gap-2 sm:col-span-2">
                                 <Button type="button" variant="outline" onClick={() => setMaintenanceFor(null)}>
                                     {t('Cancel')}</Button>
-                                <Button type="submit" disabled={saving}>
-                                    Record Maintenance
-                                </Button>
+                                <Button type="submit" disabled={saving}>{t('Record Maintenance')}</Button>
                             </div>
                         </form>
                     </DialogContent>

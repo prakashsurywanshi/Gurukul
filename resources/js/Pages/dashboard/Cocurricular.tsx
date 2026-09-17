@@ -145,9 +145,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                         <h1 className="text-2xl font-semibold text-slate-900">
                             {t('co_curricular')} <span className="sr-only">{t('Co-Curricular')}</span>
                         </h1>
-                        <p className="mt-1 text-sm text-slate-500">
-                            Manage co-curricular activity areas and grading scales.
-                        </p>
+                        <p className="mt-1 text-sm text-slate-500">{t('Manage co-curricular activity areas and grading scales.')}</p>
                     </div>
                 </div>
 
@@ -189,9 +187,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle>{t('Co-Curricular Areas')}</CardTitle>
-                                <CardDescription>
-                                    Activity areas such as Sports, Music, Art, Dance, Debate, etc.
-                                </CardDescription>
+                                <CardDescription>{t('Activity areas such as Sports, Music, Art, Dance, Debate, etc.')}</CardDescription>
                             </div>
                             <Button
                                 onClick={() => {
@@ -199,8 +195,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                     setShowAreaForm(true);
                                 }}
                             >
-                                <Plus className="h-4 w-4" /> Add Area
-                            </Button>
+                                <Plus className="h-4 w-4" />{t('Add Area')}</Button>
                         </CardHeader>
                         <CardContent>
                             {showAreaForm && (
@@ -214,7 +209,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             id="area-name"
                                             value={areaForm.name}
                                             onChange={(e) => setAreaForm((prev) => ({ ...prev, name: e.target.value }))}
-                                            placeholder="e.g. Sports, Music, Dance"
+                                            placeholder={t('e.g. Sports, Music, Dance')}
                                             required
                                         />
                                     </div>
@@ -317,9 +312,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                     ))}
                                 </div>
                             ) : (
-                                <p className="py-8 text-center text-sm text-slate-500">
-                                    No co-curricular areas defined yet.
-                                </p>
+                                <p className="py-8 text-center text-sm text-slate-500">{t('No co-curricular areas defined yet.')}</p>
                             )}
                         </CardContent>
                     </Card>
@@ -330,9 +323,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
                                 <CardTitle>{t('Co-Curricular Grades')}</CardTitle>
-                                <CardDescription>
-                                    Grading scales used to evaluate co-curricular performance.
-                                </CardDescription>
+                                <CardDescription>{t('Grading scales used to evaluate co-curricular performance.')}</CardDescription>
                             </div>
                             <Button
                                 onClick={() => {
@@ -340,8 +331,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                     setShowGradeForm(true);
                                 }}
                             >
-                                <Plus className="h-4 w-4" /> Add Grade
-                            </Button>
+                                <Plus className="h-4 w-4" />{t('Add Grade')}</Button>
                         </CardHeader>
                         <CardContent>
                             {showGradeForm && (
@@ -357,7 +347,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             onChange={(e) =>
                                                 setGradeForm((prev) => ({ ...prev, name: e.target.value }))
                                             }
-                                            placeholder="e.g. A+, A, B+, B, C"
+                                            placeholder={t('e.g. A+, A, B+, B, C')}
                                             required
                                         />
                                     </div>
@@ -492,9 +482,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                     ))}
                                 </div>
                             ) : (
-                                <p className="py-8 text-center text-sm text-slate-500">
-                                    No co-curricular grades defined yet.
-                                </p>
+                                <p className="py-8 text-center text-sm text-slate-500">{t('No co-curricular grades defined yet.')}</p>
                             )}
                         </CardContent>
                     </Card>

@@ -149,9 +149,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <FileClock className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                             {t('Audit Trail')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Every create, update and delete action recorded across the system.
-                        </p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Every create, update and delete action recorded across the system.')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" onClick={exportCsv}>
@@ -170,8 +168,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
 
                 <div className="flex items-start gap-2 rounded-lg bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:bg-sky-500/10 dark:text-sky-300">
                     <span className="mt-0.5">🗑</span>
-                    <p>
-                        Logs older than {retentionDays} days are removed automatically by nightly cleanup. Use{' '}
+                    <p>{t('Logs older than')}{retentionDays} days are removed automatically by nightly cleanup. Use{' '}
                         <strong>{t('Clear Logs')}</strong> to wipe everything now.
                     </p>
                 </div>
@@ -189,7 +186,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                                 <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 <Input
                                     className="pl-9"
-                                    placeholder="Search description…"
+                                    placeholder={t('Search description…')}
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
                                     onKeyDown={(event) => {
@@ -269,9 +266,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             <TableBody>
                                 {trails.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">
-                                            No audit events match your filters.
-                                        </TableCell>
+                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">{t('No audit events match your filters.')}</TableCell>
                                     </TableRow>
                                 )}
                                 {trails.map((trail) => (

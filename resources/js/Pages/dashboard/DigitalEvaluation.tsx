@@ -192,12 +192,8 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <ScanText className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Digital Evaluation
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Online subjective answer script marking and moderation.
-                        </p>
+                            <ScanText className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Digital Evaluation')}</h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Online subjective answer script marking and moderation.')}</p>
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
@@ -236,7 +232,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Evaluations ({evaluations.length})</CardTitle>
+                        <CardTitle className="text-base">{t('Evaluations (')}{evaluations.length})</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -244,7 +240,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                 <Input
                                     className="pl-9"
-                                    placeholder="Search evaluation…"
+                                    placeholder={t('Search evaluation…')}
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
                                     onKeyDown={(event) => {
@@ -306,9 +302,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                             <TableBody>
                                 {evaluations.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">
-                                            No evaluations found.
-                                        </TableCell>
+                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">{t('No evaluations found.')}</TableCell>
                                     </TableRow>
                                 )}
                                 {evaluations.map((evaluation) => {
@@ -562,9 +556,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                             <div className="flex items-center justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setProgressFor(null)}>
                                     {t('Cancel')}</Button>
-                                <Button type="submit" disabled={saving}>
-                                    Save Progress
-                                </Button>
+                                <Button type="submit" disabled={saving}>{t('Save Progress')}</Button>
                             </div>
                         </form>
                     </DialogContent>

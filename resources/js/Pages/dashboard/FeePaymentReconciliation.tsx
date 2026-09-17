@@ -75,13 +75,8 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
             <div className="space-y-6 p-6 lg:p-8">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <Landmark className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                        Payment Reconciliation
-                    </h1>
-                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Mark collected fee payments as reconciled once they are confirmed in the bank or ledger.
-                        Refunded payments are excluded.
-                    </p>
+                        <Landmark className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Payment Reconciliation')}</h1>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('Mark collected fee payments as reconciled once they are confirmed in the bank or ledger. Refunded payments are excluded.')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -124,7 +119,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     className="pl-9"
-                                    placeholder="Search receipt, student, transaction or cheque…"
+                                    placeholder={t('Search receipt, student, transaction or cheque…')}
                                     value={query}
                                     onChange={(event) => setQuery(event.target.value)}
                                 />
@@ -157,9 +152,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                         </div>
 
                         {filtered.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-muted-foreground">
-                                No payments match the current filters.
-                            </p>
+                            <p className="py-8 text-center text-sm text-muted-foreground">{t('No payments match the current filters.')}</p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">

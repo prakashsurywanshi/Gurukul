@@ -586,9 +586,7 @@ export default function TemplateFiveHome({
                                                 )
                                             }
                                             className="h-3.5 w-3.5 rounded border-stone-300 text-[#002147] accent-[#002147]"
-                                        />
-                                        Show Badge
-                                    </label>
+                                        />{t('Show Badge')}</label>
                                     <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 bg-[#F0F4F8] px-3 py-2 text-xs font-medium text-[#002147] transition hover:bg-stone-100">
                                         <input
                                             type="checkbox"
@@ -601,9 +599,7 @@ export default function TemplateFiveHome({
                                                 )
                                             }
                                             className="h-3.5 w-3.5 rounded border-stone-300 text-[#002147] accent-[#002147]"
-                                        />
-                                        Show Admission
-                                    </label>
+                                        />{t('Show Admission')}</label>
                                 </>
                             )}
                             {cmsContent.templateFiveShowAccreditedBadge !== false && (
@@ -1074,9 +1070,7 @@ export default function TemplateFiveHome({
                                     <a
                                         href="#about"
                                         className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/30 px-7 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition hover:border-[#2563EB] hover:text-[#2563EB]"
-                                    >
-                                        Learn More
-                                        <ExternalLink className="h-4 w-4" />
+                                    >{t('Learn More')}<ExternalLink className="h-4 w-4" />
                                     </a>
                                 </div>
                             </div>
@@ -1392,8 +1386,7 @@ export default function TemplateFiveHome({
                                     <a
                                         href="#"
                                         className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#002147] transition hover:text-[#2563EB]"
-                                    >
-                                        Read More <ChevronRight className="h-4 w-4" />
+                                    >{t('Read More')}<ChevronRight className="h-4 w-4" />
                                     </a>
                                 </div>
                                 <div className="overflow-hidden rounded-xl">
@@ -1439,8 +1432,7 @@ export default function TemplateFiveHome({
                                                     htmlFor="about-photo"
                                                     className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-black/50 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/70"
                                                 >
-                                                    <ImageIcon className="h-3 w-3" /> Change Image
-                                                </label>
+                                                    <ImageIcon className="h-3 w-3" />{t('Change Image')}</label>
                                             </div>
                                         </div>
                                     ) : cmsContent.templateFiveAboutImage ? (
@@ -1910,8 +1902,7 @@ export default function TemplateFiveHome({
                                                         className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover/gallery:opacity-100 cursor-pointer transition"
                                                     >
                                                         <span className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow hover:bg-slate-50">
-                                                            <ImageIcon className="h-3 w-3" /> Change Image
-                                                        </span>
+                                                            <ImageIcon className="h-3 w-3" />{t('Change Image')}</span>
                                                     </label>
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                                                     <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#2563EB] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -2521,8 +2512,7 @@ export default function TemplateFiveHome({
                                 }}
                                 className="mt-6 inline-flex items-center gap-1.5 rounded-lg border border-dashed border-[#2563EB]/40 px-4 py-2 text-xs font-medium text-[#2563EB]/70 transition hover:border-[#2563EB] hover:text-[#2563EB]"
                             >
-                                <Plus className="h-3.5 w-3.5" /> Add Footer Column
-                            </button>
+                                <Plus className="h-3.5 w-3.5" />{t('Add Footer Column')}</button>
                         )}
                     </div>
 

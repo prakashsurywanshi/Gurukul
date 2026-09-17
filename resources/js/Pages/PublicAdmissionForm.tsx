@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { normalizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
+import { localizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
 import { orgTypeFeatures } from '../lib/orgTypeConfig';
 import type { OrgType } from './sidebarMenu';
 import TemplateFiveLayout from './website/TemplateFiveLayout';
@@ -30,9 +30,12 @@ export default function PublicAdmissionForm({
     menuPages = [],
     admissionCustomFields = [],
 }: PublicAdmissionFormProps) {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const page = usePage<{ flash?: { success?: string; error?: string } }>();
-    const cmsContent = useMemo(() => normalizeWebsiteContent(websiteContent), [websiteContent]);
+    const cmsContent = useMemo(
+        () => localizeWebsiteContent(websiteContent, locale),
+        [websiteContent, locale],
+    );
     const theme = websiteThemes[cmsContent.theme];
     const orgType = (websiteContent?.type ?? 'school') as OrgType;
     const orgFeatures = orgTypeFeatures(orgType);

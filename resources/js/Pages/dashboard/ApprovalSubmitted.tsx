@@ -97,9 +97,7 @@ export default function ApprovalSubmitted({ user, requests }: Props) {
                                     <div className="flex items-center gap-2">
                                         {req.canCancel && (
                                             <Button size="sm" variant="outline" onClick={() => cancel(req.id)} disabled={cancellingId === req.id}>
-                                                {cancellingId === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4 mr-1" />}
-                                                Cancel Request
-                                            </Button>
+                                                {cancellingId === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4 mr-1" />}{t('Cancel Request')}</Button>
                                         )}
                                         <span className="text-xs text-muted-foreground whitespace-nowrap">
                                             {req.submittedAt ? new Date(req.submittedAt).toLocaleString() : ''}

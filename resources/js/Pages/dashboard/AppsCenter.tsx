@@ -128,9 +128,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <PanelsTopLeft className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                             {t('Apps Center')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            AI and productivity tools for your school.
-                        </p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('AI and productivity tools for your school.')}</p>
                     </div>
                     {!aiConfigured && (
                         <Badge variant="outline">AI provider not configured — some apps are unavailable</Badge>
@@ -159,16 +157,14 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                     <Input
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search apps…"
+                        placeholder={t('Search apps…')}
                         className="sm:w-64"
                     />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredApps.length === 0 && (
-                        <div className="col-span-full rounded-xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-400 dark:border-gray-700">
-                            No apps match your search.
-                        </div>
+                        <div className="col-span-full rounded-xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-400 dark:border-gray-700">{t('No apps match your search.')}</div>
                     )}
                     {filteredApps.map((app) => {
                         const Icon = ICONS[app.icon] ?? Wand2;
@@ -224,9 +220,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-base flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4 text-indigo-500" />
-                                    Generated Question Paper
-                                </CardTitle>
+                                    <Sparkles className="h-4 w-4 text-indigo-500" />{t('Generated Question Paper')}</CardTitle>
                                 <div className="flex items-center gap-2">
                                     <Badge variant="outline">
                                         {result.meta.subject} · {result.meta.class} · {result.meta.marks} marks
@@ -255,9 +249,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
                             <DialogTitle>{t('Question Paper Generator')}</DialogTitle>
-                            <DialogDescription>
-                                Describe the paper and generate a complete question set with AI.
-                            </DialogDescription>
+                            <DialogDescription>{t('Describe the paper and generate a complete question set with AI.')}</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={generate} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
@@ -266,7 +258,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                     value={form.subject}
                                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
                                     required
-                                    placeholder="e.g. Mathematics"
+                                    placeholder={t('e.g. Mathematics')}
                                 />
                             </div>
                             <div>
@@ -275,7 +267,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                     value={form.class}
                                     onChange={(e) => setForm({ ...form, class: e.target.value })}
                                     required
-                                    placeholder="e.g. Class 10"
+                                    placeholder={t('e.g. Class 10')}
                                 />
                             </div>
                             <div>

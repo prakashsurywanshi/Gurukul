@@ -121,12 +121,8 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <LayoutTemplate className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Report Card Setups
-                        </h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Design custom report card templates, layouts and remarks.
-                        </p>
+                            <LayoutTemplate className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Report Card Setups')}</h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Design custom report card templates, layouts and remarks.')}</p>
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
@@ -137,9 +133,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {templates.length === 0 && (
                         <Card className="lg:col-span-2">
-                            <CardContent className="py-10 text-center text-gray-400">
-                                No report card templates yet. Create your first one.
-                            </CardContent>
+                            <CardContent className="py-10 text-center text-gray-400">{t('No report card templates yet. Create your first one.')}</CardContent>
                         </Card>
                     )}
                     {templates.map((template) => (
@@ -185,8 +179,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                     </li>
                                 </ul>
                                 {template.remarks && (
-                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                        Default remark: {template.remarks}
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('Default remark:')}{template.remarks}
                                     </p>
                                 )}
                                 <div className="mt-4 flex items-center justify-end gap-2">

@@ -352,7 +352,7 @@ export default function Recruitment(pageProps: RecruitmentProps) {
                                 <div className="sm:col-span-2">
                                     <Label>{t('Salary Range')}</Label>
                                     <Input
-                                        placeholder="e.g. ₹30,000 - ₹40,000"
+                                        placeholder={t('e.g. ₹30,000 - ₹40,000')}
                                         value={form.salary_range}
                                         onChange={(e) => setForm({ ...form, salary_range: e.target.value })}
                                     />

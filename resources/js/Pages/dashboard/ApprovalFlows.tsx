@@ -95,7 +95,7 @@ export default function ApprovalFlows({ user, flows, staffUsers, roleOptions }: 
                     <Settings className="h-6 w-6 text-primary" />
                     <div>
                         <h1 className="text-2xl font-bold">{t('Approval Flows')}</h1>
-                        <p className="text-sm text-muted-foreground">Configure approval chains for fee concessions, attendance corrections and lesson plans.</p>
+                        <p className="text-sm text-muted-foreground">{t('Configure approval chains for fee concessions, attendance corrections and lesson plans.')}</p>
                     </div>
                 </div>
 
@@ -128,8 +128,7 @@ export default function ApprovalFlows({ user, flows, staffUsers, roleOptions }: 
                                             <div className="flex items-center justify-between">
                                                 <Label className="text-sm font-medium">{t('Approval Chain Steps')}</Label>
                                                 <Button type="button" variant="outline" size="sm" onClick={addStep}>
-                                                    <Plus className="h-3 w-3 mr-1" /> Add Step
-                                                </Button>
+                                                    <Plus className="h-3 w-3 mr-1" />{t('Add Step')}</Button>
                                             </div>
                                             {editSteps.map((step, idx) => (
                                                 <div key={idx} className="flex items-center gap-3 p-3 border rounded-md bg-muted/30">

@@ -58,9 +58,7 @@ export default function CbseDisclosure({ user, disclosure, sectionOptions = [] }
                         <h1 className="text-2xl font-semibold text-slate-900">
                             {t('cbse_disclosure')} <span className="sr-only">{t('CBSE Disclosure')}</span>
                         </h1>
-                        <p className="mt-1 text-sm text-slate-500">
-                            Edit the mandatory disclosure published publicly on the school website.
-                        </p>
+                        <p className="mt-1 text-sm text-slate-500">{t('Edit the mandatory disclosure published publicly on the school website.')}</p>
                     </div>
                     <Button type="submit" form="cbse-disclosure-form" disabled={isSaving}>
                         <Save className="h-4 w-4" />

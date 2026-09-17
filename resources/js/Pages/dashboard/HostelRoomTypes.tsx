@@ -324,7 +324,7 @@ export default function HostelRoomTypes({
                                 <Input
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                    placeholder="e.g. suite"
+                                    placeholder={t('e.g. suite')}
                                     autoFocus
                                 />
                                 <p className="text-xs text-slate-500">

@@ -250,9 +250,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <ListChecks className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                             {t('Assessment')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Plan continuous and term-based assessments with weightage.
-                        </p>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Plan continuous and term-based assessments with weightage.')}</p>
                     </div>
                     {activeTab === 'assessments' && (
                         <Button onClick={openCreate}>
@@ -337,9 +335,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     <TableBody>
                                         {assessments.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={5} className="py-10 text-center text-gray-400">
-                                                    No assessments found. Create one from the Assessments tab.
-                                                </TableCell>
+                                                <TableCell colSpan={5} className="py-10 text-center text-gray-400">{t('No assessments found. Create one from the Assessments tab.')}</TableCell>
                                             </TableRow>
                                         )}
                                         {assessments.slice(0, 8).map((assessment) => (
@@ -376,7 +372,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Assessments ({assessments.length})</CardTitle>
+                                <CardTitle className="text-base">{t('Assessments (')}{assessments.length})</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -384,7 +380,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                         <Input
                                             className="pl-9"
-                                            placeholder="Search assessment…"
+                                            placeholder={t('Search assessment…')}
                                             value={search}
                                             onChange={(event) => setSearch(event.target.value)}
                                             onKeyDown={(event) => {
@@ -450,9 +446,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     <TableBody>
                                         {assessments.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={9} className="py-10 text-center text-gray-400">
-                                                    No assessments found.
-                                                </TableCell>
+                                                <TableCell colSpan={9} className="py-10 text-center text-gray-400">{t('No assessments found.')}</TableCell>
                                             </TableRow>
                                         )}
                                         {assessments.map((assessment) => (
@@ -678,9 +672,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <TableBody>
                                     {reportRows.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">
-                                                No assessments match these filters.
-                                            </TableCell>
+                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">{t('No assessments match these filters.')}</TableCell>
                                         </TableRow>
                                     )}
                                     {reportRows.map((assessment) => (
@@ -728,9 +720,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <TableBody>
                                     {ranked.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="py-10 text-center text-gray-400">
-                                                No assessments to rank yet.
-                                            </TableCell>
+                                            <TableCell colSpan={5} className="py-10 text-center text-gray-400">{t('No assessments to rank yet.')}</TableCell>
                                         </TableRow>
                                     )}
                                     {ranked.map((assessment, index) => (
@@ -816,7 +806,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">5</Badge>
                                 <p>
-                                    <strong>Marks & ranks</strong> are entered via the Exam Marks entry module; once
+                                    <strong>{t('Marks & ranks')}</strong> are entered via the Exam Marks entry module; once
                                     published, rankings and analytics surface here automatically.
                                 </p>
                             </div>
@@ -836,7 +826,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>{editing ? t('Edit Assessment') : t('New Assessment')}</DialogTitle>
-                            <DialogDescription>Define an assessment plan, weightage and timeline.</DialogDescription>
+                            <DialogDescription>{t('Define an assessment plan, weightage and timeline.')}</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-2">
@@ -905,7 +895,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <Input
                                     value={form.term}
                                     onChange={(e) => setForm({ ...form, term: e.target.value })}
-                                    placeholder="e.g. Term 1"
+                                    placeholder={t('e.g. Term 1')}
                                 />
                             </div>
                             <div>

@@ -2,7 +2,7 @@ import { useLanguage } from '../i18n/LanguageProvider';
 import { Head, Link } from '@inertiajs/react';
 import { GraduationCap, ArrowLeft, Save, X, Pencil } from 'lucide-react';
 import { useState, useCallback } from 'react';
-import { normalizeWebsiteContent, WebsiteContent } from '../utils/websiteCmsContent';
+import { localizeWebsiteContent, WebsiteContent } from '../utils/websiteCmsContent';
 import type { CurrentUser, PublishedPage } from './Home';
 import TemplateFiveLayout from './website/TemplateFiveLayout';
 import TemplateFiveSections, { PageSection } from './website/TemplateFiveSections';
@@ -60,8 +60,8 @@ export default function WebsitePage({
     user,
     editingPageId,
 }: WebsitePageProps) {
-    const { t } = useLanguage();
-    const cmsContent = normalizeWebsiteContent(websiteContent);
+    const { t, locale } = useLanguage();
+    const cmsContent = localizeWebsiteContent(websiteContent, locale);
     const displayName = schoolName || cmsContent.brandName || 'Gurukul Institution';
     const pageTitle = page.meta_title || page.title;
     const isTemplateFive = page.template === 'template5' || cmsContent.activeTemplate === 'template5';

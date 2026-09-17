@@ -62,17 +62,13 @@ export default function ModuleManagement(pageProps: ModuleManagementProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <Blocks className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Module Management
-                        </h1>
+                            <Blocks className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Module Management')}</h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Enable or disable feature modules for this organization. Disabled modules are hidden from
                             the sidebar and blocked on the server.
                         </p>
                     </div>
-                    <Badge variant="secondary" className="hidden sm:inline-flex">
-                        Changes apply instantly
-                    </Badge>
+                    <Badge variant="secondary" className="hidden sm:inline-flex">{t('Changes apply instantly')}</Badge>
                 </div>
 
                 {groups.map((group) => (
@@ -90,9 +86,7 @@ export default function ModuleManagement(pageProps: ModuleManagementProps) {
                                         <div className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {module.label}
                                             {module.core && (
-                                                <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-300">
-                                                    Core module
-                                                </Badge>
+                                                <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-300">{t('Core module')}</Badge>
                                             )}
                                         </div>
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

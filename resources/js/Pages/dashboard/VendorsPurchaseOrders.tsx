@@ -525,7 +525,7 @@ export default function VendorsPurchaseOrders(pageProps: VendorsPurchaseOrdersPr
                                 <div>
                                     <Label>{t('Category')}</Label>
                                     <Input
-                                        placeholder="e.g. Stationery, Lab, Furniture"
+                                        placeholder={t('e.g. Stationery, Lab, Furniture')}
                                         value={vendorForm.category}
                                         onChange={(e) => setVendorForm({ ...vendorForm, category: e.target.value })}
                                     />

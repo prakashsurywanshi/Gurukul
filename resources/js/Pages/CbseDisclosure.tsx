@@ -1,7 +1,7 @@
 import { useLanguage } from '../i18n/LanguageProvider';
 import { Head, Link } from '@inertiajs/react';
 import { ChevronLeft, GraduationCap } from 'lucide-react';
-import { normalizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
+import { localizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface DisclosureSection {
@@ -16,8 +16,8 @@ interface CbseDisclosureProps {
 }
 
 export default function CbseDisclosure({ websiteContent, disclosure = {}, sectionOptions = [] }: CbseDisclosureProps) {
-    const { t } = useLanguage();
-    const cmsContent = normalizeWebsiteContent(websiteContent);
+    const { t, locale } = useLanguage();
+    const cmsContent = localizeWebsiteContent(websiteContent, locale);
     const theme = websiteThemes[cmsContent.theme];
     const isLightTheme = true;
     const pageTextClass = isLightTheme ? 'text-slate-900' : 'text-slate-100';
@@ -81,16 +81,9 @@ export default function CbseDisclosure({ websiteContent, disclosure = {}, sectio
                 <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 sm:px-8 lg:px-10">
                     <div className={`relative overflow-hidden rounded-3xl border p-8 sm:p-10 ${surfaceClass}`}>
                         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-blue-500" />
-                        <div className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-blue-600">
-                            Mandatory Disclosure
-                        </div>
-                        <h1 className={`text-3xl font-black tracking-tight sm:text-4xl ${headingTextClass}`}>
-                            CBSE Affiliation Disclosure
-                        </h1>
-                        <p className={`mt-3 max-w-3xl text-sm leading-relaxed ${bodyTextClass}`}>
-                            Information disclosed as per the requirements of the Central Board of Secondary Education
-                            for affiliated schools.
-                        </p>
+                        <div className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-blue-600">{t('Mandatory Disclosure')}</div>
+                        <h1 className={`text-3xl font-black tracking-tight sm:text-4xl ${headingTextClass}`}>{t('CBSE Affiliation Disclosure')}</h1>
+                        <p className={`mt-3 max-w-3xl text-sm leading-relaxed ${bodyTextClass}`}>{t('Information disclosed as per the requirements of the Central Board of Secondary Education for affiliated schools.')}</p>
                     </div>
 
                     <div className="mt-8 space-y-4">
@@ -105,9 +98,7 @@ export default function CbseDisclosure({ websiteContent, disclosure = {}, sectio
                             ))
                         ) : (
                             <div className={`rounded-2xl border p-8 text-center ${surfaceClass}`}>
-                                <p className={`text-sm ${mutedTextClass}`}>
-                                    Disclosure details are not published yet. Please check back later.
-                                </p>
+                                <p className={`text-sm ${mutedTextClass}`}>{t('Disclosure details are not published yet. Please check back later.')}</p>
                             </div>
                         )}
                     </div>
@@ -120,12 +111,8 @@ export default function CbseDisclosure({ websiteContent, disclosure = {}, sectio
                         © {new Date().getFullYear()} {cmsContent.brandName}. All rights reserved.
                     </p>
                     <div className="mx-auto mt-3 flex max-w-6xl items-center justify-center gap-4 px-6">
-                        <Link href="/privacy-policy" className="hover:underline">
-                            Privacy Policy
-                        </Link>
-                        <Link href="/disclosure" className="hover:underline">
-                            Mandatory Disclosure
-                        </Link>
+                        <Link href="/privacy-policy" className="hover:underline">{t('Privacy Policy')}</Link>
+                        <Link href="/disclosure" className="hover:underline">{t('Mandatory Disclosure')}</Link>
                     </div>
                 </footer>
             </div>

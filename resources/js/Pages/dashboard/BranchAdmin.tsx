@@ -131,9 +131,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <Building2 className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Branch Admin
-                        </h1>
+                            <Building2 className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Branch Admin')}</h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {isSuperAdmin
                                 ? 'Head-office dashboard for multi-branch management. Choose a branch to enter its context.'
@@ -157,9 +155,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
 
                 {!isSuperAdmin && (
                     <div className="flex items-center justify-end">
-                        <Button variant="outline" size="sm" onClick={leaveBranch}>
-                            Return to head office
-                        </Button>
+                        <Button variant="outline" size="sm" onClick={leaveBranch}>{t('Return to head office')}</Button>
                     </div>
                 )}
 
@@ -211,9 +207,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                                    Enter branch
-                                                </>
+                                                    <ExternalLink className="mr-2 h-4 w-4" />{t('Enter branch')}</>
                                             )}
                                         </Button>
                                     ) : (
@@ -232,9 +226,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                                 'Active branch'
                                             ) : (
                                                 <>
-                                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                                    Switch branch
-                                                </>
+                                                    <ExternalLink className="mr-2 h-4 w-4" />{t('Switch branch')}</>
                                             )}
                                         </Button>
                                     )}
@@ -248,12 +240,8 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                         <div className="flex items-center justify-between border-b px-6 py-4">
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    Branch Administrators
-                                </h2>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    Create branch admins and assign which organizations they can manage.
-                                </p>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('Branch Administrators')}</h2>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Create branch admins and assign which organizations they can manage.')}</p>
                             </div>
                             <Button size="sm" onClick={() => setShowCreate((v) => !v)}>
                                 <Plus className="mr-2 h-4 w-4" />
@@ -328,9 +316,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                         )}
 
                         {branchAdmins.length === 0 ? (
-                            <p className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400">
-                                No branch administrators yet.
-                            </p>
+                            <p className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400">{t('No branch administrators yet.')}</p>
                         ) : (
                             <ul className="divide-y">
                                 {branchAdmins.map((admin) => (

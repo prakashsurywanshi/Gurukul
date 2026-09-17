@@ -446,7 +446,7 @@ function ArraySection({
     const { t } = useLanguage();
     return (
         <div className="space-y-3">
-            <label className="block text-xs font-medium text-slate-500">Items ({items.length})</label>
+            <label className="block text-xs font-medium text-slate-500">{t('Items (')}{items.length})</label>
             {items.map((item, i) => (
                 <div key={i} className="rounded border border-slate-200 bg-slate-50 p-3 space-y-2">
                     <div className="flex items-center justify-between">

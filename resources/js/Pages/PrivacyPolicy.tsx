@@ -1,7 +1,7 @@
 import { useLanguage } from '../i18n/LanguageProvider';
 import { Head, Link } from '@inertiajs/react';
 import { ChevronLeft, GraduationCap, Mail, ShieldCheck } from 'lucide-react';
-import { normalizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
+import { localizeWebsiteContent, WebsiteContent, websiteThemes } from '../utils/websiteCmsContent';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface PrivacyPolicyProps {
@@ -104,8 +104,8 @@ const sections = [
 ];
 
 export default function PrivacyPolicy({ websiteContent }: PrivacyPolicyProps) {
-    const { t } = useLanguage();
-    const cmsContent = normalizeWebsiteContent(websiteContent);
+    const { t, locale } = useLanguage();
+    const cmsContent = localizeWebsiteContent(websiteContent, locale);
     const theme = websiteThemes[cmsContent.theme];
     const isLightTheme = true;
     const pageTextClass = isLightTheme ? 'text-slate-900' : 'text-slate-100';

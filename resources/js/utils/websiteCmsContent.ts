@@ -1,3 +1,5 @@
+import { regionalWebsiteDefaults } from './websiteRegionalContent';
+
 export type WebsiteStat = {
     value: string;
     label: string;
@@ -1689,6 +1691,25 @@ export function localizeWebsiteContent(
             collectArrays(activeGroup, baseKey);
         }
     });
+
+    const regional =
+        locale === 'mr' || locale === 'hi' ? regionalWebsiteDefaults[locale] : undefined;
+    if (regional) {
+        Object.keys(regional).forEach((key) => {
+            if ((overrides as Record<string, unknown>)[key] !== undefined) return;
+            const englishDefault = (
+                defaultWebsiteContent as unknown as Record<string, unknown>
+            )[key];
+            const current = (base as unknown as Record<string, unknown>)[key];
+            if (englishDefault === undefined || current === undefined) return;
+            if (
+                JSON.stringify(current) === JSON.stringify(englishDefault) &&
+                JSON.stringify(current) !== JSON.stringify(regional[key])
+            ) {
+                (base as unknown as Record<string, unknown>)[key] = regional[key];
+            }
+        });
+    }
 
     return { ...base, ...(overrides as Partial<WebsiteContent>) };
 }

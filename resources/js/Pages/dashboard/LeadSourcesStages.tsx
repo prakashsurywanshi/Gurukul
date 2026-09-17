@@ -334,7 +334,7 @@ function OptionSection({
                                     <Input
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                        placeholder="e.g. counselling-camp"
+                                        placeholder={t('e.g. counselling-camp')}
                                         autoFocus
                                     />
                                 </div>

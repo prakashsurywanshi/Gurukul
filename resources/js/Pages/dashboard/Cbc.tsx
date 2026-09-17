@@ -254,12 +254,8 @@ export default function Cbc(pageProps: CbcProps) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <Shapes className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                        CBC (Competency Based Curriculum)
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Manage strands, learning outcomes, core competencies, pathways and assessments.
-                    </p>
+                        <Shapes className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('CBC (Competency Based Curriculum)')}</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Manage strands, learning outcomes, core competencies, pathways and assessments.')}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -421,7 +417,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
                                 >
                                     <Input
-                                        placeholder="Strand name *"
+                                        placeholder={t('Strand name *')}
                                         required
                                         value={strandForm.name}
                                         onChange={(e) => setStrandForm({ ...strandForm, name: e.target.value })}
@@ -458,7 +454,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Strand *" />
+                                            <SelectValue placeholder={t('Strand *')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {strandOptions.map((strand) => (
@@ -469,7 +465,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         </SelectContent>
                                     </Select>
                                     <Input
-                                        placeholder="Outcome name *"
+                                        placeholder={t('Outcome name *')}
                                         required
                                         value={outcomeForm.name}
                                         onChange={(e) => setOutcomeForm({ ...outcomeForm, name: e.target.value })}
@@ -498,7 +494,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
                                 >
                                     <Input
-                                        placeholder="Pathway name *"
+                                        placeholder={t('Pathway name *')}
                                         required
                                         value={pathwayForm.name}
                                         onChange={(e) => setPathwayForm({ ...pathwayForm, name: e.target.value })}
@@ -529,7 +525,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6"
                                 >
                                     <Input
-                                        placeholder="Competency name *"
+                                        placeholder={t('Competency name *')}
                                         required
                                         value={competencyForm.name}
                                         onChange={(e) => setCompetencyForm({ ...competencyForm, name: e.target.value })}
@@ -1072,9 +1068,7 @@ export default function Cbc(pageProps: CbcProps) {
                                 </CardHeader>
                                 <CardContent className="pt-0">
                                     {reports.byCompetency.length === 0 ? (
-                                        <p className="py-10 text-center text-gray-400">
-                                            No competency data recorded yet.
-                                        </p>
+                                        <p className="py-10 text-center text-gray-400">{t('No competency data recorded yet.')}</p>
                                     ) : (
                                         <ul className="space-y-2">
                                             {reports.byCompetency.map((report) => (

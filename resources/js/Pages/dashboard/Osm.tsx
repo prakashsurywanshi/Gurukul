@@ -244,9 +244,7 @@ export default function Osm(pageProps: OsmProps) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <GraduationCap className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                        OSM Assessment
-                    </h1>
+                        <GraduationCap className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('OSM Assessment')}</h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Objective Sheet Marking — sessions, evaluation sheets, moderation and reports.
                     </p>
@@ -343,7 +341,7 @@ export default function Osm(pageProps: OsmProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Sessions ({filteredSessions.length})</CardTitle>
+                                <CardTitle className="text-base">{t('Sessions (')}{filteredSessions.length})</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex flex-wrap gap-3">
@@ -392,9 +390,7 @@ export default function Osm(pageProps: OsmProps) {
                                         <TableBody>
                                             {filteredSessions.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={6} className="py-10 text-center text-gray-400">
-                                                        No sessions found.
-                                                    </TableCell>
+                                                    <TableCell colSpan={6} className="py-10 text-center text-gray-400">{t('No sessions found.')}</TableCell>
                                                 </TableRow>
                                             )}
                                             {filteredSessions.map((session) => (
@@ -449,13 +445,13 @@ export default function Osm(pageProps: OsmProps) {
                                     className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
                                 >
                                     <Input
-                                        placeholder="Session name *"
+                                        placeholder={t('Session name *')}
                                         required
                                         value={sessionForm.name}
                                         onChange={(e) => setSessionForm({ ...sessionForm, name: e.target.value })}
                                     />
                                     <Input
-                                        placeholder="Term (e.g. Term1)"
+                                        placeholder={t('Term (e.g. Term1)')}
                                         value={sessionForm.term}
                                         onChange={(e) => setSessionForm({ ...sessionForm, term: e.target.value })}
                                     />
@@ -553,9 +549,7 @@ export default function Osm(pageProps: OsmProps) {
                                     </div>
                                     <div className="flex items-end lg:col-span-2">
                                         <Button type="submit">
-                                            <Plus className="mr-2 h-4 w-4" />
-                                            Add Sheet
-                                        </Button>
+                                            <Plus className="mr-2 h-4 w-4" />{t('Add Sheet')}</Button>
                                     </div>
                                 </form>
                             </CardContent>
@@ -624,9 +618,7 @@ export default function Osm(pageProps: OsmProps) {
                                         <TableBody>
                                             {session.sheets.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">
-                                                        No sheets yet for this session.
-                                                    </TableCell>
+                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">{t('No sheets yet for this session.')}</TableCell>
                                                 </TableRow>
                                             )}
                                             {session.sheets.map((sheet) => (
@@ -710,7 +702,7 @@ export default function Osm(pageProps: OsmProps) {
                                                 <TableHeader>
                                                     <TableRow>
                                                         <TableHead>{t('Student')}</TableHead>
-                                                        <TableHead className="w-28">Score (0-25)</TableHead>
+                                                        <TableHead className="w-28">{t('Score (0-25)')}</TableHead>
                                                         <TableHead>{t('Feedback')}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -777,9 +769,7 @@ export default function Osm(pageProps: OsmProps) {
                                                 >
                                                     {t('Cancel')}</Button>
                                                 <Button type="submit">
-                                                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                    Submit Evaluations
-                                                </Button>
+                                                    <CheckCircle2 className="mr-2 h-4 w-4" />{t('Submit Evaluations')}</Button>
                                             </div>
                                         </form>
                                     )}
@@ -909,7 +899,7 @@ export default function Osm(pageProps: OsmProps) {
                 {activeTab === 'moderation' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Pending Moderation ({pendingModeration.length})</CardTitle>
+                            <CardTitle className="text-base">{t('Pending Moderation (')}{pendingModeration.length})</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
@@ -926,9 +916,7 @@ export default function Osm(pageProps: OsmProps) {
                                 <TableBody>
                                     {pendingModeration.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">
-                                                Nothing pending moderation.
-                                            </TableCell>
+                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">{t('Nothing pending moderation.')}</TableCell>
                                         </TableRow>
                                     )}
                                     {pendingModeration.map((item) => (
@@ -1007,8 +995,7 @@ export default function Osm(pageProps: OsmProps) {
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">5</Badge>
-                                <p>
-                                    When marking finishes, move the session status to <Badge>{t('Completed')}</Badge> or{' '}
+                                <p>{t('When marking finishes, move the session status to')}<Badge>{t('Completed')}</Badge> or{' '}
                                     <Badge>{t('Archived')}</Badge> from the Sessions tab. Track completion via the Dashboard
                                     and Reports tabs.
                                 </p>
