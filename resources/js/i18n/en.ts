@@ -5202,5 +5202,19 @@ const en = {
     'e.g. B.Sc Computer Science': 'e.g. B.Sc Computer Science',
     '{count} active {unit}': '{count} active {unit}',
     'Create weekly tests and full mock tests per batch to track chapter-wise progress.': 'Create weekly tests and full mock tests per batch to track chapter-wise progress.',
+    'Live School Health': 'Live School Health',
+    'Enrolled Students': 'Enrolled Students',
+    'Student : Staff Ratio': 'Student : Staff Ratio',
+    'Attendance (30 days)': 'Attendance (30 days)',
+    'Fees Due': 'Fees Due',
+    'Payment Records Due': 'Payment Records Due',
+    'Pending Concessions': 'Pending Concessions',
+    'Overall Health': 'Overall Health',
+    'Live statutory indicators drawn from your student, staff, fee and attendance data.':
+        'Live statutory indicators drawn from your student, staff, fee and attendance data.',
+    'Add a compliance pack to start tracking statutory and renewal requirements.':
+        'Add a compliance pack to start tracking statutory and renewal requirements.',
+    'No compliance packs yet.': 'No compliance packs yet.',
+    'Your session expired. Please log in again to continue.': 'Your session expired. Please log in again to continue.',
 };
 export default en;

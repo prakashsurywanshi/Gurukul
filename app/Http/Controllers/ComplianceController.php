@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\ComplianceItem;
 use App\Models\CompliancePack;
+use App\Models\FeeConcessionRequest;
 use App\Models\Organization;
+use App\Models\Student;
+use App\Models\StudentFee;
 use App\Models\User;
+use App\Support\RolePermissionCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ComplianceController extends Controller
 {
@@ -42,6 +48,17 @@ class ComplianceController extends Controller
 
         $total = $items->count();
         $compliant = $items->where('status', 'compliant')->count();
+        $liveStats = $this->liveStats($organization);
+
+        $healthScore = match (true) {
+            $total === 0 => 0,
+            default => (int) round(
+                (($compliant / $total) * 60)
+                + (($liveStats['attendanceRate30d'] / 100) * 20)
+                + ($liveStats['feesDueCount'] > 0 ? 5 : 10)
+                + ($liveStats['pendingConcessions'] > 0 ? 5 : 10)
+            ),
+        };
 
         return Inertia::render('dashboard/Compliance', [
             'user' => $user,
@@ -62,8 +79,50 @@ class ComplianceController extends Controller
                 'overdue' => $items->where('overdue', true)->count(),
                 'dueThisMonth' => $items->filter(fn ($item) => $item['dueDate'] !== null && $item['status'] !== 'compliant' && (int) substr((string) $item['dueDate'], 0, 7) === now()->format('Y-m'))->count(),
                 'completion' => $total > 0 ? round(($compliant / $total) * 100) : 0,
+                'healthScore' => $healthScore,
             ],
+            'liveStats' => $liveStats,
         ]);
+    }
+
+    public function exportCsv(Request $request): StreamedResponse
+    {
+        $organization = $this->resolveOrganizationForUser($request->user());
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($request->user());
+
+        $items = ComplianceItem::query()
+            ->where('organization_id', $organization->id)
+            ->with('pack:id,name,category')
+            ->orderBy('due_date')
+            ->orderBy('id')
+            ->get();
+
+        $callback = function () use ($items) {
+            $stream = fopen('php://output', 'w');
+
+            fputcsv($stream, [
+                'Pack', 'Category', 'Item', 'Frequency', 'Due Date', 'Status', 'Verified At',
+            ]);
+
+            foreach ($items as $item) {
+                fputcsv($stream, [
+                    $item->pack?->name ?? '',
+                    $item->pack?->category ?? '',
+                    $item->title,
+                    $item->frequency,
+                    $item->due_date?->toDateString() ?? '',
+                    $item->status,
+                    $item->verified_at?->toDateString() ?? '',
+                ]);
+            }
+
+            fclose($stream);
+        };
+
+        $filename = 'compliance-checklist-'.now()->format('Y-m-d').'.csv';
+
+        return response()->streamDownload($callback, $filename, ['Content-Type' => 'text/csv']);
     }
 
     public function calendar(Request $request): Response
@@ -199,6 +258,54 @@ class ComplianceController extends Controller
     private function abortUnlessAdmin(User $user): void
     {
         abort_unless(in_array($user->role, ['admin', 'super_admin'], true), 403);
+    }
+
+    private function liveStats(Organization $organization): array
+    {
+        $studentsQuery = Student::query()->where('organization_id', $organization->id);
+        $students = (clone $studentsQuery)->count();
+        $activeStudents = (clone $studentsQuery)
+            ->where(fn ($query) => $query->whereNull('status')->orWhere('status', 'active'))
+            ->count();
+
+        $staff = User::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('role', RolePermissionCatalog::staffRoleSlugs())
+            ->count();
+
+        $attendanceSince = now()->subDays(29)->startOfDay();
+        $attendanceTotal = Attendance::query()
+            ->where('organization_id', $organization->id)
+            ->where('date', '>=', $attendanceSince)
+            ->count();
+        $attendancePresent = Attendance::query()
+            ->where('organization_id', $organization->id)
+            ->where('date', '>=', $attendanceSince)
+            ->where('status', '!=', 'absent')
+            ->count();
+        $attendanceRate30d = $attendanceTotal > 0 ? (int) round(($attendancePresent / $attendanceTotal) * 100) : 0;
+
+        $feesDueQuery = StudentFee::query()
+            ->where('organization_id', $organization->id)
+            ->where('balance', '>', 0);
+        $feesDue = (float) (clone $feesDueQuery)->sum('balance');
+        $feesDueCount = (clone $feesDueQuery)->count();
+
+        $pendingConcessions = FeeConcessionRequest::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', 'pending')
+            ->count();
+
+        return [
+            'students' => $students,
+            'activeStudents' => $activeStudents,
+            'staff' => $staff,
+            'staffStudentRatio' => $staff > 0 ? round($students / $staff, 1) : 0,
+            'attendanceRate30d' => $attendanceRate30d,
+            'feesDue' => $feesDue,
+            'feesDueCount' => $feesDueCount,
+            'pendingConcessions' => $pendingConcessions,
+        ];
     }
 
     private function resolveOrganizationForUser(User $user): ?Organization

@@ -1,19 +1,22 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useMemo, useState } from 'react';
 import {
-    CalendarDays,
     CheckCircle2,
     ChevronLeft,
     ChevronRight,
     Clock,
+    Download,
     FileClock,
     ListChecks,
     ShieldCheck,
 } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import DashboardLayout from '../DashboardLayout';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { PageHeader } from '../ui/page-header';
+import { StatCard } from '../ui/stat-card';
+import { EmptyState } from '../ui/empty-state';
 
 interface CalendarEvent {
     id: number;
@@ -33,6 +36,16 @@ interface ComplianceCalendarProps {
 }
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function eventToneClass(event: CalendarEvent): string {
+    if (event.status === 'compliant') {
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300';
+    }
+    if (event.overdue) {
+        return 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300';
+    }
+    return 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300';
+}
 
 export default function ComplianceCalendar({ user, events, upcoming, summary }: ComplianceCalendarProps) {
     const { t } = useLanguage();
@@ -64,10 +77,6 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
         return cells;
     }, [cursor]);
 
-    const monthLabel = new Intl.DateTimeFormat('en-IN', { month: 'long', year: 'numeric' }).format(
-        new Date(cursor.year, cursor.month, 1),
-    );
-
     const isToday = (day: number) =>
         cursor.year === today.getFullYear() && cursor.month === today.getMonth() && day === today.getDate();
 
@@ -80,54 +89,22 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
 
     return (
         <DashboardLayout user={user} activeTab="compliance-calendar">
-            <div className="max-w-7xl space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        <CalendarDays className="mr-2 inline-block h-6 w-6 text-primary" />
-                        {t('Compliance Calendar')}
-                    </h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        {t('View compliance deadlines and upcoming renewals on a calendar.')}
-                    </p>
-                </div>
+            <div className="space-y-6">
+                <PageHeader
+                    title={t('Compliance Calendar')}
+                    description={t('View compliance deadlines and upcoming renewals on a calendar.')}
+                    actions={
+                        <Button variant="outline" onClick={() => router.visit('/compliance/export')}>
+                            <Download className="mr-1 h-4 w-4" /> {t('Export')}
+                        </Button>
+                    }
+                />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card>
-                        <CardContent className="flex items-center justify-between pt-6">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('Compliance Items')}</p>
-                                <p className="text-2xl font-bold">{summary.events}</p>
-                            </div>
-                            <ListChecks className="h-5 w-5 text-primary" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center justify-between pt-6">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('Overdue')}</p>
-                                <p className="text-2xl font-bold text-rose-600">{summary.overdue}</p>
-                            </div>
-                            <FileClock className="h-5 w-5 text-rose-600" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center justify-between pt-6">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('Due This Month')}</p>
-                                <p className="text-2xl font-bold">{summary.dueThisMonth}</p>
-                            </div>
-                            <ShieldCheck className="h-5 w-5 text-amber-600" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardContent className="flex items-center justify-between pt-6">
-                            <div>
-                                <p className="text-sm text-muted-foreground">{t('Upcoming Deadlines')}</p>
-                                <p className="text-2xl font-bold">{upcoming.length}</p>
-                            </div>
-                            <Clock className="h-5 w-5 text-emerald-600" />
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <StatCard label={t('Compliance Items')} value={summary.events} icon={ListChecks} tone="info" />
+                    <StatCard label={t('Overdue')} value={summary.overdue} icon={FileClock} tone="danger" />
+                    <StatCard label={t('Due This Month')} value={summary.dueThisMonth} icon={ShieldCheck} tone="warning" />
+                    <StatCard label={t('Upcoming Deadlines')} value={upcoming.length} icon={Clock} tone="success" />
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -146,9 +123,7 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() =>
-                                            setCursor({ year: today.getFullYear(), month: today.getMonth() })
-                                        }
+                                        onClick={() => setCursor({ year: today.getFullYear(), month: today.getMonth() })}
                                     >
                                         {t('Today')}
                                     </Button>
@@ -156,6 +131,17 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500/80" /> {t('Compliant')}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="h-2 w-2 rounded-full bg-rose-500/80" /> {t('Overdue')}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="h-2 w-2 rounded-full bg-amber-500/80" /> {t('Pending')}
+                                </span>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -195,13 +181,8 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
                                                     {dayEvents.slice(0, 3).map((event) => (
                                                         <div
                                                             key={event.id}
-                                                            className={`truncate rounded px-1 py-0.5 text-[11px] leading-tight ${
-                                                                event.status === 'compliant'
-                                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
-                                                                    : event.overdue
-                                                                      ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
-                                                                      : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
-                                                            }`}
+                                                            title={event.title}
+                                                            className={`truncate rounded px-1 py-0.5 text-[11px] leading-tight ${eventToneClass(event)}`}
                                                         >
                                                             {event.title}
                                                         </div>
@@ -220,39 +201,37 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
                         </CardContent>
                     </Card>
 
-                    <div className="space-y-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">{t('Upcoming Deadlines')}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-0">
-                                {upcoming.length === 0 ? (
-                                    <p className="py-8 text-center text-sm text-muted-foreground">
-                                        {t('No compliance items due.')}
-                                    </p>
-                                ) : (
-                                    <ul className="space-y-3">
-                                        {upcoming.map((event) => (
-                                            <li key={event.id} className="rounded-lg border p-3">
-                                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <p className="text-sm font-medium">{event.title}</p>
-                                                    <Badge variant="outline">{event.dueDate}</Badge>
-                                                </div>
-                                                {event.pack && (
-                                                    <p className="mt-1 text-xs text-muted-foreground">{event.pack}</p>
-                                                )}
-                                                {event.status === 'compliant' && (
-                                                    <Badge variant="default" className="mt-2">
-                                                        <CheckCircle2 className="mr-1 h-3 w-3" /> {t('Compliant')}
-                                                    </Badge>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">{t('Upcoming Deadlines')}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                            {upcoming.length === 0 ? (
+                                <EmptyState title={t('No compliance items due.')} icon={CheckCircle2} />
+                            ) : (
+                                <ul className="space-y-3">
+                                    {upcoming.map((event) => (
+                                        <li key={event.id} className="rounded-lg border p-3">
+                                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                                <p className="text-sm font-medium">{event.title}</p>
+                                                <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                                                    {event.dueDate}
+                                                </span>
+                                            </div>
+                                            {event.pack && (
+                                                <p className="mt-1 text-xs text-muted-foreground">{event.pack}</p>
+                                            )}
+                                            {event.status === 'compliant' && (
+                                                <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+                                                    <CheckCircle2 className="mr-1 inline h-3 w-3" /> {t('Compliant')}
+                                                </p>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </DashboardLayout>

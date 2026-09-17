@@ -5219,5 +5219,19 @@ const hi = {
     'e.g. B.Sc Computer Science': 'उदा. बी.एससी कंप्यूटर साइंस',
     '{count} active {unit}': '{count} सक्रिय {unit}',
     'Create weekly tests and full mock tests per batch to track chapter-wise progress.': 'प्रति बैच साप्ताहिक टेस्ट और फुल मॉक टेस्ट बनाकर चैप्टर-वार प्रगति ट्रैक करें।',
+    'Live School Health': 'लाइव स्कूल हेल्थ',
+    'Enrolled Students': 'नामांकित छात्र',
+    'Student : Staff Ratio': 'छात्र : स्टाफ अनुपात',
+    'Attendance (30 days)': 'उपस्थिति (30 दिन)',
+    'Fees Due': 'बकाया फीस',
+    'Payment Records Due': 'बकाया भुगतान रिकॉर्ड',
+    'Pending Concessions': 'लंबित रियायतें',
+    'Overall Health': 'समग्र स्वास्थ्य',
+    'Live statutory indicators drawn from your student, staff, fee and attendance data.':
+        'छात्र, स्टाफ, फीस और उपस्थिति डेटा से प्राप्त लाइव वैधानिक संकेतक।',
+    'Add a compliance pack to start tracking statutory and renewal requirements.':
+        'वैधानिक और नवीनीकरण आवश्यकताओं को ट्रैक करने के लिए कंप्लायंस पैक जोड़ें।',
+    'No compliance packs yet.': 'अभी तक कोई कंप्लायंस पैक नहीं।',
+    'Your session expired. Please log in again to continue.': 'आपका सत्र समाप्त हो गया। जारी रखने के लिए कृपया फिर से लॉग इन करें।',
 };
 export default hi;

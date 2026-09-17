@@ -1,16 +1,35 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState } from 'react';
-import { CheckCircle2, ClipboardCheck, FileClock, FolderKanban, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import {
+    Activity,
+    Banknote,
+    CheckCircle2,
+    ClipboardCheck,
+    Download,
+    FileClock,
+    FolderKanban,
+    GraduationCap,
+    HandCoins,
+    Plus,
+    ShieldCheck,
+    Trash2,
+    UserRound,
+    Users,
+} from 'lucide-react';
 import { router } from '@inertiajs/react';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Badge } from '../ui/badge';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { PageHeader } from '../ui/page-header';
+import { StatCard } from '../ui/stat-card';
+import { StatusBadge } from '../ui/status-badge';
+import { EmptyState } from '../ui/empty-state';
 import { toast } from 'sonner';
 
 export type ComplianceItemRow = {
@@ -44,12 +63,23 @@ export type ComplianceProps = {
         overdue: number;
         dueThisMonth: number;
         completion: number;
+        healthScore: number;
+    };
+    liveStats: {
+        students: number;
+        activeStudents: number;
+        staff: number;
+        staffStudentRatio: number;
+        attendanceRate30d: number;
+        feesDue: number;
+        feesDueCount: number;
+        pendingConcessions: number;
     };
 };
 
 const FREQUENCIES = ['once', 'monthly', 'quarterly', 'yearly'] as const;
 
-export default function Compliance({ user, packs, items, summary }: ComplianceProps) {
+export default function Compliance({ user, packs, items, summary, liveStats }: ComplianceProps) {
     const { t } = useLanguage();
     const [packOpen, setPackOpen] = useState(false);
     const [itemPack, setItemPack] = useState<number | null>(null);
@@ -157,76 +187,122 @@ export default function Compliance({ user, packs, items, summary }: CompliancePr
             ? t(value.charAt(0).toUpperCase() + value.slice(1))
             : value;
 
+    const formatCurrency = (amount: number) =>
+        new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0,
+        }).format(amount);
+
     return (
         <DashboardLayout user={user} pageTitle={t('Compliance Overview')}>
             <div className="space-y-6">
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-                        <Card>
-                            <CardContent className="flex items-center justify-between pt-6">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">{t('Compliance Packs')}</p>
-                                    <p className="text-2xl font-bold">{summary.packs}</p>
-                                </div>
-                                <FolderKanban className="h-5 w-5 text-primary" />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center justify-between pt-6">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">{t('Total Items')}</p>
-                                    <p className="text-2xl font-bold">{summary.totalItems}</p>
-                                </div>
-                                <ClipboardCheck className="h-5 w-5 text-primary" />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center justify-between pt-6">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">{t('Compliant')}</p>
-                                    <p className="text-2xl font-bold">{summary.compliant}</p>
-                                </div>
-                                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center justify-between pt-6">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">{t('Overdue')}</p>
-                                    <p className="text-2xl font-bold text-rose-600">{summary.overdue}</p>
-                                </div>
-                                <FileClock className="h-5 w-5 text-rose-600" />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center justify-between pt-6">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">{t('Due This Month')}</p>
-                                    <p className="text-2xl font-bold">{summary.dueThisMonth}</p>
-                                </div>
-                                <ShieldCheck className="h-5 w-5 text-amber-600" />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="flex items-center justify-between pt-6">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">{t('Completion')}</p>
-                                    <p className="text-2xl font-bold">{summary.completion}%</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <Button onClick={() => setPackOpen(true)}>
-                        <Plus className="mr-1 h-4 w-4" /> {t('Add Pack')}
-                    </Button>
+                <PageHeader
+                    title={t('Compliance Overview')}
+                    description={t('Live statutory indicators drawn from your student, staff, fee and attendance data.')}
+                    actions={
+                        <>
+                            <Button variant="outline" onClick={() => router.visit('/compliance/export')}>
+                                <Download className="mr-1 h-4 w-4" /> {t('Export')}
+                            </Button>
+                            <Button onClick={() => setPackOpen(true)}>
+                                <Plus className="mr-1 h-4 w-4" /> {t('Add Pack')}
+                            </Button>
+                        </>
+                    }
+                />
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+                    <StatCard label={t('Compliance Packs')} value={summary.packs} icon={FolderKanban} tone="info" />
+                    <StatCard label={t('Total Items')} value={summary.totalItems} icon={ClipboardCheck} tone="info" />
+                    <StatCard label={t('Compliant')} value={summary.compliant} icon={CheckCircle2} tone="success" />
+                    <StatCard label={t('Overdue')} value={summary.overdue} icon={FileClock} tone="danger" />
+                    <StatCard label={t('Due This Month')} value={summary.dueThisMonth} icon={ShieldCheck} tone="warning" />
+                    <StatCard label={t('Completion')} value={`${summary.completion}%`} icon={Activity} tone="success" />
                 </div>
 
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">{t('Live School Health')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <StatCard
+                                label={t('Enrolled Students')}
+                                value={liveStats.students}
+                                hint={`${t('Active')}: ${liveStats.activeStudents}`}
+                                icon={GraduationCap}
+                                tone="info"
+                            />
+                            <StatCard label={t('Active Staff')} value={liveStats.staff} icon={UserRound} tone="info" />
+                            <StatCard
+                                label={t('Student : Staff Ratio')}
+                                value={liveStats.staffStudentRatio}
+                                icon={Users}
+                            />
+                            <StatCard
+                                label={t('Attendance (30 days)')}
+                                value={`${liveStats.attendanceRate30d}%`}
+                                icon={CheckCircle2}
+                                tone={liveStats.attendanceRate30d >= 85 ? 'success' : 'warning'}
+                            />
+                        </div>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <StatCard
+                                label={t('Fees Due')}
+                                value={formatCurrency(liveStats.feesDue)}
+                                hint={`${liveStats.feesDueCount} ${t('Payment Records Due')}`}
+                                icon={Banknote}
+                                tone={liveStats.feesDueCount > 0 ? 'warning' : 'success'}
+                            />
+                            <StatCard
+                                label={t('Pending Concessions')}
+                                value={liveStats.pendingConcessions}
+                                icon={HandCoins}
+                                tone={liveStats.pendingConcessions > 0 ? 'warning' : 'success'}
+                            />
+                            <Card className="gap-2 p-0">
+                                <CardContent className="flex flex-col justify-center px-4 py-4">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex size-10 items-center justify-center rounded-lg bg-muted text-foreground">
+                                                <Activity className="size-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-muted-foreground">{t('Overall Health')}</p>
+                                                <p
+                                                    className={`mt-0.5 text-xl font-semibold tabular-nums ${
+                                                        summary.healthScore >= 80
+                                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                                            : summary.healthScore >= 50
+                                                              ? 'text-amber-600 dark:text-amber-400'
+                                                              : 'text-red-600 dark:text-red-400'
+                                                    }`}
+                                                >
+                                                    {summary.healthScore}%
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                                        <div
+                                            className="h-full rounded-full bg-primary transition-all"
+                                            style={{ width: `${summary.healthScore}%` }}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </CardContent>
+                </Card>
+
                 {packs.length === 0 && (
-                    <Card>
-                        <CardContent className="py-10 text-center text-muted-foreground">
-                            {t('No compliance packs yet.')}
-                        </CardContent>
-                    </Card>
+                    <EmptyState
+                        title={t('No compliance packs yet.')}
+                        description={t('Add a compliance pack to start tracking statutory and renewal requirements.')}
+                        icon={FolderKanban}
+                        action={<Button onClick={() => setPackOpen(true)}>{t('Add Pack')}</Button>}
+                    />
                 )}
 
                 <div className="space-y-4">
@@ -284,17 +360,22 @@ export default function Compliance({ user, packs, items, summary }: CompliancePr
                                                         <Badge variant="outline">
                                                             {frequencyLabel(item.frequency)}
                                                         </Badge>
-                                                        {item.status === 'compliant' && (
-                                                            <Badge variant="default">
-                                                                <CheckCircle2 className="mr-1 h-3 w-3" />{' '}
-                                                                {t('Compliant')}
-                                                            </Badge>
-                                                        )}
-                                                        {item.status === 'pending' && (
-                                                            <Badge variant={item.overdue ? 'destructive' : 'outline'}>
-                                                                {item.overdue ? t('Overdue') : t('Pending')}
-                                                            </Badge>
-                                                        )}
+                                                        <StatusBadge
+                                                            status={
+                                                                item.status === 'compliant'
+                                                                    ? 'compliant'
+                                                                    : item.overdue
+                                                                      ? 'overdue'
+                                                                      : 'pending'
+                                                            }
+                                                            label={
+                                                                item.status === 'compliant'
+                                                                    ? t('Compliant')
+                                                                    : item.overdue
+                                                                      ? t('Overdue')
+                                                                      : t('Pending')
+                                                            }
+                                                        />
                                                     </div>
                                                     {item.description && (
                                                         <p className="mt-1 text-sm text-muted-foreground">

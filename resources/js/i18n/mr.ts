@@ -5211,5 +5211,19 @@ const mr = {
     'e.g. B.Sc Computer Science': 'उदा. बी.एस्सी संगणक शास्त्र',
     '{count} active {unit}': '{count} सक्रिय {unit}',
     'Create weekly tests and full mock tests per batch to track chapter-wise progress.': 'प्रत्येक बॅचसाठी साप्ताहिक चाचण्या आणि पूर्ण मॉक चाचण्या तयार करून प्रगती ट्रॅक करा.',
+    'Live School Health': 'थेट शाळा आरोग्य',
+    'Enrolled Students': 'नोंदणीकृत विद्यार्थी',
+    'Student : Staff Ratio': 'विद्यार्थी : कर्मचारी गुणोत्तर',
+    'Attendance (30 days)': 'उपस्थिती (३० दिवस)',
+    'Fees Due': 'बाकी फी',
+    'Payment Records Due': 'थकित देयक नोंदी',
+    'Pending Concessions': 'प्रलंबित सवलती',
+    'Overall Health': 'एकूण आरोग्य',
+    'Live statutory indicators drawn from your student, staff, fee and attendance data.':
+        'विद्यार्थी, कर्मचारी, फी आणि उपस्थिती डेटावर आधारित थेट वैधानिक निर्देशक.',
+    'Add a compliance pack to start tracking statutory and renewal requirements.':
+        'वैधानिक आणि नूतनीकरण आवश्यकता ट्रॅक करण्यासाठी सिस्टम पॅक जोडा.',
+    'No compliance packs yet.': 'अद्याप कोणतेही सिस्टम पॅक नाहीत.',
+    'Your session expired. Please log in again to continue.': 'तुमचे सत्र संपले आहे. पुन्हा लॉग इन करा.',
 };
 export default mr;
