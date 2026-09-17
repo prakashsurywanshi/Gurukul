@@ -7,6 +7,8 @@ use App\Http\Middleware\EnsureOrganizationSubscriptionIsActive;
 use App\Http\Middleware\EnsureStaffPermission;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -41,5 +43,20 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (HttpException $exception, Request $request) {
+            if ($exception->getStatusCode() !== 419) {
+                return null;
+            }
+
+            $redirectTo = $request->is('login') ? '/' : '/login';
+
+            if ($request->expectsJson() && ! $request->header('X-Inertia')) {
+                return response()->json(
+                    ['message' => 'Your session has expired. Please refresh the page and try again.'],
+                    419,
+                );
+            }
+
+            return redirect()->guest($redirectTo);
+        });
     })->create();

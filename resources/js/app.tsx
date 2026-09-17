@@ -6,6 +6,17 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { RegionalKeyboardProvider } from './components/regional/RegionalKeyboardProvider';
 import { LanguageProvider } from './i18n/LanguageProvider';
 
+router.on('invalid', (event: any) => {
+    if (event.detail?.response?.status === 419) {
+        const current = window.location.pathname;
+        if (!current.startsWith('/login')) {
+            const next = `/login?expired=1&redirect=${encodeURIComponent(current + window.location.search)}`;
+            window.location.replace(next);
+        }
+        return true;
+    }
+});
+
 const pages = import.meta.glob('./Pages/**/*.tsx', {
     eager: true,
 }) as Record<string, any>;
