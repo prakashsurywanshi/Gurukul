@@ -295,7 +295,7 @@ export default function SocialMediaSettings(pageProps: SocialMediaSettingsProps)
                                     value={formData.facebook.accessToken}
                                     disabled={!isEditing}
                                     onChange={(e) => updateFacebook('accessToken', e.target.value)}
-                                    placeholder="EAA..."
+                                    placeholder={t('EAA...')}
                                 />
                             </div>
                         </div>

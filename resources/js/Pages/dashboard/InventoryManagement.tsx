@@ -958,7 +958,7 @@ export default function InventoryManagement({
                             <FeaturePanel
                                 icon={PackagePlus}
                                 title={t('Add Item Stock')}
-                                description="Record new inward stock and instantly update available quantities."
+                                description={t('Record new inward stock and instantly update available quantities.')}
                             >
                                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
                                     <div className="space-y-2">
@@ -1099,7 +1099,7 @@ export default function InventoryManagement({
                             <FeaturePanel
                                 icon={Boxes}
                                 title={t('Add Item')}
-                                description="Create new inventory masters and define minimum stock thresholds."
+                                description={t('Create new inventory masters and define minimum stock thresholds.')}
                             >
                                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-7">
                                     <div className="space-y-2">
@@ -1249,7 +1249,7 @@ export default function InventoryManagement({
                             <FeaturePanel
                                 icon={Tags}
                                 title={t('Item Category')}
-                                description="Organize goods into reusable categories for easier reporting and filtering."
+                                description={t('Organize goods into reusable categories for easier reporting and filtering.')}
                             >
                                 <div className="grid gap-4 md:grid-cols-[1fr_1.5fr_auto]">
                                     <div className="space-y-2">
@@ -1304,7 +1304,7 @@ export default function InventoryManagement({
                             <FeaturePanel
                                 icon={Store}
                                 title={t('Item Store')}
-                                description="Track multiple stock rooms with ownership and physical locations."
+                                description={t('Track multiple stock rooms with ownership and physical locations.')}
                             >
                                 <div className="grid gap-4 md:grid-cols-[1fr_1fr_1.3fr_auto]">
                                     <div className="space-y-2">
@@ -1368,7 +1368,7 @@ export default function InventoryManagement({
                             <FeaturePanel
                                 icon={Truck}
                                 title={t('Item Supplier')}
-                                description="Maintain the vendor list used for purchases and replenishment."
+                                description={t('Maintain the vendor list used for purchases and replenishment.')}
                             >
                                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                                     <div className="space-y-2">

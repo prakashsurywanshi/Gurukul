@@ -162,7 +162,7 @@ export default function BiometricSettings(pageProps: BiometricSettingsProps) {
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
                             <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50">
-                                <span className="text-gray-500">POST</span>
+                                <span className="text-gray-500">{t('POST')}</span>
                                 <code className="truncate text-xs text-gray-800 dark:text-gray-200">{endpoint}</code>
                             </div>
                             <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50">

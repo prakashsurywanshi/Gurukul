@@ -143,7 +143,7 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                             {classInfo.student_count > 0 && (
                                 <Badge variant="outline" className="px-3 py-1 text-sm">
                                     {classInfo.student_count}
-                                    {t(' Students')}
+                                    {' '}{t('Students')}
                                 </Badge>
                             )}
                             {classInfo.status === 'inactive' ? (

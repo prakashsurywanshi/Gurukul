@@ -136,6 +136,7 @@ function SectionEditForm({
     onCancel: () => void;
     isSaving?: boolean;
 }) {
+    const { t } = useLanguage();
     const [draft, setDraft] = useState<Record<string, any>>(() => JSON.parse(JSON.stringify(section.data)));
 
     const updateField = (key: string, value: any) => {
@@ -376,7 +377,7 @@ function SectionEditForm({
     return (
         <div className="p-4 space-y-3">
             <h4 className="text-sm font-semibold text-slate-700">
-                Edit {sectionTypeLabels[section.type] || section.type}
+                {t('Edit')}{sectionTypeLabels[section.type] || section.type}
             </h4>
             {renderFields()}
             <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
@@ -387,7 +388,7 @@ function SectionEditForm({
                     className="inline-flex items-center gap-1.5 rounded bg-blue-600 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-blue-700 disabled:opacity-50"
                 >
                     <Check className="h-3.5 w-3.5" />
-                    {isSaving ? 'Saving...' : 'Save'}
+                    {isSaving ? t('Saving...') : t('Save')}
                 </button>
                 <button
                     type="button"
@@ -395,8 +396,7 @@ function SectionEditForm({
                     className="inline-flex items-center gap-1.5 rounded border border-slate-300 bg-white px-4 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
                 >
                     <X className="h-3.5 w-3.5" />
-                    Cancel
-                </button>
+                    {t('Cancel')}</button>
             </div>
         </div>
     );
@@ -443,13 +443,14 @@ function ArraySection({
     onUpdate: (index: number, field: string, value: string) => void;
     fields: Array<{ key: string; label: string; type?: 'text' | 'textarea' }>;
 }) {
+    const { t } = useLanguage();
     return (
         <div className="space-y-3">
             <label className="block text-xs font-medium text-slate-500">Items ({items.length})</label>
             {items.map((item, i) => (
                 <div key={i} className="rounded border border-slate-200 bg-slate-50 p-3 space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-medium text-slate-400">Item {i + 1}</span>
+                        <span className="text-[10px] font-medium text-slate-400">{t('Item')}{i + 1}</span>
                         <button
                             type="button"
                             onClick={() => onRemove(i)}
@@ -484,8 +485,7 @@ function ArraySection({
                 className="inline-flex items-center gap-1 rounded border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-500 transition hover:border-blue-400 hover:text-blue-600"
             >
                 <Plus className="h-3 w-3" />
-                Add Item
-            </button>
+                {t('Add Item')}</button>
         </div>
     );
 }
@@ -569,8 +569,7 @@ function AddSectionPalette({ onAdd }: { onAdd: (type: PageSection['type'], data:
                     className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-500 transition hover:border-blue-400 hover:text-blue-600"
                 >
                     <Plus className="h-4 w-4" />
-                    Add Section
-                </button>
+                    {t('Add Section')}</button>
             ) : (
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
@@ -706,6 +705,7 @@ function TextSection({ data }: { data: Record<string, any> }) {
 }
 
 function ImageGallerySection({ data }: { data: Record<string, any> }) {
+    const { t } = useLanguage();
     const rawImages = data.images || data.items || [];
     const images: Array<{
         url: string;
@@ -786,7 +786,7 @@ function ImageGallerySection({ data }: { data: Record<string, any> }) {
                                         )}
                                         <div className="absolute bottom-0 left-0 right-0 p-5">
                                             <h3 className="font-serif text-xl font-bold text-white drop-shadow-lg">
-                                                {albumName || 'Album'}
+                                                {albumName || t('Album')}
                                             </h3>
                                         </div>
                                     </div>

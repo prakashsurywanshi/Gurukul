@@ -211,8 +211,7 @@ function NavigationMenuEditor({
                         className="inline-flex items-center gap-1.5 rounded-lg border border-green-300 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 transition hover:bg-green-100"
                     >
                         <Plus className="h-3 w-3" />
-                        Create New Page
-                    </button>
+                        {t('Create New Page')}</button>
                 </div>
 
                 {creatingPage && (
@@ -232,7 +231,7 @@ function NavigationMenuEditor({
                             disabled={isCreating || !newPageTitle.trim()}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-green-700 disabled:opacity-50"
                         >
-                            {isCreating ? 'Creating...' : 'Create & Link'}
+                            {isCreating ? t('Creating...') : 'Create & Link'}
                         </button>
                         <button
                             type="button"
@@ -395,7 +394,7 @@ export default function TemplateFiveHome({
                             onClick={() => setActiveSection(activeSection === 'topBar' ? null : 'topBar')}
                             className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                         >
-                            {activeSection === 'topBar' ? 'Close' : 'Edit Top Bar'}
+                            {activeSection === 'topBar' ? t('Close') : t('Edit Top Bar')}
                         </button>
                     )}
                     <div className="bg-[#002147] text-white text-xs">
@@ -616,7 +615,7 @@ export default function TemplateFiveHome({
                                         {isEditing ? (
                                             <>
                                                 <InlineEditField
-                                                    value={cmsContent.templateFiveAccreditedBadgeLabel || 'Accredited'}
+                                                    value={cmsContent.templateFiveAccreditedBadgeLabel || t('Accredited')}
                                                     onChange={(v) =>
                                                         updateDraft('header', 'templateFiveAccreditedBadgeLabel', v)
                                                     }
@@ -650,7 +649,7 @@ export default function TemplateFiveHome({
                                         ) : (
                                             <>
                                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#002147]">
-                                                    {cmsContent.templateFiveAccreditedBadgeLabel || 'Accredited'}
+                                                    {cmsContent.templateFiveAccreditedBadgeLabel || t('Accredited')}
                                                 </p>
                                                 <p className="text-[10px] text-stone-500">
                                                     {cmsContent.templateFiveAccreditedBadgeGrade || 'NAAC A+ Grade'}
@@ -690,7 +689,7 @@ export default function TemplateFiveHome({
                                     }`}
                                 >
                                     {isEditing ? <Check className="h-3 w-3" /> : <Pencil className="h-3 w-3" />}
-                                    {isEditing ? 'Done Editing' : 'Edit Page'}
+                                    {isEditing ? t('Done Editing') : t('Edit Page')}
                                 </button>
                             )}
                             {user && (
@@ -699,8 +698,7 @@ export default function TemplateFiveHome({
                                     className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-[#1d4ed8]"
                                 >
                                     <Plus className="h-3 w-3" />
-                                    Create Page
-                                </Link>
+                                    {t('Create Page')}</Link>
                             )}
                         </div>
                     </div>
@@ -857,7 +855,7 @@ export default function TemplateFiveHome({
                                                     : 'border border-[#002147]/20 text-[#002147] hover:bg-[#002147]/5'
                                             }`}
                                         >
-                                            {isEditing ? 'Done Editing' : 'Edit Page'}
+                                            {isEditing ? t('Done Editing') : t('Edit Page')}
                                         </button>
                                     )}
                                     {user && (
@@ -1013,7 +1011,7 @@ export default function TemplateFiveHome({
                                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-black/40 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/60"
                                 >
                                     <ImageIcon className="h-3 w-3" />{' '}
-                                    {cmsContent.sliderImages[0] ? 'Change Hero Image' : 'Add Hero Image'}
+                                    {cmsContent.sliderImages[0] ? t('Change Hero Image') : t('Add Hero Image')}
                                 </label>
                             </div>
                         )}
@@ -1840,7 +1838,7 @@ export default function TemplateFiveHome({
                                                             )}
                                                             <div className="absolute bottom-0 left-0 right-0 p-5">
                                                                 <h3 className="font-serif text-xl font-bold text-white drop-shadow-lg">
-                                                                    {albumName || 'Album'}
+                                                                    {albumName || t('Album')}
                                                                 </h3>
                                                             </div>
                                                         </div>

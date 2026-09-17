@@ -893,7 +893,7 @@ export default function FeeManagement({
               </div>
             </div>
 
-            ${revertDetails ? `<div class="section"><h2>Reversal Details</h2>${revertDetails}</div>` : ''}
+            ${revertDetails ? `<div class="section"><h2>{t('Reversal Details')}</h2>${revertDetails}</div>` : ''}
 
             <div class="amount-box">
               <span>Amount Received</span>

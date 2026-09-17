@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 type Candidate = {
     rank: number;
@@ -56,6 +57,7 @@ const fileToDataUrl = (file: File) =>
     });
 
 export default function FaceSearchKiosk({ user, configured, mode, faceResults }: FaceSearchKioskProps) {
+    const { t } = useLanguage();
     const [photos, setPhotos] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
@@ -147,7 +149,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                         Face Search Kiosk
                     </h1>
                     <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="secondary">AI-assisted candidate matching</Badge>
+                        <Badge variant="secondary">{t('AI-assisted candidate matching')}</Badge>
                         <Badge variant="outline">Mode: {mode}</Badge>
                     </div>
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -159,7 +161,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                 {!configured && (
                     <Alert variant="destructive">
                         <ScanFace className="h-4 w-4" />
-                        <AlertTitle>AI provider not configured</AlertTitle>
+                        <AlertTitle>{t('AI provider not configured')}</AlertTitle>
                         <AlertDescription>
                             Configure an OpenAI-compatible vision-capable model in AI Assistant settings before running
                             a kiosk search.
@@ -198,7 +200,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                                 }`}
                             >
                                 <ImagePlus className="size-5" />
-                                <span className="text-xs">Add photos</span>
+                                <span className="text-xs">{t('Add photos')}</span>
                                 <input
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
@@ -226,7 +228,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                                 ) : (
                                     <ScanFace className="size-4" />
                                 )}
-                                {processing ? 'Analyzing…' : 'Analyze photos'}
+                                {processing ? 'Analyzing…' : t('Analyze photos')}
                             </Button>
                             {faceResults && (
                                 <Button type="button" variant="ghost" onClick={reset}>
@@ -240,7 +242,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                 {showCamera && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
                         <div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-lg">
-                            <h2 className="mb-3 text-lg font-semibold">Camera capture</h2>
+                            <h2 className="mb-3 text-lg font-semibold">{t('Camera capture')}</h2>
                             <video
                                 ref={setVideoRef}
                                 className="mx-auto max-h-64 w-full rounded-md bg-black"
@@ -250,8 +252,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                             />
                             <div className="mt-4 flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={closeCamera}>
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="button" onClick={capture}>
                                     <Camera className="size-4" />
                                     Capture still
@@ -267,7 +268,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                             <Card key={`${result.file}-${index}`}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-base">
-                                        Photo {index + 1}
+                                        {t('Photo')}{index + 1}
                                         <Badge variant="outline">{result.file}</Badge>
                                         <Badge variant="outline">{formatBytes(result.size)}</Badge>
                                     </CardTitle>
@@ -311,7 +312,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                                         </div>
                                     ) : (
                                         <Alert>
-                                            <AlertTitle>No strong candidates</AlertTitle>
+                                            <AlertTitle>{t('No strong candidates')}</AlertTitle>
                                             <AlertDescription>
                                                 The described attributes did not match any active student. Try a
                                                 clearer, front-facing photo.
@@ -320,7 +321,7 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                                     )}
 
                                     <details className="text-xs text-gray-400">
-                                        <summary className="cursor-pointer">View raw analysis</summary>
+                                        <summary className="cursor-pointer">{t('View raw analysis')}</summary>
                                         <pre className="mt-2 whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
                                             {result.analysis}
                                         </pre>

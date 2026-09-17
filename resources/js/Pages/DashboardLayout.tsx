@@ -128,7 +128,7 @@ export default function DashboardLayout({ user, activeTab, onLogout, appearance,
                         <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm shadow-sm">
                             <CalendarCheck className="h-4 w-4 text-[var(--primary)]" />
                             <span className="text-[var(--muted-foreground)]">{t('nav.session')}:</span>
-                            <span className="font-semibold text-[var(--foreground)]">{activeSession || 'Not Set'}</span>
+                            <span className="font-semibold text-[var(--foreground)]">{activeSession || t('Not Set')}</span>
                         </div>
 
                         {canViewTodo && <TodoBell active={activeTab === 'todo'} />}

@@ -288,7 +288,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'hero' ? null : 'hero')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'hero' ? 'Close' : 'Edit Hero'}
+                                    {activeSection === 'hero' ? t('Close') : t('Edit Hero')}
                                 </button>
                             )}
                             <section className="mx-auto grid max-w-7xl gap-14 px-5 pb-18 pt-8 sm:px-8 lg:grid-cols-[1.02fr_0.98fr] lg:px-10 lg:pb-24 lg:pt-12">
@@ -566,7 +566,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'about' ? null : 'about')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'about' ? 'Close' : 'Edit About'}
+                                    {activeSection === 'about' ? t('Close') : t('Edit About')}
                                 </button>
                             )}
                             <section id="about" className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
@@ -721,7 +721,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'programs' ? null : 'programs')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'programs' ? 'Close' : 'Edit Programs'}
+                                    {activeSection === 'programs' ? t('Close') : t('Edit Programs')}
                                 </button>
                             )}
                             <section id="programs" className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
@@ -877,7 +877,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'campus' ? null : 'campus')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'campus' ? 'Close' : 'Edit Campus'}
+                                    {activeSection === 'campus' ? t('Close') : t('Edit Campus')}
                                 </button>
                             )}
                             <section id="campus" className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10">
@@ -1096,7 +1096,7 @@ export default function TemplateOneHome({
                                     }
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'admissions' ? 'Close' : 'Edit Admissions'}
+                                    {activeSection === 'admissions' ? t('Close') : t('Edit Admissions')}
                                 </button>
                             )}
                             <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10">
@@ -1249,7 +1249,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'outcomes' ? null : 'outcomes')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'outcomes' ? 'Close' : 'Edit Outcomes'}
+                                    {activeSection === 'outcomes' ? t('Close') : t('Edit Outcomes')}
                                 </button>
                             )}
                             <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
@@ -1400,7 +1400,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'journey' ? null : 'journey')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'journey' ? 'Close' : 'Edit Journey'}
+                                    {activeSection === 'journey' ? t('Close') : t('Edit Journey')}
                                 </button>
                             )}
                             <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
@@ -1558,7 +1558,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'voices' ? null : 'voices')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'voices' ? 'Close' : 'Edit Voices & Visit'}
+                                    {activeSection === 'voices' ? t('Close') : 'Edit Voices & Visit'}
                                 </button>
                             )}
                             <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
@@ -1834,7 +1834,7 @@ export default function TemplateOneHome({
                                     onClick={() => setActiveSection(activeSection === 'faq' ? null : 'faq')}
                                     className="absolute -top-8 right-4 z-50 rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white shadow-lg hover:bg-blue-700"
                                 >
-                                    {activeSection === 'faq' ? 'Close' : 'Edit FAQ'}
+                                    {activeSection === 'faq' ? t('Close') : t('Edit FAQ')}
                                 </button>
                             )}
                             <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">

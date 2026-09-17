@@ -245,7 +245,7 @@ export default function MarksheetUploads(pageProps: MarksheetUploadsProps) {
                                                 </p>
                                                 {record.student?.roll_number && (
                                                     <p className="text-xs text-gray-500">
-                                                        Roll No: {record.student.roll_number}
+                                                        {t('Roll No:')}{record.student.roll_number}
                                                     </p>
                                                 )}
                                             </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { WebsiteSlide } from '../../utils/websiteCmsContent';
 import { getCommonWebsiteSliderImage } from '../../utils/websiteSliderImages';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface TopWebsite3DImageSliderProps {
     slides: WebsiteSlide[];
@@ -13,6 +14,7 @@ export default function TopWebsite3DImageSlider({
     isLightTheme,
     sliderImages = [],
 }: TopWebsite3DImageSliderProps) {
+    const { t } = useLanguage();
     const [activeSlide, setActiveSlide] = useState(0);
     const imageItems =
         sliderImages.length > 0

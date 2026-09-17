@@ -10,6 +10,7 @@ import { Input } from '../ui/input';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '../ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface TrailActor {
     id: number;
@@ -70,6 +71,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export default function AuditTrail(pageProps: AuditTrailProps) {
+    const { t } = useLanguage();
     const { user, trails, pagination, filters, actionOptions, moduleOptions, retentionDays = 90 } = pageProps;
     const [search, setSearch] = useState(filters.search);
     const [action, setAction] = useState(filters.action);
@@ -146,8 +148,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <FileClock className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Audit Trail
-                        </h1>
+                            {t('Audit Trail')}</h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Every create, update and delete action recorded across the system.
                         </p>
@@ -155,17 +156,14 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                     <div className="flex items-center gap-2">
                         <Button variant="outline" onClick={exportCsv}>
                             <Download className="mr-2 h-4 w-4" />
-                            Export CSV
-                        </Button>
+                            {t('Export CSV')}</Button>
                         <Button variant="outline" className="text-rose-500 hover:text-rose-600" onClick={clearLogs}>
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Clear Logs
-                        </Button>
+                            {t('Clear Logs')}</Button>
                         {hasFilters && (
                             <Button variant="ghost" onClick={resetFilters}>
                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                Reset
-                            </Button>
+                                {t('Reset')}</Button>
                         )}
                     </div>
                 </div>
@@ -174,7 +172,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                     <span className="mt-0.5">🗑</span>
                     <p>
                         Logs older than {retentionDays} days are removed automatically by nightly cleanup. Use{' '}
-                        <strong>Clear Logs</strong> to wipe everything now.
+                        <strong>{t('Clear Logs')}</strong> to wipe everything now.
                     </p>
                 </div>
 
@@ -203,10 +201,10 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             </div>
                             <Select value={action} onValueChange={(value) => setAction(value)}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="All actions" />
+                                    <SelectValue placeholder={t('All actions')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="select-all-null">All actions</SelectItem>
+                                    <SelectItem value="select-all-null">{t('All actions')}</SelectItem>
                                     {actionOptions.map((option) => (
                                         <SelectItem key={option} value={option}>
                                             {ACTION_LABELS[option] ?? option}
@@ -216,10 +214,10 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             </Select>
                             <Select value={module} onValueChange={(value) => setModule(value)}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="All modules" />
+                                    <SelectValue placeholder={t('All modules')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="select-all-null">All modules</SelectItem>
+                                    <SelectItem value="select-all-null">{t('All modules')}</SelectItem>
                                     {moduleOptions.map((option) => (
                                         <SelectItem key={option.value} value={option.value}>
                                             {option.label}
@@ -248,8 +246,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                                 ) : (
                                     <Search className="mr-2 h-4 w-4" />
                                 )}
-                                Apply
-                            </Button>
+                                {t('Apply')}</Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -259,14 +256,14 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Timestamp</TableHead>
-                                    <TableHead>User</TableHead>
-                                    <TableHead>Action</TableHead>
-                                    <TableHead>Module</TableHead>
-                                    <TableHead>Model</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead>IP Address</TableHead>
-                                    <TableHead className="text-right">Details</TableHead>
+                                    <TableHead>{t('Timestamp')}</TableHead>
+                                    <TableHead>{t('User')}</TableHead>
+                                    <TableHead>{t('Action')}</TableHead>
+                                    <TableHead>{t('Module')}</TableHead>
+                                    <TableHead>{t('Model')}</TableHead>
+                                    <TableHead>{t('Description')}</TableHead>
+                                    <TableHead>{t('IP Address')}</TableHead>
+                                    <TableHead className="text-right">{t('Details')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -332,7 +329,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             </PaginationItem>
                             <PaginationItem>
                                 <span className="px-3 text-sm text-gray-500">
-                                    Page {pagination.currentPage} of {pagination.lastPage}
+                                    {t('Page')}{pagination.currentPage} of {pagination.lastPage}
                                 </span>
                             </PaginationItem>
                             <PaginationItem>
@@ -361,39 +358,39 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             <DialogTitle>
                                 {selected ? `${ACTION_LABELS[selected.action] ?? selected.action} event` : ''}
                             </DialogTitle>
-                            <DialogDescription>Full details of this audit event.</DialogDescription>
+                            <DialogDescription>{t('Full details of this audit event.')}</DialogDescription>
                         </DialogHeader>
                         {selected && (
                             <div className="space-y-4">
                                 <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Timestamp</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Timestamp')}</dt>
                                         <dd className="font-medium">{selected.created_at}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">User</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('User')}</dt>
                                         <dd className="font-medium">{selected.user?.name ?? '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Module</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Module')}</dt>
                                         <dd className="font-medium">{selected.module}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Model</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Model')}</dt>
                                         <dd className="font-medium">
                                             {selected.model ? `${selected.model}#${selected.model_id ?? ''}` : '—'}
                                         </dd>
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <dt className="text-gray-500 dark:text-gray-400">Description</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Description')}</dt>
                                         <dd className="font-medium">{selected.description}</dd>
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <dt className="text-gray-500 dark:text-gray-400">IP Address</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('IP Address')}</dt>
                                         <dd className="font-mono text-xs">{selected.ip_address ?? '—'}</dd>
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <dt className="text-gray-500 dark:text-gray-400">User Agent</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('User Agent')}</dt>
                                         <dd className="break-words font-mono text-xs text-gray-600 dark:text-gray-300">
                                             {selected.user_agent ?? '—'}
                                         </dd>

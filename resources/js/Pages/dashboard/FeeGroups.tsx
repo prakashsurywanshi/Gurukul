@@ -312,8 +312,8 @@ export default function FeeGroups({
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                        <SelectItem value="active">{t('Active')}</SelectItem>
+                                        <SelectItem value="inactive">{t('Inactive')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

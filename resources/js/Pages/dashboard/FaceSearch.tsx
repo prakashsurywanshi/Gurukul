@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface FaceSearchProps {
     user: any;
@@ -19,6 +20,7 @@ const formatBytes = (bytes: number) =>
     bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
 export default function FaceSearch(pageProps: FaceSearchProps) {
+    const { t } = useLanguage();
     const { user, configured, mode, faceResult } = pageProps;
     const { data, setData, post, processing, errors } = useForm<{ photo: File | null }>({ photo: null });
     const [preview, setPreview] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                         Face Search
                     </h1>
                     <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="secondary">Spike preview</Badge>
+                        <Badge variant="secondary">{t('Spike preview')}</Badge>
                         <Badge variant="outline">Mode: {mode}</Badge>
                     </div>
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -60,7 +62,7 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
 
                 <Alert variant={configured ? 'default' : 'destructive'}>
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>{configured ? `AI provider ready (${mode})` : 'AI provider not configured'}</AlertTitle>
+                    <AlertTitle>{configured ? `AI provider ready (${mode})` : t('AI provider not configured')}</AlertTitle>
                     <AlertDescription>
                         {configured
                             ? 'Vision requests will be sent to the configured model. Results are previews for suitability analysis.'
@@ -89,7 +91,7 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                                     }`}
                                 >
                                     {preview ? (
-                                        <img src={preview} alt="Preview" className="max-h-48 rounded-md object-cover" />
+                                        <img src={preview} alt={t('Preview')} className="max-h-48 rounded-md object-cover" />
                                     ) : (
                                         <>
                                             <Upload className="h-8 w-8 text-gray-400" />
@@ -129,8 +131,7 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <FileQuestion className="h-4 w-4 text-indigo-500" />
-                                Result
-                            </CardTitle>
+                                {t('Result')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {faceResult ? (
@@ -154,15 +155,14 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Production roadmap (fallback plan)</CardTitle>
+                        <CardTitle className="text-base">{t('Production roadmap (fallback plan)')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                         <p>
                             If the vision pipeline is unavailable, Face Search degrades gracefully to the manual student
                             search screen (
                             <a className="text-indigo-600 dark:text-indigo-400" href="/search_students">
-                                Search Students
-                            </a>
+                                {t('Search Students')}</a>
                             ), which continues to work without any AI dependency.
                         </p>
                         <ul className="list-disc space-y-1 pl-5">

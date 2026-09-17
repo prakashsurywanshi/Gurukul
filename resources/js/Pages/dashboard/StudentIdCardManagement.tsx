@@ -175,7 +175,7 @@ export default function StudentIdCardManagement({ user, students = [], design: d
         return `
         <div class="qr-scan">
           ${qrSvgToken(value, 76)}
-          <p class="qr-hint">Scan For Attendance</p>
+          <p class="qr-hint">${t('Scan For Attendance')}</p>
         </div>`;
     };
 
@@ -394,8 +394,8 @@ export default function StudentIdCardManagement({ user, students = [], design: d
           <div class="sheet">
             <div class="card">
               <div class="header">
-                <small>Template ${templateCode}</small>
-                <h1>${cardTitle || 'Student ID Card'}</h1>
+                <small>${t('Template')} ${templateCode}</small>
+                <h1>${cardTitle || t('Student ID Card')}</h1>
               </div>
               <div class="content">
                 <div class="profile">
@@ -408,32 +408,32 @@ export default function StudentIdCardManagement({ user, students = [], design: d
                 </div>
                 <div class="grid">
                   <div class="cell">
-                    <p class="cell-label">Student ID</p>
+                    <p class="cell-label">${t('Student ID')}</p>
                     <p class="cell-value">${studentId}</p>
                   </div>
                   <div class="cell">
-                    <p class="cell-label">Admission Number</p>
+                    <p class="cell-label">${t('Admission Number')}</p>
                     <p class="cell-value">${admissionNumber}</p>
                   </div>
                   <div class="cell">
-                    <p class="cell-label">Class</p>
+                    <p class="cell-label">${t('Class')}</p>
                     <p class="cell-value">${classLabel}</p>
                   </div>
                   <div class="cell">
-                    <p class="cell-label">Phone</p>
+                    <p class="cell-label">${t('Phone')}</p>
                     <p class="cell-value">${phone}</p>
                   </div>
                   <div class="cell">
-                    <p class="cell-label">Gender</p>
+                    <p class="cell-label">${t('Gender')}</p>
                     <p class="cell-value">${gender}</p>
                   </div>
                   <div class="cell">
-                    <p class="cell-label">Blood Group</p>
+                    <p class="cell-label">${t('Blood Group')}</p>
                     <p class="cell-value">${bloodGroup}</p>
                   </div>
                 </div>
-                <div class="guardian">Guardian: ${guardian}</div>
-                <div class="guardian">Address: ${address}</div>
+                <div class="guardian">${t('Guardian')}: ${guardian}</div>
+                <div class="guardian">${t('Address')}: ${address}</div>
                 ${qrMarkup(selectedStudent)}
               </div>
             </div>
@@ -484,8 +484,8 @@ export default function StudentIdCardManagement({ user, students = [], design: d
                 return `
           <div class="card">
             <div class="header">
-              <small>Template ${escapeHtml(templateCode)}</small>
-              <h1>${escapeHtml(cardTitle || 'Student ID Card')}</h1>
+              <small>${t('Template')} ${escapeHtml(templateCode)}</small>
+              <h1>${escapeHtml(cardTitle || t('Student ID Card'))}</h1>
             </div>
             <div class="content">
               <div class="profile">
@@ -498,32 +498,32 @@ export default function StudentIdCardManagement({ user, students = [], design: d
               </div>
               <div class="grid">
                 <div class="cell">
-                  <p class="cell-label">Student ID</p>
+                  <p class="cell-label">${t('Student ID')}</p>
                   <p class="cell-value">${escapeHtml(studentId)}</p>
                 </div>
                 <div class="cell">
-                  <p class="cell-label">Admission Number</p>
+                  <p class="cell-label">${t('Admission Number')}</p>
                   <p class="cell-value">${escapeHtml(admissionNumber)}</p>
                 </div>
                 <div class="cell">
-                  <p class="cell-label">Class</p>
+                  <p class="cell-label">${t('Class')}</p>
                   <p class="cell-value">${escapeHtml(classLabel)}</p>
                 </div>
                 <div class="cell">
-                  <p class="cell-label">Phone</p>
+                  <p class="cell-label">${t('Phone')}</p>
                   <p class="cell-value">${escapeHtml(phone)}</p>
                 </div>
                 <div class="cell">
-                  <p class="cell-label">Gender</p>
+                  <p class="cell-label">${t('Gender')}</p>
                   <p class="cell-value">${escapeHtml(gender)}</p>
                 </div>
                 <div class="cell">
-                  <p class="cell-label">Blood Group</p>
+                  <p class="cell-label">${t('Blood Group')}</p>
                   <p class="cell-value">${escapeHtml(bloodGroup)}</p>
                 </div>
               </div>
-              <div class="guardian">Guardian: ${escapeHtml(guardian)}</div>
-              <div class="guardian">Address: ${escapeHtml(address)}</div>
+              <div class="guardian">${t('Guardian')}: ${escapeHtml(guardian)}</div>
+              <div class="guardian">${t('Address')}: ${escapeHtml(address)}</div>
               ${qrMarkup(student)}
             </div>
           </div>
@@ -537,7 +537,7 @@ export default function StudentIdCardManagement({ user, students = [], design: d
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>${escapeHtml(cardTitle)} - Bulk PDF</title>
+          <title>${escapeHtml(cardTitle)} - ${t('Bulk PDF')}</title>
           <style>
             * { box-sizing: border-box; }
             body {
@@ -691,7 +691,7 @@ export default function StudentIdCardManagement({ user, students = [], design: d
           </style>
         </head>
         <body>
-          <h1 class="sheet-title">${escapeHtml(cardTitle || 'Student ID Card')} Bulk Download</h1>
+          <h1 class="sheet-title">${escapeHtml(cardTitle || t('Student ID Card'))} ${t('Bulk Download')}</h1>
           <p class="sheet-subtitle">
             ${escapeHtml(selectedClass)} Section ${escapeHtml(selectedSection)} • ${filteredStudents.length} students
           </p>

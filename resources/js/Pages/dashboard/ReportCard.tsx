@@ -476,7 +476,7 @@ export default function ReportCard(pageProps: ReportProps) {
                                 organization?.logo ? (
                                     <img
                                         src={organization.logo}
-                                        alt="School logo"
+                                        alt={t('School logo')}
                                         className="mb-1 h-16 w-16 rounded-full object-cover"
                                     />
                                 ) : (
@@ -586,7 +586,7 @@ export default function ReportCard(pageProps: ReportProps) {
                                                 ) : null}
                                                 <TableCell className="text-center">
                                                     <span className={subjectPass ? 'text-emerald-600' : 'text-red-600'}>
-                                                        {row.isAbsent ? t('Absent') : subjectPass ? 'Pass' : 'Fail'}
+                                                        {row.isAbsent ? t('Absent') : subjectPass ? t('Pass') : t('Fail')}
                                                     </span>
                                                 </TableCell>
                                             </TableRow>
@@ -640,7 +640,7 @@ export default function ReportCard(pageProps: ReportProps) {
                                     <p className="text-sm italic text-slate-500">"{report.overallRemark}"</p>
                                 ) : null}
                                 <Badge variant={overallPass ? 'default' : 'destructive'} className="text-sm">
-                                    {overallPass ? 'Pass' : 'Fail'}
+                                    {overallPass ? t('Pass') : t('Fail')}
                                 </Badge>
                             </div>
                         </div>

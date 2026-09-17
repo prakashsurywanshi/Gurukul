@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 type PaymentRow = {
     id: string;
@@ -40,6 +41,7 @@ interface FeePaymentReconciliationProps {
 const methods = ['cash', 'card', 'upi', 'cheque', 'bank_transfer', 'online'];
 
 export default function FeePaymentReconciliation({ user, payments, summary, filters }: FeePaymentReconciliationProps) {
+    const { t } = useLanguage();
     const [query, setQuery] = useState('');
     const [method, setMethod] = useState(filters.method ?? '');
     const [busyId, setBusyId] = useState<string | null>(null);
@@ -85,7 +87,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total payments</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('Total payments')}</CardTitle>
                             <Wallet className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
@@ -94,7 +96,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Reconciled</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('Reconciled')}</CardTitle>
                             <BadgeCheck className="h-4 w-4 text-emerald-500" />
                         </CardHeader>
                         <CardContent>
@@ -103,7 +105,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Pending reconciliation</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('Pending reconciliation')}</CardTitle>
                             <Ban className="h-4 w-4 text-amber-500" />
                         </CardHeader>
                         <CardContent>
@@ -114,7 +116,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Payments</CardTitle>
+                        <CardTitle className="text-base">{t('Payments')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -129,8 +131,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                             </div>
                             <div>
                                 <Label className="sr-only" htmlFor="method-filter">
-                                    Payment method
-                                </Label>
+                                    {t('Payment method')}</Label>
                                 <select
                                     id="method-filter"
                                     className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -145,7 +146,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                         });
                                     }}
                                 >
-                                    <option value="">All methods</option>
+                                    <option value="">{t('All methods')}</option>
                                     {methods.map((m) => (
                                         <option key={m} value={m}>
                                             {m.replace('_', ' ')}
@@ -164,14 +165,14 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                                            <th className="pb-2 pr-4">Receipt</th>
-                                            <th className="pb-2 pr-4">Student</th>
-                                            <th className="pb-2 pr-4">Date</th>
-                                            <th className="pb-2 pr-4">Method</th>
-                                            <th className="pb-2 pr-4">Amount</th>
-                                            <th className="pb-2 pr-4">Reference</th>
-                                            <th className="pb-2 pr-4">Status</th>
-                                            <th className="pb-2 text-right">Stake</th>
+                                            <th className="pb-2 pr-4">{t('Receipt')}</th>
+                                            <th className="pb-2 pr-4">{t('Student')}</th>
+                                            <th className="pb-2 pr-4">{t('Date')}</th>
+                                            <th className="pb-2 pr-4">{t('Method')}</th>
+                                            <th className="pb-2 pr-4">{t('Amount')}</th>
+                                            <th className="pb-2 pr-4">{t('Reference')}</th>
+                                            <th className="pb-2 pr-4">{t('Status')}</th>
+                                            <th className="pb-2 text-right">{t('Stake')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -214,11 +215,10 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                                             >
                                                                 <Badge className="bg-emerald-500 text-white">
                                                                     <CheckCircle2 className="mr-1 h-3 w-3" />
-                                                                    Reconciled
-                                                                </Badge>
+                                                                    {t('Reconciled')}</Badge>
                                                             </span>
                                                         ) : (
-                                                            <Badge variant="secondary">Unreconciled</Badge>
+                                                            <Badge variant="secondary">{t('Unreconciled')}</Badge>
                                                         )}
                                                     </td>
                                                     <td className="py-2.5 text-right">
@@ -232,7 +232,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                                             {busyId === payment.id ? (
                                                                 <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
                                                             ) : null}
-                                                            {payment.reconciled_at ? 'Undo' : 'Reconcile'}
+                                                            {payment.reconciled_at ? t('Undo') : t('Reconcile')}
                                                         </Button>
                                                     </td>
                                                 </tr>

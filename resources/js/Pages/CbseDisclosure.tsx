@@ -73,8 +73,7 @@ export default function CbseDisclosure({ websiteContent, disclosure = {}, sectio
                             className={`flex items-center gap-1 text-xs font-semibold ${mutedTextClass} hover:${headingTextClass}`}
                         >
                             <ChevronLeft className="h-3.5 w-3.5" />
-                            Back to Home
-                        </Link>
+                            {t('Back to Home')}</Link>
                         <LanguageSwitcher variant="site" />
                     </div>
                 </header>

@@ -103,7 +103,7 @@ export default function AdmissionSettings({
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-slate-900">
-                            {t('admission_settings')} <span className="sr-only">Admission Settings</span>
+                            {t('admission_settings')} <span className="sr-only">{t('Admission Settings')}</span>
                         </h1>
                         <p className="mt-1 text-sm text-slate-500">
                             Configure the public admission form behaviour and which fields are shown to applicants.
@@ -111,7 +111,7 @@ export default function AdmissionSettings({
                     </div>
                     <Button type="submit" form="admission-settings-form" disabled={isSaving}>
                         <Save className="h-4 w-4" />
-                        {isSaving ? 'Saving...' : 'Save Settings'}
+                        {isSaving ? t('Saving...') : t('Save Settings')}
                     </Button>
                 </div>
 
@@ -129,7 +129,7 @@ export default function AdmissionSettings({
                 <form id="admission-settings-form" onSubmit={handleSubmit} className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Admission Preferences</CardTitle>
+                            <CardTitle>{t('Admission Preferences')}</CardTitle>
                             <CardDescription>
                                 Control how applicants reach and use the public admission form.
                             </CardDescription>
@@ -137,7 +137,7 @@ export default function AdmissionSettings({
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div>
-                                    <p className="font-medium text-slate-900">Enable Public Admission Form</p>
+                                    <p className="font-medium text-slate-900">{t('Enable Public Admission Form')}</p>
                                     <p className="mt-1 text-sm text-slate-500">
                                         Allow visitors to submit admission applications from the school website.
                                     </p>
@@ -151,7 +151,7 @@ export default function AdmissionSettings({
                             </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div>
-                                    <p className="font-medium text-slate-900">Require Email / Phone Verification</p>
+                                    <p className="font-medium text-slate-900">{t('Require Email / Phone Verification')}</p>
                                     <p className="mt-1 text-sm text-slate-500">
                                         Ask applicants to verify their contact details with an OTP before submitting.
                                     </p>
@@ -165,7 +165,7 @@ export default function AdmissionSettings({
                             </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div>
-                                    <p className="font-medium text-slate-900">Require Documents at Submission</p>
+                                    <p className="font-medium text-slate-900">{t('Require Documents at Submission')}</p>
                                     <p className="mt-1 text-sm text-slate-500">
                                         Make document uploads mandatory on the admission form.
                                     </p>
@@ -182,7 +182,7 @@ export default function AdmissionSettings({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Form Sections</CardTitle>
+                            <CardTitle>{t('Form Sections')}</CardTitle>
                             <CardDescription>
                                 Choose which sections appear on the public admission form.
                             </CardDescription>
@@ -208,12 +208,11 @@ export default function AdmissionSettings({
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Admission Form Fields</CardTitle>
+                            <CardTitle>{t('Admission Form Fields')}</CardTitle>
                             <CardDescription>
                                 Custom fields shown on the admission form. Manage shared definitions on the{' '}
                                 <Link href="/custom-fields" className="text-blue-600 hover:underline">
-                                    Custom Fields
-                                </Link>{' '}
+                                    {t('Custom Fields')}</Link>{' '}
                                 page.
                             </CardDescription>
                         </CardHeader>

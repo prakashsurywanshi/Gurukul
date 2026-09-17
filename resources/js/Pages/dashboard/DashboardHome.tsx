@@ -408,7 +408,7 @@ function AdminDashboard({
             <div className="grid gap-6 xl:grid-cols-3">
                 <AdminListCard
                     title={t('Recent Admissions')}
-                    description="Newest student entries in the system."
+                    description={t('Newest student entries in the system.')}
                     icon={UserPlus}
                     emptyLabel="No recent admissions available."
                     items={(stats?.students?.recentAdmissions || []).map((student: any) => (
@@ -430,7 +430,7 @@ function AdminDashboard({
 
                 <AdminListCard
                     title={t('Fee Follow-ups')}
-                    description="Highest-priority pending collections."
+                    description={t('Highest-priority pending collections.')}
                     icon={TrendingDown}
                     emptyLabel="No pending fee follow-ups right now."
                     items={(stats?.fees?.followUps || []).map((fee: any) => (
@@ -461,7 +461,7 @@ function AdminDashboard({
 
                 <AdminListCard
                     title={orgFeatures.supportsMockTests ? t(orgFeatures.testsWordKey) : t('Upcoming Exams')}
-                    description="Near-term exam schedule overview."
+                    description={t('Near-term exam schedule overview.')}
                     icon={CalendarDays}
                     emptyLabel="No upcoming exams scheduled."
                     items={(stats?.exams?.upcoming || []).map((exam: any) => (
@@ -783,7 +783,7 @@ function StudentDashboard({
             <div className="grid gap-6 xl:grid-cols-3">
                 <AdminListCard
                     title={t('Homework')}
-                    description="Assignments for your class."
+                    description={t('Assignments for your class.')}
                     icon={FileText}
                     emptyLabel="No homework assigned yet."
                     items={(stats?.homework?.items || []).map((item: any) => (
@@ -808,7 +808,7 @@ function StudentDashboard({
 
                 <AdminListCard
                     title={t('Upcoming Exams')}
-                    description="Your scheduled online examinations."
+                    description={t('Your scheduled online examinations.')}
                     icon={CalendarDays}
                     emptyLabel="No upcoming online exams found."
                     items={(stats?.exams?.upcoming || []).map((exam: any) => (
@@ -834,7 +834,7 @@ function StudentDashboard({
 
                 <AdminListCard
                     title={t('Library Desk')}
-                    description="Books currently issued to you."
+                    description={t('Books currently issued to you.')}
                     icon={Book}
                     emptyLabel="No library books are currently issued."
                     items={(stats?.library?.items || []).map((item: any) => (

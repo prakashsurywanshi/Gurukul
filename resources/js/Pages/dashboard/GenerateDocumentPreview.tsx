@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Printer, X } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface DesignElement {
     id: string;
@@ -186,6 +187,7 @@ export default function GenerateDocumentPreview({
     cards: Card[];
     sheet: SheetConfig;
 }) {
+    const { t } = useLanguage();
     const geometry = useMemo(() => {
         const paper = PAPER_MM[sheet.paper] ?? PAPER_MM.a4;
         const paperW = sheet.orientation === 'landscape' ? paper.h : paper.w;
@@ -333,8 +335,7 @@ export default function GenerateDocumentPreview({
                         className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
                     >
                         <X className="h-4 w-4" />
-                        Close
-                    </button>
+                        {t('Close')}</button>
                 </div>
             </div>
 

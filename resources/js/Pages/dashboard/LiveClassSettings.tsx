@@ -86,9 +86,9 @@ export default function LiveClassSettings({ user, settings }: { user: any; setti
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="google_meet">Google Meet</SelectItem>
-                                        <SelectItem value="zoom">Zoom</SelectItem>
-                                        <SelectItem value="microsoft_teams">Microsoft Teams</SelectItem>
+                                        <SelectItem value="google_meet">{t('Google Meet')}</SelectItem>
+                                        <SelectItem value="zoom">{t('Zoom')}</SelectItem>
+                                        <SelectItem value="microsoft_teams">{t('Microsoft Teams')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -119,9 +119,9 @@ export default function NsfwModeration(pageProps: NsfwModerationProps) {
                                     onChange={(e) => setItemType(e.target.value)}
                                     className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                                 >
-                                    <option value="media">Media</option>
-                                    <option value="gallery">Gallery Image</option>
-                                    <option value="chat">Chat Message</option>
+                                    <option value="media">{t('Media')}</option>
+                                    <option value="gallery">{t('Gallery Image')}</option>
+                                    <option value="chat">{t('Chat Message')}</option>
                                 </select>
                             </div>
                             <div className="min-w-[120px]">

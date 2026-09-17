@@ -124,10 +124,10 @@ export default function HpcActivities(pageProps: HpcActivitiesProps) {
                                         onChange={(e) => setCategory(e.target.value)}
                                         className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                                     >
-                                        <option value="academic">Academic</option>
-                                        <option value="co_curricular">Co-curricular</option>
-                                        <option value="conduct">Conduct</option>
-                                        <option value="sports">Sports</option>
+                                        <option value="academic">{t('Academic')}</option>
+                                        <option value="co_curricular">{t('Co-curricular')}</option>
+                                        <option value="conduct">{t('Conduct')}</option>
+                                        <option value="sports">{t('Sports')}</option>
                                     </select>
                                 </div>
                                 <div>
@@ -187,10 +187,10 @@ export default function HpcActivities(pageProps: HpcActivitiesProps) {
                                         className="bg-transparent text-sm dark:text-white focus:outline-none"
                                     >
                                         <option value="">{t('hpc.allCategories')}</option>
-                                        <option value="academic">Academic</option>
-                                        <option value="co_curricular">Co-curricular</option>
-                                        <option value="conduct">Conduct</option>
-                                        <option value="sports">Sports</option>
+                                        <option value="academic">{t('Academic')}</option>
+                                        <option value="co_curricular">{t('Co-curricular')}</option>
+                                        <option value="conduct">{t('Conduct')}</option>
+                                        <option value="sports">{t('Sports')}</option>
                                     </select>
                                 </div>
                                 <div className="relative">

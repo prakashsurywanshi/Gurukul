@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
 import { Textarea } from '../ui/textarea';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface TemplateRow {
     id: number;
@@ -43,6 +44,7 @@ const emptyForm = {
 };
 
 export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
+    const { t } = useLanguage();
     const { user, templates } = pageProps;
     const [creating, setCreating] = useState(false);
     const [editing, setEditing] = useState<TemplateRow | null>(null);
@@ -128,7 +130,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
-                        New Template
+                        {t('New Template')}
                     </Button>
                 </div>
 
@@ -152,8 +154,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                             {template.name}
                                             {template.is_default && (
                                                 <Badge className="ml-2 bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
-                                                    Default
-                                                </Badge>
+                                                    {t('Default')}</Badge>
                                             )}
                                         </CardTitle>
                                         <CardDescription>
@@ -192,13 +193,11 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                     {!template.is_default && (
                                         <Button variant="outline" size="sm" onClick={() => setDefault(template)}>
                                             <Star className="mr-2 h-4 w-4" />
-                                            Set Default
-                                        </Button>
+                                            {t('Set Default')}</Button>
                                     )}
                                     <Button variant="ghost" size="sm" onClick={() => openEdit(template)}>
                                         <Pencil className="mr-2 h-4 w-4" />
-                                        Edit
-                                    </Button>
+                                        {t('Edit')}</Button>
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -206,8 +205,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                         onClick={() => confirmDelete(template)}
                                     >
                                         <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </Button>
+                                        {t('Delete')}</Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -225,8 +223,8 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                 >
                     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
                         <DialogHeader>
-                            <DialogTitle>{editing ? 'Edit Template' : 'New Template'}</DialogTitle>
-                            <DialogDescription>Configure report card sections and options.</DialogDescription>
+                            <DialogTitle>{editing ? t('Edit Template') : t('New Template')}</DialogTitle>
+                            <DialogDescription>{t('Configure report card sections and options.')}</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-2">
@@ -247,13 +245,13 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="standard">Standard</SelectItem>
-                                        <SelectItem value="landscape">Landscape</SelectItem>
+                                        <SelectItem value="standard">{t('Standard')}</SelectItem>
+                                        <SelectItem value="landscape">{t('Landscape')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div>
-                                <Label>Header Color</Label>
+                                <Label>{t('Header Color')}</Label>
                                 <Input
                                     type="color"
                                     value={form.header_color}
@@ -261,28 +259,28 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                 />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Rank</Label>
+                                <Label>{t('Show Rank')}</Label>
                                 <Switch
                                     checked={form.show_rank}
                                     onCheckedChange={(checked) => setForm({ ...form, show_rank: checked })}
                                 />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Percentage</Label>
+                                <Label>{t('Show Percentage')}</Label>
                                 <Switch
                                     checked={form.show_percentage}
                                     onCheckedChange={(checked) => setForm({ ...form, show_percentage: checked })}
                                 />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Show Remarks</Label>
+                                <Label>{t('Show Remarks')}</Label>
                                 <Switch
                                     checked={form.show_remarks}
                                     onCheckedChange={(checked) => setForm({ ...form, show_remarks: checked })}
                                 />
                             </div>
                             <div className="flex items-center justify-between">
-                                <Label>Subject-wise Grade</Label>
+                                <Label>{t('Subject-wise Grade')}</Label>
                                 <Switch
                                     checked={form.show_subject_wise_grade}
                                     onCheckedChange={(checked) =>
@@ -291,7 +289,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                 />
                             </div>
                             <div className="sm:col-span-2">
-                                <Label>Default Remarks</Label>
+                                <Label>{t('Default Remarks')}</Label>
                                 <Textarea
                                     rows={3}
                                     value={form.remarks}
@@ -299,7 +297,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                 />
                             </div>
                             <div className="flex items-center justify-between sm:col-span-2">
-                                <Label>Make default</Label>
+                                <Label>{t('Make default')}</Label>
                                 <Switch
                                     checked={form.make_default}
                                     onCheckedChange={(checked) => setForm({ ...form, make_default: checked })}
@@ -314,10 +312,9 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={saving}>
-                                    {editing ? 'Save Changes' : 'Create Template'}
+                                    {editing ? t('Save Changes') : t('Create Template')}
                                 </Button>
                             </div>
                         </form>

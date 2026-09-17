@@ -495,7 +495,7 @@ export default function PageForm({ user, page, organization }: PageFormProps) {
                                                     dangerouslySetInnerHTML={{
                                                         __html:
                                                             content ||
-                                                            '<p class="text-slate-400 italic">No content yet.</p>',
+                                                            `<p class="text-slate-400 italic">${t('No content yet.')}</p>`,
                                                     }}
                                                 />
                                             </div>

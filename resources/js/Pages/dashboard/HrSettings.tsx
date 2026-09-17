@@ -198,8 +198,7 @@ export default function HrSettings(pageProps: HrSettingsProps) {
                                             {t(day)}
                                             {selected && (
                                                 <Badge className="ml-1.5 hidden bg-indigo-100 text-indigo-700 sm:inline-flex">
-                                                    OFF
-                                                </Badge>
+                                                    {t('OFF')}</Badge>
                                             )}
                                         </button>
                                     );

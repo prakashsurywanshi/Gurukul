@@ -98,9 +98,9 @@ export default function HpcCards(pageProps: HpcCardsProps) {
                                         onChange={(e) => setCardType(e.target.value)}
                                         className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                                     >
-                                        <option value="academic">Academic</option>
-                                        <option value="co_curricular">Co-curricular</option>
-                                        <option value="combined">Combined</option>
+                                        <option value="academic">{t('Academic')}</option>
+                                        <option value="co_curricular">{t('Co-curricular')}</option>
+                                        <option value="combined">{t('Combined')}</option>
                                     </select>
                                 </div>
                                 <div>

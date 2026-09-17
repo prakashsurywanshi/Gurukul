@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Textarea } from '../ui/textarea';
 import { Loader2, Inbox, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 type ApprovalStep = {
     stepNo: number;
@@ -36,19 +37,21 @@ type ApprovalRequestItem = {
 };
 
 interface Props {
+    user: any;
     requests: ApprovalRequestItem[];
 }
 
-const statusBadge = (status: string) => {
+const statusBadge = (status: string, t: (key: string) => string) => {
     switch (status) {
-        case 'pending': return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-        case 'approved': return <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" />Approved</Badge>;
-        case 'rejected': return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
+        case 'pending': return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />{t('Pending')}</Badge>;
+        case 'approved': return <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" />{t('Approved')}</Badge>;
+        case 'rejected': return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />{t('Rejected')}</Badge>;
         default: return <Badge variant="secondary">{status}</Badge>;
     }
 };
 
-export default function ApprovalActionCenter({ requests }: Props) {
+export default function ApprovalActionCenter({ user, requests }: Props) {
+    const { t } = useLanguage();
     const [processingId, setProcessingId] = useState<number | null>(null);
     const [notes, setNotes] = useState<Record<number, string>>({});
 
@@ -61,13 +64,13 @@ export default function ApprovalActionCenter({ requests }: Props) {
     };
 
     return (
-        <DashboardLayout title="Action Center">
+        <DashboardLayout user={user} activeTab="approvals-action-center">
             <div className="space-y-6">
                 <div className="flex items-center gap-3">
                     <Inbox className="h-6 w-6 text-primary" />
                     <div>
-                        <h1 className="text-2xl font-bold">Approval Action Center</h1>
-                        <p className="text-sm text-muted-foreground">Review and act on pending requests assigned to you.</p>
+                        <h1 className="text-2xl font-bold">{t('Approval Action Center')}</h1>
+                        <p className="text-sm text-muted-foreground">{t('Review and act on pending requests assigned to you.')}</p>
                     </div>
                 </div>
 
@@ -75,8 +78,8 @@ export default function ApprovalActionCenter({ requests }: Props) {
                     <Card>
                         <CardContent className="py-12 text-center text-muted-foreground">
                             <Inbox className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                            <p className="font-medium">No pending approvals</p>
-                            <p className="text-sm mt-1">There are no requests awaiting your action right now.</p>
+                            <p className="font-medium">{t('No pending approvals')}</p>
+                            <p className="text-sm mt-1">{t('There are no requests awaiting your action right now.')}</p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -89,7 +92,7 @@ export default function ApprovalActionCenter({ requests }: Props) {
                                         <CardDescription>{req.summary}</CardDescription>
                                         <div className="flex items-center gap-2 mt-1">
                                             <Badge variant="secondary">{req.moduleLabel}</Badge>
-                                            {statusBadge(req.status)}
+                                            {statusBadge(req.status, t)}
                                             {req.requester && <span className="text-xs text-muted-foreground">by {req.requester.name}</span>}
                                         </div>
                                     </div>
@@ -107,7 +110,7 @@ export default function ApprovalActionCenter({ requests }: Props) {
                                     )}
 
                                     <div className="space-y-2">
-                                        <p className="text-sm font-medium">Approval Chain</p>
+                                        <p className="text-sm font-medium">{t('Approval Chain')}</p>
                                         <div className="flex items-center gap-2 flex-wrap">
                                             {req.steps.map((step, i) => (
                                                 <div key={i} className="flex items-center gap-2">
@@ -125,7 +128,7 @@ export default function ApprovalActionCenter({ requests }: Props) {
                                     <div className="flex gap-3 pt-2">
                                         <Textarea
                                             className="flex-1"
-                                            placeholder="Note (optional)"
+                                            placeholder={t('Note (optional)')}
                                             value={notes[req.id] || ''}
                                             onChange={e => setNotes(prev => ({ ...prev, [req.id]: e.target.value }))}
                                         />
@@ -136,16 +139,14 @@ export default function ApprovalActionCenter({ requests }: Props) {
                                                 disabled={processingId === req.id}
                                             >
                                                 {processingId === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
-                                                Approve
-                                            </Button>
+                                                {t('Approve')}</Button>
                                             <Button
                                                 size="sm"
                                                 variant="destructive"
                                                 onClick={() => act(req.id, 'reject')}
                                                 disabled={processingId === req.id}
                                             >
-                                                Reject
-                                            </Button>
+                                                {t('Reject')}</Button>
                                         </div>
                                     </div>
                                 </CardContent>

@@ -715,7 +715,7 @@ export default function SuperAdminKnowledgeBaseCms({
                                     dangerouslySetInnerHTML={{
                                         __html:
                                             moduleDraft.content ||
-                                            '<p>Formatted module documentation preview will appear here.</p>',
+                                            `<p>${t('Formatted module documentation preview will appear here.')}</p>`,
                                     }}
                                 />
                             </div>
@@ -790,7 +790,7 @@ export default function SuperAdminKnowledgeBaseCms({
                                 <div
                                     className={htmlDocumentClass}
                                     dangerouslySetInnerHTML={{
-                                        __html: faqDraft.answer || '<p>Formatted FAQ preview will appear here.</p>',
+                                        __html: faqDraft.answer || `<p>${t('Formatted FAQ preview will appear here.')}</p>`,
                                     }}
                                 />
                             </div>

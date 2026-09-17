@@ -86,7 +86,7 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
             ? `
               <div class="qr-scan">
                 ${qrSvgToken(member.qr_token || `EMP-${member.id}`, 72)}
-                <p class="qr-hint">Scan For Attendance</p>
+                <p class="qr-hint">${t('Scan For Attendance')}</p>
               </div>`
             : '';
 

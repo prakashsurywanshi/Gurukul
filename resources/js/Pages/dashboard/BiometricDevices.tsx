@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface Device {
     id: number;
@@ -87,6 +88,7 @@ const emptyLogForm = {
 };
 
 export default function BiometricDevices(pageProps: BiometricDevicesProps) {
+    const { t } = useLanguage();
     const { user, devices, logs, summary } = pageProps;
     const [creating, setCreating] = useState(false);
     const [editing, setEditing] = useState<Device | null>(null);
@@ -146,13 +148,13 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                     Sync OK
                 </Badge>
             ) : (
-                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">Failed</Badge>
+                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">{t('Failed')}</Badge>
             );
         }
         return log.direction === 'in' ? (
             <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">In</Badge>
         ) : (
-            <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">Out</Badge>
+            <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">{t('Out')}</Badge>
         );
     };
 
@@ -162,11 +164,11 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Device</TableHead>
-                            <TableHead>Person</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Event Time</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>{t('Device')}</TableHead>
+                            <TableHead>{t('Person')}</TableHead>
+                            <TableHead>{t('Type')}</TableHead>
+                            <TableHead>{t('Event Time')}</TableHead>
+                            <TableHead>{t('Status')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -232,7 +234,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <ServerCog className="h-8 w-8 text-indigo-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Devices</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Devices')}</p>
                                 <p className="text-lg font-semibold">
                                     {summary.devices}{' '}
                                     <span className="text-xs font-normal text-gray-400">({summary.active} active)</span>
@@ -244,7 +246,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <UserCheck className="h-8 w-8 text-emerald-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Attendance Logs</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Attendance Logs')}</p>
                                 <p className="text-lg font-semibold">{summary.attendance}</p>
                             </div>
                         </CardContent>
@@ -253,7 +255,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <ScanFace className="h-8 w-8 text-sky-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Face Events</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Face Events')}</p>
                                 <p className="text-lg font-semibold">{summary.face}</p>
                             </div>
                         </CardContent>
@@ -262,7 +264,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Activity className="h-8 w-8 text-amber-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Agent Syncs</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Agent Syncs')}</p>
                                 <p className="text-lg font-semibold">{summary.agent}</p>
                             </div>
                         </CardContent>
@@ -289,13 +291,13 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Device</TableHead>
-                                                <TableHead>Type</TableHead>
-                                                <TableHead>Location</TableHead>
-                                                <TableHead>Serial / API</TableHead>
-                                                <TableHead className="text-right">Logs</TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead className="text-right">Actions</TableHead>
+                                                <TableHead>{t('Device')}</TableHead>
+                                                <TableHead>{t('Type')}</TableHead>
+                                                <TableHead>{t('Location')}</TableHead>
+                                                <TableHead>{t('Serial / API')}</TableHead>
+                                                <TableHead className="text-right">{t('Logs')}</TableHead>
+                                                <TableHead>{t('Status')}</TableHead>
+                                                <TableHead className="text-right">{t('Actions')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -329,7 +331,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                                                     : ACTIVITY_STYLES.inactive
                                                             }
                                                         >
-                                                            {device.isActive ? 'Active' : 'Inactive'}
+                                                            {device.isActive ? t('Active') : t('Inactive')}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>
@@ -340,7 +342,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                                                 onClick={() => setEditing(device)}
                                                             >
                                                                 <Pencil className="h-4 w-4" />
-                                                                <span className="sr-only">Edit</span>
+                                                                <span className="sr-only">{t('Edit')}</span>
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"
@@ -352,7 +354,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                                                 }
                                                             >
                                                                 <Power className="h-4 w-4" />
-                                                                <span className="sr-only">Toggle</span>
+                                                                <span className="sr-only">{t('Toggle')}</span>
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"
@@ -371,7 +373,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                                                 }}
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
-                                                                <span className="sr-only">Delete</span>
+                                                                <span className="sr-only">{t('Delete')}</span>
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -399,7 +401,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
 
                 {(creating || editing) && (
                     <DialogShell
-                        title={editing ? `Edit ${editing.name}` : 'Add Biometric Device'}
+                        title={editing ? `Edit ${editing.name}` : t('Add Biometric Device')}
                         onClose={() => {
                             setCreating(false);
                             setEditing(null);
@@ -414,14 +416,14 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
 
                 {addingLog && (
                     <DialogShell
-                        title="Record Biometric Log"
+                        title={t('Record Biometric Log')}
                         onClose={() => setAddingLog(false)}
                         onSubmit={saveLog}
                         saving={saving}
                     >
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Device</Label>
+                                <Label>{t('Device')}</Label>
                                 <Select
                                     value={logForm.biometric_device_id}
                                     onValueChange={(value) =>
@@ -429,7 +431,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                     }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select device" />
+                                        <SelectValue placeholder={t('Select device')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {devices.map((device) => (
@@ -443,7 +445,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Log Type</Label>
+                                    <Label>{t('Log Type')}</Label>
                                     <Select
                                         value={logForm.log_type}
                                         onValueChange={(value) =>
@@ -463,7 +465,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Person Type</Label>
+                                    <Label>{t('Person Type')}</Label>
                                     <Select
                                         value={logForm.person_type}
                                         onValueChange={(value) =>
@@ -474,16 +476,16 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="student">Student</SelectItem>
-                                            <SelectItem value="staff">Staff</SelectItem>
-                                            <SelectItem value="visitor">Visitor</SelectItem>
+                                            <SelectItem value="student">{t('Student')}</SelectItem>
+                                            <SelectItem value="staff">{t('Staff')}</SelectItem>
+                                            <SelectItem value="visitor">{t('Visitor')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Person Name</Label>
+                                    <Label>{t('Person Name')}</Label>
                                     <Input
                                         value={logForm.person_name}
                                         onChange={(event) =>
@@ -503,7 +505,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Direction</Label>
+                                    <Label>{t('Direction')}</Label>
                                     <Select
                                         value={logForm.direction}
                                         onValueChange={(value) =>
@@ -515,12 +517,12 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="in">In</SelectItem>
-                                            <SelectItem value="out">Out</SelectItem>
+                                            <SelectItem value="out">{t('Out')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Event Time</Label>
+                                    <Label>{t('Event Time')}</Label>
                                     <Input
                                         type="datetime-local"
                                         value={logForm.event_time}
@@ -544,10 +546,11 @@ const ACTIVITY_STYLES: Record<string, string> = {
 };
 
 function DeviceForm({ form, setForm }: { form: any; setForm: (updater: (current: any) => any) => void }) {
+    const { t } = useLanguage();
     return (
         <div className="space-y-4">
             <div className="space-y-2">
-                <Label>Device Name</Label>
+                <Label>{t('Device Name')}</Label>
                 <Input
                     value={form.name}
                     onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
@@ -555,7 +558,7 @@ function DeviceForm({ form, setForm }: { form: any; setForm: (updater: (current:
             </div>
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label>Device Type</Label>
+                    <Label>{t('Device Type')}</Label>
                     <Select
                         value={form.device_type}
                         onValueChange={(value) => setForm((current) => ({ ...current, device_type: value }))}
@@ -573,7 +576,7 @@ function DeviceForm({ form, setForm }: { form: any; setForm: (updater: (current:
                     </Select>
                 </div>
                 <div className="space-y-2">
-                    <Label>Location</Label>
+                    <Label>{t('Location')}</Label>
                     <Input
                         value={form.location}
                         onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))}
@@ -582,14 +585,14 @@ function DeviceForm({ form, setForm }: { form: any; setForm: (updater: (current:
             </div>
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label>Serial Number</Label>
+                    <Label>{t('Serial Number')}</Label>
                     <Input
                         value={form.serial_number}
                         onChange={(event) => setForm((current) => ({ ...current, serial_number: event.target.value }))}
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label>API URL</Label>
+                    <Label>{t('API URL')}</Label>
                     <Input
                         value={form.api_url}
                         onChange={(event) => setForm((current) => ({ ...current, api_url: event.target.value }))}
@@ -597,7 +600,7 @@ function DeviceForm({ form, setForm }: { form: any; setForm: (updater: (current:
                 </div>
             </div>
             <div className="space-y-2">
-                <Label>Notes</Label>
+                <Label>{t('Notes')}</Label>
                 <Input
                     value={form.notes}
                     onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
@@ -622,6 +625,7 @@ function DialogShell({
     saving: boolean;
     children: React.ReactNode;
 }) {
+    const { t } = useLanguage();
     return (
         <Dialog open onOpenChange={(open: boolean) => !open && onClose()}>
             <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
@@ -633,10 +637,9 @@ function DialogShell({
                     {children}
                     <div className="flex justify-end gap-2 pt-2">
                         <Button type="button" variant="ghost" onClick={onClose}>
-                            Cancel
-                        </Button>
+                            {t('Cancel')}</Button>
                         <Button type="submit" disabled={saving}>
-                            {saving ? 'Saving…' : 'Save'}
+                            {saving ? 'Saving…' : t('Save')}
                         </Button>
                     </div>
                 </form>

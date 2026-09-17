@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface ClassOption {
     id: number;
@@ -70,6 +71,7 @@ const emptyForm = {
 };
 
 export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
+    const { t } = useLanguage();
     const { user, classes, subjects, evaluations, filters, stats } = pageProps;
     const [search, setSearch] = useState(filters.search);
     const [status, setStatus] = useState(filters.status);
@@ -199,8 +201,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
-                        New Evaluation
-                    </Button>
+                        {t('New Evaluation')}</Button>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -208,7 +209,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <ClipboardList className="h-8 w-8 text-amber-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Pending')}</p>
                                 <p className="text-lg font-semibold">{stats.pending}</p>
                             </div>
                         </CardContent>
@@ -217,7 +218,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <ScanText className="h-8 w-8 text-sky-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">In Progress</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('In Progress')}</p>
                                 <p className="text-lg font-semibold">{stats.inProgress}</p>
                             </div>
                         </CardContent>
@@ -226,7 +227,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Completed')}</p>
                                 <p className="text-lg font-semibold">{stats.completed}</p>
                             </div>
                         </CardContent>
@@ -255,13 +256,13 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                             </div>
                             <Select value={status} onValueChange={setStatus}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="All statuses" />
+                                    <SelectValue placeholder={t('All statuses')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="select-all-null">All statuses</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
+                                    <SelectItem value="select-all-null">{t('All statuses')}</SelectItem>
+                                    <SelectItem value="pending">{t('Pending')}</SelectItem>
+                                    <SelectItem value="in_progress">{t('In Progress')}</SelectItem>
+                                    <SelectItem value="completed">{t('Completed')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -279,12 +280,10 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 }}
                             >
                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                Reset
-                            </Button>
+                                {t('Reset')}</Button>
                             <Button onClick={applyFilters}>
                                 <Search className="mr-2 h-4 w-4" />
-                                Apply
-                            </Button>
+                                {t('Apply')}</Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -294,14 +293,14 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Class</TableHead>
-                                    <TableHead>Subject</TableHead>
-                                    <TableHead className="text-right">Marks</TableHead>
-                                    <TableHead>Scripts</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Due Date</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t('Title')}</TableHead>
+                                    <TableHead>{t('Class')}</TableHead>
+                                    <TableHead>{t('Subject')}</TableHead>
+                                    <TableHead className="text-right">{t('Marks')}</TableHead>
+                                    <TableHead>{t('Scripts')}</TableHead>
+                                    <TableHead>{t('Status')}</TableHead>
+                                    <TableHead>{t('Due Date')}</TableHead>
+                                    <TableHead className="text-right">{t('Actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -364,7 +363,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                                         onClick={() => openProgress(evaluation)}
                                                     >
                                                         <CheckCircle2 className="h-4 w-4" />
-                                                        <span className="sr-only">Progress</span>
+                                                        <span className="sr-only">{t('Progress')}</span>
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
@@ -372,7 +371,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                                         onClick={() => openEdit(evaluation)}
                                                     >
                                                         <Pencil className="h-4 w-4" />
-                                                        <span className="sr-only">Edit</span>
+                                                        <span className="sr-only">{t('Edit')}</span>
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
@@ -381,7 +380,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                                         onClick={() => confirmDelete(evaluation)}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">Delete</span>
+                                                        <span className="sr-only">{t('Delete')}</span>
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -404,8 +403,8 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                 >
                     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>{editing ? 'Edit Evaluation' : 'New Evaluation'}</DialogTitle>
-                            <DialogDescription>Set up an online subjective evaluation batch.</DialogDescription>
+                            <DialogTitle>{editing ? t('Edit Evaluation') : t('New Evaluation')}</DialogTitle>
+                            <DialogDescription>{t('Set up an online subjective evaluation batch.')}</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-2">
@@ -417,16 +416,16 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Class</Label>
+                                <Label>{t('Class')}</Label>
                                 <Select
                                     value={form.class_id}
                                     onValueChange={(value) => setForm({ ...form, class_id: value })}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All classes" />
+                                        <SelectValue placeholder={t('All classes')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All classes</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All classes')}</SelectItem>
                                         {classes.map((classItem) => (
                                             <SelectItem key={classItem.id} value={String(classItem.id)}>
                                                 {classItem.name}
@@ -436,16 +435,16 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 </Select>
                             </div>
                             <div>
-                                <Label>Subject</Label>
+                                <Label>{t('Subject')}</Label>
                                 <Select
                                     value={form.subject_id}
                                     onValueChange={(value) => setForm({ ...form, subject_id: value })}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All subjects" />
+                                        <SelectValue placeholder={t('All subjects')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All subjects</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All subjects')}</SelectItem>
                                         {subjects.map((subject) => (
                                             <SelectItem key={subject.id} value={String(subject.id)}>
                                                 {subject.name}
@@ -455,7 +454,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 </Select>
                             </div>
                             <div>
-                                <Label>Total Marks</Label>
+                                <Label>{t('Total Marks')}</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -465,7 +464,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Total Scripts</Label>
+                                <Label>{t('Total Scripts')}</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -483,14 +482,14 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="in_progress">In Progress</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="pending">{t('Pending')}</SelectItem>
+                                        <SelectItem value="in_progress">{t('In Progress')}</SelectItem>
+                                        <SelectItem value="completed">{t('Completed')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div>
-                                <Label>Due Date</Label>
+                                <Label>{t('Due Date')}</Label>
                                 <Input
                                     type="date"
                                     value={form.due_date}
@@ -498,14 +497,14 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Evaluator</Label>
+                                <Label>{t('Evaluator')}</Label>
                                 <Input
                                     value={form.evaluator_name}
                                     onChange={(e) => setForm({ ...form, evaluator_name: e.target.value })}
                                 />
                             </div>
                             <div className="sm:col-span-2">
-                                <Label>Notes</Label>
+                                <Label>{t('Notes')}</Label>
                                 <Textarea
                                     rows={3}
                                     value={form.notes}
@@ -521,10 +520,9 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={saving}>
-                                    {editing ? 'Save Changes' : 'Create Evaluation'}
+                                    {editing ? t('Save Changes') : t('Create Evaluation')}
                                 </Button>
                             </div>
                         </form>
@@ -534,12 +532,12 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                 <Dialog open={progressFor !== null} onOpenChange={(open) => !open && setProgressFor(null)}>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <DialogTitle>Update Progress</DialogTitle>
+                            <DialogTitle>{t('Update Progress')}</DialogTitle>
                             <DialogDescription>{progressFor?.title}</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submitProgress} className="grid grid-cols-1 gap-4">
                             <div>
-                                <Label>Scripts Evaluated</Label>
+                                <Label>{t('Scripts Evaluated')}</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -555,16 +553,15 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="in_progress">In Progress</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="pending">{t('Pending')}</SelectItem>
+                                        <SelectItem value="in_progress">{t('In Progress')}</SelectItem>
+                                        <SelectItem value="completed">{t('Completed')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="flex items-center justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setProgressFor(null)}>
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={saving}>
                                     Save Progress
                                 </Button>

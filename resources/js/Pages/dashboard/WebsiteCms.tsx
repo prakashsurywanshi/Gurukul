@@ -791,7 +791,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Shared Brand, SEO, and Navigation')}
-                                    description="Update common branding and navigation labels once for all templates."
+                                    description={t('Update common branding and navigation labels once for all templates.')}
                                     data={content.shared as Record<string, string>}
                                     fields={sharedFields}
                                     onChange={updateSharedField}
@@ -946,7 +946,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 Features')}
-                                    description="Feature cards used in the classic admissions layout."
+                                    description={t('Feature cards used in the classic admissions layout.')}
                                     items={getTemplateArray('template1', 'features')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -963,7 +963,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 Pillars')}
-                                    description="Core trust and campus support points."
+                                    description={t('Core trust and campus support points.')}
                                     items={getTemplateArray('template1', 'pillars')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -999,7 +999,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 Programs List')}
-                                    description="Program cards for the classic homepage."
+                                    description={t('Program cards for the classic homepage.')}
                                     items={getTemplateArray('template1', 'programs')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1017,7 +1017,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 1 Campus, Outcomes, Journey, and Visit')}
-                                    description="Main editorial sections for campus life and admissions storytelling."
+                                    description={t('Main editorial sections for campus life and admissions storytelling.')}
                                     data={content.template1 as Record<string, string>}
                                     fields={[
                                         {
@@ -1134,7 +1134,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 Campus Stats')}
-                                    description="Campus metrics shown in the campus section."
+                                    description={t('Campus metrics shown in the campus section.')}
                                     items={getTemplateArray('template1', 'campusStats')}
                                     fields={[
                                         { key: 'value', label: 'Value' },
@@ -1164,7 +1164,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 Outcomes')}
-                                    description="Outcome cards shown after campus storytelling."
+                                    description={t('Outcome cards shown after campus storytelling.')}
                                     items={getTemplateArray('template1', 'outcomes')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1181,7 +1181,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 Journey Steps')}
-                                    description="Admissions journey steps for families."
+                                    description={t('Admissions journey steps for families.')}
                                     items={getTemplateArray('template1', 'journeySteps')}
                                     fields={[
                                         { key: 'step', label: 'Step number' },
@@ -1217,7 +1217,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 1 FAQs')}
-                                    description="Frequently asked questions for the classic homepage."
+                                    description={t('Frequently asked questions for the classic homepage.')}
                                     items={getTemplateArray('template1', 'faqs')}
                                     fields={[
                                         { key: 'question', label: 'Question' },
@@ -1334,7 +1334,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 2 About Cards')}
-                                    description="Small supporting cards in the about section."
+                                    description={t('Small supporting cards in the about section.')}
                                     items={getTemplateArray('template2', 'templateTwoAboutCards')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1357,7 +1357,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 2 Gallery')}
-                                    description="Gallery intro copy for the immersive visual section."
+                                    description={t('Gallery intro copy for the immersive visual section.')}
                                     data={content.template2 as Record<string, string>}
                                     fields={[
                                         {
@@ -1380,7 +1380,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 2 Gallery Items')}
-                                    description="Gallery cards used in the modern visual grid."
+                                    description={t('Gallery cards used in the modern visual grid.')}
                                     items={getTemplateArray('template2', 'templateTwoGalleryItems')}
                                     fields={[
                                         { key: 'category', label: 'Category' },
@@ -1679,7 +1679,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 3 Programs')}
-                                    description="Programs list for the heritage editorial homepage."
+                                    description={t('Programs list for the heritage editorial homepage.')}
                                     items={getTemplateArray('template3', 'programs')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1710,7 +1710,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 3 News')}
-                                    description="Latest highlights used in the editorial layout."
+                                    description={t('Latest highlights used in the editorial layout.')}
                                     items={getTemplateArray('template3', 'news')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1727,7 +1727,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 3 Outcomes')}
-                                    description="Outcome cards for the heritage homepage."
+                                    description={t('Outcome cards for the heritage homepage.')}
                                     items={getTemplateArray('template3', 'outcomes')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1762,7 +1762,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 3 Testimonials')}
-                                    description="Voice cards for the heritage editorial template."
+                                    description={t('Voice cards for the heritage editorial template.')}
                                     items={getTemplateArray('template3', 'testimonials')}
                                     fields={[
                                         {
@@ -1790,7 +1790,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
                             <TabsContent value="template4" className="space-y-6">
                                 <FieldGrid
                                     title={t('Template 4 Top Header')}
-                                    description="Contact and address details shown in the colorful top header bar."
+                                    description={t('Contact and address details shown in the colorful top header bar.')}
                                     data={content.template4 as Record<string, string>}
                                     fields={templateFourTopFields}
                                     onChange={(key, value) => updateTemplateField('template4', key, value)}
@@ -1798,7 +1798,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 4 Hero and Notice')}
-                                    description="Classic hero section and visible principal notice content."
+                                    description={t('Classic hero section and visible principal notice content.')}
                                     data={content.template4 as Record<string, string>}
                                     fields={templateFourHeroFields}
                                     onChange={(key, value) => updateTemplateField('template4', key, value)}
@@ -1806,7 +1806,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 4 Highlights')}
-                                    description="Top classic stat cards shown below the hero."
+                                    description={t('Top classic stat cards shown below the hero.')}
                                     items={getTemplateArray('template4', 'highlights')}
                                     fields={[
                                         { key: 'value', label: 'Value' },
@@ -1819,7 +1819,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 4 About')}
-                                    description="About section headline and intro for the classic school layout."
+                                    description={t('About section headline and intro for the classic school layout.')}
                                     data={content.template4 as Record<string, string>}
                                     fields={templateFourAboutFields}
                                     onChange={(key, value) => updateTemplateField('template4', key, value)}
@@ -1827,7 +1827,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 4 About Cards')}
-                                    description="Small classic cards that explain the school identity."
+                                    description={t('Small classic cards that explain the school identity.')}
                                     items={getTemplateArray('template4', 'templateFourAboutCards')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1850,7 +1850,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 4 Gallery')}
-                                    description="Gallery section heading and intro copy."
+                                    description={t('Gallery section heading and intro copy.')}
                                     data={content.template4 as Record<string, string>}
                                     fields={templateFourGalleryFields}
                                     onChange={(key, value) => updateTemplateField('template4', key, value)}
@@ -1882,7 +1882,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 4 Events')}
-                                    description="Events board heading and section intro."
+                                    description={t('Events board heading and section intro.')}
                                     data={content.template4 as Record<string, string>}
                                     fields={templateFourEventsFields}
                                     onChange={(key, value) => updateTemplateField('template4', key, value)}
@@ -1890,7 +1890,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 4 Events List')}
-                                    description="Classic events and updates for parents and students."
+                                    description={t('Classic events and updates for parents and students.')}
                                     items={getTemplateArray('template4', 'templateFourEvents')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -1915,7 +1915,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 4 Contact')}
-                                    description="Contact section heading and descriptive copy."
+                                    description={t('Contact section heading and descriptive copy.')}
                                     data={content.template4 as Record<string, string>}
                                     fields={templateFourContactFields}
                                     onChange={(key, value) => updateTemplateField('template4', key, value)}
@@ -1949,7 +1949,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
                             <TabsContent value="template5" className="space-y-6">
                                 <FieldGrid
                                     title={t('Template 5 Top Bar')}
-                                    description="Contact details shown in the navy top utility bar."
+                                    description={t('Contact details shown in the navy top utility bar.')}
                                     data={content.template5 as Record<string, string>}
                                     fields={[
                                         {
@@ -2011,7 +2011,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 News Marquee')}
-                                    description="Scrolling news ticker items shown below the navigation."
+                                    description={t('Scrolling news ticker items shown below the navigation.')}
                                     items={getTemplateArray('template5', 'templateFiveMarqueeItems')}
                                     fields={[
                                         { key: 'text', label: 'News text' },
@@ -2082,7 +2082,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 5 About')}
-                                    description="About section content for the institutional homepage."
+                                    description={t('About section content for the institutional homepage.')}
                                     data={content.template5 as Record<string, string>}
                                     fields={[
                                         {
@@ -2105,7 +2105,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 Achievements')}
-                                    description="Counter bar statistics shown below the hero."
+                                    description={t('Counter bar statistics shown below the hero.')}
                                     items={getTemplateArray('template5', 'templateFiveAchievements')}
                                     fields={[
                                         {
@@ -2130,7 +2130,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 Departments')}
-                                    description="Academic department cards shown on the homepage."
+                                    description={t('Academic department cards shown on the homepage.')}
                                     items={getTemplateArray('template5', 'templateFiveDepartments')}
                                     fields={[
                                         {
@@ -2156,7 +2156,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 Why Choose Us')}
-                                    description="Feature cards highlighting institutional strengths."
+                                    description={t('Feature cards highlighting institutional strengths.')}
                                     items={getTemplateArray('template5', 'templateFiveWhyChooseUs')}
                                     fields={[
                                         { key: 'title', label: 'Title' },
@@ -2179,7 +2179,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 Events')}
-                                    description="Upcoming events listed on the homepage."
+                                    description={t('Upcoming events listed on the homepage.')}
                                     items={getTemplateArray('template5', 'templateFiveEvents')}
                                     fields={[
                                         { key: 'title', label: 'Event title' },
@@ -2196,7 +2196,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 News')}
-                                    description="Latest news items shown on the homepage."
+                                    description={t('Latest news items shown on the homepage.')}
                                     items={getTemplateArray('template5', 'templateFiveNews')}
                                     fields={[
                                         { key: 'title', label: 'News title' },
@@ -2213,7 +2213,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 5 Gallery')}
-                                    description="Gallery section heading and intro copy."
+                                    description={t('Gallery section heading and intro copy.')}
                                     data={content.template5 as Record<string, string>}
                                     fields={[
                                         {
@@ -2256,7 +2256,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <ArrayEditor
                                     title={t('Template 5 Testimonials')}
-                                    description="Student and alumni testimonial cards."
+                                    description={t('Student and alumni testimonial cards.')}
                                     items={getTemplateArray('template5', 'templateFiveTestimonials')}
                                     fields={[
                                         {
@@ -2280,7 +2280,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 5 Contact')}
-                                    description="Contact section heading and Google Maps embed."
+                                    description={t('Contact section heading and Google Maps embed.')}
                                     data={content.template5 as Record<string, string>}
                                     fields={[
                                         {
@@ -2328,7 +2328,7 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 5 Footer')}
-                                    description="Footer copyright text and tagline."
+                                    description={t('Footer copyright text and tagline.')}
                                     data={content.template5 as Record<string, string>}
                                     fields={[
                                         {

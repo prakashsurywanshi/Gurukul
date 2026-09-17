@@ -198,7 +198,7 @@ export default function Home({ websiteContent, user, publishedPages, menuPages }
                                     disabled={isSaving || !hasDirtyFields}
                                     className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isSaving ? 'Saving...' : 'Save Changes'}
+                                    {isSaving ? t('Saving...') : t('Save Changes')}
                                 </button>
                             </div>
                         </div>

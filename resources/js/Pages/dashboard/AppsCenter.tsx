@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface AppCard {
     id: string;
@@ -57,6 +58,7 @@ const ICONS: Record<string, typeof Wand2> = {
 };
 
 export default function AppsCenter(pageProps: AppsCenterProps) {
+    const { t } = useLanguage();
     const { user, apps, aiConfigured, result } = pageProps;
     const [generating, setGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -125,8 +127,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <PanelsTopLeft className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Apps Center
-                        </h1>
+                            {t('Apps Center')}</h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             AI and productivity tools for your school.
                         </p>
@@ -143,8 +144,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                             size="sm"
                             onClick={() => setCategory('all')}
                         >
-                            All
-                        </Button>
+                            {t('All')}</Button>
                         {categories.map((entry) => (
                             <Button
                                 key={entry}
@@ -188,7 +188,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                             <Icon className="h-5 w-5" />
                                         </span>
                                         {isComingSoon ? (
-                                            <Badge variant="secondary">Coming soon</Badge>
+                                            <Badge variant="secondary">{t('Coming soon')}</Badge>
                                         ) : (
                                             <>
                                                 {isAction && <Badge variant="secondary">AI</Badge>}
@@ -211,7 +211,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                             openApp(app);
                                         }}
                                     >
-                                        {isComingSoon ? 'Coming soon' : app.type === 'action' ? 'Open' : 'Launch'}
+                                        {isComingSoon ? t('Coming soon') : app.type === 'action' ? t('Open') : t('Launch')}
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -237,8 +237,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                         ) : (
                                             <>
                                                 <Copy className="mr-2 h-4 w-4" />
-                                                Copy
-                                            </>
+                                                {t('Copy')}</>
                                         )}
                                     </Button>
                                 </div>
@@ -255,7 +254,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                 <Dialog open={generatorOpen} onOpenChange={setGeneratorOpen}>
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
-                            <DialogTitle>Question Paper Generator</DialogTitle>
+                            <DialogTitle>{t('Question Paper Generator')}</DialogTitle>
                             <DialogDescription>
                                 Describe the paper and generate a complete question set with AI.
                             </DialogDescription>
@@ -280,7 +279,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Total Marks</Label>
+                                <Label>{t('Total Marks')}</Label>
                                 <Input
                                     type="number"
                                     min="10"
@@ -291,28 +290,27 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Class Level</Label>
+                                <Label>{t('Class Level')}</Label>
                                 <Input
                                     value={form.class}
                                     onChange={(e) => setForm({ ...form, class: e.target.value })}
                                     disabled={false}
-                                    placeholder="Same as class"
+                                    placeholder={t('Same as class')}
                                     className="opacity-50"
                                 />
                             </div>
                             <div className="sm:col-span-2">
-                                <Label>Sections</Label>
+                                <Label>{t('Sections')}</Label>
                                 <Textarea
                                     rows={2}
                                     value={form.sections}
                                     onChange={(e) => setForm({ ...form, sections: e.target.value })}
-                                    placeholder="Optional custom section breakdown"
+                                    placeholder={t('Optional custom section breakdown')}
                                 />
                             </div>
                             <div className="flex items-center justify-end gap-2 sm:col-span-2">
                                 <Button type="button" variant="outline" onClick={() => setGeneratorOpen(false)}>
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={generating || !aiConfigured}>
                                     {generating ? (
                                         <>

@@ -44,7 +44,7 @@ export default function SelectOrganization({ organizations }: { organizations: G
                         <div className="grid h-9 w-9 place-items-center rounded-xl bg-indigo-600 text-white">
                             <Building2 className="h-5 w-5" />
                         </div>
-                        <span className="text-lg font-bold text-slate-900">QGurukul</span>
+                        <span className="text-lg font-bold text-slate-900">{t('QGurukul')}</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <LanguageSwitcher variant="site" />

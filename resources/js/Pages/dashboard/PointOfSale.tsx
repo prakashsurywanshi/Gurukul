@@ -376,11 +376,11 @@ export default function PointOfSale({ user, catalog, sales, filters, summary }: 
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="cash">Cash</SelectItem>
-                                                    <SelectItem value="card">Card</SelectItem>
-                                                    <SelectItem value="upi">UPI</SelectItem>
-                                                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                                    <SelectItem value="other">Other</SelectItem>
+                                                    <SelectItem value="cash">{t('Cash')}</SelectItem>
+                                                    <SelectItem value="card">{t('Card')}</SelectItem>
+                                                    <SelectItem value="upi">{t('UPI')}</SelectItem>
+                                                    <SelectItem value="bank_transfer">{t('Bank Transfer')}</SelectItem>
+                                                    <SelectItem value="other">{t('Other')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>

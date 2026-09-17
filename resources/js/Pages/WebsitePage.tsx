@@ -481,7 +481,7 @@ export default function WebsitePage({
                     [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-[#2563EB] [&_blockquote]:bg-[#2563EB]/5 [&_blockquote]:py-3 [&_blockquote]:pl-5 [&_blockquote]:pr-4 [&_blockquote]:italic [&_blockquote]:text-slate-600"
 
                                     dangerouslySetInnerHTML={{
-                                        __html: contentHtml || '<p class="text-slate-400 italic">No content yet.</p>',
+                                        __html: contentHtml || `<p class="text-slate-400 italic">${t('No content yet.')}</p>`,
                                     }}
                                 />
                             )}

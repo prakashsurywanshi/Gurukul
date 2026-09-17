@@ -419,7 +419,7 @@ export default function CommunicationSettings({ user, communicationSettings }: C
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="MSG91">MSG91</SelectItem>
-                                                <SelectItem value="Twilio">Twilio</SelectItem>
+                                                <SelectItem value="Twilio">{t('Twilio')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>

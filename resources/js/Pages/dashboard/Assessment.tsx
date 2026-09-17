@@ -25,6 +25,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface ClassOption {
     id: number;
@@ -91,6 +92,7 @@ const emptyForm = {
 type Tab = 'dashboard' | 'assessments' | 'analytics' | 'student-report' | 'rank-list' | 'guide';
 
 export default function Assessment(pageProps: AssessmentProps) {
+    const { t } = useLanguage();
     const { user, tab, classes, subjects, assessments, filters, stats } = pageProps;
     const [activeTab, setActiveTab] = useState<Tab>(tab as Tab);
     const [search, setSearch] = useState(filters.search);
@@ -247,8 +249,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <ListChecks className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            Assessment
-                        </h1>
+                            {t('Assessment')}</h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Plan continuous and term-based assessments with weightage.
                         </p>
@@ -256,7 +257,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                     {activeTab === 'assessments' && (
                         <Button onClick={openCreate}>
                             <Plus className="mr-2 h-4 w-4" />
-                            New Assessment
+                            {t('New Assessment')}
                         </Button>
                     )}
                 </div>
@@ -284,7 +285,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <CardContent className="flex items-center gap-3 p-4">
                                     <ClipboardList className="h-8 w-8 text-indigo-500" />
                                     <div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Assessments</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Assessments')}</p>
                                         <p className="text-lg font-semibold">{assessments.length}</p>
                                     </div>
                                 </CardContent>
@@ -293,7 +294,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <CardContent className="flex items-center gap-3 p-4">
                                     <ListChecks className="h-8 w-8 text-emerald-500" />
                                     <div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Active</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Active')}</p>
                                         <p className="text-lg font-semibold">{stats.active}</p>
                                     </div>
                                 </CardContent>
@@ -302,7 +303,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <CardContent className="flex items-center gap-3 p-4">
                                     <CheckCircle2 className="h-8 w-8 text-sky-500" />
                                     <div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Completed')}</p>
                                         <p className="text-lg font-semibold">{stats.completed}</p>
                                     </div>
                                 </CardContent>
@@ -311,7 +312,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <CardContent className="flex items-center gap-3 p-4">
                                     <Gauge className="h-8 w-8 text-amber-500" />
                                     <div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Active Weightage</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Active Weightage')}</p>
                                         <p className="text-lg font-semibold">{stats.totalWeightage}%</p>
                                     </div>
                                 </CardContent>
@@ -320,17 +321,17 @@ export default function Assessment(pageProps: AssessmentProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Recent Assessments</CardTitle>
+                                <CardTitle className="text-base">{t('Recent Assessments')}</CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Title</TableHead>
-                                            <TableHead>Type</TableHead>
+                                            <TableHead>{t('Title')}</TableHead>
+                                            <TableHead>{t('Type')}</TableHead>
                                             <TableHead>Class · Subject</TableHead>
-                                            <TableHead className="text-right">Weightage</TableHead>
-                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">{t('Weightage')}</TableHead>
+                                            <TableHead>{t('Status')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -398,13 +399,13 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         onValueChange={(value) => setStatus(value === 'select-all-null' ? '' : value)}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="All statuses" />
+                                            <SelectValue placeholder={t('All statuses')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="select-all-null">All statuses</SelectItem>
-                                            <SelectItem value="draft">Draft</SelectItem>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="completed">Completed</SelectItem>
+                                            <SelectItem value="select-all-null">{t('All statuses')}</SelectItem>
+                                            <SelectItem value="draft">{t('Draft')}</SelectItem>
+                                            <SelectItem value="active">{t('Active')}</SelectItem>
+                                            <SelectItem value="completed">{t('Completed')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -422,12 +423,10 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         }}
                                     >
                                         <RefreshCw className="mr-2 h-4 w-4" />
-                                        Reset
-                                    </Button>
+                                        {t('Reset')}</Button>
                                     <Button onClick={applyFilters}>
                                         <Search className="mr-2 h-4 w-4" />
-                                        Apply
-                                    </Button>
+                                        {t('Apply')}</Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -437,15 +436,15 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Type</TableHead>
-                                            <TableHead>Class</TableHead>
-                                            <TableHead>Subject</TableHead>
-                                            <TableHead className="text-right">Weightage</TableHead>
-                                            <TableHead className="text-right">Marks</TableHead>
-                                            <TableHead>Period</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead>{t('Name')}</TableHead>
+                                            <TableHead>{t('Type')}</TableHead>
+                                            <TableHead>{t('Class')}</TableHead>
+                                            <TableHead>{t('Subject')}</TableHead>
+                                            <TableHead className="text-right">{t('Weightage')}</TableHead>
+                                            <TableHead className="text-right">{t('Marks')}</TableHead>
+                                            <TableHead>{t('Period')}</TableHead>
+                                            <TableHead>{t('Status')}</TableHead>
+                                            <TableHead className="text-right">{t('Actions')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -496,7 +495,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                                             onClick={() => openEdit(assessment)}
                                                         >
                                                             <Pencil className="h-4 w-4" />
-                                                            <span className="sr-only">Edit</span>
+                                                            <span className="sr-only">{t('Edit')}</span>
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
@@ -505,7 +504,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                                             onClick={() => confirmDelete(assessment)}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Delete</span>
+                                                            <span className="sr-only">{t('Delete')}</span>
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -522,11 +521,11 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">By Assessment Type</CardTitle>
+                                <CardTitle className="text-base">{t('By Assessment Type')}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {Object.keys(analytics.byType).length === 0 && (
-                                    <p className="py-8 text-center text-sm text-gray-400">No assessment data yet.</p>
+                                    <p className="py-8 text-center text-sm text-gray-400">{t('No assessment data yet.')}</p>
                                 )}
                                 {Object.entries(analytics.byType).map(([type, entry]) => (
                                     <div key={type}>
@@ -553,11 +552,11 @@ export default function Assessment(pageProps: AssessmentProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Weightage by Term</CardTitle>
+                                <CardTitle className="text-base">{t('Weightage by Term')}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {Object.keys(analytics.byTerm).length === 0 && (
-                                    <p className="py-8 text-center text-sm text-gray-400">No assessment data yet.</p>
+                                    <p className="py-8 text-center text-sm text-gray-400">{t('No assessment data yet.')}</p>
                                 )}
                                 {Object.entries(analytics.byTerm)
                                     .sort((a, b) => b[1].weightage - a[1].weightage)
@@ -589,7 +588,7 @@ export default function Assessment(pageProps: AssessmentProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Status Breakdown</CardTitle>
+                                <CardTitle className="text-base">{t('Status Breakdown')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="grid grid-cols-3 gap-3">
@@ -621,10 +620,10 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     onValueChange={(value) => setReportClass(value === 'select-all-null' ? '' : value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All classes" />
+                                        <SelectValue placeholder={t('All classes')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All classes</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All classes')}</SelectItem>
                                         {classes.map((classItem) => (
                                             <SelectItem key={classItem.id} value={String(classItem.id)}>
                                                 {classItem.name}
@@ -639,10 +638,10 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All subjects" />
+                                        <SelectValue placeholder={t('All subjects')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All subjects</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All subjects')}</SelectItem>
                                         {subjects.map((subject) => (
                                             <SelectItem key={subject.id} value={String(subject.id)}>
                                                 {subject.name}
@@ -655,25 +654,25 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     onValueChange={(value) => setReportStatus(value === 'select-all-null' ? '' : value)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All statuses" />
+                                        <SelectValue placeholder={t('All statuses')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All statuses</SelectItem>
-                                        <SelectItem value="draft">Draft</SelectItem>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All statuses')}</SelectItem>
+                                        <SelectItem value="draft">{t('Draft')}</SelectItem>
+                                        <SelectItem value="active">{t('Active')}</SelectItem>
+                                        <SelectItem value="completed">{t('Completed')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Assessment</TableHead>
-                                        <TableHead>Term</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead className="text-right">Weightage</TableHead>
-                                        <TableHead className="text-right">Marks</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead>{t('Assessment')}</TableHead>
+                                        <TableHead>{t('Term')}</TableHead>
+                                        <TableHead>{t('Type')}</TableHead>
+                                        <TableHead className="text-right">{t('Weightage')}</TableHead>
+                                        <TableHead className="text-right">{t('Marks')}</TableHead>
+                                        <TableHead>{t('Status')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -713,17 +712,17 @@ export default function Assessment(pageProps: AssessmentProps) {
                 {activeTab === 'rank-list' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Assessment Standings (by weightage)</CardTitle>
+                            <CardTitle className="text-base">{t('Assessment Standings (by weightage)')}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-16">Rank</TableHead>
-                                        <TableHead>Assessment</TableHead>
+                                        <TableHead className="w-16">{t('Rank')}</TableHead>
+                                        <TableHead>{t('Assessment')}</TableHead>
                                         <TableHead>Class · Subject</TableHead>
-                                        <TableHead className="text-right">Weightage</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">{t('Weightage')}</TableHead>
+                                        <TableHead>{t('Status')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -782,20 +781,20 @@ export default function Assessment(pageProps: AssessmentProps) {
                 {activeTab === 'guide' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Assessment Guide</CardTitle>
+                            <CardTitle className="text-base">{t('Assessment Guide')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">1</Badge>
                                 <p>
-                                    <strong>Create plans</strong> under the Assessments tab — choose continuous or term
+                                    <strong>{t('Create plans')}</strong> under the Assessments tab — choose continuous or term
                                     type, assign a class/subject, weightage (%) and total marks.
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">2</Badge>
                                 <p>
-                                    <strong>Weightage</strong> controls how much each assessment contributes to the
+                                    <strong>{t('Weightage')}</strong> controls how much each assessment contributes to the
                                     final score. The Analytics tab shows how weight is distributed across types and
                                     terms.
                                 </p>
@@ -803,14 +802,14 @@ export default function Assessment(pageProps: AssessmentProps) {
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">3</Badge>
                                 <p>
-                                    <strong>Status</strong> — draft while preparing, active once students sit the
+                                    <strong>{t('Status')}</strong> — draft while preparing, active once students sit the
                                     assessment, completed when marking finishes and results are finalised.
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">4</Badge>
                                 <p>
-                                    <strong>Student Report</strong> filters which assessments apply to a class/subject
+                                    <strong>{t('Student Report')}</strong> filters which assessments apply to a class/subject
                                     so parents and students see exactly what counts towards the term.
                                 </p>
                             </div>
@@ -836,7 +835,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                 >
                     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>{editing ? 'Edit Assessment' : 'New Assessment'}</DialogTitle>
+                            <DialogTitle>{editing ? t('Edit Assessment') : t('New Assessment')}</DialogTitle>
                             <DialogDescription>Define an assessment plan, weightage and timeline.</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -849,16 +848,16 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Class</Label>
+                                <Label>{t('Class')}</Label>
                                 <Select
                                     value={form.class_id}
                                     onValueChange={(value) => setForm({ ...form, class_id: value })}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All classes" />
+                                        <SelectValue placeholder={t('All classes')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All classes</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All classes')}</SelectItem>
                                         {classes.map((classItem) => (
                                             <SelectItem key={classItem.id} value={String(classItem.id)}>
                                                 {classItem.name}
@@ -868,16 +867,16 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 </Select>
                             </div>
                             <div>
-                                <Label>Subject</Label>
+                                <Label>{t('Subject')}</Label>
                                 <Select
                                     value={form.subject_id}
                                     onValueChange={(value) => setForm({ ...form, subject_id: value })}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="All subjects" />
+                                        <SelectValue placeholder={t('All subjects')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="select-all-null">All subjects</SelectItem>
+                                        <SelectItem value="select-all-null">{t('All subjects')}</SelectItem>
                                         {subjects.map((subject) => (
                                             <SelectItem key={subject.id} value={String(subject.id)}>
                                                 {subject.name}
@@ -896,13 +895,13 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="continuous">Continuous</SelectItem>
-                                        <SelectItem value="term">Term</SelectItem>
+                                        <SelectItem value="continuous">{t('Continuous')}</SelectItem>
+                                        <SelectItem value="term">{t('Term')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div>
-                                <Label>Term</Label>
+                                <Label>{t('Term')}</Label>
                                 <Input
                                     value={form.term}
                                     onChange={(e) => setForm({ ...form, term: e.target.value })}
@@ -921,7 +920,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Total Marks</Label>
+                                <Label>{t('Total Marks')}</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -931,7 +930,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Start Date</Label>
+                                <Label>{t('Start Date')}</Label>
                                 <Input
                                     type="date"
                                     value={form.start_date}
@@ -939,7 +938,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 />
                             </div>
                             <div>
-                                <Label>End Date</Label>
+                                <Label>{t('End Date')}</Label>
                                 <Input
                                     type="date"
                                     value={form.end_date}
@@ -956,14 +955,14 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="draft">Draft</SelectItem>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="draft">{t('Draft')}</SelectItem>
+                                        <SelectItem value="active">{t('Active')}</SelectItem>
+                                        <SelectItem value="completed">{t('Completed')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="sm:col-span-2">
-                                <Label>Description</Label>
+                                <Label>{t('Description')}</Label>
                                 <Textarea
                                     rows={3}
                                     value={form.description}
@@ -979,10 +978,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={saving}>
-                                    {editing ? 'Save Changes' : 'Create Assessment'}
+                                    {editing ? t('Save Changes') : t('Create Assessment')}
                                 </Button>
                             </div>
                         </form>

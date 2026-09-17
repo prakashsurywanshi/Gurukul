@@ -49,7 +49,7 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
             <div className="space-y-6 p-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-slate-900">
-                        Students Recycle Bin <span className="sr-only">Students Recycle Bin</span>
+                        {t('Students Recycle Bin')}<span className="sr-only">{t('Students Recycle Bin')}</span>
                     </h1>
                     <p className="mt-1 text-sm text-slate-500">
                         Restore wrongly deleted students or permanently remove them.
@@ -79,12 +79,12 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Student</TableHead>
-                                            <TableHead>Admission No</TableHead>
-                                            <TableHead>Class</TableHead>
-                                            <TableHead>Phone</TableHead>
-                                            <TableHead>Deleted At</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead>{t('Student')}</TableHead>
+                                            <TableHead>{t('Admission No')}</TableHead>
+                                            <TableHead>{t('Class')}</TableHead>
+                                            <TableHead>{t('Phone')}</TableHead>
+                                            <TableHead>{t('Deleted At')}</TableHead>
+                                            <TableHead className="text-right">{t('Actions')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -123,8 +123,7 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                                                             }
                                                         >
                                                             <ArchiveRestore className="h-4 w-4" />
-                                                            Restore
-                                                        </Button>
+                                                            {t('Restore')}</Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -139,8 +138,7 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                                                             }
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                            Delete
-                                                        </Button>
+                                                            {t('Delete')}</Button>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -151,7 +149,7 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                         ) : (
                             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
                                 <RefreshCw className="h-8 w-8 text-slate-300" />
-                                <p className="mt-3 text-sm font-medium text-slate-600">Recycle bin is empty</p>
+                                <p className="mt-3 text-sm font-medium text-slate-600">{t('Recycle bin is empty')}</p>
                                 <p className="mt-1 text-sm text-slate-400">
                                     Deleted students will appear here until then. {t('no_records_found')}
                                 </p>

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface Strand {
     id: number;
@@ -105,6 +106,7 @@ const LEVEL_BARS: Record<string, string> = {
 };
 
 export default function Cbc(pageProps: CbcProps) {
+    const { t } = useLanguage();
     const {
         user,
         tab,
@@ -279,31 +281,31 @@ export default function Cbc(pageProps: CbcProps) {
                 {activeTab === 'dashboard' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">CBC Overview</CardTitle>
+                            <CardTitle className="text-base">{t('CBC Overview')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Strands</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Strands')}</p>
                                         <p className="text-2xl font-bold">{strands.length}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Learning Outcomes</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Learning Outcomes')}</p>
                                         <p className="text-2xl font-bold">{outcomes.length}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Core Competencies</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Core Competencies')}</p>
                                         <p className="text-2xl font-bold">{summary.competencies}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Pathways</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Pathways')}</p>
                                         <p className="text-2xl font-bold">{pathways.length}</p>
                                     </CardContent>
                                 </Card>
@@ -312,7 +314,7 @@ export default function Cbc(pageProps: CbcProps) {
                             <div className="grid gap-6 lg:grid-cols-2">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="text-sm">Competency Levels Distribution</CardTitle>
+                                        <CardTitle className="text-sm">{t('Competency Levels Distribution')}</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         {Object.entries(LEVEL_LABELS).map(([level, label]) => {
@@ -347,11 +349,11 @@ export default function Cbc(pageProps: CbcProps) {
 
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle className="text-sm">Strand Coverage</CardTitle>
+                                        <CardTitle className="text-sm">{t('Strand Coverage')}</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         {strands.length === 0 && (
-                                            <p className="py-6 text-center text-sm text-gray-400">No strands yet.</p>
+                                            <p className="py-6 text-center text-sm text-gray-400">{t('No strands yet.')}</p>
                                         )}
                                         {strands.map((strand) => {
                                             const assessed = assessments.filter(
@@ -406,10 +408,10 @@ export default function Cbc(pageProps: CbcProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base">
-                                {activeTab === 'strands' && 'Add Strand'}
-                                {activeTab === 'outcomes' && 'Add Learning Outcome'}
-                                {activeTab === 'pathways' && 'Add Pathway'}
-                                {activeTab === 'competencies' && 'Add Core Competency'}
+                                {activeTab === 'strands' && t('Add Strand')}
+                                {activeTab === 'outcomes' && t('Add Learning Outcome')}
+                                {activeTab === 'pathways' && t('Add Pathway')}
+                                {activeTab === 'competencies' && t('Add Core Competency')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -425,13 +427,13 @@ export default function Cbc(pageProps: CbcProps) {
                                         onChange={(e) => setStrandForm({ ...strandForm, name: e.target.value })}
                                     />
                                     <Input
-                                        placeholder="Code"
+                                        placeholder={t('Code')}
                                         value={strandForm.code}
                                         onChange={(e) => setStrandForm({ ...strandForm, code: e.target.value })}
                                     />
                                     <div className="lg:col-span-2">
                                         <Input
-                                            placeholder="Description"
+                                            placeholder={t('Description')}
                                             value={strandForm.description}
                                             onChange={(e) =>
                                                 setStrandForm({ ...strandForm, description: e.target.value })
@@ -440,8 +442,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </div>
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Add
-                                    </Button>
+                                        {t('Add')}</Button>
                                 </form>
                             )}
 
@@ -474,12 +475,12 @@ export default function Cbc(pageProps: CbcProps) {
                                         onChange={(e) => setOutcomeForm({ ...outcomeForm, name: e.target.value })}
                                     />
                                     <Input
-                                        placeholder="Code"
+                                        placeholder={t('Code')}
                                         value={outcomeForm.code}
                                         onChange={(e) => setOutcomeForm({ ...outcomeForm, code: e.target.value })}
                                     />
                                     <Input
-                                        placeholder="Description"
+                                        placeholder={t('Description')}
                                         value={outcomeForm.description}
                                         onChange={(e) =>
                                             setOutcomeForm({ ...outcomeForm, description: e.target.value })
@@ -487,8 +488,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     />
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Add
-                                    </Button>
+                                        {t('Add')}</Button>
                                 </form>
                             )}
 
@@ -504,13 +504,13 @@ export default function Cbc(pageProps: CbcProps) {
                                         onChange={(e) => setPathwayForm({ ...pathwayForm, name: e.target.value })}
                                     />
                                     <Input
-                                        placeholder="Code"
+                                        placeholder={t('Code')}
                                         value={pathwayForm.code}
                                         onChange={(e) => setPathwayForm({ ...pathwayForm, code: e.target.value })}
                                     />
                                     <div className="lg:col-span-2">
                                         <Input
-                                            placeholder="Description"
+                                            placeholder={t('Description')}
                                             value={pathwayForm.description}
                                             onChange={(e) =>
                                                 setPathwayForm({ ...pathwayForm, description: e.target.value })
@@ -519,8 +519,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </div>
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Add
-                                    </Button>
+                                        {t('Add')}</Button>
                                 </form>
                             )}
 
@@ -536,7 +535,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         onChange={(e) => setCompetencyForm({ ...competencyForm, name: e.target.value })}
                                     />
                                     <Input
-                                        placeholder="Code"
+                                        placeholder={t('Code')}
                                         value={competencyForm.code}
                                         onChange={(e) => setCompetencyForm({ ...competencyForm, code: e.target.value })}
                                     />
@@ -547,7 +546,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Strand (optional)" />
+                                            <SelectValue placeholder={t('Strand (optional)')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {strandOptions.map((strand) => (
@@ -559,7 +558,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </Select>
                                     <div className="lg:col-span-2">
                                         <Input
-                                            placeholder="Description"
+                                            placeholder={t('Description')}
                                             value={competencyForm.description}
                                             onChange={(e) =>
                                                 setCompetencyForm({ ...competencyForm, description: e.target.value })
@@ -568,8 +567,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </div>
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Add
-                                    </Button>
+                                        {t('Add')}</Button>
                                 </form>
                             )}
                         </CardContent>
@@ -579,7 +577,7 @@ export default function Cbc(pageProps: CbcProps) {
                 {activeTab === 'assessments' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Record Assessment</CardTitle>
+                            <CardTitle className="text-base">{t('Record Assessment')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <form
@@ -595,7 +593,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select student" />
+                                            <SelectValue placeholder={t('Select student')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {students.map((student) => (
@@ -608,7 +606,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </Select>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Level</Label>
+                                    <Label>{t('Level')}</Label>
                                     <Select
                                         value={assessmentForm.level}
                                         onValueChange={(value) =>
@@ -628,7 +626,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </Select>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Assessed On</Label>
+                                    <Label>{t('Assessed On')}</Label>
                                     <Input
                                         type="date"
                                         value={assessmentForm.assessed_on}
@@ -638,7 +636,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Strand</Label>
+                                    <Label>{t('Strand')}</Label>
                                     <Select
                                         value={assessmentForm.cbc_strand_id}
                                         onValueChange={(value) =>
@@ -651,7 +649,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Optional" />
+                                            <SelectValue placeholder={t('Optional')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {strandOptions.map((strand) => (
@@ -663,7 +661,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </Select>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Learning Outcome</Label>
+                                    <Label>{t('Learning Outcome')}</Label>
                                     <Select
                                         value={assessmentForm.cbc_learning_outcome_id}
                                         onValueChange={(value) =>
@@ -671,7 +669,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Optional" />
+                                            <SelectValue placeholder={t('Optional')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {(assessmentForm.cbc_strand_id
@@ -688,7 +686,7 @@ export default function Cbc(pageProps: CbcProps) {
                                     </Select>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Core Competency</Label>
+                                    <Label>{t('Core Competency')}</Label>
                                     <Select
                                         value={assessmentForm.cbc_competency_id}
                                         onValueChange={(value) =>
@@ -696,7 +694,7 @@ export default function Cbc(pageProps: CbcProps) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Optional" />
+                                            <SelectValue placeholder={t('Optional')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {(assessmentForm.cbc_strand_id
@@ -713,9 +711,9 @@ export default function Cbc(pageProps: CbcProps) {
                                     </Select>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Notes</Label>
+                                    <Label>{t('Notes')}</Label>
                                     <Input
-                                        placeholder="Notes (optional)"
+                                        placeholder={t('Notes (optional)')}
                                         value={assessmentForm.notes}
                                         onChange={(e) =>
                                             setAssessmentForm({ ...assessmentForm, notes: e.target.value })
@@ -725,8 +723,7 @@ export default function Cbc(pageProps: CbcProps) {
                                 <div className="flex items-end">
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Record
-                                    </Button>
+                                        {t('Record')}</Button>
                                 </div>
                             </form>
                         </CardContent>
@@ -738,7 +735,7 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'strands' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {strands.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">No strands yet.</li>
+                                    <li className="py-10 text-center text-gray-400">{t('No strands yet.')}</li>
                                 )}
                                 {strands.map((strand) => (
                                     <li key={strand.id} className="flex items-start justify-between gap-4 p-4">
@@ -763,7 +760,7 @@ export default function Cbc(pageProps: CbcProps) {
                                             onClick={() => remove('strand', strand.id, strand.name)}
                                         >
                                             <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
+                                            <span className="sr-only">{t('Delete')}</span>
                                         </Button>
                                     </li>
                                 ))}
@@ -773,7 +770,7 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'outcomes' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {outcomes.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">No learning outcomes yet.</li>
+                                    <li className="py-10 text-center text-gray-400">{t('No learning outcomes yet.')}</li>
                                 )}
                                 {outcomes.map((outcome) => (
                                     <li key={outcome.id} className="flex items-start justify-between gap-4 p-4">
@@ -798,7 +795,7 @@ export default function Cbc(pageProps: CbcProps) {
                                             onClick={() => remove('outcome', outcome.id, outcome.name)}
                                         >
                                             <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
+                                            <span className="sr-only">{t('Delete')}</span>
                                         </Button>
                                     </li>
                                 ))}
@@ -808,7 +805,7 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'pathways' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {pathways.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">No pathways yet.</li>
+                                    <li className="py-10 text-center text-gray-400">{t('No pathways yet.')}</li>
                                 )}
                                 {pathways.map((pathway) => (
                                     <li key={pathway.id} className="flex items-start justify-between gap-4 p-4">
@@ -832,7 +829,7 @@ export default function Cbc(pageProps: CbcProps) {
                                             onClick={() => remove('pathway', pathway.id, pathway.name)}
                                         >
                                             <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
+                                            <span className="sr-only">{t('Delete')}</span>
                                         </Button>
                                     </li>
                                 ))}
@@ -842,7 +839,7 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'competencies' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {competencies.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">No core competencies yet.</li>
+                                    <li className="py-10 text-center text-gray-400">{t('No core competencies yet.')}</li>
                                 )}
                                 {competencies.map((competency) => (
                                     <li key={competency.id} className="flex items-start justify-between gap-4 p-4">
@@ -869,7 +866,7 @@ export default function Cbc(pageProps: CbcProps) {
                                             onClick={() => remove('competency', competency.id, competency.name)}
                                         >
                                             <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
+                                            <span className="sr-only">{t('Delete')}</span>
                                         </Button>
                                     </li>
                                 ))}
@@ -879,7 +876,7 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'assessments' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {assessments.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">No assessments recorded yet.</li>
+                                    <li className="py-10 text-center text-gray-400">{t('No assessments recorded yet.')}</li>
                                 )}
                                 {assessments.map((assessment) => (
                                     <li key={assessment.id} className="flex items-start justify-between gap-4 p-4">
@@ -923,7 +920,7 @@ export default function Cbc(pageProps: CbcProps) {
                                             onClick={() => removeAssessment(assessment)}
                                         >
                                             <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
+                                            <span className="sr-only">{t('Delete')}</span>
                                         </Button>
                                     </li>
                                 ))}
@@ -937,25 +934,25 @@ export default function Cbc(pageProps: CbcProps) {
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Proficiency Rate</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Proficiency Rate')}</p>
                                     <p className="text-2xl font-bold">{reports.proficiencyRate}%</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Assessments</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Assessments')}</p>
                                     <p className="text-2xl font-bold">{summary.assessments}</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Students Assessed</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Students Assessed')}</p>
                                     <p className="text-2xl font-bold">{summary.studentsAssessed}</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Strands Reported</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Strands Reported')}</p>
                                     <p className="text-2xl font-bold">
                                         {reports.byStrand.filter((report) => report.assessments > 0).length}
                                     </p>
@@ -965,7 +962,7 @@ export default function Cbc(pageProps: CbcProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Assessment Level Distribution</CardTitle>
+                                <CardTitle className="text-base">{t('Assessment Level Distribution')}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 {Object.entries(reports.levelTotals).map(([level, count]) => {
@@ -992,17 +989,17 @@ export default function Cbc(pageProps: CbcProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Strand-wise Report</CardTitle>
+                                <CardTitle className="text-base">{t('Strand-wise Report')}</CardTitle>
                             </CardHeader>
                             <CardContent className="pt-0">
                                 {reports.byStrand.filter((report) => report.assessments > 0).length === 0 ? (
-                                    <p className="py-10 text-center text-gray-400">No assessment data recorded yet.</p>
+                                    <p className="py-10 text-center text-gray-400">{t('No assessment data recorded yet.')}</p>
                                 ) : (
                                     <table className="w-full text-sm">
                                         <thead>
                                             <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                <th className="py-2 pr-4">Strand</th>
-                                                <th className="py-2 pr-4">Assessments</th>
+                                                <th className="py-2 pr-4">{t('Strand')}</th>
+                                                <th className="py-2 pr-4">{t('Assessments')}</th>
                                                 {Object.keys(LEVEL_LABELS).map((level) => (
                                                     <th key={level} className="py-2 pr-4">
                                                         {LEVEL_LABELS[level]}
@@ -1033,11 +1030,11 @@ export default function Cbc(pageProps: CbcProps) {
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-base">Top Learning Outcomes</CardTitle>
+                                    <CardTitle className="text-base">{t('Top Learning Outcomes')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-0">
                                     {reports.byOutcome.length === 0 ? (
-                                        <p className="py-10 text-center text-gray-400">No outcome data recorded yet.</p>
+                                        <p className="py-10 text-center text-gray-400">{t('No outcome data recorded yet.')}</p>
                                     ) : (
                                         <ul className="space-y-2">
                                             {reports.byOutcome.map((report) => (
@@ -1071,7 +1068,7 @@ export default function Cbc(pageProps: CbcProps) {
                             </Card>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-base">Top Core Competencies</CardTitle>
+                                    <CardTitle className="text-base">{t('Top Core Competencies')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-0">
                                     {reports.byCompetency.length === 0 ? (

@@ -115,9 +115,9 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                     onChange={(e) => setFontSize(e.target.value)}
                                     className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                                 >
-                                    <option value="small">Small</option>
-                                    <option value="normal">Normal</option>
-                                    <option value="large">Large</option>
+                                    <option value="small">{t('Small')}</option>
+                                    <option value="normal">{t('Normal')}</option>
+                                    <option value="large">{t('Large')}</option>
                                 </select>
                             </div>
 

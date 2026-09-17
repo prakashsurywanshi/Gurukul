@@ -143,7 +143,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-slate-900">
-                            {t('co_curricular')} <span className="sr-only">Co-Curricular</span>
+                            {t('co_curricular')} <span className="sr-only">{t('Co-Curricular')}</span>
                         </h1>
                         <p className="mt-1 text-sm text-slate-500">
                             Manage co-curricular activity areas and grading scales.
@@ -188,7 +188,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
-                                <CardTitle>Co-Curricular Areas</CardTitle>
+                                <CardTitle>{t('Co-Curricular Areas')}</CardTitle>
                                 <CardDescription>
                                     Activity areas such as Sports, Music, Art, Dance, Debate, etc.
                                 </CardDescription>
@@ -209,7 +209,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                     className="mb-6 space-y-4 rounded-lg border bg-slate-50 p-4"
                                 >
                                     <div>
-                                        <Label htmlFor="area-name">Area Name</Label>
+                                        <Label htmlFor="area-name">{t('Area Name')}</Label>
                                         <Input
                                             id="area-name"
                                             value={areaForm.name}
@@ -219,19 +219,19 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="area-desc">Description</Label>
+                                        <Label htmlFor="area-desc">{t('Description')}</Label>
                                         <Input
                                             id="area-desc"
                                             value={areaForm.description}
                                             onChange={(e) =>
                                                 setAreaForm((prev) => ({ ...prev, description: e.target.value }))
                                             }
-                                            placeholder="Optional description"
+                                            placeholder={t('Optional description')}
                                         />
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <div className="flex items-center gap-2">
-                                            <Label>Active</Label>
+                                            <Label>{t('Active')}</Label>
                                             <Switch
                                                 checked={areaForm.is_active}
                                                 onCheckedChange={(checked) =>
@@ -240,7 +240,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="area-sort">Sort Order</Label>
+                                            <Label htmlFor="area-sort">{t('Sort Order')}</Label>
                                             <Input
                                                 id="area-sort"
                                                 type="number"
@@ -263,11 +263,10 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             ) : (
                                                 <Save className="h-4 w-4" />
                                             )}
-                                            {editingArea ? 'Update' : 'Create'}
+                                            {editingArea ? t('Update') : t('Create')}
                                         </Button>
                                         <Button type="button" variant="outline" onClick={resetAreaForm}>
-                                            Cancel
-                                        </Button>
+                                            {t('Cancel')}</Button>
                                     </div>
                                 </form>
                             )}
@@ -287,7 +286,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Badge variant={area.is_active ? 'default' : 'secondary'}>
-                                                    {area.is_active ? 'Active' : 'Inactive'}
+                                                    {area.is_active ? t('Active') : t('Inactive')}
                                                 </Badge>
                                                 <Button
                                                     variant="ghost"
@@ -330,7 +329,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
-                                <CardTitle>Co-Curricular Grades</CardTitle>
+                                <CardTitle>{t('Co-Curricular Grades')}</CardTitle>
                                 <CardDescription>
                                     Grading scales used to evaluate co-curricular performance.
                                 </CardDescription>
@@ -351,7 +350,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                     className="mb-6 space-y-4 rounded-lg border bg-slate-50 p-4"
                                 >
                                     <div>
-                                        <Label htmlFor="grade-name">Grade Name</Label>
+                                        <Label htmlFor="grade-name">{t('Grade Name')}</Label>
                                         <Input
                                             id="grade-name"
                                             value={gradeForm.name}
@@ -363,14 +362,14 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="grade-desc">Description</Label>
+                                        <Label htmlFor="grade-desc">{t('Description')}</Label>
                                         <Input
                                             id="grade-desc"
                                             value={gradeForm.description}
                                             onChange={(e) =>
                                                 setGradeForm((prev) => ({ ...prev, description: e.target.value }))
                                             }
-                                            placeholder="Optional description"
+                                            placeholder={t('Optional description')}
                                         />
                                     </div>
                                     <div className="flex gap-4">
@@ -411,7 +410,7 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             />
                                         </div>
                                         <div className="w-28">
-                                            <Label htmlFor="grade-sort">Sort</Label>
+                                            <Label htmlFor="grade-sort">{t('Sort')}</Label>
                                             <Input
                                                 id="grade-sort"
                                                 type="number"
@@ -433,11 +432,10 @@ export default function Cocurricular({ user, areas, grades }: CocurricularProps)
                                             ) : (
                                                 <Save className="h-4 w-4" />
                                             )}
-                                            {editingGrade ? 'Update' : 'Create'}
+                                            {editingGrade ? t('Update') : t('Create')}
                                         </Button>
                                         <Button type="button" variant="outline" onClick={resetGradeForm}>
-                                            Cancel
-                                        </Button>
+                                            {t('Cancel')}</Button>
                                     </div>
                                 </form>
                             )}

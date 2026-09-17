@@ -232,7 +232,7 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
                     </div>
                     <div>
                         <h1 className="text-xl font-bold tracking-[0.02em] text-[var(--sidebar-foreground)]">
-                            {schoolName || 'Gurukul'}
+                            {schoolName || t('Gurukul')}
                         </h1>
                         <p className="text-xs uppercase tracking-[0.28em] text-[rgba(226,232,240,0.62)]">
                             {t('ERP System')}

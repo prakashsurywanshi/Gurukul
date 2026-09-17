@@ -9,6 +9,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Loader2, Settings, Plus, Trash2, Check, X } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 type Step = {
     stepNo: number;
@@ -30,12 +31,14 @@ type FlowModule = {
 };
 
 interface Props {
+    user: any;
     flows: FlowModule[];
     staffUsers: { id: string; name: string; role: string }[];
     roleOptions: string[];
 }
 
-export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props) {
+export default function ApprovalFlows({ user, flows, staffUsers, roleOptions }: Props) {
+    const { t } = useLanguage();
     const [saving, setSaving] = useState(false);
     const [editingModule, setEditingModule] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<{ name: string; description: string; is_active: boolean }>({ name: '', description: '', is_active: true });
@@ -86,12 +89,12 @@ export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props)
     };
 
     return (
-        <DashboardLayout title="Approval Flows">
+        <DashboardLayout user={user} activeTab="approvals-config">
             <div className="space-y-6">
                 <div className="flex items-center gap-3">
                     <Settings className="h-6 w-6 text-primary" />
                     <div>
-                        <h1 className="text-2xl font-bold">Approval Flows</h1>
+                        <h1 className="text-2xl font-bold">{t('Approval Flows')}</h1>
                         <p className="text-sm text-muted-foreground">Configure approval chains for fee concessions, attendance corrections and lesson plans.</p>
                     </div>
                 </div>
@@ -102,10 +105,10 @@ export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props)
                             <CardHeader className="flex flex-row items-start justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-lg">{flow.label}</CardTitle>
-                                    <CardDescription>{flow.description || 'Default single admin step'}</CardDescription>
+                                    <CardDescription>{flow.description || t('Default single admin step')}</CardDescription>
                                 </div>
                                 <Badge variant={flow.isActive ? 'default' : 'secondary'}>
-                                    {flow.isActive ? 'Active' : 'Inactive'}
+                                    {flow.isActive ? t('Active') : t('Inactive')}
                                 </Badge>
                             </CardHeader>
                             <CardContent>
@@ -113,17 +116,17 @@ export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props)
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <Label>Display Name</Label>
+                                                <Label>{t('Display Name')}</Label>
                                                 <Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
                                             </div>
                                             <div>
-                                                <Label>Description (optional)</Label>
+                                                <Label>{t('Description (optional)')}</Label>
                                                 <Input value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} />
                                             </div>
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <Label className="text-sm font-medium">Approval Chain Steps</Label>
+                                                <Label className="text-sm font-medium">{t('Approval Chain Steps')}</Label>
                                                 <Button type="button" variant="outline" size="sm" onClick={addStep}>
                                                     <Plus className="h-3 w-3 mr-1" /> Add Step
                                                 </Button>
@@ -134,8 +137,8 @@ export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props)
                                                     <Select value={step.actorType} onValueChange={v => updateStep(idx, 'actorType', v)}>
                                                         <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="role">Role</SelectItem>
-                                                            <SelectItem value="user">User</SelectItem>
+                                                            <SelectItem value="role">{t('Role')}</SelectItem>
+                                                            <SelectItem value="user">{t('User')}</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                     {step.actorType === 'role' ? (
@@ -153,7 +156,7 @@ export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props)
                                                             </SelectContent>
                                                         </Select>
                                                     )}
-                                                    <Input className="flex-1" placeholder="Note (optional)" value={step.note || ''} onChange={e => updateStep(idx, 'note', e.target.value)} />
+                                                    <Input className="flex-1" placeholder={t('Note (optional)')} value={step.note || ''} onChange={e => updateStep(idx, 'note', e.target.value)} />
                                                     {editSteps.length > 1 && (
                                                         <Button type="button" variant="ghost" size="sm" onClick={() => removeStep(idx)} className="text-destructive">
                                                             <Trash2 className="h-4 w-4" />
@@ -165,25 +168,24 @@ export default function ApprovalFlows({ flows, staffUsers, roleOptions }: Props)
                                         <div className="flex gap-2 pt-2">
                                             <Button onClick={() => saveFlow(flow)} disabled={saving}>
                                                 {saving && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                                                Save Changes
-                                            </Button>
-                                            <Button variant="outline" onClick={cancelEdit}>Cancel</Button>
+                                                {t('Save Changes')}</Button>
+                                            <Button variant="outline" onClick={cancelEdit}>{t('Cancel')}</Button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <p className="text-sm font-medium">Active: <Badge variant={flow.isActive ? 'default' : 'secondary'}>{flow.isActive ? 'Yes' : 'No'}</Badge></p>
+                                                <p className="text-sm font-medium">{t('Active:')}<Badge variant={flow.isActive ? 'default' : 'secondary'}>{flow.isActive ? t('Yes') : 'No'}</Badge></p>
                                                 <p className="text-sm text-muted-foreground mt-1">
                                                     {flow.steps.length} step{flow.steps.length !== 1 ? 's' : ''}:
                                                     {flow.steps.map(s => ` ${s.actorType === 'role' ? s.actorValue : 'user'}`).join(' → ')}
                                                 </p>
                                             </div>
                                             <div className="flex gap-2">
-                                                <Button variant="outline" size="sm" onClick={() => startEdit(flow)}>Configure</Button>
+                                                <Button variant="outline" size="sm" onClick={() => startEdit(flow)}>{t('Configure')}</Button>
                                                 <Button variant="outline" size="sm" onClick={() => toggleActive(flow, !flow.isActive)} disabled={!flow.flowId}>
-                                                    {flow.isActive ? 'Disable' : 'Enable'}
+                                                    {flow.isActive ? t('Disable') : t('Enable')}
                                                 </Button>
                                             </div>
                                         </div>

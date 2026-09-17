@@ -100,6 +100,7 @@ import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface Metric {
     label: string;
@@ -261,6 +262,7 @@ const palette = [
 ];
 
 function ChartCard({ chart }: { chart: ChartWidget }) {
+    const { t } = useLanguage();
     const hasSecond = chart.data.some((d) => d.value2 !== undefined);
 
     return (
@@ -272,7 +274,7 @@ function ChartCard({ chart }: { chart: ChartWidget }) {
                 {chart.kind === 'list' ? (
                     <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                         {chart.data.length === 0 && (
-                            <li className="py-6 text-center text-sm text-gray-400">No records yet.</li>
+                            <li className="py-6 text-center text-sm text-gray-400">{t('No records yet.')}</li>
                         )}
                         {chart.data.map((item, index) => (
                             <li key={index} className="flex items-center justify-between gap-3 py-2.5">
@@ -361,6 +363,7 @@ export default function DomainDashboard({
     sections,
     charts,
 }: DomainDashboardProps) {
+    const { t } = useLanguage();
     const [openIndex, setOpenIndex] = useState<number | null>(null);
     const empty = metrics.length === 0;
 
@@ -394,7 +397,7 @@ export default function DomainDashboard({
                 {empty ? (
                     <Card>
                         <CardContent className="p-12 text-center">
-                            <p className="text-sm text-gray-400">No data available for this dashboard yet.</p>
+                            <p className="text-sm text-gray-400">{t('No data available for this dashboard yet.')}</p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -450,12 +453,12 @@ export default function DomainDashboard({
                                     className="text-xs text-gray-400 transition hover:text-gray-700 dark:hover:text-gray-200"
                                     onClick={() => setOpenIndex(openIndex === index ? null : index)}
                                 >
-                                    {openIndex === index ? 'Show fewer' : `Show all (${section.rows.length})`}
+                                    {openIndex === index ? t('Show fewer') : `Show all (${section.rows.length})`}
                                 </button>
                             )}
                         </div>
                         {section.rows.length === 0 ? (
-                            <div className="px-6 py-8 text-center text-sm text-gray-400">No records yet.</div>
+                            <div className="px-6 py-8 text-center text-sm text-gray-400">{t('No records yet.')}</div>
                         ) : (
                             <Table>
                                 <TableHeader>

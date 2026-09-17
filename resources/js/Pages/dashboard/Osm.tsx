@@ -20,6 +20,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface Sheet {
     id: number;
@@ -135,6 +136,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function Osm(pageProps: OsmProps) {
+    const { t } = useLanguage();
     const { user, tab, sessions, evaluations, pendingModeration, classOptions, students, statusOptions, summary } =
         pageProps;
     const [activeTab, setActiveTab] = useState<Tab>(tab as Tab);
@@ -271,13 +273,13 @@ export default function Osm(pageProps: OsmProps) {
                         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Sessions</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Sessions')}</p>
                                     <p className="text-2xl font-bold">{summary.sessions}</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Sheets</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Sheets')}</p>
                                     <p className="text-2xl font-bold">
                                         {summary.evaluatedTotal} / {summary.sheetsTotal}
                                     </p>
@@ -285,19 +287,19 @@ export default function Osm(pageProps: OsmProps) {
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Evaluations</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Evaluations')}</p>
                                     <p className="text-2xl font-bold">{summary.evaluations}</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Pending Moderation</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Pending Moderation')}</p>
                                     <p className="text-2xl font-bold text-purple-600">{summary.pendingModeration}</p>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Avg Score</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Avg Score')}</p>
                                     <p className="text-2xl font-bold">{summary.averageScore}</p>
                                 </CardContent>
                             </Card>
@@ -305,7 +307,7 @@ export default function Osm(pageProps: OsmProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Status Distribution</CardTitle>
+                                <CardTitle className="text-base">{t('Status Distribution')}</CardTitle>
                             </CardHeader>
                             <CardContent className="grid gap-6 lg:grid-cols-2">
                                 <div className="space-y-3">
@@ -333,7 +335,7 @@ export default function Osm(pageProps: OsmProps) {
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                         {summary.studentsAssessed} students assessed across {summary.sessions} sessions.
                                         Averages recommended when sessions reach{' '}
-                                        <Badge className="ml-1">Moderation</Badge> stage.
+                                        <Badge className="ml-1">{t('Moderation')}</Badge> stage.
                                     </p>
                                 </div>
                             </CardContent>
@@ -350,10 +352,10 @@ export default function Osm(pageProps: OsmProps) {
                                         onValueChange={statusFilterSelect}
                                     >
                                         <SelectTrigger className="w-44">
-                                            <SelectValue placeholder="All statuses" />
+                                            <SelectValue placeholder={t('All statuses')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="select-all-null">All statuses</SelectItem>
+                                            <SelectItem value="select-all-null">{t('All statuses')}</SelectItem>
                                             {statusOptions.map((status) => (
                                                 <SelectItem key={status} value={status}>
                                                     {STATUS_LABELS[status] ?? status}
@@ -363,10 +365,10 @@ export default function Osm(pageProps: OsmProps) {
                                     </Select>
                                     <Select value={classFilter || 'select-all-null'} onValueChange={classFilterSelect}>
                                         <SelectTrigger className="w-44">
-                                            <SelectValue placeholder="All classes" />
+                                            <SelectValue placeholder={t('All classes')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="select-all-null">All classes</SelectItem>
+                                            <SelectItem value="select-all-null">{t('All classes')}</SelectItem>
                                             {classOptions.map((option) => (
                                                 <SelectItem key={option.id} value={String(option.id)}>
                                                     {option.label}
@@ -379,12 +381,12 @@ export default function Osm(pageProps: OsmProps) {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Session</TableHead>
+                                                <TableHead>{t('Session')}</TableHead>
                                                 <TableHead>Class · Subject</TableHead>
-                                                <TableHead>Sheets</TableHead>
-                                                <TableHead>Progress</TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead>Term</TableHead>
+                                                <TableHead>{t('Sheets')}</TableHead>
+                                                <TableHead>{t('Progress')}</TableHead>
+                                                <TableHead>{t('Status')}</TableHead>
+                                                <TableHead>{t('Term')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -439,7 +441,7 @@ export default function Osm(pageProps: OsmProps) {
                     <>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Create Session</CardTitle>
+                                <CardTitle className="text-base">{t('Create Session')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <form
@@ -473,14 +475,13 @@ export default function Osm(pageProps: OsmProps) {
                                         </SelectContent>
                                     </Select>
                                     <Input
-                                        placeholder="Notes"
+                                        placeholder={t('Notes')}
                                         value={sessionForm.notes}
                                         onChange={(e) => setSessionForm({ ...sessionForm, notes: e.target.value })}
                                     />
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Create
-                                    </Button>
+                                        {t('Create')}</Button>
                                 </form>
                             </CardContent>
                         </Card>
@@ -503,7 +504,7 @@ export default function Osm(pageProps: OsmProps) {
                                             }
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select session" />
+                                                <SelectValue placeholder={t('Select session')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {sessions.map((session) => (
@@ -515,13 +516,13 @@ export default function Osm(pageProps: OsmProps) {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Class</Label>
+                                        <Label>{t('Class')}</Label>
                                         <Select
                                             value={sheetForm.class_id}
                                             onValueChange={(value) => setSheetForm({ ...sheetForm, class_id: value })}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Optional" />
+                                                <SelectValue placeholder={t('Optional')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {classOptions.map((option) => (
@@ -533,14 +534,14 @@ export default function Osm(pageProps: OsmProps) {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Subject</Label>
+                                        <Label>{t('Subject')}</Label>
                                         <Input
                                             value={sheetForm.subject}
                                             onChange={(e) => setSheetForm({ ...sheetForm, subject: e.target.value })}
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Sheets Count</Label>
+                                        <Label>{t('Sheets Count')}</Label>
                                         <Input
                                             type="number"
                                             min={0}
@@ -601,23 +602,23 @@ export default function Osm(pageProps: OsmProps) {
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">Delete</span>
+                                                <span className="sr-only">{t('Delete')}</span>
                                             </Button>
                                         </div>
                                     </div>
                                     <p className="text-xs text-gray-400">
-                                        Term {session.term} · {session.evaluated}/{session.sheetsTotal} evaluated
+                                        {t('Term')}{session.term} · {session.evaluated}/{session.sheetsTotal} evaluated
                                     </p>
                                 </CardHeader>
                                 <CardContent className="p-0">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Class</TableHead>
-                                                <TableHead>Subject</TableHead>
-                                                <TableHead className="text-right">Sheets</TableHead>
-                                                <TableHead className="text-right">Evaluated</TableHead>
-                                                <TableHead className="text-right">Progress</TableHead>
+                                                <TableHead>{t('Class')}</TableHead>
+                                                <TableHead>{t('Subject')}</TableHead>
+                                                <TableHead className="text-right">{t('Sheets')}</TableHead>
+                                                <TableHead className="text-right">{t('Evaluated')}</TableHead>
+                                                <TableHead className="text-right">{t('Progress')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -659,11 +660,11 @@ export default function Osm(pageProps: OsmProps) {
                 {activeTab === 'evaluate' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Evaluate Sheets</CardTitle>
+                            <CardTitle className="text-base">{t('Evaluate Sheets')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {sessions.length === 0 && (
-                                <p className="py-8 text-center text-sm text-gray-400">Create a session first.</p>
+                                <p className="py-8 text-center text-sm text-gray-400">{t('Create a session first.')}</p>
                             )}
                             {sessions.map((session) => (
                                 <div
@@ -677,7 +678,7 @@ export default function Osm(pageProps: OsmProps) {
                                         </Badge>
                                     </p>
                                     {session.sheets.length === 0 ? (
-                                        <p className="text-xs text-gray-400">No sheets.</p>
+                                        <p className="text-xs text-gray-400">{t('No sheets.')}</p>
                                     ) : (
                                         <div className="divide-y divide-slate-100 dark:divide-slate-800">
                                             {session.sheets.map((sheet) => (
@@ -697,8 +698,7 @@ export default function Osm(pageProps: OsmProps) {
                                                         onClick={() => openEvaluate(sheet, session.id)}
                                                     >
                                                         <ClipboardCheck className="mr-2 h-4 w-4" />
-                                                        Evaluate
-                                                    </Button>
+                                                        {t('Evaluate')}</Button>
                                                 </div>
                                             ))}
                                         </div>
@@ -709,9 +709,9 @@ export default function Osm(pageProps: OsmProps) {
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Student</TableHead>
+                                                        <TableHead>{t('Student')}</TableHead>
                                                         <TableHead className="w-28">Score (0-25)</TableHead>
-                                                        <TableHead>Feedback</TableHead>
+                                                        <TableHead>{t('Feedback')}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -775,8 +775,7 @@ export default function Osm(pageProps: OsmProps) {
                                                     variant="ghost"
                                                     onClick={() => setExpandedSheet(null)}
                                                 >
-                                                    Cancel
-                                                </Button>
+                                                    {t('Cancel')}</Button>
                                                 <Button type="submit">
                                                     <CheckCircle2 className="mr-2 h-4 w-4" />
                                                     Submit Evaluations
@@ -793,38 +792,38 @@ export default function Osm(pageProps: OsmProps) {
                 {activeTab === 'reports' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">OSM Reports</CardTitle>
+                            <CardTitle className="text-base">{t('OSM Reports')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Sessions</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Sessions')}</p>
                                         <p className="text-2xl font-bold">{summary.sessions}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Sheets</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Sheets')}</p>
                                         <p className="text-2xl font-bold">{summary.sheets}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Evaluations</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Evaluations')}</p>
                                         <p className="text-2xl font-bold">{summary.evaluations}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Avg Score</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Avg Score')}</p>
                                         <p className="text-2xl font-bold">{summary.averageScore}</p>
                                     </CardContent>
                                 </Card>
                             </div>
 
                             <div>
-                                <p className="mb-2 text-sm font-medium">Session Progress</p>
+                                <p className="mb-2 text-sm font-medium">{t('Session Progress')}</p>
                                 {sessions.map((session) => (
                                     <div key={session.id} className="mb-2">
                                         <div className="mb-1 flex justify-between text-sm">
@@ -852,20 +851,19 @@ export default function Osm(pageProps: OsmProps) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Student</TableHead>
-                                            <TableHead>Session</TableHead>
-                                            <TableHead>Subject</TableHead>
-                                            <TableHead className="text-right">Score</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Assessed</TableHead>
+                                            <TableHead>{t('Student')}</TableHead>
+                                            <TableHead>{t('Session')}</TableHead>
+                                            <TableHead>{t('Subject')}</TableHead>
+                                            <TableHead className="text-right">{t('Score')}</TableHead>
+                                            <TableHead>{t('Status')}</TableHead>
+                                            <TableHead>{t('Assessed')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {evaluations.length === 0 && (
                                             <TableRow>
                                                 <TableCell colSpan={6} className="py-10 text-center text-gray-400">
-                                                    No evaluations recorded yet.
-                                                </TableCell>
+                                                    {t('No evaluations recorded yet.')}</TableCell>
                                             </TableRow>
                                         )}
                                         {evaluations.map((evaluation) => (
@@ -917,12 +915,12 @@ export default function Osm(pageProps: OsmProps) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Student</TableHead>
-                                        <TableHead>Session</TableHead>
-                                        <TableHead>Subject</TableHead>
-                                        <TableHead className="text-right">Score</TableHead>
-                                        <TableHead>Evaluated By</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                        <TableHead>{t('Student')}</TableHead>
+                                        <TableHead>{t('Session')}</TableHead>
+                                        <TableHead>{t('Subject')}</TableHead>
+                                        <TableHead className="text-right">{t('Score')}</TableHead>
+                                        <TableHead>{t('Evaluated By')}</TableHead>
+                                        <TableHead className="text-right">{t('Actions')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -953,16 +951,14 @@ export default function Osm(pageProps: OsmProps) {
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Button size="sm" onClick={() => moderate(item.id, 'ok')}>
                                                         <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                        Approve
-                                                    </Button>
+                                                        {t('Approve')}</Button>
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
                                                         className="text-rose-500 hover:text-rose-600"
                                                         onClick={() => moderate(item.id, 'rejected')}
                                                     >
-                                                        Reject
-                                                    </Button>
+                                                        {t('Reject')}</Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -976,13 +972,13 @@ export default function Osm(pageProps: OsmProps) {
                 {activeTab === 'guide' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">OSM Guide</CardTitle>
+                            <CardTitle className="text-base">{t('OSM Guide')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">1</Badge>
                                 <p>
-                                    <strong>Create a session</strong> for a term (e.g. Term1). Give it a meaningful name
+                                    <strong>{t('Create a session')}</strong> for a term (e.g. Term1). Give it a meaningful name
                                     such as <em>OSM — English (Class I)</em>.
                                 </p>
                             </div>
@@ -990,30 +986,30 @@ export default function Osm(pageProps: OsmProps) {
                                 <Badge className="h-6 w-6 rounded-full">2</Badge>
                                 <p>
                                     <strong>Add class · subject sheets</strong> to a session. Each sheet tracks how many
-                                    answer sheets exist (<em>Sheets</em>) and how many have been evaluated (
-                                    <em>Evaluated</em>).
+                                    answer sheets exist (<em>{t('Sheets')}</em>) and how many have been evaluated (
+                                    <em>{t('Evaluated')}</em>).
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">3</Badge>
                                 <p>
-                                    <strong>Evaluate</strong> students of a sheet's class with a score (0-25) and
+                                    <strong>{t('Evaluate')}</strong> students of a sheet's class with a score (0-25) and
                                     optional feedback. Once a session has evaluations it moves to{' '}
-                                    <Badge>Evaluating</Badge> automatically.
+                                    <Badge>{t('Evaluating')}</Badge> automatically.
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">4</Badge>
                                 <p>
-                                    <strong>Moderation</strong> — a moderator reviews pending evaluations and approves
+                                    <strong>{t('Moderation')}</strong> — a moderator reviews pending evaluations and approves
                                     or rejects them.
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">5</Badge>
                                 <p>
-                                    When marking finishes, move the session status to <Badge>Completed</Badge> or{' '}
-                                    <Badge>Archived</Badge> from the Sessions tab. Track completion via the Dashboard
+                                    When marking finishes, move the session status to <Badge>{t('Completed')}</Badge> or{' '}
+                                    <Badge>{t('Archived')}</Badge> from the Sessions tab. Track completion via the Dashboard
                                     and Reports tabs.
                                 </p>
                             </div>

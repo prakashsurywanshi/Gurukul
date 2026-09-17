@@ -167,11 +167,11 @@ export default function SupplierPayments({ user, payments, suppliers, summary }:
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="cash">Cash</SelectItem>
-                                        <SelectItem value="cheque">Cheque</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                        <SelectItem value="upi">UPI</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        <SelectItem value="cash">{t('Cash')}</SelectItem>
+                                        <SelectItem value="cheque">{t('Cheque')}</SelectItem>
+                                        <SelectItem value="bank_transfer">{t('Bank Transfer')}</SelectItem>
+                                        <SelectItem value="upi">{t('UPI')}</SelectItem>
+                                        <SelectItem value="other">{t('Other')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

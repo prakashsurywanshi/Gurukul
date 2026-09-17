@@ -37,6 +37,7 @@ type StudentRecord = {
 };
 
 interface Props {
+    user: any;
     requests: ConcessionRequest[];
     students: StudentRecord[];
     statuses: string[];
@@ -46,7 +47,7 @@ interface Props {
 const currency = (value: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
 
-export default function FeeConcessions({ requests, students, canReview }: Props) {
+export default function FeeConcessions({ user, requests, students, canReview }: Props) {
     const { t } = useLanguage();
     const [filterStatus, setFilterStatus] = useState('pending');
     const [showModal, setShowModal] = useState(false);
@@ -97,7 +98,7 @@ export default function FeeConcessions({ requests, students, canReview }: Props)
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout user={user} activeTab="fee-concessions">
             <div className="space-y-6 p-6 lg:p-8">
                 <Card>
                     <CardHeader className="flex flex-row items-start justify-between gap-4">

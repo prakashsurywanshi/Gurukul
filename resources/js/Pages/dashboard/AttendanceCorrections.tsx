@@ -39,6 +39,7 @@ type StudentRecord = {
 };
 
 interface Props {
+    user: any;
     corrections: Correction[];
     classRecords: ClassRecord[];
     students: StudentRecord[];
@@ -46,7 +47,7 @@ interface Props {
     canReview: boolean;
 }
 
-export default function AttendanceCorrections({ corrections, students, statuses, canReview }: Props) {
+export default function AttendanceCorrections({ user, corrections, students, statuses, canReview }: Props) {
     const { t } = useLanguage();
     const [filterStatus, setFilterStatus] = useState('pending');
     const [showModal, setShowModal] = useState(false);
@@ -108,7 +109,7 @@ export default function AttendanceCorrections({ corrections, students, statuses,
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout user={user} activeTab="attendance-corrections">
             <div className="space-y-6 p-6 lg:p-8">
                 <Card>
                     <CardHeader className="flex flex-row items-start justify-between gap-4">

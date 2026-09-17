@@ -260,7 +260,7 @@ export default function TemplateFiveLayout({
                                 </div>
                                 <div className="pr-2">
                                     <p className="text-[10px] font-semibold uppercase tracking-wider text-[#002147]">
-                                        {cmsContent.templateFiveAccreditedBadgeLabel || 'Accredited'}
+                                        {cmsContent.templateFiveAccreditedBadgeLabel || t('Accredited')}
                                     </p>
                                     <p className="text-[10px] text-stone-500">
                                         {cmsContent.templateFiveAccreditedBadgeGrade || 'NAAC A+ Grade'}
@@ -294,7 +294,7 @@ export default function TemplateFiveLayout({
                                 }`}
                             >
                                 {isEditing ? <Check className="h-3 w-3" /> : <Pencil className="h-3 w-3" />}
-                                {isEditing ? 'Done Editing' : 'Edit Page'}
+                                {isEditing ? t('Done Editing') : t('Edit Page')}
                             </button>
                         )}
                         {user && (
@@ -303,8 +303,7 @@ export default function TemplateFiveLayout({
                                 className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-md transition hover:bg-[#1d4ed8]"
                             >
                                 <Plus className="h-3 w-3" />
-                                Create Page
-                            </Link>
+                                {t('Create Page')}</Link>
                         )}
                     </div>
                 </div>
@@ -447,7 +446,7 @@ export default function TemplateFiveLayout({
                                                 : 'border border-[#002147]/20 text-[#002147] hover:bg-[#002147]/5'
                                         }`}
                                     >
-                                        {isEditing ? 'Done Editing' : 'Edit Page'}
+                                        {isEditing ? t('Done Editing') : t('Edit Page')}
                                     </button>
                                 )}
                                 {user && (

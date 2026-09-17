@@ -157,7 +157,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="true">Yes</SelectItem>
+                                        <SelectItem value="true">{t('Yes')}</SelectItem>
                                         <SelectItem value="false">No</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -169,7 +169,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="true">Yes</SelectItem>
+                                        <SelectItem value="true">{t('Yes')}</SelectItem>
                                         <SelectItem value="false">No</SelectItem>
                                     </SelectContent>
                                 </Select>

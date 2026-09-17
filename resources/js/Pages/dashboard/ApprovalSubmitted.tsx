@@ -5,6 +5,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Loader2, Send, CheckCircle2, XCircle, Clock, Ban } from 'lucide-react';
 import { useState } from 'react';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 type ApprovalStep = {
     stepNo: number;
@@ -35,20 +36,22 @@ type ApprovalRequestItem = {
 };
 
 interface Props {
+    user: any;
     requests: ApprovalRequestItem[];
 }
 
-const statusBadge = (status: string) => {
+const statusBadge = (status: string, t: (key: string) => string) => {
     switch (status) {
-        case 'pending': return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-        case 'approved': return <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" />Approved</Badge>;
-        case 'rejected': return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
-        case 'cancelled': return <Badge variant="secondary"><Ban className="h-3 w-3 mr-1" />Cancelled</Badge>;
+        case 'pending': return <Badge variant="outline"><Clock className="h-3 w-3 mr-1" />{t('Pending')}</Badge>;
+        case 'approved': return <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" />{t('Approved')}</Badge>;
+        case 'rejected': return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />{t('Rejected')}</Badge>;
+        case 'cancelled': return <Badge variant="secondary"><Ban className="h-3 w-3 mr-1" />{t('Cancelled')}</Badge>;
         default: return <Badge variant="secondary">{status}</Badge>;
     }
 };
 
-export default function ApprovalSubmitted({ requests }: Props) {
+export default function ApprovalSubmitted({ user, requests }: Props) {
+    const { t } = useLanguage();
     const [cancellingId, setCancellingId] = useState<number | null>(null);
 
     const cancel = (id: number) => {
@@ -60,13 +63,13 @@ export default function ApprovalSubmitted({ requests }: Props) {
     };
 
     return (
-        <DashboardLayout title="Submitted Requests">
+        <DashboardLayout user={user} activeTab="approvals-submitted">
             <div className="space-y-6">
                 <div className="flex items-center gap-3">
                     <Send className="h-6 w-6 text-primary" />
                     <div>
-                        <h1 className="text-2xl font-bold">My Submitted Requests</h1>
-                        <p className="text-sm text-muted-foreground">Track approval requests you have submitted.</p>
+                        <h1 className="text-2xl font-bold">{t('My Submitted Requests')}</h1>
+                        <p className="text-sm text-muted-foreground">{t('Track approval requests you have submitted.')}</p>
                     </div>
                 </div>
 
@@ -74,8 +77,8 @@ export default function ApprovalSubmitted({ requests }: Props) {
                     <Card>
                         <CardContent className="py-12 text-center text-muted-foreground">
                             <Send className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                            <p className="font-medium">No submitted requests</p>
-                            <p className="text-sm mt-1">Requests you submit for approval will appear here.</p>
+                            <p className="font-medium">{t('No submitted requests')}</p>
+                            <p className="text-sm mt-1">{t('Requests you submit for approval will appear here.')}</p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -88,7 +91,7 @@ export default function ApprovalSubmitted({ requests }: Props) {
                                         <CardDescription>{req.summary}</CardDescription>
                                         <div className="flex items-center gap-2 mt-1">
                                             <Badge variant="secondary">{req.moduleLabel}</Badge>
-                                            {statusBadge(req.status)}
+                                            {statusBadge(req.status, t)}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -113,7 +116,7 @@ export default function ApprovalSubmitted({ requests }: Props) {
                                     )}
 
                                     <div className="space-y-2">
-                                        <p className="text-sm font-medium">Approval Chain</p>
+                                        <p className="text-sm font-medium">{t('Approval Chain')}</p>
                                         <div className="flex items-center gap-2 flex-wrap">
                                             {req.steps.map((step, i) => (
                                                 <div key={i} className="flex items-center gap-2">

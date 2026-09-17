@@ -26,6 +26,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface MaintenanceLog {
     id: number;
@@ -113,6 +114,7 @@ const emptyForm = {
 };
 
 export default function Assets(pageProps: AssetsProps) {
+    const { t } = useLanguage();
     const { user, assets, filters, categories, stats } = pageProps;
     const [search, setSearch] = useState(filters.search);
     const [status, setStatus] = useState(filters.status);
@@ -349,7 +351,7 @@ export default function Assets(pageProps: AssetsProps) {
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Asset
+                        {t('Add Asset')}
                     </Button>
                 </div>
 
@@ -358,7 +360,7 @@ export default function Assets(pageProps: AssetsProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <BadgeIndianRupee className="h-8 w-8 text-emerald-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Cost</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Total Cost')}</p>
                                 <p className="text-lg font-semibold">₹{stats.totalCost}</p>
                             </div>
                         </CardContent>
@@ -367,7 +369,7 @@ export default function Assets(pageProps: AssetsProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Archive className="h-8 w-8 text-indigo-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Current Value</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Current Value')}</p>
                                 <p className="text-lg font-semibold">₹{stats.currentValue}</p>
                             </div>
                         </CardContent>
@@ -376,7 +378,7 @@ export default function Assets(pageProps: AssetsProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Wrench className="h-8 w-8 text-amber-500" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Under Maintenance</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Under Maintenance')}</p>
                                 <p className="text-lg font-semibold">{stats.underMaintenance}</p>
                             </div>
                         </CardContent>
@@ -385,7 +387,7 @@ export default function Assets(pageProps: AssetsProps) {
                         <CardContent className="flex items-center gap-3 p-4">
                             <Trash2 className="h-8 w-8 text-gray-400" />
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Disposed</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t('Disposed')}</p>
                                 <p className="text-lg font-semibold">{stats.disposed}</p>
                             </div>
                         </CardContent>
@@ -426,7 +428,7 @@ export default function Assets(pageProps: AssetsProps) {
                                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Assigned Assets</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Assigned Assets')}</p>
                                             <p className="text-lg font-semibold">{assignedAssets.length}</p>
                                         </CardContent>
                                     </Card>
@@ -453,11 +455,11 @@ export default function Assets(pageProps: AssetsProps) {
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Asset</TableHead>
-                                                        <TableHead>Code</TableHead>
-                                                        <TableHead>Assigned To</TableHead>
-                                                        <TableHead>Category</TableHead>
-                                                        <TableHead className="text-right">Current Value</TableHead>
+                                                        <TableHead>{t('Asset')}</TableHead>
+                                                        <TableHead>{t('Code')}</TableHead>
+                                                        <TableHead>{t('Assigned To')}</TableHead>
+                                                        <TableHead>{t('Category')}</TableHead>
+                                                        <TableHead className="text-right">{t('Current Value')}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -483,7 +485,7 @@ export default function Assets(pageProps: AssetsProps) {
                                         </CardContent>
                                     </Card>
                                 ) : (
-                                    <p className="py-8 text-center text-sm text-gray-400">No assets assigned yet.</p>
+                                    <p className="py-8 text-center text-sm text-gray-400">{t('No assets assigned yet.')}</p>
                                 )}
                             </>
                         )}
@@ -519,10 +521,10 @@ export default function Assets(pageProps: AssetsProps) {
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Asset</TableHead>
-                                                        <TableHead>Rate</TableHead>
-                                                        <TableHead className="text-right">Purchase Cost</TableHead>
-                                                        <TableHead className="text-right">Current Value</TableHead>
+                                                        <TableHead>{t('Asset')}</TableHead>
+                                                        <TableHead>{t('Rate')}</TableHead>
+                                                        <TableHead className="text-right">{t('Purchase Cost')}</TableHead>
+                                                        <TableHead className="text-right">{t('Current Value')}</TableHead>
                                                         <TableHead className="text-right">
                                                             Annual Depreciation
                                                         </TableHead>
@@ -568,13 +570,13 @@ export default function Assets(pageProps: AssetsProps) {
                                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Disposed Assets</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Disposed Assets')}</p>
                                             <p className="text-lg font-semibold">{disposedAssets.length}</p>
                                         </CardContent>
                                     </Card>
                                     <Card>
                                         <CardContent className="p-4">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Total Sale Value</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Total Sale Value')}</p>
                                             <p className="text-lg font-semibold">
                                                 ₹
                                                 {disposedAssets
@@ -594,11 +596,11 @@ export default function Assets(pageProps: AssetsProps) {
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Asset</TableHead>
-                                                        <TableHead>Code</TableHead>
-                                                        <TableHead className="text-right">Purchase Cost</TableHead>
-                                                        <TableHead>Disposal Date</TableHead>
-                                                        <TableHead className="text-right">Sale Price</TableHead>
+                                                        <TableHead>{t('Asset')}</TableHead>
+                                                        <TableHead>{t('Code')}</TableHead>
+                                                        <TableHead className="text-right">{t('Purchase Cost')}</TableHead>
+                                                        <TableHead>{t('Disposal Date')}</TableHead>
+                                                        <TableHead className="text-right">{t('Sale Price')}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -626,7 +628,7 @@ export default function Assets(pageProps: AssetsProps) {
                                         </CardContent>
                                     </Card>
                                 ) : (
-                                    <p className="py-8 text-center text-sm text-gray-400">No disposed assets.</p>
+                                    <p className="py-8 text-center text-sm text-gray-400">{t('No disposed assets.')}</p>
                                 )}
                             </>
                         )}
@@ -649,12 +651,12 @@ export default function Assets(pageProps: AssetsProps) {
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Date</TableHead>
-                                                        <TableHead>Asset</TableHead>
-                                                        <TableHead>Type</TableHead>
-                                                        <TableHead>Performed By</TableHead>
-                                                        <TableHead className="text-right">Cost</TableHead>
-                                                        <TableHead>Notes</TableHead>
+                                                        <TableHead>{t('Date')}</TableHead>
+                                                        <TableHead>{t('Asset')}</TableHead>
+                                                        <TableHead>{t('Type')}</TableHead>
+                                                        <TableHead>{t('Performed By')}</TableHead>
+                                                        <TableHead className="text-right">{t('Cost')}</TableHead>
+                                                        <TableHead>{t('Notes')}</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -691,17 +693,17 @@ export default function Assets(pageProps: AssetsProps) {
                         {view === 'categories' && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-base">Categories</CardTitle>
+                                    <CardTitle className="text-base">{t('Categories')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Category</TableHead>
-                                                <TableHead className="text-right">Assets</TableHead>
-                                                <TableHead className="text-right">Purchase Cost</TableHead>
-                                                <TableHead className="text-right">Current Value</TableHead>
-                                                <TableHead className="text-right">Depreciated</TableHead>
+                                                <TableHead>{t('Category')}</TableHead>
+                                                <TableHead className="text-right">{t('Assets')}</TableHead>
+                                                <TableHead className="text-right">{t('Purchase Cost')}</TableHead>
+                                                <TableHead className="text-right">{t('Current Value')}</TableHead>
+                                                <TableHead className="text-right">{t('Depreciated')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -737,17 +739,17 @@ export default function Assets(pageProps: AssetsProps) {
                         {view === 'reports' && (
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-base">Category Report</CardTitle>
+                                    <CardTitle className="text-base">{t('Category Report')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-0">
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Category</TableHead>
-                                                <TableHead className="text-right">Assets</TableHead>
-                                                <TableHead className="text-right">Purchase Cost</TableHead>
-                                                <TableHead className="text-right">Current Value</TableHead>
-                                                <TableHead className="text-right">Depreciated</TableHead>
+                                                <TableHead>{t('Category')}</TableHead>
+                                                <TableHead className="text-right">{t('Assets')}</TableHead>
+                                                <TableHead className="text-right">{t('Purchase Cost')}</TableHead>
+                                                <TableHead className="text-right">{t('Current Value')}</TableHead>
+                                                <TableHead className="text-right">{t('Depreciated')}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -807,10 +809,10 @@ export default function Assets(pageProps: AssetsProps) {
                                     </div>
                                     <Select value={status} onValueChange={setStatus}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="All statuses" />
+                                            <SelectValue placeholder={t('All statuses')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="select-all-null">All statuses</SelectItem>
+                                            <SelectItem value="select-all-null">{t('All statuses')}</SelectItem>
                                             {Object.entries(STATUS_LABELS).map(([value, label]) => (
                                                 <SelectItem key={value} value={value}>
                                                     {label}
@@ -820,10 +822,10 @@ export default function Assets(pageProps: AssetsProps) {
                                     </Select>
                                     <Select value={category} onValueChange={setCategory}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="All categories" />
+                                            <SelectValue placeholder={t('All categories')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="select-all-null">All categories</SelectItem>
+                                            <SelectItem value="select-all-null">{t('All categories')}</SelectItem>
                                             {categories.map((option) => (
                                                 <SelectItem key={option} value={option}>
                                                     {option}
@@ -835,12 +837,10 @@ export default function Assets(pageProps: AssetsProps) {
                                 <div className="flex items-center justify-end gap-2">
                                     <Button variant="ghost" onClick={resetFilters}>
                                         <RefreshCw className="mr-2 h-4 w-4" />
-                                        Reset
-                                    </Button>
+                                        {t('Reset')}</Button>
                                     <Button onClick={applyFilters}>
                                         <Search className="mr-2 h-4 w-4" />
-                                        Apply
-                                    </Button>
+                                        {t('Apply')}</Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -850,14 +850,14 @@ export default function Assets(pageProps: AssetsProps) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Asset</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Category</TableHead>
-                                            <TableHead>Purchase Date</TableHead>
-                                            <TableHead className="text-right">Cost</TableHead>
-                                            <TableHead className="text-right">Current Value</TableHead>
-                                            <TableHead>Condition</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
+                                            <TableHead>{t('Asset')}</TableHead>
+                                            <TableHead>{t('Status')}</TableHead>
+                                            <TableHead>{t('Category')}</TableHead>
+                                            <TableHead>{t('Purchase Date')}</TableHead>
+                                            <TableHead className="text-right">{t('Cost')}</TableHead>
+                                            <TableHead className="text-right">{t('Current Value')}</TableHead>
+                                            <TableHead>{t('Condition')}</TableHead>
+                                            <TableHead className="text-right">{t('Actions')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -906,7 +906,7 @@ export default function Assets(pageProps: AssetsProps) {
                                                             onClick={() => setDetails(asset)}
                                                         >
                                                             <Warehouse className="h-4 w-4" />
-                                                            <span className="sr-only">Details</span>
+                                                            <span className="sr-only">{t('Details')}</span>
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
@@ -914,7 +914,7 @@ export default function Assets(pageProps: AssetsProps) {
                                                             onClick={() => openEdit(asset)}
                                                         >
                                                             <Pencil className="h-4 w-4" />
-                                                            <span className="sr-only">Edit</span>
+                                                            <span className="sr-only">{t('Edit')}</span>
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
@@ -922,7 +922,7 @@ export default function Assets(pageProps: AssetsProps) {
                                                             onClick={() => setMaintenanceFor(asset)}
                                                         >
                                                             <Wrench className="h-4 w-4" />
-                                                            <span className="sr-only">Maintenance</span>
+                                                            <span className="sr-only">{t('Maintenance')}</span>
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
@@ -931,7 +931,7 @@ export default function Assets(pageProps: AssetsProps) {
                                                             className="text-rose-500 hover:text-rose-600"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Delete</span>
+                                                            <span className="sr-only">{t('Delete')}</span>
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -955,9 +955,9 @@ export default function Assets(pageProps: AssetsProps) {
                 >
                     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                         <DialogHeader>
-                            <DialogTitle>{editing ? 'Edit Asset' : 'Add Asset'}</DialogTitle>
+                            <DialogTitle>{editing ? t('Edit Asset') : t('Add Asset')}</DialogTitle>
                             <DialogDescription>
-                                {editing ? 'Update asset details below.' : 'Register a new fixed asset.'}
+                                {editing ? t('Update asset details below.') : t('Register a new fixed asset.')}
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submitForm} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -966,11 +966,11 @@ export default function Assets(pageProps: AssetsProps) {
                                 <Input value={form.name} onChange={(e) => setField('name', e.target.value)} required />
                             </div>
                             <div>
-                                <Label>Asset Code</Label>
+                                <Label>{t('Asset Code')}</Label>
                                 <Input
                                     value={form.asset_code}
                                     onChange={(e) => setField('asset_code', e.target.value)}
-                                    placeholder="Auto if blank"
+                                    placeholder={t('Auto if blank')}
                                 />
                             </div>
                             <div>
@@ -983,21 +983,21 @@ export default function Assets(pageProps: AssetsProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Subcategory</Label>
+                                <Label>{t('Subcategory')}</Label>
                                 <Input
                                     value={form.subcategory}
                                     onChange={(e) => setField('subcategory', e.target.value)}
                                 />
                             </div>
                             <div>
-                                <Label>Serial Number</Label>
+                                <Label>{t('Serial Number')}</Label>
                                 <Input
                                     value={form.serial_number}
                                     onChange={(e) => setField('serial_number', e.target.value)}
                                 />
                             </div>
                             <div>
-                                <Label>Purchase Date</Label>
+                                <Label>{t('Purchase Date')}</Label>
                                 <Input
                                     type="date"
                                     value={form.purchase_date}
@@ -1066,22 +1066,22 @@ export default function Assets(pageProps: AssetsProps) {
                                 </Select>
                             </div>
                             <div>
-                                <Label>Location</Label>
+                                <Label>{t('Location')}</Label>
                                 <Input value={form.location} onChange={(e) => setField('location', e.target.value)} />
                             </div>
                             <div>
-                                <Label>Assigned To</Label>
+                                <Label>{t('Assigned To')}</Label>
                                 <Input
                                     value={form.assigned_to}
                                     onChange={(e) => setField('assigned_to', e.target.value)}
                                 />
                             </div>
                             <div>
-                                <Label>Vendor</Label>
+                                <Label>{t('Vendor')}</Label>
                                 <Input value={form.vendor} onChange={(e) => setField('vendor', e.target.value)} />
                             </div>
                             <div className="sm:col-span-2">
-                                <Label>Notes</Label>
+                                <Label>{t('Notes')}</Label>
                                 <Textarea
                                     value={form.notes}
                                     onChange={(e) => setField('notes', e.target.value)}
@@ -1097,10 +1097,9 @@ export default function Assets(pageProps: AssetsProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={saving}>
-                                    {editing ? 'Save Changes' : 'Add Asset'}
+                                    {editing ? t('Save Changes') : t('Add Asset')}
                                 </Button>
                             </div>
                         </form>
@@ -1119,7 +1118,7 @@ export default function Assets(pageProps: AssetsProps) {
                             <div className="space-y-4">
                                 <dl className="grid grid-cols-2 gap-2 text-sm">
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Status</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Status')}</dt>
                                         <dd>
                                             <Badge className={STATUS_STYLES[details.status] ?? ''}>
                                                 {STATUS_LABELS[details.status] ?? details.status}
@@ -1127,47 +1126,47 @@ export default function Assets(pageProps: AssetsProps) {
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Condition</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Condition')}</dt>
                                         <dd>{CONDITION_LABELS[details.condition] ?? details.condition}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Purchase Date</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Purchase Date')}</dt>
                                         <dd>{details.purchase_date ?? '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Purchase Cost</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Purchase Cost')}</dt>
                                         <dd>₹{details.purchase_cost}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Current Value</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Current Value')}</dt>
                                         <dd>₹{details.current_value}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Depreciation Rate</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Depreciation Rate')}</dt>
                                         <dd>
                                             {details.depreciation_rate ?? '—'}
                                             {details.depreciation_rate ? '%' : ''}
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Location</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Location')}</dt>
                                         <dd>{details.location ?? '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Assigned To</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Assigned To')}</dt>
                                         <dd>{details.assigned_to ?? '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Vendor</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Vendor')}</dt>
                                         <dd>{details.vendor ?? '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-gray-500 dark:text-gray-400">Serial Number</dt>
+                                        <dt className="text-gray-500 dark:text-gray-400">{t('Serial Number')}</dt>
                                         <dd className="font-mono text-xs">{details.serial_number ?? '—'}</dd>
                                     </div>
                                     {details.status === 'disposed' && (
                                         <div className="sm:col-span-2">
-                                            <dt className="text-gray-500 dark:text-gray-400">Disposal</dt>
+                                            <dt className="text-gray-500 dark:text-gray-400">{t('Disposal')}</dt>
                                             <dd>
                                                 {details.disposal_date ?? '—'}
                                                 {details.disposal_sale_price
@@ -1178,7 +1177,7 @@ export default function Assets(pageProps: AssetsProps) {
                                     )}
                                     {details.notes && (
                                         <div className="sm:col-span-2">
-                                            <dt className="text-gray-500 dark:text-gray-400">Notes</dt>
+                                            <dt className="text-gray-500 dark:text-gray-400">{t('Notes')}</dt>
                                             <dd className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">
                                                 {details.notes}
                                             </dd>
@@ -1191,7 +1190,7 @@ export default function Assets(pageProps: AssetsProps) {
                                         Maintenance History ({details.maintenance_count})
                                     </h4>
                                     {details.maintenance_logs.length === 0 ? (
-                                        <p className="text-sm text-gray-400">No maintenance recorded.</p>
+                                        <p className="text-sm text-gray-400">{t('No maintenance recorded.')}</p>
                                     ) : (
                                         <div className="space-y-2">
                                             {details.maintenance_logs.map((log) => (
@@ -1224,7 +1223,7 @@ export default function Assets(pageProps: AssetsProps) {
                 <Dialog open={maintenanceFor !== null} onOpenChange={(open) => !open && setMaintenanceFor(null)}>
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
-                            <DialogTitle>Maintenance</DialogTitle>
+                            <DialogTitle>{t('Maintenance')}</DialogTitle>
                             <DialogDescription>Record maintenance for "{maintenanceFor?.name}".</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submitMaintenance} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1254,11 +1253,11 @@ export default function Assets(pageProps: AssetsProps) {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="repair">Repair</SelectItem>
-                                        <SelectItem value="service">Service</SelectItem>
-                                        <SelectItem value="inspection">Inspection</SelectItem>
-                                        <SelectItem value="upgrade">Upgrade</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        <SelectItem value="repair">{t('Repair')}</SelectItem>
+                                        <SelectItem value="service">{t('Service')}</SelectItem>
+                                        <SelectItem value="inspection">{t('Inspection')}</SelectItem>
+                                        <SelectItem value="upgrade">{t('Upgrade')}</SelectItem>
+                                        <SelectItem value="other">{t('Other')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -1275,7 +1274,7 @@ export default function Assets(pageProps: AssetsProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Performed By</Label>
+                                <Label>{t('Performed By')}</Label>
                                 <Input
                                     value={maintenanceForm.performed_by}
                                     onChange={(e) =>
@@ -1284,7 +1283,7 @@ export default function Assets(pageProps: AssetsProps) {
                                 />
                             </div>
                             <div className="sm:col-span-2">
-                                <Label>Notes</Label>
+                                <Label>{t('Notes')}</Label>
                                 <Textarea
                                     rows={3}
                                     value={maintenanceForm.notes}
@@ -1295,8 +1294,7 @@ export default function Assets(pageProps: AssetsProps) {
                             </div>
                             <div className="flex items-center justify-end gap-2 sm:col-span-2">
                                 <Button type="button" variant="outline" onClick={() => setMaintenanceFor(null)}>
-                                    Cancel
-                                </Button>
+                                    {t('Cancel')}</Button>
                                 <Button type="submit" disabled={saving}>
                                     Record Maintenance
                                 </Button>

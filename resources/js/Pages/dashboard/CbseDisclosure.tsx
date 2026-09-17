@@ -56,7 +56,7 @@ export default function CbseDisclosure({ user, disclosure, sectionOptions = [] }
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-slate-900">
-                            {t('cbse_disclosure')} <span className="sr-only">CBSE Disclosure</span>
+                            {t('cbse_disclosure')} <span className="sr-only">{t('CBSE Disclosure')}</span>
                         </h1>
                         <p className="mt-1 text-sm text-slate-500">
                             Edit the mandatory disclosure published publicly on the school website.
@@ -64,7 +64,7 @@ export default function CbseDisclosure({ user, disclosure, sectionOptions = [] }
                     </div>
                     <Button type="submit" form="cbse-disclosure-form" disabled={isSaving}>
                         <Save className="h-4 w-4" />
-                        {isSaving ? 'Saving...' : 'Save Disclosure'}
+                        {isSaving ? t('Saving...') : t('Save Disclosure')}
                     </Button>
                 </div>
 
@@ -104,7 +104,7 @@ export default function CbseDisclosure({ user, disclosure, sectionOptions = [] }
                                                     [section.key]: event.target.value,
                                                 }))
                                             }
-                                            placeholder={section.multiline ? 'Enter details...' : 'Enter value...'}
+                                            placeholder={section.multiline ? t('Enter details...') : t('Enter value...')}
                                         />
                                     </CardContent>
                                 </Card>

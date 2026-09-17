@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface Branch {
     id: number;
@@ -39,6 +40,7 @@ interface BranchAdminProps {
 }
 
 export default function BranchAdmin(pageProps: BranchAdminProps) {
+    const { t } = useLanguage();
     const { user, branches, branchAdmins = [], activeBranchId = null, isSuperAdmin = true } = pageProps;
     const [impersonating, setImpersonating] = useState<number | null>(null);
     const [switching, setSwitching] = useState<number | null>(null);
@@ -172,7 +174,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                     <div className="flex items-start justify-between">
                                         <CardTitle className="text-base">{branch.name}</CardTitle>
                                         <Badge variant={active ? 'default' : 'destructive'}>
-                                            {active ? 'Active' : 'Expired'}
+                                            {active ? t('Active') : t('Expired')}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -255,7 +257,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                             </div>
                             <Button size="sm" onClick={() => setShowCreate((v) => !v)}>
                                 <Plus className="mr-2 h-4 w-4" />
-                                {showCreate ? 'Close' : 'New branch admin'}
+                                {showCreate ? t('Close') : t('New branch admin')}
                             </Button>
                         </div>
 
@@ -263,7 +265,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                             <form onSubmit={createBranchAdmin} className="space-y-4 border-b px-6 py-4">
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div className="space-y-1">
-                                        <Label htmlFor="ba-name">Name</Label>
+                                        <Label htmlFor="ba-name">{t('Name')}</Label>
                                         <Input
                                             id="ba-name"
                                             value={name}
@@ -272,7 +274,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label htmlFor="ba-email">Email</Label>
+                                        <Label htmlFor="ba-email">{t('Email')}</Label>
                                         <Input
                                             id="ba-email"
                                             type="email"
@@ -282,7 +284,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label htmlFor="ba-password">Password</Label>
+                                        <Label htmlFor="ba-password">{t('Password')}</Label>
                                         <Input
                                             id="ba-password"
                                             type="password"
@@ -293,7 +295,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Assign to branches</Label>
+                                    <Label>{t('Assign to branches')}</Label>
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                                         {branches.map((branch) => (
                                             <label
@@ -338,8 +340,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                                 {admin.name}
                                                 {admin.status === 'inactive' && (
                                                     <Badge variant="destructive" className="ml-2">
-                                                        Inactive
-                                                    </Badge>
+                                                        {t('Inactive')}</Badge>
                                                 )}
                                             </p>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -369,7 +370,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                title="Deactivate"
+                                                title={t('Deactivate')}
                                                 disabled={admin.status === 'inactive'}
                                                 onClick={() => deactivateAdmin(admin)}
                                             >

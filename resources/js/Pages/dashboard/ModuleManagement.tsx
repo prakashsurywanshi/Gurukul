@@ -5,6 +5,7 @@ import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Switch } from '../ui/switch';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface ModuleEntry {
     key: string;
@@ -25,6 +26,7 @@ interface ModuleManagementProps {
 }
 
 export default function ModuleManagement(pageProps: ModuleManagementProps) {
+    const { t } = useLanguage();
     const { user, groups } = pageProps;
     const [flags, setFlags] = useState<Record<string, boolean>>(() => {
         const initial: Record<string, boolean> = {};
@@ -95,7 +97,7 @@ export default function ModuleManagement(pageProps: ModuleManagementProps) {
                                         </div>
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             {module.description}
-                                            {module.core && ' This module is always enabled.'}
+                                            {module.core && t('This module is always enabled.')}
                                         </p>
                                     </div>
                                     <Switch

@@ -18,6 +18,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 interface DepartmentRow {
     name: string;
@@ -66,6 +67,7 @@ interface HrDashboardProps {
 }
 
 export default function HrDashboard(pageProps: HrDashboardProps) {
+    const { t } = useLanguage();
     const { user, staff, departmentBreakdown, upcomingBirthdays, recentActivity, pendingLeaveRequests } = pageProps;
 
     const maxDept = useMemo(
@@ -97,26 +99,26 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
                     <Card>
                         <CardContent className="p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Total Staff</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Total Staff')}</p>
                             <p className="text-2xl font-bold">{staff.total}</p>
                             <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">{staff.active} active</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Pending Leaves</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Pending Leaves')}</p>
                             <p className="text-2xl font-bold text-amber-600">{staff.pendingLeaves}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">On Leave Today</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('On Leave Today')}</p>
                             <p className="text-2xl font-bold text-sky-600">{staff.onLeaveToday}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Active Loans</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Active Loans')}</p>
                             <p className="text-2xl font-bold">{staff.activeLoans}</p>
                             <p className="mt-1 text-xs text-gray-400">
                                 ₹{staff.outstandingLoans.toLocaleString('en-IN')} outstanding
@@ -125,13 +127,13 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Attendance Today</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Attendance Today')}</p>
                             <p className="text-2xl font-bold text-indigo-600">{staff.attendanceMarkedToday}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Unpaid Payslips</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('Unpaid Payslips')}</p>
                             <p className="text-2xl font-bold text-rose-600">{staff.unpaidPayslips}</p>
                             <p className="mt-1 text-xs text-gray-400">
                                 ₹{staff.unpaidPayrollValue.toLocaleString('en-IN')}
@@ -150,7 +152,7 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {departmentBreakdown.length === 0 && (
-                                <p className="py-8 text-center text-sm text-gray-400">No department assignments yet.</p>
+                                <p className="py-8 text-center text-sm text-gray-400">{t('No department assignments yet.')}</p>
                             )}
                             {departmentBreakdown.map((entry) => (
                                 <div key={entry.name}>
@@ -178,7 +180,7 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                         </CardHeader>
                         <CardContent className="divide-y divide-gray-100 dark:divide-gray-800">
                             {recentActivity.length === 0 && (
-                                <p className="py-8 text-center text-sm text-gray-400">No recent staff activity.</p>
+                                <p className="py-8 text-center text-sm text-gray-400">{t('No recent staff activity.')}</p>
                             )}
                             {recentActivity.map((entry) => (
                                 <div key={entry.id} className="py-3 first:pt-0 last:pb-0">
@@ -206,10 +208,10 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Staff</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Dates</TableHead>
-                                        <TableHead className="text-right">Days</TableHead>
+                                        <TableHead>{t('Staff')}</TableHead>
+                                        <TableHead>{t('Type')}</TableHead>
+                                        <TableHead>{t('Dates')}</TableHead>
+                                        <TableHead className="text-right">{t('Days')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -295,22 +297,22 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                                 <p className="text-lg font-semibold">
                                     ₹{staff.unpaidPayrollValue.toLocaleString('en-IN')}
                                 </p>
-                                <p className="text-xs text-gray-400">Unpaid payroll value</p>
+                                <p className="text-xs text-gray-400">{t('Unpaid payroll value')}</p>
                             </div>
                             <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                                 <HandCoins className="mb-1 h-5 w-5 text-slate-500" />
                                 <p className="text-lg font-semibold">{staff.activeLoans}</p>
-                                <p className="text-xs text-gray-400">Active loans</p>
+                                <p className="text-xs text-gray-400">{t('Active loans')}</p>
                             </div>
                             <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                                 <Users className="mb-1 h-5 w-5 text-slate-500" />
                                 <p className="text-lg font-semibold">{staff.active}</p>
-                                <p className="text-xs text-gray-400">Active staff</p>
+                                <p className="text-xs text-gray-400">{t('Active staff')}</p>
                             </div>
                             <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                                 <CalendarCheck className="mb-1 h-5 w-5 text-slate-500" />
                                 <p className="text-lg font-semibold">{staff.attendanceMarkedToday}</p>
-                                <p className="text-xs text-gray-400">Marked today</p>
+                                <p className="text-xs text-gray-400">{t('Marked today')}</p>
                             </div>
                         </div>
                     </CardContent>

@@ -253,13 +253,11 @@ export default function StudyMaterials(pageProps: StudyMaterialsProps) {
                                                     ) : material.type === 'note' ? (
                                                         <span className="flex items-center gap-1">
                                                             <FileText className="h-3 w-3" />
-                                                            Note
-                                                        </span>
+                                                            {t('Note')}</span>
                                                     ) : (
                                                         <span className="flex items-center gap-1">
                                                             <FileDown className="h-3 w-3" />
-                                                            File
-                                                        </span>
+                                                            {t('File')}</span>
                                                     )}
                                                 </Badge>
                                             </TableCell>
