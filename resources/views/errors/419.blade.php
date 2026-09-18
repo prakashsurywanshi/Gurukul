@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Session Expired — Gurukul</title>
+    <title>{{ __('Session Expired — Gurukul') }}</title>
     <link rel="icon" href="/favicon.ico" />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
@@ -30,11 +30,11 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
         </div>
-        <h1>Session Expired</h1>
-        <p>Your session has expired or the security token is no longer valid. Please log in again to continue.</p>
+        <h1>{{ __('Session Expired') }}</h1>
+        <p>{{ __('Your session has expired or the security token is no longer valid. Please log in again to continue.') }}</p>
         <div class="actions">
-            <a href="/login" class="btn btn-primary" id="loginBtn">Log In Again</a>
-            <button class="btn btn-outline" onclick="history.back()">Go Back</button>
+            <a href="/login" class="btn btn-primary" id="loginBtn">{{ __('Log In Again') }}</a>
+            <button class="btn btn-outline" onclick="history.back()">{{ __('Go Back') }}</button>
         </div>
         <p class="timer" id="timer"></p>
     </div>
