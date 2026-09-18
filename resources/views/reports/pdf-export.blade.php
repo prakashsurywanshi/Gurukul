@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $report['label'] }} Report</title>
+    <title>{{ $report['label'] }} {{ __('Report') }}</title>
     <style>
         body { font-family: Arial, sans-serif; color: #0f172a; font-size: 12px; margin: 20px; }
         h1 { font-size: 22px; margin-bottom: 4px; }
@@ -19,8 +19,8 @@
     </style>
 </head>
 <body>
-    <h1>{{ $report['label'] }} Report</h1>
-    <p class="subtitle">{{ $report['description'] }} | Generated: {{ $generatedAt }}</p>
+    <h1>{{ $report['label'] }} {{ __('Report') }}</h1>
+    <p class="subtitle">{{ $report['description'] }} | {{ __('Generated:') }} {{ $generatedAt }}</p>
 
     <div class="stats">
         @foreach($report['stats'] as $stat)
@@ -51,11 +51,11 @@
             </tbody>
         </table>
     @else
-        <p style="text-align: center; color: #94a3b8; padding: 40px;">No records found.</p>
+        <p style="text-align: center; color: #94a3b8; padding: 40px;">{{ __('No records found.') }}</p>
     @endif
 
     <div class="footer">
-        {{ $organization->name ?? 'School' }} | {{ $report['label'] }} Report | Page 1
+        {{ $organization->name ?? __('School') }} | {{ $report['label'] }} {{ __('Report') }} | {{ __('Page 1') }}
     </div>
 </body>
 </html>
