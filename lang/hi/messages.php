@@ -1,0 +1,57 @@
+<?php
+
+// Phase 3b — High-touch batch 1 (hi): admission > student > certificate lifecycle.
+// Hindi (Devanagari) canonical strings; parity gate vs lang/*/messages.php enforces
+// key-set identity so flash → __() parity holds across en/mr/hi after coding.
+
+declare(strict_types=1);
+
+return [
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+    'Admissions are currently closed.' => 'प्रवेश फिलहाल बंद हैं।',
+    'Admission enquiry created successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक बनाई गई।',
+    'Admission enquiry updated successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक अपडेट की गई।',
+    'Admission enquiry deleted successfully.' => 'प्रवेश पूछताछ सफलतापूर्वक हटा दी गई।',
+    'Admission settings saved successfully.' => 'प्रवेश सेटिंग्स सफलतापूर्वक सहेज ली गईं।',
+    'Admission request submitted.' => 'प्रवेश अनुरोध सबमिट कर दिया गया।',
+];

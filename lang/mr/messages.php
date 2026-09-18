@@ -1,0 +1,55 @@
+<?php
+
+// Phase 3b — High-touch batch 1: admission > student record > certificate lifecycle.
+// Hand-translated Marathi (mr). Identity keys (en) live in lang/en/messages.php.
+// Parity with en is enforced by scripts/validate-i18n.mjs output every commit.
+
+declare(strict_types=1);
+
+return [
+    'Admission enquiry created successfully.' => 'ॲडमिशन चौकशी यशस्वीरीत्या तयार केली.',
+    'Admission enquiry updated successfully.' => 'ॲडमिशन चौकशी यशस्वीरीत्या अद्ययावत केली.',
+    'Admission enquiry deleted successfully.' => 'ॲडमिशन चौकशी यशस्वीरीत्या हटवली.',
+    'Admission settings saved successfully.' => 'ॲडमिशन सेटिंग्ज यशस्वीरीत्या जतन केल्या.',
+    'Admission request submitted.' => 'ॲडमिशन अर्ज सादर केला.',
+    'Admissions are currently closed.' => 'सध्या प्रवेश बंद आहेत.',
+    'Admission details updated.' => 'ॲडमिशन तपशील अद्ययावत केला.',
+    'A fresh OTP has been sent to your pending email address.' => 'तुमच्या प्रलंबित ईमेल पत्त्यावर नवीन OTP पाठवला आहे.',
+    'A valid staff email is required before sending a reset password email.' => 'पासवर्ड रीसेटचा ईमेल पाठवण्यापूर्वी वैध कर्मचारी ईमेल आवश्यक आहे.',
+    'Student record created successfully.' => 'विद्यार्थी नोंद यशस्वीरीत्या तयार केली.',
+    'Student record updated successfully.' => 'विद्यार्थी नोंद यशस्वीरीत्या अद्ययावत केली.',
+    'Student record deleted successfully.' => 'विद्यार्थी नोंद यशस्वीरीत्या हटवली.',
+    'Certificate generated successfully.' => 'प्रमाणपत्र यशस्वीरीत्या तयार केले.',
+    'Certificate template saved successfully.' => 'प्रमाणपत्र साचा यशस्वीरीत्या जतन केला.',
+    'Certificate template deleted successfully.' => 'प्रमाणपत्र साचा यशस्वीरीत्या हटवला.',
+    'Student admitted successfully.' => 'विद्यार्थ्याचा प्रवेश यशस्वीरीत्या झाला.',
+    'Student promoted successfully.' => 'विद्यार्थ्याची बढती यशस्वीरीत्या झाली.',
+    'Student transferred successfully.' => 'विद्यार्थी यशस्वीरीत्या हस्तांतरित झाला.',
+    'Student status updated.' => 'विद्यार्थ्याची स्थिती अद्ययावत केली.',
+    'The student could not be found.' => 'विद्यार्थी सापडला नाही.',
+    'Student credentials resent successfully.' => 'विद्यार्थ्याची क्रेडेन्शियल्स पुन्हा यशस्वीरीत्या पाठवली.',
+    'Student account activated.' => 'विद्यार्थी खाते सक्रिय केले.',
+    'Student account deactivated.' => 'विद्यार्थी खाते निष्क्रिय केले.',
+    'Student deleted permanently.' => 'विद्यार्थी कायमचा हटवला.',
+    'Student restored successfully.' => 'विद्यार्थी यशस्वीरीत्या पुनर्स्थापित केला.',
+    'Password changed successfully.' => 'पासवर्ड यशस्वीरीत्या बदलला.',
+    'Profile updated successfully.' => 'प्रोफाइल यशस्वीरीत्या अद्ययावत केले.',
+    'Profile photo updated.' => 'प्रोफाइल फोटो अद्ययावत केला.',
+    'Parent profile updated successfully.' => 'पालक प्रोफाइल यशस्वीरीत्या अद्ययावत केले.',
+    'Birthday recorded.' => 'वाढदिवस नोंदवला.',
+    'Birthday removed.' => 'वाढदिवस काढून टाकला.',
+    'New email OTP sent.' => 'नवीन ईमेल OTP पाठवला.',
+    'Email verified successfully.' => 'ईमेल यशस्वीरीत्या सत्यापित झाला.',
+    'Your password has been updated.' => 'तुमचा पासवर्ड अद्ययावत करण्यात आला आहे.',
+    'You have been logged out.' => 'तुम्ही लॉग आउट झाला आहात.',
+    'Invalid credentials provided.' => 'चुकीची क्रेडेन्शियल्स दिली आहेत.',
+    'Account not found.' => 'खाते सापडले नाही.',
+    'Please verify your email before proceeding.' => 'पुढे जाण्यापूर्वी कृपया तुमचा ईमेल सत्यापित करा.',
+    'Verification email sent successfully.' => 'सत्यापन ईमेल यशस्वीरीत्या पाठवला.',
+    'Registration completed successfully. Please verify your email.' => 'नोंदणी यशस्वीरीत्या पूर्ण झाली. कृपया तुमचा ईमेल सत्यापित करा.',
+    'A New Admission Enquiry has been received.' => 'नवीन ॲडमिशन चौकशी प्राप्त झाली आहे.',
+    'Admission inquiry code verified successfully.' => 'ॲडमिशन चौकशी कोड यशस्वीरीत्या सत्यापित झाला.',
+    'Admission inquiry code invalid or expired.' => 'ॲडमिशन चौकशी कोड अवैध किंवा कालबाह्य आहे.',
+    'No pending admission inquiry found for this email.' => 'या ईमेलसाठी कोणतीही प्रलंबित ॲडमिशन चौकशी सापडली नाही.',
+    'OTP resent successfully.' => 'OTP यशस्वीरीत्या पुन्हा पाठवला.',
+];
