@@ -704,7 +704,8 @@ export default function VendorsPurchaseOrders(pageProps: VendorsPurchaseOrdersPr
                                     </div>
                                 ))}
                                 <div className="text-right text-lg font-bold text-gray-900 dark:text-white">
-                                    Total: {money(orderTotal.toFixed(2))}
+                                    {t('Total:')}
+                                    {money(orderTotal.toFixed(2))}
                                 </div>
                             </div>
 

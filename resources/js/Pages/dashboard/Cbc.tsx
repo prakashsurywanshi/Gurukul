@@ -254,8 +254,12 @@ export default function Cbc(pageProps: CbcProps) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <Shapes className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('CBC (Competency Based Curriculum)')}</h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Manage strands, learning outcomes, core competencies, pathways and assessments.')}</p>
+                        <Shapes className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        {t('CBC (Competency Based Curriculum)')}
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {t('Manage strands, learning outcomes, core competencies, pathways and assessments.')}
+                    </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -289,13 +293,17 @@ export default function Cbc(pageProps: CbcProps) {
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Learning Outcomes')}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {t('Learning Outcomes')}
+                                        </p>
                                         <p className="text-2xl font-bold">{outcomes.length}</p>
                                     </CardContent>
                                 </Card>
                                 <Card>
                                     <CardContent className="p-4">
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Core Competencies')}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {t('Core Competencies')}
+                                        </p>
                                         <p className="text-2xl font-bold">{summary.competencies}</p>
                                     </CardContent>
                                 </Card>
@@ -333,12 +341,13 @@ export default function Cbc(pageProps: CbcProps) {
                                             );
                                         })}
                                         <p className="pt-2 text-xs text-gray-400">
-                                            {summary.assessments} assessments recorded for {summary.studentsAssessed}{' '}
-                                            students (
+                                            {summary.assessments}
+                                            {t('assessments recorded for')}
+                                            {summary.studentsAssessed} {t('students (')}
                                             {levelTotal && levelTotal > 0
                                                 ? Math.round((summary.assessments / Math.max(1, levelTotal)) * 100)
                                                 : 0}
-                                            % coverage).
+                                            {t('% coverage).')}
                                         </p>
                                     </CardContent>
                                 </Card>
@@ -349,9 +358,12 @@ export default function Cbc(pageProps: CbcProps) {
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         {strands.length === 0 && (
-                                            <p className="py-6 text-center text-sm text-gray-400">{t('No strands yet.')}</p>
+                                            <p className="py-6 text-center text-sm text-gray-400">
+                                                {t('No strands yet.')}
+                                            </p>
                                         )}
                                         {strands.map((strand) => {
+                                            const { t } = useLanguage();
                                             const assessed = assessments.filter(
                                                 (assessment) => assessment.strand_id === strand.id,
                                             ).length;
@@ -376,7 +388,10 @@ export default function Cbc(pageProps: CbcProps) {
                                                             {strand.name}
                                                         </span>
                                                         <span className="text-gray-400">
-                                                            {strand.outcome_count} outcomes · {assessed} assessed
+                                                            {strand.outcome_count}
+                                                            {t('outcomes ·')}
+                                                            {assessed}
+                                                            {t('assessed')}
                                                         </span>
                                                     </div>
                                                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -422,11 +437,13 @@ export default function Cbc(pageProps: CbcProps) {
                                         value={strandForm.name}
                                         onChange={(e) => setStrandForm({ ...strandForm, name: e.target.value })}
                                     />
+
                                     <Input
                                         placeholder={t('Code')}
                                         value={strandForm.code}
                                         onChange={(e) => setStrandForm({ ...strandForm, code: e.target.value })}
                                     />
+
                                     <div className="lg:col-span-2">
                                         <Input
                                             placeholder={t('Description')}
@@ -438,7 +455,8 @@ export default function Cbc(pageProps: CbcProps) {
                                     </div>
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        {t('Add')}</Button>
+                                        {t('Add')}
+                                    </Button>
                                 </form>
                             )}
 
@@ -470,11 +488,13 @@ export default function Cbc(pageProps: CbcProps) {
                                         value={outcomeForm.name}
                                         onChange={(e) => setOutcomeForm({ ...outcomeForm, name: e.target.value })}
                                     />
+
                                     <Input
                                         placeholder={t('Code')}
                                         value={outcomeForm.code}
                                         onChange={(e) => setOutcomeForm({ ...outcomeForm, code: e.target.value })}
                                     />
+
                                     <Input
                                         placeholder={t('Description')}
                                         value={outcomeForm.description}
@@ -482,9 +502,11 @@ export default function Cbc(pageProps: CbcProps) {
                                             setOutcomeForm({ ...outcomeForm, description: e.target.value })
                                         }
                                     />
+
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        {t('Add')}</Button>
+                                        {t('Add')}
+                                    </Button>
                                 </form>
                             )}
 
@@ -499,11 +521,13 @@ export default function Cbc(pageProps: CbcProps) {
                                         value={pathwayForm.name}
                                         onChange={(e) => setPathwayForm({ ...pathwayForm, name: e.target.value })}
                                     />
+
                                     <Input
                                         placeholder={t('Code')}
                                         value={pathwayForm.code}
                                         onChange={(e) => setPathwayForm({ ...pathwayForm, code: e.target.value })}
                                     />
+
                                     <div className="lg:col-span-2">
                                         <Input
                                             placeholder={t('Description')}
@@ -515,7 +539,8 @@ export default function Cbc(pageProps: CbcProps) {
                                     </div>
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        {t('Add')}</Button>
+                                        {t('Add')}
+                                    </Button>
                                 </form>
                             )}
 
@@ -530,11 +555,13 @@ export default function Cbc(pageProps: CbcProps) {
                                         value={competencyForm.name}
                                         onChange={(e) => setCompetencyForm({ ...competencyForm, name: e.target.value })}
                                     />
+
                                     <Input
                                         placeholder={t('Code')}
                                         value={competencyForm.code}
                                         onChange={(e) => setCompetencyForm({ ...competencyForm, code: e.target.value })}
                                     />
+
                                     <Select
                                         value={competencyForm.cbc_strand_id}
                                         onValueChange={(value) =>
@@ -563,7 +590,8 @@ export default function Cbc(pageProps: CbcProps) {
                                     </div>
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        {t('Add')}</Button>
+                                        {t('Add')}
+                                    </Button>
                                 </form>
                             )}
                         </CardContent>
@@ -581,7 +609,7 @@ export default function Cbc(pageProps: CbcProps) {
                                 className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
                             >
                                 <div className="space-y-1">
-                                    <Label>Student *</Label>
+                                    <Label>{t('Student *')}</Label>
                                     <Select
                                         value={assessmentForm.student_id}
                                         onValueChange={(value) =>
@@ -719,7 +747,8 @@ export default function Cbc(pageProps: CbcProps) {
                                 <div className="flex items-end">
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        {t('Record')}</Button>
+                                        {t('Record')}
+                                    </Button>
                                 </div>
                             </form>
                         </CardContent>
@@ -733,40 +762,48 @@ export default function Cbc(pageProps: CbcProps) {
                                 {strands.length === 0 && (
                                     <li className="py-10 text-center text-gray-400">{t('No strands yet.')}</li>
                                 )}
-                                {strands.map((strand) => (
-                                    <li key={strand.id} className="flex items-start justify-between gap-4 p-4">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                    {strand.name}
-                                                </span>
-                                                {strand.code && <Badge variant="outline">{strand.code}</Badge>}
-                                                <Badge variant="secondary">{strand.outcome_count} outcomes</Badge>
+                                {strands.map((strand) => {
+                                    const { t } = useLanguage();
+                                    return (
+                                        <li key={strand.id} className="flex items-start justify-between gap-4 p-4">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {strand.name}
+                                                    </span>
+                                                    {strand.code && <Badge variant="outline">{strand.code}</Badge>}
+                                                    <Badge variant="secondary">
+                                                        {strand.outcome_count}
+                                                        {t('outcomes')}
+                                                    </Badge>
+                                                </div>
+                                                {strand.description && (
+                                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                        {strand.description}
+                                                    </p>
+                                                )}
                                             </div>
-                                            {strand.description && (
-                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    {strand.description}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-rose-500 hover:text-rose-600"
-                                            onClick={() => remove('strand', strand.id, strand.name)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">{t('Delete')}</span>
-                                        </Button>
-                                    </li>
-                                ))}
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="text-rose-500 hover:text-rose-600"
+                                                onClick={() => remove('strand', strand.id, strand.name)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                <span className="sr-only">{t('Delete')}</span>
+                                            </Button>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
 
                         {activeTab === 'outcomes' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {outcomes.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">{t('No learning outcomes yet.')}</li>
+                                    <li className="py-10 text-center text-gray-400">
+                                        {t('No learning outcomes yet.')}
+                                    </li>
                                 )}
                                 {outcomes.map((outcome) => (
                                     <li key={outcome.id} className="flex items-start justify-between gap-4 p-4">
@@ -835,7 +872,9 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'competencies' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {competencies.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">{t('No core competencies yet.')}</li>
+                                    <li className="py-10 text-center text-gray-400">
+                                        {t('No core competencies yet.')}
+                                    </li>
                                 )}
                                 {competencies.map((competency) => (
                                     <li key={competency.id} className="flex items-start justify-between gap-4 p-4">
@@ -872,7 +911,9 @@ export default function Cbc(pageProps: CbcProps) {
                         {activeTab === 'assessments' && (
                             <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {assessments.length === 0 && (
-                                    <li className="py-10 text-center text-gray-400">{t('No assessments recorded yet.')}</li>
+                                    <li className="py-10 text-center text-gray-400">
+                                        {t('No assessments recorded yet.')}
+                                    </li>
                                 )}
                                 {assessments.map((assessment) => (
                                     <li key={assessment.id} className="flex items-start justify-between gap-4 p-4">
@@ -989,7 +1030,9 @@ export default function Cbc(pageProps: CbcProps) {
                             </CardHeader>
                             <CardContent className="pt-0">
                                 {reports.byStrand.filter((report) => report.assessments > 0).length === 0 ? (
-                                    <p className="py-10 text-center text-gray-400">{t('No assessment data recorded yet.')}</p>
+                                    <p className="py-10 text-center text-gray-400">
+                                        {t('No assessment data recorded yet.')}
+                                    </p>
                                 ) : (
                                     <table className="w-full text-sm">
                                         <thead>
@@ -1030,34 +1073,42 @@ export default function Cbc(pageProps: CbcProps) {
                                 </CardHeader>
                                 <CardContent className="pt-0">
                                     {reports.byOutcome.length === 0 ? (
-                                        <p className="py-10 text-center text-gray-400">{t('No outcome data recorded yet.')}</p>
+                                        <p className="py-10 text-center text-gray-400">
+                                            {t('No outcome data recorded yet.')}
+                                        </p>
                                     ) : (
                                         <ul className="space-y-2">
-                                            {reports.byOutcome.map((report) => (
-                                                <li
-                                                    key={report.id}
-                                                    className="flex items-center justify-between gap-2 rounded-lg border p-3"
-                                                >
-                                                    <div className="min-w-0">
-                                                        <p className="truncate text-sm font-medium">{report.name}</p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {report.assessments} assessments
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex shrink-0 flex-wrap gap-1">
-                                                        {Object.keys(LEVEL_LABELS).map((level) =>
-                                                            (report.levels[level] ?? 0) > 0 ? (
-                                                                <Badge
-                                                                    key={level}
-                                                                    className={LEVEL_STYLES[level] ?? ''}
-                                                                >
-                                                                    {report.levels[level]}
-                                                                </Badge>
-                                                            ) : null,
-                                                        )}
-                                                    </div>
-                                                </li>
-                                            ))}
+                                            {reports.byOutcome.map((report) => {
+                                                const { t } = useLanguage();
+                                                return (
+                                                    <li
+                                                        key={report.id}
+                                                        className="flex items-center justify-between gap-2 rounded-lg border p-3"
+                                                    >
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-sm font-medium">
+                                                                {report.name}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {report.assessments}
+                                                                {t('assessments')}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex shrink-0 flex-wrap gap-1">
+                                                            {Object.keys(LEVEL_LABELS).map((level) =>
+                                                                (report.levels[level] ?? 0) > 0 ? (
+                                                                    <Badge
+                                                                        key={level}
+                                                                        className={LEVEL_STYLES[level] ?? ''}
+                                                                    >
+                                                                        {report.levels[level]}
+                                                                    </Badge>
+                                                                ) : null,
+                                                            )}
+                                                        </div>
+                                                    </li>
+                                                );
+                                            })}
                                         </ul>
                                     )}
                                 </CardContent>
@@ -1068,18 +1119,28 @@ export default function Cbc(pageProps: CbcProps) {
                                 </CardHeader>
                                 <CardContent className="pt-0">
                                     {reports.byCompetency.length === 0 ? (
-                                        <p className="py-10 text-center text-gray-400">{t('No competency data recorded yet.')}</p>
+                                        <p className="py-10 text-center text-gray-400">
+                                            {t('No competency data recorded yet.')}
+                                        </p>
                                     ) : (
                                         <ul className="space-y-2">
-                                            {reports.byCompetency.map((report) => (
-                                                <li
-                                                    key={report.id}
-                                                    className="flex items-center justify-between gap-2 rounded-lg border p-3"
-                                                >
-                                                    <span className="truncate text-sm font-medium">{report.name}</span>
-                                                    <Badge variant="outline">{report.assessments} assessments</Badge>
-                                                </li>
-                                            ))}
+                                            {reports.byCompetency.map((report) => {
+                                                const { t } = useLanguage();
+                                                return (
+                                                    <li
+                                                        key={report.id}
+                                                        className="flex items-center justify-between gap-2 rounded-lg border p-3"
+                                                    >
+                                                        <span className="truncate text-sm font-medium">
+                                                            {report.name}
+                                                        </span>
+                                                        <Badge variant="outline">
+                                                            {report.assessments}
+                                                            {t('assessments')}
+                                                        </Badge>
+                                                    </li>
+                                                );
+                                            })}
                                         </ul>
                                     )}
                                 </CardContent>

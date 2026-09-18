@@ -145,14 +145,20 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
             <div className="space-y-6 p-6 lg:p-8">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Face Search Kiosk')}</h1>
+                        <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        {t('Face Search Kiosk')}
+                    </h1>
                     <div className="mt-2 flex items-center gap-2">
                         <Badge variant="secondary">{t('AI-assisted candidate matching')}</Badge>
-                        <Badge variant="outline">Mode: {mode}</Badge>
+                        <Badge variant="outline">
+                            {t('Mode:')}
+                            {mode}
+                        </Badge>
                     </div>
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Capture or upload up to 5 photos. The AI vision provider extracts age, gender and quality, then
-                        a heuristic matcher surfaces the most likely student records.
+                        {t(
+                            'Capture or upload up to 5 photos. The AI vision provider extracts age, gender and quality, then a heuristic matcher surfaces the most likely student records.',
+                        )}
                     </p>
                 </div>
 
@@ -160,22 +166,34 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                     <Alert variant="destructive">
                         <ScanFace className="h-4 w-4" />
                         <AlertTitle>{t('AI provider not configured')}</AlertTitle>
-                        <AlertDescription>{t('Configure an OpenAI-compatible vision-capable model in AI Assistant settings before running a kiosk search.')}</AlertDescription>
+                        <AlertDescription>
+                            {t(
+                                'Configure an OpenAI-compatible vision-capable model in AI Assistant settings before running a kiosk search.',
+                            )}
+                        </AlertDescription>
                     </Alert>
                 )}
 
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base">
-                            <Camera className="h-4 w-4 text-indigo-500" />{t('Photo queue (')}{photos.length}/5)
+                            <Camera className="h-4 w-4 text-indigo-500" />
+                            {t('Photo queue (')}
+                            {photos.length}/5)
                         </CardTitle>
-                        <CardDescription>{t('Use the camera capture or the file picker. Images are processed in-memory only.')}</CardDescription>
+                        <CardDescription>
+                            {t('Use the camera capture or the file picker. Images are processed in-memory only.')}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                             {previews.map((preview, index) => (
                                 <div key={preview} className="relative">
-                                    <img src={preview} alt={t('queued')} className="h-28 w-full rounded-md object-cover" />
+                                    <img
+                                        src={preview}
+                                        alt={t('queued')}
+                                        className="h-28 w-full rounded-md object-cover"
+                                    />
                                     <button
                                         type="button"
                                         onClick={() => removePhoto(index)}
@@ -207,7 +225,9 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
 
                         <div className="flex flex-wrap items-center gap-2">
                             <Button type="button" variant="outline" onClick={openCamera}>
-                                <Camera className="size-4" />{t('Open camera')}</Button>
+                                <Camera className="size-4" />
+                                {t('Open camera')}
+                            </Button>
                             <Button
                                 type="button"
                                 onClick={submit}
@@ -221,7 +241,9 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                                 {processing ? 'Analyzing…' : t('Analyze photos')}
                             </Button>
                             {faceResults && (
-                                <Button type="button" variant="ghost" onClick={reset}>{t('Reset results')}</Button>
+                                <Button type="button" variant="ghost" onClick={reset}>
+                                    {t('Reset results')}
+                                </Button>
                             )}
                         </div>
                     </CardContent>
@@ -238,11 +260,15 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
                                 muted
                                 autoPlay
                             />
+
                             <div className="mt-4 flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={closeCamera}>
-                                    {t('Cancel')}</Button>
+                                    {t('Cancel')}
+                                </Button>
                                 <Button type="button" onClick={capture}>
-                                    <Camera className="size-4" />{t('Capture still')}</Button>
+                                    <Camera className="size-4" />
+                                    {t('Capture still')}
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -250,66 +276,85 @@ export default function FaceSearchKiosk({ user, configured, mode, faceResults }:
 
                 {faceResults && faceResults.length > 0 && (
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        {faceResults.map((result, index) => (
-                            <Card key={`${result.file}-${index}`}>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        {t('Photo')}{index + 1}
-                                        <Badge variant="outline">{result.file}</Badge>
-                                        <Badge variant="outline">{formatBytes(result.size)}</Badge>
-                                    </CardTitle>
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant={qualityVariant(result.attributes.quality)}>
-                                            Quality: {result.attributes.quality}
-                                        </Badge>
-                                        <Badge variant="outline">Gender: {result.attributes.gender}</Badge>
-                                        {result.attributes.estimatedAge !== null && (
-                                            <Badge variant="outline">{t('Est. age:')}{result.attributes.estimatedAge}</Badge>
-                                        )}
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                        {result.attributes.description}
-                                    </p>
-
-                                    {result.candidates.length > 0 ? (
-                                        <div className="space-y-2">
-                                            <p className="text-xs font-medium uppercase text-gray-400">{t('Likely candidates')}</p>
-                                            {result.candidates.map((candidate) => (
-                                                <a
-                                                    key={candidate.student.id}
-                                                    href={`/students/${candidate.student.id}`}
-                                                    className="flex items-center justify-between rounded-md border border-gray-200 p-3 text-sm transition hover:border-indigo-300 dark:border-gray-700"
-                                                >
-                                                    <div>
-                                                        <p className="font-medium">
-                                                            {candidate.student.first_name} {candidate.student.last_name}
-                                                        </p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {candidate.student.admission_no} · {candidate.student.class}
-                                                        </p>
-                                                    </div>
-                                                    <Badge variant="secondary">{candidate.score}%</Badge>
-                                                </a>
-                                            ))}
+                        {faceResults.map((result, index) => {
+                            const { t } = useLanguage();
+                            return (
+                                <Card key={`${result.file}-${index}`}>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-base">
+                                            {t('Photo')}
+                                            {index + 1}
+                                            <Badge variant="outline">{result.file}</Badge>
+                                            <Badge variant="outline">{formatBytes(result.size)}</Badge>
+                                        </CardTitle>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant={qualityVariant(result.attributes.quality)}>
+                                                {t('Quality:')}
+                                                {result.attributes.quality}
+                                            </Badge>
+                                            <Badge variant="outline">
+                                                {t('Gender:')}
+                                                {result.attributes.gender}
+                                            </Badge>
+                                            {result.attributes.estimatedAge !== null && (
+                                                <Badge variant="outline">
+                                                    {t('Est. age:')}
+                                                    {result.attributes.estimatedAge}
+                                                </Badge>
+                                            )}
                                         </div>
-                                    ) : (
-                                        <Alert>
-                                            <AlertTitle>{t('No strong candidates')}</AlertTitle>
-                                            <AlertDescription>{t('The described attributes did not match any active student. Try a clearer, front-facing photo.')}</AlertDescription>
-                                        </Alert>
-                                    )}
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            {result.attributes.description}
+                                        </p>
 
-                                    <details className="text-xs text-gray-400">
-                                        <summary className="cursor-pointer">{t('View raw analysis')}</summary>
-                                        <pre className="mt-2 whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
-                                            {result.analysis}
-                                        </pre>
-                                    </details>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                        {result.candidates.length > 0 ? (
+                                            <div className="space-y-2">
+                                                <p className="text-xs font-medium uppercase text-gray-400">
+                                                    {t('Likely candidates')}
+                                                </p>
+                                                {result.candidates.map((candidate) => (
+                                                    <a
+                                                        key={candidate.student.id}
+                                                        href={`/students/${candidate.student.id}`}
+                                                        className="flex items-center justify-between rounded-md border border-gray-200 p-3 text-sm transition hover:border-indigo-300 dark:border-gray-700"
+                                                    >
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                {candidate.student.first_name}{' '}
+                                                                {candidate.student.last_name}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {candidate.student.admission_no} ·{' '}
+                                                                {candidate.student.class}
+                                                            </p>
+                                                        </div>
+                                                        <Badge variant="secondary">{candidate.score}%</Badge>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <Alert>
+                                                <AlertTitle>{t('No strong candidates')}</AlertTitle>
+                                                <AlertDescription>
+                                                    {t(
+                                                        'The described attributes did not match any active student. Try a clearer, front-facing photo.',
+                                                    )}
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
+
+                                        <details className="text-xs text-gray-400">
+                                            <summary className="cursor-pointer">{t('View raw analysis')}</summary>
+                                            <pre className="mt-2 whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                                                {result.analysis}
+                                            </pre>
+                                        </details>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
 import * as React from 'react';
 import { CalendarDays } from 'lucide-react';
 
@@ -49,6 +50,7 @@ const parseDisplayDateToIso = (value: string) => {
 };
 
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+    const { t } = useLanguage();
     if (type === 'date') {
         const { value, defaultValue, onChange, onBlur, placeholder, ...restProps } = props;
         const controlledValue = value ?? defaultValue ?? '';
@@ -139,6 +141,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
                         onBlur?.(event);
                     }}
                 />
+
                 <input
                     ref={nativeDateInputRef}
                     tabIndex={-1}
@@ -152,10 +155,11 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
                     }}
                     className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
                 />
+
                 <button
                     type="button"
                     tabIndex={-1}
-                    aria-label="Select date"
+                    aria-label={t('Select date')}
                     disabled={disabled}
                     onClick={openNativePicker}
                     className="text-muted-foreground hover:text-foreground absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-1 transition disabled:pointer-events-none"

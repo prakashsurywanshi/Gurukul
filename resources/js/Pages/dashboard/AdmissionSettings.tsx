@@ -105,7 +105,11 @@ export default function AdmissionSettings({
                         <h1 className="text-2xl font-semibold text-slate-900">
                             {t('admission_settings')} <span className="sr-only">{t('Admission Settings')}</span>
                         </h1>
-                        <p className="mt-1 text-sm text-slate-500">{t('Configure the public admission form behaviour and which fields are shown to applicants.')}</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                            {t(
+                                'Configure the public admission form behaviour and which fields are shown to applicants.',
+                            )}
+                        </p>
                     </div>
                     <Button type="submit" form="admission-settings-form" disabled={isSaving}>
                         <Save className="h-4 w-4" />
@@ -128,13 +132,17 @@ export default function AdmissionSettings({
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Admission Preferences')}</CardTitle>
-                            <CardDescription>{t('Control how applicants reach and use the public admission form.')}</CardDescription>
+                            <CardDescription>
+                                {t('Control how applicants reach and use the public admission form.')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div>
                                     <p className="font-medium text-slate-900">{t('Enable Public Admission Form')}</p>
-                                    <p className="mt-1 text-sm text-slate-500">{t('Allow visitors to submit admission applications from the school website.')}</p>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {t('Allow visitors to submit admission applications from the school website.')}
+                                    </p>
                                 </div>
                                 <Switch
                                     checked={form.enablePublicForm}
@@ -145,8 +153,14 @@ export default function AdmissionSettings({
                             </div>
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div>
-                                    <p className="font-medium text-slate-900">{t('Require Email / Phone Verification')}</p>
-                                    <p className="mt-1 text-sm text-slate-500">{t('Ask applicants to verify their contact details with an OTP before submitting.')}</p>
+                                    <p className="font-medium text-slate-900">
+                                        {t('Require Email / Phone Verification')}
+                                    </p>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {t(
+                                            'Ask applicants to verify their contact details with an OTP before submitting.',
+                                        )}
+                                    </p>
                                 </div>
                                 <Switch
                                     checked={form.requireVerification}
@@ -158,7 +172,9 @@ export default function AdmissionSettings({
                             <div className="flex items-center justify-between rounded-lg border p-4">
                                 <div>
                                     <p className="font-medium text-slate-900">{t('Require Documents at Submission')}</p>
-                                    <p className="mt-1 text-sm text-slate-500">{t('Make document uploads mandatory on the admission form.')}</p>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {t('Make document uploads mandatory on the admission form.')}
+                                    </p>
                                 </div>
                                 <Switch
                                     checked={form.requireDocuments}
@@ -173,7 +189,9 @@ export default function AdmissionSettings({
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Form Sections')}</CardTitle>
-                            <CardDescription>{t('Choose which sections appear on the public admission form.')}</CardDescription>
+                            <CardDescription>
+                                {t('Choose which sections appear on the public admission form.')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {sectionOptions.map((section) => (
@@ -197,10 +215,12 @@ export default function AdmissionSettings({
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Admission Form Fields')}</CardTitle>
-                            <CardDescription>{t('Custom fields shown on the admission form. Manage shared definitions on the')}{' '}
+                            <CardDescription>
+                                {t('Custom fields shown on the admission form. Manage shared definitions on the')}{' '}
                                 <Link href="/custom-fields" className="text-blue-600 hover:underline">
-                                    {t('Custom Fields')}</Link>{' '}
-                                page.
+                                    {t('Custom Fields')}
+                                </Link>{' '}
+                                {t('page.')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -228,10 +248,18 @@ export default function AdmissionSettings({
                             ) : (
                                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
                                     <FilePlus2 className="h-8 w-8 text-slate-400" />
-                                    <p className="mt-3 text-sm font-medium text-slate-700">{t('No custom admission fields yet')}</p>
-                                    <p className="mt-1 text-sm text-slate-500">{t('Create custom fields on the Custom Fields page, then enable them for the admission form here.')}</p>
+                                    <p className="mt-3 text-sm font-medium text-slate-700">
+                                        {t('No custom admission fields yet')}
+                                    </p>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {t(
+                                            'Create custom fields on the Custom Fields page, then enable them for the admission form here.',
+                                        )}
+                                    </p>
                                     <Link href="/custom-fields">
-                                        <Button variant="outline" className="mt-4">{t('Create Custom Field')}</Button>
+                                        <Button variant="outline" className="mt-4">
+                                            {t('Create Custom Field')}
+                                        </Button>
                                     </Link>
                                 </div>
                             )}

@@ -244,9 +244,11 @@ export default function Osm(pageProps: OsmProps) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <GraduationCap className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('OSM Assessment')}</h1>
+                        <GraduationCap className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        {t('OSM Assessment')}
+                    </h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Objective Sheet Marking — sessions, evaluation sheets, moderation and reports.
+                        {t('Objective Sheet Marking — sessions, evaluation sheets, moderation and reports.')}
                     </p>
                 </div>
 
@@ -291,7 +293,9 @@ export default function Osm(pageProps: OsmProps) {
                             </Card>
                             <Card>
                                 <CardContent className="p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('Pending Moderation')}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {t('Pending Moderation')}
+                                    </p>
                                     <p className="text-2xl font-bold text-purple-600">{summary.pendingModeration}</p>
                                 </CardContent>
                             </Card>
@@ -331,9 +335,12 @@ export default function Osm(pageProps: OsmProps) {
                                 </div>
                                 <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {summary.studentsAssessed} students assessed across {summary.sessions} sessions.
-                                        Averages recommended when sessions reach{' '}
-                                        <Badge className="ml-1">{t('Moderation')}</Badge> stage.
+                                        {summary.studentsAssessed}
+                                        {t('students assessed across')}
+                                        {summary.sessions}
+                                        {t('sessions. Averages recommended when sessions reach')}{' '}
+                                        <Badge className="ml-1">{t('Moderation')}</Badge>
+                                        {t('stage.')}
                                     </p>
                                 </div>
                             </CardContent>
@@ -341,7 +348,10 @@ export default function Osm(pageProps: OsmProps) {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">{t('Sessions (')}{filteredSessions.length})</CardTitle>
+                                <CardTitle className="text-base">
+                                    {t('Sessions (')}
+                                    {filteredSessions.length})
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="flex flex-wrap gap-3">
@@ -380,7 +390,7 @@ export default function Osm(pageProps: OsmProps) {
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>{t('Session')}</TableHead>
-                                                <TableHead>Class · Subject</TableHead>
+                                                <TableHead>{t('Class · Subject')}</TableHead>
                                                 <TableHead>{t('Sheets')}</TableHead>
                                                 <TableHead>{t('Progress')}</TableHead>
                                                 <TableHead>{t('Status')}</TableHead>
@@ -390,7 +400,9 @@ export default function Osm(pageProps: OsmProps) {
                                         <TableBody>
                                             {filteredSessions.length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={6} className="py-10 text-center text-gray-400">{t('No sessions found.')}</TableCell>
+                                                    <TableCell colSpan={6} className="py-10 text-center text-gray-400">
+                                                        {t('No sessions found.')}
+                                                    </TableCell>
                                                 </TableRow>
                                             )}
                                             {filteredSessions.map((session) => (
@@ -450,11 +462,13 @@ export default function Osm(pageProps: OsmProps) {
                                         value={sessionForm.name}
                                         onChange={(e) => setSessionForm({ ...sessionForm, name: e.target.value })}
                                     />
+
                                     <Input
                                         placeholder={t('Term (e.g. Term1)')}
                                         value={sessionForm.term}
                                         onChange={(e) => setSessionForm({ ...sessionForm, term: e.target.value })}
                                     />
+
                                     <Select
                                         value={sessionForm.status}
                                         onValueChange={(value) => setSessionForm({ ...sessionForm, status: value })}
@@ -475,16 +489,18 @@ export default function Osm(pageProps: OsmProps) {
                                         value={sessionForm.notes}
                                         onChange={(e) => setSessionForm({ ...sessionForm, notes: e.target.value })}
                                     />
+
                                     <Button type="submit">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        {t('Create')}</Button>
+                                        {t('Create')}
+                                    </Button>
                                 </form>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Add Class · Subject Sheet</CardTitle>
+                                <CardTitle className="text-base">{t('Add Class · Subject Sheet')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <form
@@ -492,7 +508,7 @@ export default function Osm(pageProps: OsmProps) {
                                     className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6"
                                 >
                                     <div className="space-y-1">
-                                        <Label>Session *</Label>
+                                        <Label>{t('Session *')}</Label>
                                         <Select
                                             value={sheetForm.osm_session_id}
                                             onValueChange={(value) =>
@@ -549,103 +565,119 @@ export default function Osm(pageProps: OsmProps) {
                                     </div>
                                     <div className="flex items-end lg:col-span-2">
                                         <Button type="submit">
-                                            <Plus className="mr-2 h-4 w-4" />{t('Add Sheet')}</Button>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            {t('Add Sheet')}
+                                        </Button>
                                     </div>
                                 </form>
                             </CardContent>
                         </Card>
 
-                        {sessions.map((session) => (
-                            <Card key={session.id}>
-                                <CardHeader>
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="text-base">
-                                            {session.name}{' '}
-                                            <Badge className={STATUS_STYLES[session.status] ?? ''}>
-                                                {STATUS_LABELS[session.status] ?? session.status}
-                                            </Badge>
-                                        </CardTitle>
-                                        <div className="flex items-center gap-2">
-                                            <Select
-                                                value={session.status}
-                                                onValueChange={(value) =>
-                                                    router.put(`/osm/sessions/${session.id}`, { status: value })
-                                                }
-                                            >
-                                                <SelectTrigger className="w-40">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {statusOptions.map((status) => (
-                                                        <SelectItem key={status} value={status}>
-                                                            {STATUS_LABELS[status] ?? status}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-rose-500 hover:text-rose-600"
-                                                onClick={() => {
-                                                    if (window.confirm(`Delete session "${session.name}"?`)) {
-                                                        router.delete(`/osm/sessions/${session.id}`, {
-                                                            preserveScroll: true,
-                                                        });
+                        {sessions.map((session) => {
+                            const { t } = useLanguage();
+                            return (
+                                <Card key={session.id}>
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-base">
+                                                {session.name}{' '}
+                                                <Badge className={STATUS_STYLES[session.status] ?? ''}>
+                                                    {STATUS_LABELS[session.status] ?? session.status}
+                                                </Badge>
+                                            </CardTitle>
+                                            <div className="flex items-center gap-2">
+                                                <Select
+                                                    value={session.status}
+                                                    onValueChange={(value) =>
+                                                        router.put(`/osm/sessions/${session.id}`, { status: value })
                                                     }
-                                                }}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                <span className="sr-only">{t('Delete')}</span>
-                                            </Button>
+                                                >
+                                                    <SelectTrigger className="w-40">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {statusOptions.map((status) => (
+                                                            <SelectItem key={status} value={status}>
+                                                                {STATUS_LABELS[status] ?? status}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-rose-500 hover:text-rose-600"
+                                                    onClick={() => {
+                                                        if (window.confirm(`Delete session "${session.name}"?`)) {
+                                                            router.delete(`/osm/sessions/${session.id}`, {
+                                                                preserveScroll: true,
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    <span className="sr-only">{t('Delete')}</span>
+                                                </Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <p className="text-xs text-gray-400">
-                                        {t('Term')}{session.term} · {session.evaluated}/{session.sheetsTotal} evaluated
-                                    </p>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>{t('Class')}</TableHead>
-                                                <TableHead>{t('Subject')}</TableHead>
-                                                <TableHead className="text-right">{t('Sheets')}</TableHead>
-                                                <TableHead className="text-right">{t('Evaluated')}</TableHead>
-                                                <TableHead className="text-right">{t('Progress')}</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {session.sheets.length === 0 && (
+                                        <p className="text-xs text-gray-400">
+                                            {t('Term')}
+                                            {session.term} · {session.evaluated}/{session.sheetsTotal}
+                                            {t('evaluated')}
+                                        </p>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <Table>
+                                            <TableHeader>
                                                 <TableRow>
-                                                    <TableCell colSpan={5} className="py-8 text-center text-gray-400">{t('No sheets yet for this session.')}</TableCell>
+                                                    <TableHead>{t('Class')}</TableHead>
+                                                    <TableHead>{t('Subject')}</TableHead>
+                                                    <TableHead className="text-right">{t('Sheets')}</TableHead>
+                                                    <TableHead className="text-right">{t('Evaluated')}</TableHead>
+                                                    <TableHead className="text-right">{t('Progress')}</TableHead>
                                                 </TableRow>
-                                            )}
-                                            {session.sheets.map((sheet) => (
-                                                <TableRow key={sheet.id}>
-                                                    <TableCell className="text-sm">{sheet.classLabel ?? '—'}</TableCell>
-                                                    <TableCell className="text-sm">{sheet.subject ?? '—'}</TableCell>
-                                                    <TableCell className="text-right text-sm">
-                                                        {sheet.sheetsCount}
-                                                    </TableCell>
-                                                    <TableCell className="text-right text-sm">
-                                                        {sheet.evaluatedCount}
-                                                    </TableCell>
-                                                    <TableCell className="text-right text-sm">
-                                                        {sheet.sheetsCount > 0
-                                                            ? Math.round(
-                                                                  (sheet.evaluatedCount / sheet.sheetsCount) * 100,
-                                                              )
-                                                            : 0}
-                                                        %
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                            </TableHeader>
+                                            <TableBody>
+                                                {session.sheets.length === 0 && (
+                                                    <TableRow>
+                                                        <TableCell
+                                                            colSpan={5}
+                                                            className="py-8 text-center text-gray-400"
+                                                        >
+                                                            {t('No sheets yet for this session.')}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                                {session.sheets.map((sheet) => (
+                                                    <TableRow key={sheet.id}>
+                                                        <TableCell className="text-sm">
+                                                            {sheet.classLabel ?? '—'}
+                                                        </TableCell>
+                                                        <TableCell className="text-sm">
+                                                            {sheet.subject ?? '—'}
+                                                        </TableCell>
+                                                        <TableCell className="text-right text-sm">
+                                                            {sheet.sheetsCount}
+                                                        </TableCell>
+                                                        <TableCell className="text-right text-sm">
+                                                            {sheet.evaluatedCount}
+                                                        </TableCell>
+                                                        <TableCell className="text-right text-sm">
+                                                            {sheet.sheetsCount > 0
+                                                                ? Math.round(
+                                                                      (sheet.evaluatedCount / sheet.sheetsCount) * 100,
+                                                                  )
+                                                                : 0}
+                                                            %
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </>
                 )}
 
@@ -673,26 +705,34 @@ export default function Osm(pageProps: OsmProps) {
                                         <p className="text-xs text-gray-400">{t('No sheets.')}</p>
                                     ) : (
                                         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                            {session.sheets.map((sheet) => (
-                                                <div key={sheet.id} className="flex items-center justify-between py-2">
-                                                    <div>
-                                                        <p className="text-sm">
-                                                            {sheet.classLabel ?? '—'}{' '}
-                                                            {sheet.subject ? `· ${sheet.subject}` : ''}
-                                                        </p>
-                                                        <p className="text-xs text-gray-400">
-                                                            {sheet.evaluatedCount}/{sheet.sheetsCount} evaluated
-                                                        </p>
-                                                    </div>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => openEvaluate(sheet, session.id)}
+                                            {session.sheets.map((sheet) => {
+                                                const { t } = useLanguage();
+                                                return (
+                                                    <div
+                                                        key={sheet.id}
+                                                        className="flex items-center justify-between py-2"
                                                     >
-                                                        <ClipboardCheck className="mr-2 h-4 w-4" />
-                                                        {t('Evaluate')}</Button>
-                                                </div>
-                                            ))}
+                                                        <div>
+                                                            <p className="text-sm">
+                                                                {sheet.classLabel ?? '—'}{' '}
+                                                                {sheet.subject ? `· ${sheet.subject}` : ''}
+                                                            </p>
+                                                            <p className="text-xs text-gray-400">
+                                                                {sheet.evaluatedCount}/{sheet.sheetsCount}
+                                                                {t('evaluated')}
+                                                            </p>
+                                                        </div>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => openEvaluate(sheet, session.id)}
+                                                        >
+                                                            <ClipboardCheck className="mr-2 h-4 w-4" />
+                                                            {t('Evaluate')}
+                                                        </Button>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
 
@@ -767,9 +807,12 @@ export default function Osm(pageProps: OsmProps) {
                                                     variant="ghost"
                                                     onClick={() => setExpandedSheet(null)}
                                                 >
-                                                    {t('Cancel')}</Button>
+                                                    {t('Cancel')}
+                                                </Button>
                                                 <Button type="submit">
-                                                    <CheckCircle2 className="mr-2 h-4 w-4" />{t('Submit Evaluations')}</Button>
+                                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                    {t('Submit Evaluations')}
+                                                </Button>
                                             </div>
                                         </form>
                                     )}
@@ -814,27 +857,30 @@ export default function Osm(pageProps: OsmProps) {
 
                             <div>
                                 <p className="mb-2 text-sm font-medium">{t('Session Progress')}</p>
-                                {sessions.map((session) => (
-                                    <div key={session.id} className="mb-2">
-                                        <div className="mb-1 flex justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-300">
-                                                {session.name} ({session.term})
-                                            </span>
-                                            <span className="text-gray-400">
-                                                {session.evaluated}/{session.sheetsTotal} · {session.evaluationCount}{' '}
-                                                evaluations
-                                            </span>
+                                {sessions.map((session) => {
+                                    const { t } = useLanguage();
+                                    return (
+                                        <div key={session.id} className="mb-2">
+                                            <div className="mb-1 flex justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-300">
+                                                    {session.name} ({session.term})
+                                                </span>
+                                                <span className="text-gray-400">
+                                                    {session.evaluated}/{session.sheetsTotal} ·{' '}
+                                                    {session.evaluationCount} {t('evaluations')}
+                                                </span>
+                                            </div>
+                                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                                <div
+                                                    className="h-full rounded-full bg-indigo-500"
+                                                    style={{
+                                                        width: `${session.sheetsTotal > 0 ? (session.evaluated / session.sheetsTotal) * 100 : 0}%`,
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                            <div
-                                                className="h-full rounded-full bg-indigo-500"
-                                                style={{
-                                                    width: `${session.sheetsTotal > 0 ? (session.evaluated / session.sheetsTotal) * 100 : 0}%`,
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             <div className="overflow-x-auto">
@@ -853,7 +899,8 @@ export default function Osm(pageProps: OsmProps) {
                                         {evaluations.length === 0 && (
                                             <TableRow>
                                                 <TableCell colSpan={6} className="py-10 text-center text-gray-400">
-                                                    {t('No evaluations recorded yet.')}</TableCell>
+                                                    {t('No evaluations recorded yet.')}
+                                                </TableCell>
                                             </TableRow>
                                         )}
                                         {evaluations.map((evaluation) => (
@@ -899,7 +946,10 @@ export default function Osm(pageProps: OsmProps) {
                 {activeTab === 'moderation' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">{t('Pending Moderation (')}{pendingModeration.length})</CardTitle>
+                            <CardTitle className="text-base">
+                                {t('Pending Moderation (')}
+                                {pendingModeration.length})
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
@@ -916,7 +966,9 @@ export default function Osm(pageProps: OsmProps) {
                                 <TableBody>
                                     {pendingModeration.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">{t('Nothing pending moderation.')}</TableCell>
+                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">
+                                                {t('Nothing pending moderation.')}
+                                            </TableCell>
                                         </TableRow>
                                     )}
                                     {pendingModeration.map((item) => (
@@ -939,14 +991,16 @@ export default function Osm(pageProps: OsmProps) {
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Button size="sm" onClick={() => moderate(item.id, 'ok')}>
                                                         <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                        {t('Approve')}</Button>
+                                                        {t('Approve')}
+                                                    </Button>
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
                                                         className="text-rose-500 hover:text-rose-600"
                                                         onClick={() => moderate(item.id, 'rejected')}
                                                     >
-                                                        {t('Reject')}</Button>
+                                                        {t('Reject')}
+                                                    </Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -966,38 +1020,46 @@ export default function Osm(pageProps: OsmProps) {
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">1</Badge>
                                 <p>
-                                    <strong>{t('Create a session')}</strong> for a term (e.g. Term1). Give it a meaningful name
-                                    such as <em>OSM — English (Class I)</em>.
+                                    <strong>{t('Create a session')}</strong>
+                                    {t('for a term (e.g. Term1). Give it a meaningful name such as')}
+                                    <em>{t('OSM — English (Class I)')}</em>.
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">2</Badge>
                                 <p>
-                                    <strong>Add class · subject sheets</strong> to a session. Each sheet tracks how many
-                                    answer sheets exist (<em>{t('Sheets')}</em>) and how many have been evaluated (
+                                    <strong>{t('Add class · subject sheets')}</strong>
+                                    {t('to a session. Each sheet tracks how many answer sheets exist (')}
+                                    <em>{t('Sheets')}</em>
+                                    {t(') and how many have been evaluated (')}
                                     <em>{t('Evaluated')}</em>).
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">3</Badge>
                                 <p>
-                                    <strong>{t('Evaluate')}</strong> students of a sheet's class with a score (0-25) and
-                                    optional feedback. Once a session has evaluations it moves to{' '}
-                                    <Badge>{t('Evaluating')}</Badge> automatically.
+                                    <strong>{t('Evaluate')}</strong>
+                                    {t(
+                                        "students of a sheet's class with a score (0-25) and optional feedback. Once a session has evaluations it moves to",
+                                    )}{' '}
+                                    <Badge>{t('Evaluating')}</Badge>
+                                    {t('automatically.')}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">4</Badge>
                                 <p>
-                                    <strong>{t('Moderation')}</strong> — a moderator reviews pending evaluations and approves
-                                    or rejects them.
+                                    <strong>{t('Moderation')}</strong>
+                                    {t('— a moderator reviews pending evaluations and approves or rejects them.')}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">5</Badge>
-                                <p>{t('When marking finishes, move the session status to')}<Badge>{t('Completed')}</Badge> or{' '}
-                                    <Badge>{t('Archived')}</Badge> from the Sessions tab. Track completion via the Dashboard
-                                    and Reports tabs.
+                                <p>
+                                    {t('When marking finishes, move the session status to')}
+                                    <Badge>{t('Completed')}</Badge>
+                                    {t('or')} <Badge>{t('Archived')}</Badge>
+                                    {t('from the Sessions tab. Track completion via the Dashboard and Reports tabs.')}
                                 </p>
                             </div>
                         </CardContent>

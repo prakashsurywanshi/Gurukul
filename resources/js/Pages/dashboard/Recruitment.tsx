@@ -194,96 +194,102 @@ export default function Recruitment(pageProps: RecruitmentProps) {
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        {positions.map((position) => (
-                            <Card key={position.id}>
-                                <CardHeader className="pb-3">
-                                    <div className="flex flex-wrap items-start gap-2">
-                                        <div className="min-w-0">
-                                            <CardTitle className="text-base">{position.title}</CardTitle>
-                                            <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                                {position.department} · {typeLabel(position.position_type)} ·{' '}
-                                                {position.vacancies}{' '}
-                                                {position.vacancies === 1 ? t('Vacancy') : t('Vacancies')}
+                        {positions.map((position) => {
+                            const { t } = useLanguage();
+                            return (
+                                <Card key={position.id}>
+                                    <CardHeader className="pb-3">
+                                        <div className="flex flex-wrap items-start gap-2">
+                                            <div className="min-w-0">
+                                                <CardTitle className="text-base">{position.title}</CardTitle>
+                                                <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                    {position.department} · {typeLabel(position.position_type)} ·{' '}
+                                                    {position.vacancies}{' '}
+                                                    {position.vacancies === 1 ? t('Vacancy') : t('Vacancies')}
+                                                </div>
+                                            </div>
+                                            <div className="ml-auto flex gap-1">
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-7 w-7"
+                                                    onClick={() => openEdit(position)}
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-7 w-7 text-red-500"
+                                                    onClick={() => remove(position)}
+                                                    disabled={deletingId === position.id}
+                                                >
+                                                    {deletingId === position.id ? (
+                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    )}
+                                                </Button>
                                             </div>
                                         </div>
-                                        <div className="ml-auto flex gap-1">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-7 w-7"
-                                                onClick={() => openEdit(position)}
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-7 w-7 text-red-500"
-                                                onClick={() => remove(position)}
-                                                disabled={deletingId === position.id}
-                                            >
-                                                {deletingId === position.id ? (
-                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                ) : (
-                                                    <Trash2 className="h-3.5 w-3.5" />
+                                    </CardHeader>
+                                    <CardContent className="space-y-3 text-sm">
+                                        <div className="flex flex-wrap gap-2">
+                                            <Badge className={statusColor[position.status]}>
+                                                {t(position.status.charAt(0).toUpperCase() + position.status.slice(1))}
+                                            </Badge>
+                                            {position.salary_range && (
+                                                <Badge variant="outline">{position.salary_range}</Badge>
+                                            )}
+                                            {position.application_deadline && (
+                                                <Badge variant="outline">
+                                                    {t('Deadline:')}
+                                                    {position.application_deadline}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        {position.description && (
+                                            <p className="text-gray-600 dark:text-gray-300">{position.description}</p>
+                                        )}
+                                        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50">
+                                            <div className="mb-1 font-semibold text-gray-700 dark:text-gray-200">
+                                                {t('Requirements')}
+                                            </div>
+                                            <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-400">
+                                                {position.requirements || t('Not specified')}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center justify-between border-t pt-2 dark:border-gray-800">
+                                            <span className="text-xs text-gray-400">
+                                                {position.created_by ? `${t('Posted by')} ${position.created_by}` : ''}
+                                            </span>
+                                            <div className="flex gap-2">
+                                                {position.status !== 'open' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-7 text-green-600"
+                                                        onClick={() => toggleStatus(position, 'open')}
+                                                    >
+                                                        {t('Open')}
+                                                    </Button>
                                                 )}
-                                            </Button>
+                                                {position.status !== 'closed' && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-7 text-red-600"
+                                                        onClick={() => toggleStatus(position, 'closed')}
+                                                    >
+                                                        {t('Close')}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-3 text-sm">
-                                    <div className="flex flex-wrap gap-2">
-                                        <Badge className={statusColor[position.status]}>
-                                            {t(position.status.charAt(0).toUpperCase() + position.status.slice(1))}
-                                        </Badge>
-                                        {position.salary_range && (
-                                            <Badge variant="outline">{position.salary_range}</Badge>
-                                        )}
-                                        {position.application_deadline && (
-                                            <Badge variant="outline">Deadline: {position.application_deadline}</Badge>
-                                        )}
-                                    </div>
-                                    {position.description && (
-                                        <p className="text-gray-600 dark:text-gray-300">{position.description}</p>
-                                    )}
-                                    <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50">
-                                        <div className="mb-1 font-semibold text-gray-700 dark:text-gray-200">
-                                            {t('Requirements')}
-                                        </div>
-                                        <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-400">
-                                            {position.requirements || t('Not specified')}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center justify-between border-t pt-2 dark:border-gray-800">
-                                        <span className="text-xs text-gray-400">
-                                            {position.created_by ? `${t('Posted by')} ${position.created_by}` : ''}
-                                        </span>
-                                        <div className="flex gap-2">
-                                            {position.status !== 'open' && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-7 text-green-600"
-                                                    onClick={() => toggleStatus(position, 'open')}
-                                                >
-                                                    {t('Open')}
-                                                </Button>
-                                            )}
-                                            {position.status !== 'closed' && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-7 text-red-600"
-                                                    onClick={() => toggleStatus(position, 'closed')}
-                                                >
-                                                    {t('Close')}
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -310,6 +316,7 @@ export default function Recruitment(pageProps: RecruitmentProps) {
                                     value={form.title}
                                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                                 />
+
                                 {errors.title && <div className="mt-1 text-xs text-red-500">{errors.title}</div>}
                             </div>
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

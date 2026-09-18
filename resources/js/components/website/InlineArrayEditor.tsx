@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Plus, Trash2, GripVertical, Pencil, X, Check, Eye, EyeOff } from 'lucide-react';
 import InlineEditField from './InlineEditField';
 
+import { useLanguage } from '../../i18n/LanguageProvider';
+
 interface ArrayItem {
     [key: string]: string;
 }
@@ -29,12 +31,16 @@ export default function InlineArrayEditor({
     onChange,
     renderItem,
     newItemDefaults,
-    emptyLabel = 'No items yet',
-    addLabel = 'Add Item',
+    emptyLabel,
+    addLabel,
 }: InlineArrayEditorProps) {
+    const { t } = useLanguage();
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [newItem, setNewItem] = useState<ArrayItem>({ ...newItemDefaults });
+
+    const resolvedEmptyLabel = emptyLabel ?? t('No items yet');
+    const resolvedAddLabel = addLabel ?? t('Add Item');
 
     if (!isEditing) return null;
 
@@ -112,7 +118,7 @@ export default function InlineArrayEditor({
                                                     ? 'bg-blue-100 text-blue-600'
                                                     : 'text-slate-400 hover:bg-slate-100 hover:text-blue-600'
                                             }`}
-                                            title={isEditingItem ? 'Stop editing this item' : 'Edit this item'}
+                                            title={isEditingItem ? t('Stop editing this item') : t('Edit this item')}
                                         >
                                             {isEditingItem ? (
                                                 <EyeOff className="h-3.5 w-3.5" />
@@ -124,7 +130,7 @@ export default function InlineArrayEditor({
                                             type="button"
                                             onClick={() => deleteItem(index)}
                                             className="rounded p-1 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
-                                            title="Remove this item"
+                                            title={t('Remove this item')}
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
                                         </button>
@@ -142,12 +148,16 @@ export default function InlineArrayEditor({
                     })}
                 </div>
 
-                {items.length === 0 && <p className="py-4 text-center text-sm text-slate-400 italic">{emptyLabel}</p>}
+                {items.length === 0 && (
+                    <p className="py-4 text-center text-sm text-slate-400 italic">{resolvedEmptyLabel}</p>
+                )}
 
                 {/* Add new item */}
                 {isAdding ? (
                     <div className="mt-4 rounded-xl border-2 border-green-300 bg-green-50 p-4">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-green-700">New Item</p>
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-green-700">
+                            {t('New Item')}
+                        </p>
                         <div className="p-4 bg-white rounded-lg border border-green-200">
                             {renderItem(newItem, -1, true, (key, value) => handleNewFieldChange(key, value))}
                         </div>
@@ -157,7 +167,7 @@ export default function InlineArrayEditor({
                                 onClick={addItem}
                                 className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
                             >
-                                <Check className="h-4 w-4" /> Add to page
+                                <Check className="h-4 w-4" /> {t('Add to page')}
                             </button>
                             <button
                                 type="button"
@@ -167,7 +177,7 @@ export default function InlineArrayEditor({
                                 }}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
                             >
-                                <X className="h-4 w-4" /> Cancel
+                                <X className="h-4 w-4" /> {t('Cancel')}
                             </button>
                         </div>
                     </div>
@@ -178,7 +188,7 @@ export default function InlineArrayEditor({
                         className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-green-300 bg-green-50/50 py-3 text-sm font-semibold text-green-700 transition hover:border-green-400 hover:bg-green-100"
                     >
                         <Plus className="h-5 w-5" />
-                        {addLabel}
+                        {resolvedAddLabel}
                     </button>
                 )}
             </div>

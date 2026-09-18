@@ -142,15 +142,22 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
     const agentLogs = useMemo(() => logs.filter((log) => log.logType === 'agent'), [logs]);
 
     const statusBadge = (log: LogEntry) => {
+        const { t } = useLanguage();
         if (log.logType === 'agent') {
             return log.matched ? (
-                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">{t('Sync OK')}</Badge>
+                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    {t('Sync OK')}
+                </Badge>
             ) : (
-                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">{t('Failed')}</Badge>
+                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                    {t('Failed')}
+                </Badge>
             );
         }
         return log.direction === 'in' ? (
-            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">In</Badge>
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                {t('In')}
+            </Badge>
         ) : (
             <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">{t('Out')}</Badge>
         );
@@ -208,14 +215,22 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Biometric Devices')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Devices, attendance logs, face monitoring and agent sync status.')}</p>
+                            <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                            {t('Biometric Devices')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {t('Devices, attendance logs, face monitoring and agent sync status.')}
+                        </p>
                     </div>
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={startLogForm}>
-                            <ListChecks className="mr-2 h-4 w-4" />{t('Add Log')}</Button>
+                            <ListChecks className="mr-2 h-4 w-4" />
+                            {t('Add Log')}
+                        </Button>
                         <Button onClick={() => setCreating(true)}>
-                            <Plus className="mr-2 h-4 w-4" />{t('Add Device')}</Button>
+                            <Plus className="mr-2 h-4 w-4" />
+                            {t('Add Device')}
+                        </Button>
                     </div>
                 </div>
 
@@ -227,7 +242,10 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('Devices')}</p>
                                 <p className="text-lg font-semibold">
                                     {summary.devices}{' '}
-                                    <span className="text-xs font-normal text-gray-400">({summary.active} active)</span>
+                                    <span className="text-xs font-normal text-gray-400">
+                                        ({summary.active}
+                                        {t('active)')}
+                                    </span>
                                 </p>
                             </div>
                         </CardContent>
@@ -263,15 +281,31 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
 
                 <Tabs defaultValue="devices">
                     <TabsList>
-                        <TabsTrigger value="devices">{t('All Devices (')}{devices.length})</TabsTrigger>
-                        <TabsTrigger value="attendance">{t('Attendance Logs (')}{attendanceLogs.length})</TabsTrigger>
-                        <TabsTrigger value="face">{t('Face Monitoring (')}{faceLogs.length})</TabsTrigger>
-                        <TabsTrigger value="agent">{t('Agent Logs (')}{agentLogs.length})</TabsTrigger>
+                        <TabsTrigger value="devices">
+                            {t('All Devices (')}
+                            {devices.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="attendance">
+                            {t('Attendance Logs (')}
+                            {attendanceLogs.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="face">
+                            {t('Face Monitoring (')}
+                            {faceLogs.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="agent">
+                            {t('Agent Logs (')}
+                            {agentLogs.length})
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="devices" className="mt-4">
                         {devices.length === 0 ? (
-                            <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-gray-400 dark:bg-slate-800">{t('No biometric devices registered yet. Add your first device to start capturing attendance logs.')}</p>
+                            <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-gray-400 dark:bg-slate-800">
+                                {t(
+                                    'No biometric devices registered yet. Add your first device to start capturing attendance logs.',
+                                )}
+                            </p>
                         ) : (
                             <Card>
                                 <CardContent className="p-0">
@@ -503,7 +537,7 @@ export default function BiometricDevices(pageProps: BiometricDevicesProps) {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="in">In</SelectItem>
+                                            <SelectItem value="in">{t('In')}</SelectItem>
                                             <SelectItem value="out">{t('Out')}</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -624,7 +658,8 @@ function DialogShell({
                     {children}
                     <div className="flex justify-end gap-2 pt-2">
                         <Button type="button" variant="ghost" onClick={onClose}>
-                            {t('Cancel')}</Button>
+                            {t('Cancel')}
+                        </Button>
                         <Button type="submit" disabled={saving}>
                             {saving ? 'Saving…' : t('Save')}
                         </Button>

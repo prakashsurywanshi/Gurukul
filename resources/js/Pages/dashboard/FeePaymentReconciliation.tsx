@@ -75,8 +75,14 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
             <div className="space-y-6 p-6 lg:p-8">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <Landmark className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Payment Reconciliation')}</h1>
-                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{t('Mark collected fee payments as reconciled once they are confirmed in the bank or ledger. Refunded payments are excluded.')}</p>
+                        <Landmark className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        {t('Payment Reconciliation')}
+                    </h1>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        {t(
+                            'Mark collected fee payments as reconciled once they are confirmed in the bank or ledger. Refunded payments are excluded.',
+                        )}
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -126,7 +132,8 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                             </div>
                             <div>
                                 <Label className="sr-only" htmlFor="method-filter">
-                                    {t('Payment method')}</Label>
+                                    {t('Payment method')}
+                                </Label>
                                 <select
                                     id="method-filter"
                                     className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -152,7 +159,9 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                         </div>
 
                         {filtered.length === 0 ? (
-                            <p className="py-8 text-center text-sm text-muted-foreground">{t('No payments match the current filters.')}</p>
+                            <p className="py-8 text-center text-sm text-muted-foreground">
+                                {t('No payments match the current filters.')}
+                            </p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -170,6 +179,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                     </thead>
                                     <tbody>
                                         {filtered.map((payment) => {
+                                            const { t } = useLanguage();
                                             const isRefunded = payment.status === 'refunded';
                                             return (
                                                 <tr key={payment.id} className="border-b last:border-0">
@@ -200,7 +210,7 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                                     <td className="py-2.5 pr-4">
                                                         {isRefunded ? (
                                                             <Badge variant="outline" className="text-red-500">
-                                                                Refunded
+                                                                {t('Refunded')}
                                                             </Badge>
                                                         ) : payment.reconciled_at ? (
                                                             <span
@@ -208,7 +218,8 @@ export default function FeePaymentReconciliation({ user, payments, summary, filt
                                                             >
                                                                 <Badge className="bg-emerald-500 text-white">
                                                                     <CheckCircle2 className="mr-1 h-3 w-3" />
-                                                                    {t('Reconciled')}</Badge>
+                                                                    {t('Reconciled')}
+                                                                </Badge>
                                                             </span>
                                                         ) : (
                                                             <Badge variant="secondary">{t('Unreconciled')}</Badge>

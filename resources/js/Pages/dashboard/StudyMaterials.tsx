@@ -229,80 +229,85 @@ export default function StudyMaterials(pageProps: StudyMaterialsProps) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {materials.map((material) => (
-                                        <TableRow key={material.id}>
-                                            <TableCell>
-                                                <p className="font-medium text-gray-900 dark:text-white">
-                                                    {material.title}
-                                                </p>
-                                                {material.description && (
-                                                    <p className="max-w-xs truncate text-xs text-gray-500">
-                                                        {material.description}
+                                    {materials.map((material) => {
+                                        const { t } = useLanguage();
+                                        return (
+                                            <TableRow key={material.id}>
+                                                <TableCell>
+                                                    <p className="font-medium text-gray-900 dark:text-white">
+                                                        {material.title}
                                                     </p>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-sm">{material.class ?? '—'}</TableCell>
-                                            <TableCell className="text-sm">{material.subject ?? '—'}</TableCell>
-                                            <TableCell>
-                                                <Badge className={TYPE_BADGE[material.type] ?? ''}>
-                                                    {material.type === 'link' ? (
-                                                        <span className="flex items-center gap-1">
-                                                            <Link2 className="h-3 w-3" />
-                                                            Link
-                                                        </span>
-                                                    ) : material.type === 'note' ? (
-                                                        <span className="flex items-center gap-1">
-                                                            <FileText className="h-3 w-3" />
-                                                            {t('Note')}</span>
-                                                    ) : (
-                                                        <span className="flex items-center gap-1">
-                                                            <FileDown className="h-3 w-3" />
-                                                            {t('File')}</span>
+                                                    {material.description && (
+                                                        <p className="max-w-xs truncate text-xs text-gray-500">
+                                                            {material.description}
+                                                        </p>
                                                     )}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-sm">{material.uploaded_by ?? '—'}</TableCell>
-                                            <TableCell className="whitespace-nowrap text-sm">
-                                                {material.created_at ?? '—'}
-                                            </TableCell>
-                                            {canManage && (
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-1">
-                                                        {material.attachmentUrl && (
+                                                </TableCell>
+                                                <TableCell className="text-sm">{material.class ?? '—'}</TableCell>
+                                                <TableCell className="text-sm">{material.subject ?? '—'}</TableCell>
+                                                <TableCell>
+                                                    <Badge className={TYPE_BADGE[material.type] ?? ''}>
+                                                        {material.type === 'link' ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <Link2 className="h-3 w-3" />
+                                                                {t('Link')}
+                                                            </span>
+                                                        ) : material.type === 'note' ? (
+                                                            <span className="flex items-center gap-1">
+                                                                <FileText className="h-3 w-3" />
+                                                                {t('Note')}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="flex items-center gap-1">
+                                                                <FileDown className="h-3 w-3" />
+                                                                {t('File')}
+                                                            </span>
+                                                        )}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-sm">{material.uploaded_by ?? '—'}</TableCell>
+                                                <TableCell className="whitespace-nowrap text-sm">
+                                                    {material.created_at ?? '—'}
+                                                </TableCell>
+                                                {canManage && (
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-1">
+                                                            {material.attachmentUrl && (
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                    onClick={() =>
+                                                                        window.open(material.attachmentUrl, '_blank')
+                                                                    }
+                                                                >
+                                                                    <FileDown className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
                                                             <Button
                                                                 size="icon"
                                                                 variant="ghost"
-                                                                onClick={() =>
-                                                                    window.open(material.attachmentUrl, '_blank')
-                                                                }
+                                                                onClick={() => openEdit(material)}
                                                             >
-                                                                <FileDown className="h-4 w-4" />
+                                                                <Pencil className="h-4 w-4" />
                                                             </Button>
-                                                        )}
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            onClick={() => openEdit(material)}
-                                                        >
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="ghost"
-                                                            onClick={() => remove(material)}
-                                                            disabled={deletingId === material.id}
-                                                        >
-                                                            {deletingId === material.id ? (
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                            ) : (
-                                                                <Trash2 className="h-4 w-4 text-red-500" />
-                                                            )}
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            )}
-                                        </TableRow>
-                                    ))}
+                                                            <Button
+                                                                size="icon"
+                                                                variant="ghost"
+                                                                onClick={() => remove(material)}
+                                                                disabled={deletingId === material.id}
+                                                            >
+                                                                {deletingId === material.id ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                ) : (
+                                                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                                                )}
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                )}
+                                            </TableRow>
+                                        );
+                                    })}
                                 </TableBody>
                             </Table>
                         )}
@@ -333,6 +338,7 @@ export default function StudyMaterials(pageProps: StudyMaterialsProps) {
                                     onChange={(e) => setForm({ ...form, title: e.target.value })}
                                     required
                                 />
+
                                 {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title}</p>}
                             </div>
                             <div>
@@ -389,6 +395,7 @@ export default function StudyMaterials(pageProps: StudyMaterialsProps) {
                                     onChange={(e) => setForm({ ...form, url: e.target.value })}
                                     placeholder="https://"
                                 />
+
                                 {errors.url && <p className="mt-1 text-xs text-red-500">{errors.url}</p>}
                             </div>
                             <div>
@@ -398,6 +405,7 @@ export default function StudyMaterials(pageProps: StudyMaterialsProps) {
                                     onChange={(e) => setFormFile(e.target.files?.[0] ?? null)}
                                     accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar"
                                 />
+
                                 <p className="mt-1 text-xs text-gray-500">
                                     {t('Max 20 MB. Supports PDF, Office docs, ZIP.')}
                                 </p>

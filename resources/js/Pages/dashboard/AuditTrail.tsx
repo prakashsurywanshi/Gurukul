@@ -148,28 +148,37 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <FileClock className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            {t('Audit Trail')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Every create, update and delete action recorded across the system.')}</p>
+                            {t('Audit Trail')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {t('Every create, update and delete action recorded across the system.')}
+                        </p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" onClick={exportCsv}>
                             <Download className="mr-2 h-4 w-4" />
-                            {t('Export CSV')}</Button>
+                            {t('Export CSV')}
+                        </Button>
                         <Button variant="outline" className="text-rose-500 hover:text-rose-600" onClick={clearLogs}>
                             <Trash2 className="mr-2 h-4 w-4" />
-                            {t('Clear Logs')}</Button>
+                            {t('Clear Logs')}
+                        </Button>
                         {hasFilters && (
                             <Button variant="ghost" onClick={resetFilters}>
                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                {t('Reset')}</Button>
+                                {t('Reset')}
+                            </Button>
                         )}
                     </div>
                 </div>
 
                 <div className="flex items-start gap-2 rounded-lg bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:bg-sky-500/10 dark:text-sky-300">
                     <span className="mt-0.5">🗑</span>
-                    <p>{t('Logs older than')}{retentionDays} days are removed automatically by nightly cleanup. Use{' '}
-                        <strong>{t('Clear Logs')}</strong> to wipe everything now.
+                    <p>
+                        {t('Logs older than')}
+                        {retentionDays}
+                        {t('days are removed automatically by nightly cleanup. Use')} <strong>{t('Clear Logs')}</strong>
+                        {t('to wipe everything now.')}
                     </p>
                 </div>
 
@@ -177,7 +186,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                     <CardHeader>
                         <CardTitle className="text-base">
                             <Filter className="mr-2 inline-block h-4 w-4" />
-                            Filters
+                            {t('Filters')}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -228,6 +237,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                                 onChange={(event) => setStartDate(event.target.value)}
                                 max={endDate || undefined}
                             />
+
                             <Input
                                 type="date"
                                 value={endDate}
@@ -236,14 +246,18 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             />
                         </div>
                         <div className="mt-3 flex items-center justify-end gap-2">
-                            <Badge variant="outline">{pagination.total} events</Badge>
+                            <Badge variant="outline">
+                                {pagination.total}
+                                {t('events')}
+                            </Badge>
                             <Button onClick={() => applyFilters(1)} disabled={loading}>
                                 {loading ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : (
                                     <Search className="mr-2 h-4 w-4" />
                                 )}
-                                {t('Apply')}</Button>
+                                {t('Apply')}
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -266,7 +280,9 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             <TableBody>
                                 {trails.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">{t('No audit events match your filters.')}</TableCell>
+                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">
+                                            {t('No audit events match your filters.')}
+                                        </TableCell>
                                     </TableRow>
                                 )}
                                 {trails.map((trail) => (
@@ -324,7 +340,10 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                             </PaginationItem>
                             <PaginationItem>
                                 <span className="px-3 text-sm text-gray-500">
-                                    {t('Page')}{pagination.currentPage} of {pagination.lastPage}
+                                    {t('Page')}
+                                    {pagination.currentPage}
+                                    {t('of')}
+                                    {pagination.lastPage}
                                 </span>
                             </PaginationItem>
                             <PaginationItem>
@@ -395,7 +414,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div className="rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
                                         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-400">
-                                            Before
+                                            {t('Before')}
                                         </p>
                                         {selected.old_values ? (
                                             <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-xs">
@@ -407,7 +426,7 @@ export default function AuditTrail(pageProps: AuditTrailProps) {
                                     </div>
                                     <div className="rounded-md border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
                                         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-                                            After
+                                            {t('After')}
                                         </p>
                                         {selected.new_values ? (
                                             <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-xs">

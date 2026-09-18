@@ -249,8 +249,11 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <ListChecks className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            {t('Assessment')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Plan continuous and term-based assessments with weightage.')}</p>
+                            {t('Assessment')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {t('Plan continuous and term-based assessments with weightage.')}
+                        </p>
                     </div>
                     {activeTab === 'assessments' && (
                         <Button onClick={openCreate}>
@@ -310,7 +313,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <CardContent className="flex items-center gap-3 p-4">
                                     <Gauge className="h-8 w-8 text-amber-500" />
                                     <div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{t('Active Weightage')}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {t('Active Weightage')}
+                                        </p>
                                         <p className="text-lg font-semibold">{stats.totalWeightage}%</p>
                                     </div>
                                 </CardContent>
@@ -327,7 +332,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         <TableRow>
                                             <TableHead>{t('Title')}</TableHead>
                                             <TableHead>{t('Type')}</TableHead>
-                                            <TableHead>Class · Subject</TableHead>
+                                            <TableHead>{t('Class · Subject')}</TableHead>
                                             <TableHead className="text-right">{t('Weightage')}</TableHead>
                                             <TableHead>{t('Status')}</TableHead>
                                         </TableRow>
@@ -335,7 +340,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     <TableBody>
                                         {assessments.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={5} className="py-10 text-center text-gray-400">{t('No assessments found. Create one from the Assessments tab.')}</TableCell>
+                                                <TableCell colSpan={5} className="py-10 text-center text-gray-400">
+                                                    {t('No assessments found. Create one from the Assessments tab.')}
+                                                </TableCell>
                                             </TableRow>
                                         )}
                                         {assessments.slice(0, 8).map((assessment) => (
@@ -372,7 +379,10 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">{t('Assessments (')}{assessments.length})</CardTitle>
+                                <CardTitle className="text-base">
+                                    {t('Assessments (')}
+                                    {assessments.length})
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -419,10 +429,12 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         }}
                                     >
                                         <RefreshCw className="mr-2 h-4 w-4" />
-                                        {t('Reset')}</Button>
+                                        {t('Reset')}
+                                    </Button>
                                     <Button onClick={applyFilters}>
                                         <Search className="mr-2 h-4 w-4" />
-                                        {t('Apply')}</Button>
+                                        {t('Apply')}
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -446,7 +458,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     <TableBody>
                                         {assessments.length === 0 && (
                                             <TableRow>
-                                                <TableCell colSpan={9} className="py-10 text-center text-gray-400">{t('No assessments found.')}</TableCell>
+                                                <TableCell colSpan={9} className="py-10 text-center text-gray-400">
+                                                    {t('No assessments found.')}
+                                                </TableCell>
                                             </TableRow>
                                         )}
                                         {assessments.map((assessment) => (
@@ -519,28 +533,38 @@ export default function Assessment(pageProps: AssessmentProps) {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {Object.keys(analytics.byType).length === 0 && (
-                                    <p className="py-8 text-center text-sm text-gray-400">{t('No assessment data yet.')}</p>
+                                    <p className="py-8 text-center text-sm text-gray-400">
+                                        {t('No assessment data yet.')}
+                                    </p>
                                 )}
-                                {Object.entries(analytics.byType).map(([type, entry]) => (
-                                    <div key={type}>
-                                        <div className="mb-1 flex items-center justify-between text-sm">
-                                            <span className="text-gray-600 dark:text-gray-300">
-                                                {TYPE_LABELS[type] ?? type}
-                                                <span className="ml-2 text-xs text-gray-400">
-                                                    {entry.count} assessment{entry.count === 1 ? '' : 's'} ·{' '}
-                                                    {entry.marks} marks
+                                {Object.entries(analytics.byType).map(([type, entry]) => {
+                                    const { t } = useLanguage();
+                                    return (
+                                        <div key={type}>
+                                            <div className="mb-1 flex items-center justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-300">
+                                                    {TYPE_LABELS[type] ?? type}
+                                                    <span className="ml-2 text-xs text-gray-400">
+                                                        {entry.count}
+                                                        {t('assessment')}
+                                                        {entry.count === 1 ? '' : 's'} · {entry.marks}
+                                                        {t('marks')}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                            <span className="text-gray-400">{entry.weightage}% wt</span>
+                                                <span className="text-gray-400">
+                                                    {entry.weightage}
+                                                    {t('% wt')}
+                                                </span>
+                                            </div>
+                                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                                <div
+                                                    className="h-full rounded-full bg-indigo-500"
+                                                    style={{ width: `${(entry.weightage / maxTypeWeightage) * 100}%` }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                            <div
-                                                className="h-full rounded-full bg-indigo-500"
-                                                style={{ width: `${(entry.weightage / maxTypeWeightage) * 100}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </CardContent>
                         </Card>
 
@@ -550,33 +574,39 @@ export default function Assessment(pageProps: AssessmentProps) {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {Object.keys(analytics.byTerm).length === 0 && (
-                                    <p className="py-8 text-center text-sm text-gray-400">{t('No assessment data yet.')}</p>
+                                    <p className="py-8 text-center text-sm text-gray-400">
+                                        {t('No assessment data yet.')}
+                                    </p>
                                 )}
                                 {Object.entries(analytics.byTerm)
                                     .sort((a, b) => b[1].weightage - a[1].weightage)
-                                    .map(([term, entry]) => (
-                                        <div key={term}>
-                                            <div className="mb-1 flex items-center justify-between text-sm">
-                                                <span className="text-gray-600 dark:text-gray-300">
-                                                    {term}
-                                                    <span className="ml-2 text-xs text-gray-400">
-                                                        {entry.count} assessments
+                                    .map(([term, entry]) => {
+                                        const { t } = useLanguage();
+                                        return (
+                                            <div key={term}>
+                                                <div className="mb-1 flex items-center justify-between text-sm">
+                                                    <span className="text-gray-600 dark:text-gray-300">
+                                                        {term}
+                                                        <span className="ml-2 text-xs text-gray-400">
+                                                            {entry.count}
+                                                            {t('assessments')}
+                                                        </span>
                                                     </span>
-                                                </span>
-                                                <span className="text-gray-400">
-                                                    {Math.round((entry.weightage / analytics.termTotal) * 100)}%
-                                                </span>
+                                                    <span className="text-gray-400">
+                                                        {Math.round((entry.weightage / analytics.termTotal) * 100)}%
+                                                    </span>
+                                                </div>
+                                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                                    <div
+                                                        className="h-full rounded-full bg-emerald-500"
+                                                        style={{
+                                                            width: `${(entry.weightage / analytics.termTotal) * 100}%`,
+                                                        }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                                <div
-                                                    className="h-full rounded-full bg-emerald-500"
-                                                    style={{
-                                                        width: `${(entry.weightage / analytics.termTotal) * 100}%`,
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                             </CardContent>
                         </Card>
 
@@ -605,7 +635,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                 {activeTab === 'student-report' && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Student Report — Applicable Assessments</CardTitle>
+                            <CardTitle className="text-base">{t('Student Report — Applicable Assessments')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -672,7 +702,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <TableBody>
                                     {reportRows.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">{t('No assessments match these filters.')}</TableCell>
+                                            <TableCell colSpan={6} className="py-10 text-center text-gray-400">
+                                                {t('No assessments match these filters.')}
+                                            </TableCell>
                                         </TableRow>
                                     )}
                                     {reportRows.map((assessment) => (
@@ -712,7 +744,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                     <TableRow>
                                         <TableHead className="w-16">{t('Rank')}</TableHead>
                                         <TableHead>{t('Assessment')}</TableHead>
-                                        <TableHead>Class · Subject</TableHead>
+                                        <TableHead>{t('Class · Subject')}</TableHead>
                                         <TableHead className="text-right">{t('Weightage')}</TableHead>
                                         <TableHead>{t('Status')}</TableHead>
                                     </TableRow>
@@ -720,7 +752,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 <TableBody>
                                     {ranked.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="py-10 text-center text-gray-400">{t('No assessments to rank yet.')}</TableCell>
+                                            <TableCell colSpan={5} className="py-10 text-center text-gray-400">
+                                                {t('No assessments to rank yet.')}
+                                            </TableCell>
                                         </TableRow>
                                     )}
                                     {ranked.map((assessment, index) => (
@@ -761,8 +795,9 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 </TableBody>
                             </Table>
                             <p className="p-4 text-xs text-gray-400">
-                                Student score rankings are published after exam marks are entered. This standings view
-                                ranks assessment plans by weightage to guide prioritisation.
+                                {t(
+                                    'Student score rankings are published after exam marks are entered. This standings view ranks assessment plans by weightage to guide prioritisation.',
+                                )}
                             </p>
                         </CardContent>
                     </Card>
@@ -777,37 +812,46 @@ export default function Assessment(pageProps: AssessmentProps) {
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">1</Badge>
                                 <p>
-                                    <strong>{t('Create plans')}</strong> under the Assessments tab — choose continuous or term
-                                    type, assign a class/subject, weightage (%) and total marks.
+                                    <strong>{t('Create plans')}</strong>
+                                    {t(
+                                        'under the Assessments tab — choose continuous or term type, assign a class/subject, weightage (%) and total marks.',
+                                    )}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">2</Badge>
                                 <p>
-                                    <strong>{t('Weightage')}</strong> controls how much each assessment contributes to the
-                                    final score. The Analytics tab shows how weight is distributed across types and
-                                    terms.
+                                    <strong>{t('Weightage')}</strong>
+                                    {t(
+                                        'controls how much each assessment contributes to the final score. The Analytics tab shows how weight is distributed across types and terms.',
+                                    )}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">3</Badge>
                                 <p>
-                                    <strong>{t('Status')}</strong> — draft while preparing, active once students sit the
-                                    assessment, completed when marking finishes and results are finalised.
+                                    <strong>{t('Status')}</strong>
+                                    {t(
+                                        '— draft while preparing, active once students sit the assessment, completed when marking finishes and results are finalised.',
+                                    )}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">4</Badge>
                                 <p>
-                                    <strong>{t('Student Report')}</strong> filters which assessments apply to a class/subject
-                                    so parents and students see exactly what counts towards the term.
+                                    <strong>{t('Student Report')}</strong>
+                                    {t(
+                                        'filters which assessments apply to a class/subject so parents and students see exactly what counts towards the term.',
+                                    )}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Badge className="h-6 w-6 rounded-full">5</Badge>
                                 <p>
-                                    <strong>{t('Marks & ranks')}</strong> are entered via the Exam Marks entry module; once
-                                    published, rankings and analytics surface here automatically.
+                                    <strong>{t('Marks & ranks')}</strong>
+                                    {t(
+                                        'are entered via the Exam Marks entry module; once published, rankings and analytics surface here automatically.',
+                                    )}
                                 </p>
                             </div>
                         </CardContent>
@@ -826,11 +870,13 @@ export default function Assessment(pageProps: AssessmentProps) {
                     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>{editing ? t('Edit Assessment') : t('New Assessment')}</DialogTitle>
-                            <DialogDescription>{t('Define an assessment plan, weightage and timeline.')}</DialogDescription>
+                            <DialogDescription>
+                                {t('Define an assessment plan, weightage and timeline.')}
+                            </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <Label>Assessment Name *</Label>
+                                <Label>{t('Assessment Name *')}</Label>
                                 <Input
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -876,7 +922,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 </Select>
                             </div>
                             <div>
-                                <Label>Type *</Label>
+                                <Label>{t('Type *')}</Label>
                                 <Select
                                     value={form.assessment_type}
                                     onValueChange={(value) => setForm({ ...form, assessment_type: value })}
@@ -899,7 +945,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Weightage (%)</Label>
+                                <Label>{t('Weightage (%)')}</Label>
                                 <Input
                                     type="number"
                                     min="0"
@@ -936,7 +982,7 @@ export default function Assessment(pageProps: AssessmentProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Status *</Label>
+                                <Label>{t('Status *')}</Label>
                                 <Select
                                     value={form.status}
                                     onValueChange={(value) => setForm({ ...form, status: value })}
@@ -968,7 +1014,8 @@ export default function Assessment(pageProps: AssessmentProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    {t('Cancel')}</Button>
+                                    {t('Cancel')}
+                                </Button>
                                 <Button type="submit" disabled={saving}>
                                     {editing ? t('Save Changes') : t('Create Assessment')}
                                 </Button>

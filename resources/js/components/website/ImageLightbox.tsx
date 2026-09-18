@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
@@ -15,6 +16,7 @@ interface ImageLightboxProps {
 }
 
 export default function ImageLightbox({ images, initialIndex, onClose, albumTitle }: ImageLightboxProps) {
+    const { t } = useLanguage();
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
     const goPrev = useCallback(() => {
@@ -82,7 +84,9 @@ export default function ImageLightbox({ images, initialIndex, onClose, albumTitl
                     <div className="mb-4 text-center">
                         <p className="text-lg font-bold text-white">{albumTitle}</p>
                         <p className="mt-1 text-xs text-white/50">
-                            {currentIndex + 1} of {images.length}
+                            {currentIndex + 1}
+                            {t('of')}
+                            {images.length}
                         </p>
                     </div>
                 )}
@@ -91,6 +95,7 @@ export default function ImageLightbox({ images, initialIndex, onClose, albumTitl
                     alt={current.title || current.caption || ''}
                     className="max-h-[72vh] max-w-full rounded-lg object-contain shadow-2xl"
                 />
+
                 {(current.title || current.caption) && (
                     <div className="mt-4 max-w-2xl text-center">
                         {current.title && <p className="text-lg font-semibold text-white">{current.title}</p>}

@@ -54,9 +54,7 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold dark:text-white">{t('hpc.appearanceTitle')}</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {t('hpc.appearanceSubtitle')}
-                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('hpc.appearanceSubtitle')}</p>
                     </div>
                     <Button onClick={save}>
                         <Save className="h-4 w-4 mr-2" />
@@ -83,6 +81,7 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                             onChange={(e) => setPrimaryColor(e.target.value)}
                                             className="h-9 w-12 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900"
                                         />
+
                                         <input
                                             value={primaryColor}
                                             onChange={(e) => setPrimaryColor(e.target.value)}
@@ -99,6 +98,7 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                             onChange={(e) => setAccentColor(e.target.value)}
                                             className="h-9 w-12 rounded-md border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900"
                                         />
+
                                         <input
                                             value={accentColor}
                                             onChange={(e) => setAccentColor(e.target.value)}
@@ -129,6 +129,7 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                         onChange={(e) => setShowLogo(e.target.checked)}
                                         className="h-4 w-4"
                                     />
+
                                     <span className="text-sm dark:text-white">{t('hpc.showLogo')}</span>
                                 </label>
                                 <label className="flex items-center gap-3">
@@ -138,6 +139,7 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                         onChange={(e) => setShowGrades(e.target.checked)}
                                         className="h-4 w-4"
                                     />
+
                                     <span className="text-sm dark:text-white">{t('hpc.showGrades')}</span>
                                 </label>
                             </div>
@@ -163,7 +165,7 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                             <GraduationCap className="h-8 w-8 shrink-0 opacity-90" />
                                         ) : (
                                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold">
-                                                SG
+                                                {t('SG')}
                                             </div>
                                         )}
                                         <div>
@@ -182,23 +184,19 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                                 <p className="text-[10px] uppercase tracking-wide text-slate-400">
                                                     {t('Student Name')}
                                                 </p>
-                                                <p className="font-semibold text-slate-900">
-                                                    {t('hpc.sampleStudent')}
-                                                </p>
+                                                <p className="font-semibold text-slate-900">{t('hpc.sampleStudent')}</p>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] uppercase tracking-wide text-slate-400">
                                                     {t('Class')}
                                                 </p>
-                                                <p className="font-semibold text-slate-900">6-A</p>
+                                                <p className="font-semibold text-slate-900">{t('6-A')}</p>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] uppercase tracking-wide text-slate-400">
                                                     {t('hpc.sessionCol')}
                                                 </p>
-                                                <p className="font-semibold text-slate-900">
-                                                    {t('hpc.sampleSession')}
-                                                </p>
+                                                <p className="font-semibold text-slate-900">{t('hpc.sampleSession')}</p>
                                             </div>
                                         </div>
 
@@ -231,12 +229,8 @@ export default function HpcCardAppearance(pageProps: HpcCardAppearanceProps) {
                                             className="flex items-center justify-between rounded-xl px-4 py-3 text-white"
                                             style={{ background: accentColor }}
                                         >
-                                            <span className="text-sm font-semibold">
-                                                {t('hpc.overallOutcome')}
-                                            </span>
-                                            <span className="text-lg font-bold">
-                                                {showGrades ? 'A+' : '—'}
-                                            </span>
+                                            <span className="text-sm font-semibold">{t('hpc.overallOutcome')}</span>
+                                            <span className="text-lg font-bold">{showGrades ? 'A+' : '—'}</span>
                                         </div>
                                     </div>
                                 </div>

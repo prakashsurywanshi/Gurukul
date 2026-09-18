@@ -621,26 +621,32 @@ export default function ParentPortal({
                                     <EmptyRow label={t('No assessments yet')} />
                                 ) : (
                                     <div className="grid gap-3 md:grid-cols-2">
-                                        {tabs.osm.map((assessment, index) => (
-                                            <div key={index} className="rounded-lg border p-3">
-                                                <p className="font-medium">{assessment.name}</p>
-                                                <p className="mt-1 text-xs text-muted-foreground">
-                                                    {assessment.assessment_type ?? '-'}
-                                                    {assessment.term ? <span className="mx-1">·</span> : null}
-                                                    {assessment.term}
-                                                    {assessment.start_date ? <span className="mx-1">·</span> : null}
-                                                    {assessment.start_date}
-                                                </p>
-                                                <p className="mt-2 text-sm">
-                                                    {assessment.total_marks ? `${assessment.total_marks} marks` : ''}
-                                                    {assessment.weightage ? (
-                                                        <span className="ml-2 text-xs text-muted-foreground">
-                                                            weightage {assessment.weightage}%
-                                                        </span>
-                                                    ) : null}
-                                                </p>
-                                            </div>
-                                        ))}
+                                        {tabs.osm.map((assessment, index) => {
+                                            const { t } = useLanguage();
+                                            return (
+                                                <div key={index} className="rounded-lg border p-3">
+                                                    <p className="font-medium">{assessment.name}</p>
+                                                    <p className="mt-1 text-xs text-muted-foreground">
+                                                        {assessment.assessment_type ?? '-'}
+                                                        {assessment.term ? <span className="mx-1">·</span> : null}
+                                                        {assessment.term}
+                                                        {assessment.start_date ? <span className="mx-1">·</span> : null}
+                                                        {assessment.start_date}
+                                                    </p>
+                                                    <p className="mt-2 text-sm">
+                                                        {assessment.total_marks
+                                                            ? `${assessment.total_marks} marks`
+                                                            : ''}
+                                                        {assessment.weightage ? (
+                                                            <span className="ml-2 text-xs text-muted-foreground">
+                                                                {t('weightage')}
+                                                                {assessment.weightage}%
+                                                            </span>
+                                                        ) : null}
+                                                    </p>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </CardContent>
@@ -802,26 +808,30 @@ export default function ParentPortal({
                                     <EmptyRow label={t('No books listed yet')} />
                                 ) : (
                                     <div className="grid gap-3 md:grid-cols-2">
-                                        {tabs.library.map((book, index) => (
-                                            <div key={index} className="rounded-lg border p-3">
-                                                <p className="font-medium">{book.title}</p>
-                                                <p className="mt-1 text-xs text-muted-foreground">
-                                                    {book.author}
-                                                    <span className="mx-1">·</span>
-                                                    {book.category}
-                                                    <span className="mx-1">·</span>
-                                                    {book.language}
-                                                </p>
-                                                <p className="mt-2 text-xs">
-                                                    {t('Copies available')}: {book.available_copies}
-                                                    {book.rack_number ? (
-                                                        <span className="ml-2 text-muted-foreground">
-                                                            rack {book.rack_number}
-                                                        </span>
-                                                    ) : null}
-                                                </p>
-                                            </div>
-                                        ))}
+                                        {tabs.library.map((book, index) => {
+                                            const { t } = useLanguage();
+                                            return (
+                                                <div key={index} className="rounded-lg border p-3">
+                                                    <p className="font-medium">{book.title}</p>
+                                                    <p className="mt-1 text-xs text-muted-foreground">
+                                                        {book.author}
+                                                        <span className="mx-1">·</span>
+                                                        {book.category}
+                                                        <span className="mx-1">·</span>
+                                                        {book.language}
+                                                    </p>
+                                                    <p className="mt-2 text-xs">
+                                                        {t('Copies available')}: {book.available_copies}
+                                                        {book.rack_number ? (
+                                                            <span className="ml-2 text-muted-foreground">
+                                                                {t('rack')}
+                                                                {book.rack_number}
+                                                            </span>
+                                                        ) : null}
+                                                    </p>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </CardContent>
@@ -1042,6 +1052,7 @@ export default function ParentPortal({
                                         label={t('Health Records')}
                                         icon={ClipboardCheck}
                                     />
+
                                     <QuickLink href="/my-hostel" label={t('Hostel')} icon={FolderOpen} />
                                     <QuickLink
                                         href="/my-certificates"

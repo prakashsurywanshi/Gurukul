@@ -78,9 +78,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
     };
 
     const toggleOrg = (orgId: number) => {
-        setSelectedIds((prev) =>
-            prev.includes(orgId) ? prev.filter((id) => id !== orgId) : [...prev, orgId],
-        );
+        setSelectedIds((prev) => (prev.includes(orgId) ? prev.filter((id) => id !== orgId) : [...prev, orgId]));
     };
 
     const createBranchAdmin = (event: FormEvent) => {
@@ -131,7 +129,9 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <Building2 className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Branch Admin')}</h1>
+                            <Building2 className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                            {t('Branch Admin')}
+                        </h1>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {isSuperAdmin
                                 ? 'Head-office dashboard for multi-branch management. Choose a branch to enter its context.'
@@ -139,7 +139,9 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                         </p>
                     </div>
                     <Badge variant="outline">
-                        {branches.length} branch{branches.length !== 1 ? 'es' : ''}
+                        {branches.length}
+                        {t('branch')}
+                        {branches.length !== 1 ? 'es' : ''}
                     </Badge>
                 </div>
 
@@ -147,20 +149,24 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                     <Alert>
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription>
-                            Entering a branch uses the impersonation workflow. You can return to the head-office
-                            view using the "Return to head office" banner.
+                            {t(
+                                'Entering a branch uses the impersonation workflow. You can return to the head-office view using the "Return to head office" banner.',
+                            )}
                         </AlertDescription>
                     </Alert>
                 )}
 
                 {!isSuperAdmin && (
                     <div className="flex items-center justify-end">
-                        <Button variant="outline" size="sm" onClick={leaveBranch}>{t('Return to head office')}</Button>
+                        <Button variant="outline" size="sm" onClick={leaveBranch}>
+                            {t('Return to head office')}
+                        </Button>
                     </div>
                 )}
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {branches.map((branch) => {
+                        const { t } = useLanguage();
                         const active = branch.subscription_status === 'active';
                         const isActiveBranch = activeBranchId !== null && activeBranchId === branch.id;
 
@@ -178,19 +184,31 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                     <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                         <p>{branch.email}</p>
                                         {branch.phone && <p>{branch.phone}</p>}
-                                        <p className="text-xs">Session: {branch.current_session}</p>
+                                        <p className="text-xs">
+                                            {t('Session:')}
+                                            {branch.current_session}
+                                        </p>
                                         {branch.expiry_date && (
-                                            <p className="text-xs">Renewal: {branch.expiry_date}</p>
+                                            <p className="text-xs">
+                                                {t('Renewal:')}
+                                                {branch.expiry_date}
+                                            </p>
                                         )}
                                     </div>
                                     <div className="flex gap-4 text-sm">
                                         <div className="flex items-center gap-1">
                                             <Users className="h-3.5 w-3.5 text-gray-400" />
-                                            <span>{branch.students_count} students</span>
+                                            <span>
+                                                {branch.students_count}
+                                                {t('students')}
+                                            </span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Users className="h-3.5 w-3.5 text-gray-400" />
-                                            <span>{branch.users_count} staff</span>
+                                            <span>
+                                                {branch.users_count}
+                                                {t('staff')}
+                                            </span>
                                         </div>
                                     </div>
                                     {isSuperAdmin ? (
@@ -203,11 +221,13 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                             {impersonating === branch.id ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    Entering…
+                                                    {t('Entering…')}
                                                 </>
                                             ) : (
                                                 <>
-                                                    <ExternalLink className="mr-2 h-4 w-4" />{t('Enter branch')}</>
+                                                    <ExternalLink className="mr-2 h-4 w-4" />
+                                                    {t('Enter branch')}
+                                                </>
                                             )}
                                         </Button>
                                     ) : (
@@ -220,13 +240,15 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                             {switching === branch.id ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    Switching…
+                                                    {t('Switching…')}
                                                 </>
                                             ) : isActiveBranch ? (
                                                 'Active branch'
                                             ) : (
                                                 <>
-                                                    <ExternalLink className="mr-2 h-4 w-4" />{t('Switch branch')}</>
+                                                    <ExternalLink className="mr-2 h-4 w-4" />
+                                                    {t('Switch branch')}
+                                                </>
                                             )}
                                         </Button>
                                     )}
@@ -240,8 +262,12 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                         <div className="flex items-center justify-between border-b px-6 py-4">
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('Branch Administrators')}</h2>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Create branch admins and assign which organizations they can manage.')}</p>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    {t('Branch Administrators')}
+                                </h2>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    {t('Create branch admins and assign which organizations they can manage.')}
+                                </p>
                             </div>
                             <Button size="sm" onClick={() => setShowCreate((v) => !v)}>
                                 <Plus className="mr-2 h-4 w-4" />
@@ -295,6 +321,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                                     checked={selectedIds.includes(branch.id)}
                                                     onChange={() => toggleOrg(branch.id)}
                                                 />
+
                                                 {branch.name}
                                             </label>
                                         ))}
@@ -305,7 +332,7 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                                         {saving ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Saving…
+                                                {t('Saving…')}
                                             </>
                                         ) : (
                                             'Create'
@@ -316,55 +343,63 @@ export default function BranchAdmin(pageProps: BranchAdminProps) {
                         )}
 
                         {branchAdmins.length === 0 ? (
-                            <p className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400">{t('No branch administrators yet.')}</p>
+                            <p className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400">
+                                {t('No branch administrators yet.')}
+                            </p>
                         ) : (
                             <ul className="divide-y">
-                                {branchAdmins.map((admin) => (
-                                    <li key={admin.id} className="flex flex-wrap items-center gap-4 px-6 py-4">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                {admin.name}
-                                                {admin.status === 'inactive' && (
-                                                    <Badge variant="destructive" className="ml-2">
-                                                        {t('Inactive')}</Badge>
-                                                )}
-                                            </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {admin.email} · created {admin.created_at}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <select
-                                                multiple
-                                                className="w-56 rounded-md border bg-white px-2 py-1 text-sm dark:bg-gray-800"
-                                                value={admin.organization_ids.map(String)}
-                                                onChange={(e) => {
-                                                    const values = Array.from(e.target.selectedOptions, (opt) =>
-                                                        Number(opt.value),
-                                                    );
-                                                    router.patch(`/branch-admin/users/${admin.id}/organizations`, {
-                                                        organization_ids: values,
-                                                    });
-                                                }}
-                                            >
-                                                {branches.map((branch) => (
-                                                    <option key={branch.id} value={branch.id}>
-                                                        {branch.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                title={t('Deactivate')}
-                                                disabled={admin.status === 'inactive'}
-                                                onClick={() => deactivateAdmin(admin)}
-                                            >
-                                                <Trash2 className="h-4 w-4 text-red-500" />
-                                            </Button>
-                                        </div>
-                                    </li>
-                                ))}
+                                {branchAdmins.map((admin) => {
+                                    const { t } = useLanguage();
+                                    return (
+                                        <li key={admin.id} className="flex flex-wrap items-center gap-4 px-6 py-4">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-medium text-gray-900 dark:text-gray-100">
+                                                    {admin.name}
+                                                    {admin.status === 'inactive' && (
+                                                        <Badge variant="destructive" className="ml-2">
+                                                            {t('Inactive')}
+                                                        </Badge>
+                                                    )}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                    {admin.email}
+                                                    {t('· created')}
+                                                    {admin.created_at}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <select
+                                                    multiple
+                                                    className="w-56 rounded-md border bg-white px-2 py-1 text-sm dark:bg-gray-800"
+                                                    value={admin.organization_ids.map(String)}
+                                                    onChange={(e) => {
+                                                        const values = Array.from(e.target.selectedOptions, (opt) =>
+                                                            Number(opt.value),
+                                                        );
+                                                        router.patch(`/branch-admin/users/${admin.id}/organizations`, {
+                                                            organization_ids: values,
+                                                        });
+                                                    }}
+                                                >
+                                                    {branches.map((branch) => (
+                                                        <option key={branch.id} value={branch.id}>
+                                                            {branch.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    title={t('Deactivate')}
+                                                    disabled={admin.status === 'inactive'}
+                                                    onClick={() => deactivateAdmin(admin)}
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                                </Button>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
                     </div>

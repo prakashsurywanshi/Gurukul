@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage } from '../../i18n/LanguageProvider';
 
 import * as React from 'react';
 import useEmblaCarousel, { type UseEmblaCarouselType } from 'embla-carousel-react';
@@ -166,6 +167,7 @@ function CarouselPrevious({
     size = 'icon',
     ...props
 }: React.ComponentProps<typeof Button>) {
+    const { t } = useLanguage();
     const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
     return (
@@ -185,7 +187,7 @@ function CarouselPrevious({
             {...props}
         >
             <ArrowLeft />
-            <span className="sr-only">Previous slide</span>
+            <span className="sr-only">{t('Previous slide')}</span>
         </Button>
     );
 }
@@ -196,6 +198,7 @@ function CarouselNext({
     size = 'icon',
     ...props
 }: React.ComponentProps<typeof Button>) {
+    const { t } = useLanguage();
     const { orientation, scrollNext, canScrollNext } = useCarousel();
 
     return (
@@ -215,7 +218,7 @@ function CarouselNext({
             {...props}
         >
             <ArrowRight />
-            <span className="sr-only">Next slide</span>
+            <span className="sr-only">{t('Next slide')}</span>
         </Button>
     );
 }

@@ -1,6 +1,8 @@
 import { WebsiteThemeKey, WebsiteTemplateKey, websiteThemes, WebsiteContent } from '../utils/websiteCmsContent';
 import { Check, Eye } from 'lucide-react';
 
+import { useLanguage } from '../i18n/LanguageProvider';
+
 const templateLabels: Record<WebsiteTemplateKey, string> = {
     template1: 'Classic Admissions',
     template2: '3D Modern',
@@ -12,6 +14,8 @@ const templateLabels: Record<WebsiteTemplateKey, string> = {
 /* ── Template 1: Classic Admissions ─────────────────────────────── */
 
 function TemplateOneMiniPreview() {
+    const { t } = useLanguage();
+
     return (
         <div className="bg-[linear-gradient(180deg,#f0f9ff,#f8fbff)]">
             {/* Nav */}
@@ -21,12 +25,12 @@ function TemplateOneMiniPreview() {
                     <span className="text-[5px] font-bold uppercase tracking-wider text-slate-700">Gurukul</span>
                 </div>
                 <div className="flex gap-1.5 rounded-full border border-slate-200/80 bg-white/85 px-2 py-0.5 text-[4.5px] text-slate-600">
-                    <span>About</span>
-                    <span>Programs</span>
-                    <span>Contact</span>
+                    <span>{t('About')}</span>
+                    <span>{t('Programs')}</span>
+                    <span>{t('Contact')}</span>
                 </div>
                 <div className="rounded-full bg-gradient-to-br from-slate-900 to-blue-600 px-1.5 py-0.5 text-[4px] font-semibold text-white">
-                    Apply
+                    {t('Apply')}
                 </div>
             </div>
 
@@ -34,23 +38,24 @@ function TemplateOneMiniPreview() {
             <div className="grid grid-cols-[1.1fr_0.9fr] gap-2 px-3 pb-2 pt-1">
                 <div>
                     <div className="inline-block rounded-full border border-sky-200 bg-white/90 px-1.5 py-0.5 text-[4px] font-medium text-sky-800">
-                        Admissions Open 2026
+                        {t('Admissions Open 2026')}
                     </div>
                     <h3 className="mt-1 text-[7px] font-black leading-tight text-slate-950">
-                        A modern learning
+                        {t('A modern learning')}
+
                         <span className="block bg-clip-text text-transparent bg-[linear-gradient(135deg,#0f172a,#2563eb,#2563EB)]">
-                            destination for all
+                            {t('destination for all')}
                         </span>
                     </h3>
                     <p className="mt-0.5 text-[4.5px] leading-relaxed text-slate-500">
-                        Building future leaders through excellence.
+                        {t('Building future leaders through excellence.')}
                     </p>
                     <div className="mt-1.5 flex gap-1">
                         <div className="rounded-full bg-gradient-to-br from-slate-900 to-blue-600 px-2 py-0.5 text-[4px] font-semibold text-white">
-                            Explore
+                            {t('Explore')}
                         </div>
                         <div className="rounded-full border border-slate-200 bg-white/90 px-2 py-0.5 text-[4px] font-semibold text-slate-700">
-                            Portal
+                            {t('Portal')}
                         </div>
                     </div>
                     {/* Stat cards */}
@@ -61,7 +66,7 @@ function TemplateOneMiniPreview() {
                                 className="rounded-lg border border-slate-200/80 bg-white/80 p-1 text-center backdrop-blur"
                             >
                                 <p className="text-[6px] font-black text-slate-900">{v}</p>
-                                <p className="text-[3.5px] text-slate-400">students</p>
+                                <p className="text-[3.5px] text-slate-400">{t('students')}</p>
                             </div>
                         ))}
                     </div>
@@ -73,7 +78,9 @@ function TemplateOneMiniPreview() {
                         style={{ transform: 'rotateY(-12deg) rotateX(6deg)' }}
                     >
                         <div className="rounded-lg border border-slate-200/70 bg-white/80 p-1.5">
-                            <p className="text-[4px] font-bold uppercase tracking-widest text-sky-700">Spotlight</p>
+                            <p className="text-[4px] font-bold uppercase tracking-widest text-sky-700">
+                                {t('Spotlight')}
+                            </p>
                             <div className="mt-1 grid grid-cols-2 gap-1">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="rounded-md border border-slate-200/80 bg-white/88 p-1">
@@ -85,7 +92,7 @@ function TemplateOneMiniPreview() {
                             </div>
                         </div>
                         <div className="mt-1 rounded-md bg-gradient-to-br from-sky-100 to-blue-50 p-1">
-                            <p className="text-[3.5px] font-semibold text-slate-700">Live Overview</p>
+                            <p className="text-[3.5px] font-semibold text-slate-700">{t('Live Overview')}</p>
                         </div>
                     </div>
                 </div>
@@ -98,7 +105,7 @@ function TemplateOneMiniPreview() {
                         key={p}
                         className={`rounded-md border p-1 ${i % 2 === 0 ? 'border-blue-200/70 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.92))]' : 'border-sky-200/80 bg-[linear-gradient(180deg,rgba(239,246,255,0.96),rgba(255,255,255,0.92))]'}`}
                     >
-                        <div className="text-[4px] font-bold text-slate-800">{p}</div>
+                        <div className="text-[4px] font-bold text-slate-800">{t(p)}</div>
                         <div className="mt-0.5 h-0.5 w-3 rounded bg-slate-200" />
                     </div>
                 ))}
@@ -116,6 +123,8 @@ function TemplateOneMiniPreview() {
 /* ── Template 2: 3D Modern ─────────────────────────────────────── */
 
 function TemplateTwoMiniPreview() {
+    const { t } = useLanguage();
+
     return (
         <div className="bg-[radial-gradient(circle_at_top_left,#1a2744,#0b1223)]">
             {/* Nav */}
@@ -125,12 +134,12 @@ function TemplateTwoMiniPreview() {
                     <span className="text-[5px] font-bold uppercase tracking-wider text-slate-200">Gurukul</span>
                 </div>
                 <div className="flex gap-1.5 rounded-full border border-white/12 bg-white/6 px-2 py-0.5 text-[4.5px] text-slate-300">
-                    <span>About</span>
-                    <span>Gallery</span>
-                    <span>Contact</span>
+                    <span>{t('About')}</span>
+                    <span>{t('Gallery')}</span>
+                    <span>{t('Contact')}</span>
                 </div>
                 <div className="rounded-full bg-[linear-gradient(135deg,#67e8f9,#a78bfa,#93c5fd)] px-1.5 py-0.5 text-[4px] font-semibold text-slate-950">
-                    Apply
+                    {t('Apply')}
                 </div>
             </div>
 
@@ -138,21 +147,24 @@ function TemplateTwoMiniPreview() {
             <div className="grid grid-cols-[0.88fr_1.12fr] gap-2 px-3 pb-2 pt-1">
                 <div>
                     <div className="inline-block rounded-full border border-cyan-300/20 bg-cyan-300/10 px-1.5 py-0.5 text-[4px] font-medium text-cyan-200">
-                        Welcome 2026
+                        {t('Welcome 2026')}
                     </div>
                     <h3 className="mt-1 text-[7px] font-black leading-tight text-white">
-                        Future of
+                        {t('Future of')}
+
                         <span className="block bg-clip-text text-transparent bg-[linear-gradient(135deg,#67e8f9,#93c5fd,#bfdbfe)]">
-                            learning starts
+                            {t('learning starts')}
                         </span>
                     </h3>
-                    <p className="mt-0.5 text-[4.5px] leading-relaxed text-slate-400">Innovation meets tradition.</p>
+                    <p className="mt-0.5 text-[4.5px] leading-relaxed text-slate-400">
+                        {t('Innovation meets tradition.')}
+                    </p>
                     <div className="mt-1.5 flex gap-1">
                         <div className="rounded-full bg-[linear-gradient(135deg,#22d3ee,#60a5fa)] px-2 py-0.5 text-[4px] font-semibold text-slate-950">
-                            Explore
+                            {t('Explore')}
                         </div>
                         <div className="rounded-full border border-white/15 bg-white/6 px-2 py-0.5 text-[4px] font-semibold text-white">
-                            Portal
+                            {t('Portal')}
                         </div>
                     </div>
                     {/* Stats */}
@@ -163,7 +175,7 @@ function TemplateTwoMiniPreview() {
                                 className={`rounded-lg border border-white/10 bg-white/5 p-1 text-center ${i % 2 === 1 ? 'translate-x-1' : ''}`}
                             >
                                 <p className="text-[6px] font-black text-white">{v}</p>
-                                <p className="text-[3.5px] text-slate-400">{i === 0 ? 'students' : 'results'}</p>
+                                <p className="text-[3.5px] text-slate-400">{i === 0 ? t('students') : t('results')}</p>
                             </div>
                         ))}
                     </div>
@@ -178,9 +190,9 @@ function TemplateTwoMiniPreview() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-[4px] font-bold uppercase tracking-widest text-cyan-200">
-                                        Campus
+                                        {t('Campus')}
                                     </p>
-                                    <p className="text-[5px] font-bold text-white">3D Experience</p>
+                                    <p className="text-[5px] font-bold text-white">{t('3D Experience')}</p>
                                 </div>
                                 <div className="h-4 w-4 rounded-full bg-gradient-to-br from-cyan-300 to-pink-300 opacity-30" />
                             </div>
@@ -219,6 +231,7 @@ function TemplateTwoMiniPreview() {
                                 background: `linear-gradient(135deg, ${c}, #0b1223)`,
                             }}
                         />
+
                         <div className="p-1">
                             <div className="h-0.5 w-3 rounded bg-white/20" />
                         </div>
@@ -238,6 +251,8 @@ function TemplateTwoMiniPreview() {
 /* ── Template 3: Heritage Editorial ─────────────────────────────── */
 
 function TemplateThreeMiniPreview() {
+    const { t } = useLanguage();
+
     return (
         <div className="bg-[linear-gradient(180deg,#f0f4ff,#e0e7ff,#f0f9ff,#e9eef5)]">
             {/* Nav */}
@@ -249,12 +264,12 @@ function TemplateThreeMiniPreview() {
                     <span className="font-serif text-[5.5px] font-semibold tracking-wide text-stone-950">Gurukul</span>
                 </div>
                 <div className="flex gap-1.5 rounded-full border border-white/70 bg-white/70 px-2 py-0.5 text-[4.5px] text-stone-600 backdrop-blur">
-                    <span>About</span>
-                    <span>Programs</span>
-                    <span>Contact</span>
+                    <span>{t('About')}</span>
+                    <span>{t('Programs')}</span>
+                    <span>{t('Contact')}</span>
                 </div>
                 <div className="rounded-full bg-[linear-gradient(135deg,#1e3a5f,#1d4ed8,#1e40af)] px-1.5 py-0.5 text-[4px] font-semibold text-white">
-                    Apply
+                    {t('Apply')}
                 </div>
             </div>
 
@@ -262,21 +277,22 @@ function TemplateThreeMiniPreview() {
             <div className="grid grid-cols-[0.94fr_1.06fr] gap-2 px-3 pb-2 pt-1">
                 <div>
                     <div className="inline-flex items-center gap-0.5 rounded-full border border-blue-200 bg-white/80 px-1.5 py-0.5 text-[4px] font-semibold text-blue-900">
-                        ✦ Admissions Open
+                        {t('✦ Admissions Open')}
                     </div>
                     <h3 className="mt-1 font-serif text-[7.5px] font-semibold leading-tight text-stone-950">
-                        Nurturing
-                        <span className="mt-0.5 block text-blue-800">Minds of Tomorrow</span>
+                        {t('Nurturing')}
+
+                        <span className="mt-0.5 block text-blue-800">{t('Minds of Tomorrow')}</span>
                     </h3>
                     <p className="mt-0.5 text-[4.5px] leading-relaxed text-stone-600">
-                        A legacy of academic excellence.
+                        {t('A legacy of academic excellence.')}
                     </p>
                     <div className="mt-1.5 flex gap-1">
                         <div className="rounded-full bg-stone-950 px-2 py-0.5 text-[4px] font-semibold text-white">
-                            Explore
+                            {t('Explore')}
                         </div>
                         <div className="rounded-full border border-stone-300 bg-white/80 px-2 py-0.5 text-[4px] font-semibold text-stone-800">
-                            Portal
+                            {t('Portal')}
                         </div>
                     </div>
                     {/* Highlight cards */}
@@ -285,7 +301,7 @@ function TemplateThreeMiniPreview() {
                             <div key={v} className="rounded-xl border border-white/70 bg-white/75 p-1 backdrop-blur">
                                 <p className="font-serif text-[6px] font-semibold text-stone-950">{v}</p>
                                 <p className="text-[3.5px] uppercase tracking-wider text-stone-500">
-                                    {v === '500+' ? 'students' : 'pass rate'}
+                                    {v === '500+' ? t('students') : t('pass rate')}
                                 </p>
                             </div>
                         ))}
@@ -298,12 +314,12 @@ function TemplateThreeMiniPreview() {
                         {/* Overlay panels at bottom */}
                         <div className="absolute bottom-1 left-1 right-1 flex gap-1">
                             <div className="flex-1 rounded-md border border-white/70 bg-white/80 p-1 backdrop-blur">
-                                <p className="text-[3.5px] font-semibold text-stone-700">Open House</p>
-                                <p className="text-[3px] text-stone-500">Mar 15, 2026</p>
+                                <p className="text-[3.5px] font-semibold text-stone-700">{t('Open House')}</p>
+                                <p className="text-[3px] text-stone-500">{t('Mar 15, 2026')}</p>
                             </div>
                             <div className="flex-1 rounded-md bg-stone-900/90 p-1">
-                                <p className="text-[3.5px] font-semibold text-white">Overview</p>
-                                <p className="text-[3px] text-stone-400">25+ acres</p>
+                                <p className="text-[3.5px] font-semibold text-white">{t('Overview')}</p>
+                                <p className="text-[3px] text-stone-400">{t('25+ acres')}</p>
                             </div>
                         </div>
                     </div>
@@ -317,7 +333,7 @@ function TemplateThreeMiniPreview() {
                         key={p}
                         className={`rounded-lg border p-1 ${i % 2 === 0 ? 'border-blue-200/60 bg-[#f0f4ff]' : 'border-sky-200/60 bg-[#f8fbff]'}`}
                     >
-                        <div className="font-serif text-[4px] font-semibold text-stone-800">{p}</div>
+                        <div className="font-serif text-[4px] font-semibold text-stone-800">{t(p)}</div>
                         <div className="mt-0.5 h-0.5 w-3 rounded bg-stone-200" />
                     </div>
                 ))}
@@ -330,7 +346,7 @@ function TemplateThreeMiniPreview() {
                         <div key={v} className="text-center">
                             <p className="font-serif text-[6px] font-semibold text-white">{v}</p>
                             <p className="text-[3px] text-stone-400">
-                                {v === '25+' ? 'years' : v === '500+' ? 'students' : 'care'}
+                                {v === '25+' ? t('years') : v === '500+' ? t('students') : t('care')}
                             </p>
                         </div>
                     ))}
@@ -349,6 +365,8 @@ function TemplateThreeMiniPreview() {
 /* ── Template 4: Colorful Classic ─────────────────────────────── */
 
 function TemplateFourMiniPreview() {
+    const { t } = useLanguage();
+
     return (
         <div className="bg-[linear-gradient(180deg,#f0f9ff,#f0f9ff,#e0e7ff,#edf4ff)]">
             {/* Top info bar */}
@@ -369,17 +387,17 @@ function TemplateFourMiniPreview() {
                 </div>
                 <div className="flex gap-0.5">
                     <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[3.5px] font-semibold text-white">
-                        About
+                        {t('About')}
                     </span>
                     <span className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[3.5px] text-slate-600">
-                        Gallery
+                        {t('Gallery')}
                     </span>
                     <span className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[3.5px] text-slate-600">
-                        Events
+                        {t('Events')}
                     </span>
                 </div>
                 <div className="rounded-full bg-[linear-gradient(135deg,#1e3a5f,#1e40af)] px-1.5 py-0.5 text-[4px] font-semibold text-white">
-                    Apply
+                    {t('Apply')}
                 </div>
             </div>
 
@@ -387,40 +405,43 @@ function TemplateFourMiniPreview() {
             <div className="grid grid-cols-[1fr_0.95fr] gap-2 px-3 pb-2 pt-1.5">
                 <div>
                     <div className="inline-flex items-center gap-0.5 rounded-full border border-blue-200 bg-white px-1.5 py-0.5 text-[4px] font-semibold text-blue-900">
-                        ✦ Admissions Open
+                        {t('✦ Admissions Open')}
                     </div>
                     <h3 className="mt-1 font-serif text-[7.5px] font-semibold leading-tight text-stone-950">
-                        Building Futures
-                        <span className="mt-0.5 block text-blue-800">With Excellence</span>
+                        {t('Building Futures')}
+
+                        <span className="mt-0.5 block text-blue-800">{t('With Excellence')}</span>
                     </h3>
-                    <p className="mt-0.5 text-[4.5px] leading-relaxed text-stone-600">Where every child matters.</p>
+                    <p className="mt-0.5 text-[4.5px] leading-relaxed text-stone-600">
+                        {t('Where every child matters.')}
+                    </p>
                     <div className="mt-1.5 flex gap-1">
                         <div className="rounded-full bg-stone-950 px-2 py-0.5 text-[4px] font-semibold text-white">
-                            Explore
+                            {t('Explore')}
                         </div>
                         <div className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[4px] font-semibold text-blue-900">
-                            Contact
+                            {t('Contact')}
                         </div>
                     </div>
                     {/* Notice */}
                     <div className="mt-1.5 rounded-md border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-50 p-1">
                         <p className="text-[3.5px] font-semibold text-blue-800">
-                            📢 Notice: Admissions 2026-27 are now open!
+                            {t('📢 Notice: Admissions 2026-27 are now open!')}
                         </p>
                     </div>
                     {/* Highlight cards in rose/blue/sky */}
                     <div className="mt-1.5 grid grid-cols-3 gap-0.5">
                         <div className="rounded-md border border-rose-200 bg-rose-50/90 p-0.5 text-center">
                             <p className="text-[5px] font-bold text-rose-800">500+</p>
-                            <p className="text-[3px] text-rose-500">students</p>
+                            <p className="text-[3px] text-rose-500">{t('students')}</p>
                         </div>
                         <div className="rounded-md border border-blue-200 bg-blue-50/90 p-0.5 text-center">
                             <p className="text-[5px] font-bold text-blue-800">50+</p>
-                            <p className="text-[3px] text-blue-500">staff</p>
+                            <p className="text-[3px] text-blue-500">{t('staff')}</p>
                         </div>
                         <div className="rounded-md border border-sky-200 bg-sky-50/90 p-0.5 text-center">
                             <p className="text-[5px] font-bold text-sky-800">98%</p>
-                            <p className="text-[3px] text-sky-500">results</p>
+                            <p className="text-[3px] text-sky-500">{t('results')}</p>
                         </div>
                     </div>
                 </div>
@@ -428,8 +449,8 @@ function TemplateFourMiniPreview() {
                 <div className="relative overflow-hidden rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-sky-50 p-1 shadow-md">
                     <div className="h-full min-h-[5rem] rounded-xl bg-gradient-to-br from-blue-100 via-blue-50 to-sky-100" />
                     <div className="absolute bottom-1 left-1 right-1 rounded-md border border-blue-200 bg-white/90 p-1 backdrop-blur">
-                        <p className="text-[3.5px] font-semibold text-blue-900">Campus Admissions</p>
-                        <p className="text-[3px] text-stone-500">Walk-in inquiries welcome</p>
+                        <p className="text-[3.5px] font-semibold text-blue-900">{t('Campus Admissions')}</p>
+                        <p className="text-[3px] text-stone-500">{t('Walk-in inquiries welcome')}</p>
                     </div>
                 </div>
             </div>
@@ -440,7 +461,7 @@ function TemplateFourMiniPreview() {
                 <div className="rounded-lg border border-blue-200 bg-white/80 p-1">
                     <div className="mb-0.5 flex items-center gap-0.5">
                         <div className="h-1.5 w-1.5 rounded-sm bg-rose-100 text-rose-600" />
-                        <span className="text-[4px] font-bold text-stone-800">About</span>
+                        <span className="text-[4px] font-bold text-stone-800">{t('About')}</span>
                     </div>
                     <div className="h-0.5 w-full rounded bg-blue-100" />
                     <div className="mt-0.5 h-0.5 w-3/4 rounded bg-stone-200" />
@@ -449,7 +470,7 @@ function TemplateFourMiniPreview() {
                 <div className="rounded-lg border border-sky-200 bg-white/80 p-1">
                     <div className="mb-0.5 flex items-center gap-0.5">
                         <div className="h-1.5 w-1.5 rounded-sm bg-sky-100 text-sky-600" />
-                        <span className="text-[4px] font-bold text-stone-800">Gallery</span>
+                        <span className="text-[4px] font-bold text-stone-800">{t('Gallery')}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-0.5">
                         <div className="h-2 rounded bg-sky-100" />
@@ -460,7 +481,7 @@ function TemplateFourMiniPreview() {
                 <div className="rounded-lg border border-emerald-200 bg-white/80 p-1">
                     <div className="mb-0.5 flex items-center gap-0.5">
                         <div className="h-1.5 w-1.5 rounded-sm bg-emerald-100 text-emerald-600" />
-                        <span className="text-[4px] font-bold text-stone-800">Events</span>
+                        <span className="text-[4px] font-bold text-stone-800">{t('Events')}</span>
                     </div>
                     <div className="space-y-0.5">
                         <div className="h-1 rounded bg-emerald-50" />
@@ -475,11 +496,11 @@ function TemplateFourMiniPreview() {
                     <div className="space-y-0.5">
                         <div className="flex items-center gap-0.5">
                             <div className="h-1 w-1 rounded-full bg-rose-100" />
-                            <span className="text-[3.5px] text-stone-600">📞 Contact</span>
+                            <span className="text-[3.5px] text-stone-600">{t('📞 Contact')}</span>
                         </div>
                         <div className="flex items-center gap-0.5">
                             <div className="h-1 w-1 rounded-full bg-rose-100" />
-                            <span className="text-[3.5px] text-stone-600">✉ Email</span>
+                            <span className="text-[3.5px] text-stone-600">{t('✉ Email')}</span>
                         </div>
                     </div>
                     {/* Map placeholder */}
@@ -499,6 +520,8 @@ function TemplateFourMiniPreview() {
 /* ── Template 5: Classic Institutional ───────────────────────── */
 
 function TemplateFiveMiniPreview() {
+    const { t } = useLanguage();
+
     return (
         <div className="bg-[linear-gradient(180deg,#f0f4f8,#ffffff)]">
             {/* Top bar */}
@@ -518,40 +541,41 @@ function TemplateFiveMiniPreview() {
                     <span className="font-serif text-[5.5px] font-bold tracking-wide text-[#002147]">Gurukul</span>
                 </div>
                 <div className="rounded bg-[#2563EB] px-1.5 py-0.5 text-[3.5px] font-semibold text-white">
-                    Accredited
+                    {t('Accredited')}
                 </div>
             </div>
 
             {/* Nav */}
             <div className="flex items-center justify-between bg-[#2563EB] px-3 py-1">
                 <div className="flex gap-1.5 text-[4px] font-semibold text-white">
-                    <span>Home</span>
-                    <span>About</span>
-                    <span>Admissions</span>
-                    <span>Departments</span>
+                    <span>{t('Home')}</span>
+                    <span>{t('About')}</span>
+                    <span>{t('Admissions')}</span>
+                    <span>{t('Departments')}</span>
                 </div>
             </div>
 
             {/* Marquee */}
             <div className="border-b border-slate-200 bg-slate-50 px-3 py-0.5">
-                <p className="text-[3px] text-[#002147]">📢 Admissions are open for 2026-27 academic year</p>
+                <p className="text-[3px] text-[#002147]">{t('📢 Admissions are open for 2026-27 academic year')}</p>
             </div>
 
             {/* Hero */}
             <div className="bg-[linear-gradient(135deg,#002147,#003366)] px-3 py-3">
                 <h3 className="font-serif text-[7px] font-bold leading-tight text-white">
-                    Empowering Minds,
-                    <span className="mt-0.5 block text-[#2563EB]">Shaping Futures</span>
+                    {t('Empowering Minds,')}
+
+                    <span className="mt-0.5 block text-[#2563EB]">{t('Shaping Futures')}</span>
                 </h3>
                 <p className="mt-0.5 text-[4px] leading-relaxed text-slate-300">
-                    A Legacy of Academic Excellence Since 1979
+                    {t('A Legacy of Academic Excellence Since 1979')}
                 </p>
                 <div className="mt-1.5 flex gap-1">
                     <div className="rounded bg-[#2563EB] px-2 py-0.5 text-[3.5px] font-semibold text-white">
-                        Apply Now
+                        {t('Apply Now')}
                     </div>
                     <div className="rounded border border-white/30 px-2 py-0.5 text-[3.5px] font-semibold text-white">
-                        Learn More
+                        {t('Learn More')}
                     </div>
                 </div>
             </div>
@@ -561,7 +585,7 @@ function TemplateFiveMiniPreview() {
                 {['3200+', '120+', '96%', '45+'].map((v) => (
                     <div key={v} className="text-center">
                         <p className="text-[5px] font-black text-white">{v}</p>
-                        <p className="text-[2.5px] text-white/70">students</p>
+                        <p className="text-[2.5px] text-white/70">{t('students')}</p>
                     </div>
                 ))}
             </div>
@@ -570,17 +594,17 @@ function TemplateFiveMiniPreview() {
             <div className="grid grid-cols-3 gap-1 px-3 py-2">
                 <div className="rounded border border-slate-200 bg-white p-1">
                     <div className="h-1 w-1 rounded-sm bg-[#002147]" />
-                    <p className="mt-0.5 text-[3.5px] font-bold text-[#002147]">Arts</p>
+                    <p className="mt-0.5 text-[3.5px] font-bold text-[#002147]">{t('Arts')}</p>
                     <div className="mt-0.5 h-0.5 w-3 rounded bg-slate-200" />
                 </div>
                 <div className="rounded border border-slate-200 bg-white p-1">
                     <div className="h-1 w-1 rounded-sm bg-[#2563EB]" />
-                    <p className="mt-0.5 text-[3.5px] font-bold text-[#002147]">Commerce</p>
+                    <p className="mt-0.5 text-[3.5px] font-bold text-[#002147]">{t('Commerce')}</p>
                     <div className="mt-0.5 h-0.5 w-3 rounded bg-slate-200" />
                 </div>
                 <div className="rounded border border-slate-200 bg-white p-1">
                     <div className="h-1 w-1 rounded-sm bg-emerald-500" />
-                    <p className="mt-0.5 text-[3.5px] font-bold text-[#002147]">Science</p>
+                    <p className="mt-0.5 text-[3.5px] font-bold text-[#002147]">{t('Science')}</p>
                     <div className="mt-0.5 h-0.5 w-3 rounded bg-slate-200" />
                 </div>
             </div>
@@ -611,6 +635,7 @@ export function WebsiteThemePreviewCard({
     content: WebsiteContent;
     onSelect: (template: WebsiteTemplateKey, theme: WebsiteThemeKey) => void;
 }) {
+    const { t } = useLanguage();
     const theme = websiteThemes[themeKey];
     const isLight = true;
 
@@ -635,17 +660,18 @@ export function WebsiteThemePreviewCard({
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-xs font-semibold text-slate-900 dark:text-[var(--foreground)]">
-                            {templateLabels[templateKey]}
+                            {t(templateLabels[templateKey])}
                         </p>
                         <p className="mt-0.5 text-[10px] text-slate-500 dark:text-[var(--muted-foreground)]">
-                            {theme.name} Theme
+                            {theme.name}
+                            {t('Theme')}
                         </p>
                     </div>
                     <div className="flex items-center gap-1.5">
                         {isActive && (
                             <span className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-800">
                                 <Check className="h-2.5 w-2.5" />
-                                Active
+                                {t('Active')}
                             </span>
                         )}
                         <div
@@ -687,6 +713,7 @@ export function TemplateCardSelector({
     activeTemplate: WebsiteTemplateKey;
     onSelect: (template: WebsiteTemplateKey) => void;
 }) {
+    const { t } = useLanguage();
     const templates: WebsiteTemplateKey[] = ['template1', 'template2', 'template3', 'template4', 'template5'];
 
     return (
@@ -714,10 +741,10 @@ export function TemplateCardSelector({
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-xs font-semibold text-slate-900 dark:text-[var(--foreground)]">
-                                        {templateLabels[templateKey]}
+                                        {t(templateLabels[templateKey])}
                                     </p>
                                     <p className="mt-0.5 text-[10px] leading-snug text-slate-500 dark:text-[var(--muted-foreground)]">
-                                        {templateDescriptions[templateKey]}
+                                        {t(templateDescriptions[templateKey])}
                                     </p>
                                 </div>
                                 <div
@@ -742,6 +769,8 @@ export function TemplateCardSelector({
 
 // Shared mini components for the theme selector grid (theme-aware previews)
 function MiniNavbar({ isLight, theme }: { isLight: boolean; theme: any }) {
+    const { t } = useLanguage();
+
     return (
         <div
             className={`flex items-center justify-between rounded-t-lg px-3 py-1.5 text-[6px] font-semibold ${
@@ -753,15 +782,17 @@ function MiniNavbar({ isLight, theme }: { isLight: boolean; theme: any }) {
                 <span className="tracking-wider uppercase">Gurukul</span>
             </div>
             <div className="flex gap-2">
-                <span>About</span>
-                <span>Programs</span>
-                <span>Contact</span>
+                <span>{t('About')}</span>
+                <span>{t('Programs')}</span>
+                <span>{t('Contact')}</span>
             </div>
         </div>
     );
 }
 
 function MiniHero({ isLight, theme }: { isLight: boolean; theme: any }) {
+    const { t } = useLanguage();
+
     return (
         <div
             className={`px-3 py-3 ${
@@ -775,27 +806,27 @@ function MiniHero({ isLight, theme }: { isLight: boolean; theme: any }) {
                     isLight ? 'bg-sky-100 text-sky-800' : 'bg-cyan-300/10 text-cyan-200'
                 }`}
             >
-                Admissions open 2026-27
+                {t('Admissions open 2026-27')}
             </div>
             <h3 className={`mt-1 text-[8px] font-bold leading-tight ${isLight ? 'text-slate-950' : 'text-white'}`}>
-                A modern learning
+                {t('A modern learning')}
             </h3>
             <p className={`mt-0.5 text-[6px] leading-relaxed ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                destination with depth, energy, and ambition.
+                {t('destination with depth, energy, and ambition.')}
             </p>
             <div className="mt-2 flex gap-1">
                 <div
                     className={`rounded-full px-2 py-0.5 text-[5px] font-semibold ${theme.primaryButton}`}
                     style={{ boxShadow: 'none' }}
                 >
-                    Explore
+                    {t('Explore')}
                 </div>
                 <div
                     className={`rounded-full border px-2 py-0.5 text-[5px] font-semibold ${
                         isLight ? 'border-slate-200 text-slate-700' : 'border-white/20 text-slate-300'
                     }`}
                 >
-                    Portal
+                    {t('Portal')}
                 </div>
             </div>
         </div>
@@ -845,6 +876,7 @@ export function WebsiteThemeSelector({
     content: WebsiteContent;
     onSelect: (template: WebsiteTemplateKey, theme: WebsiteThemeKey) => void;
 }) {
+    const { t } = useLanguage();
     const templates: WebsiteTemplateKey[] = ['template1', 'template2', 'template3', 'template4', 'template5'];
     const themes: WebsiteThemeKey[] = ['white', 'aurora', 'sunrise', 'emerald'];
 
@@ -852,11 +884,12 @@ export function WebsiteThemeSelector({
         <div className="space-y-6">
             <div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-[var(--foreground)]">
-                    Template & Theme Preview
+                    {t('Template & Theme Preview')}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-[var(--muted-foreground)]">
-                    Select a template and theme combination. Each card shows a live preview of how your public website
-                    will look.
+                    {t(
+                        'Select a template and theme combination. Each card shows a live preview of how your public website will look.',
+                    )}
                 </p>
             </div>
 
@@ -864,7 +897,7 @@ export function WebsiteThemeSelector({
                 {templates.map((templateKey) => (
                     <div key={templateKey} className="space-y-3">
                         <h4 className="text-sm font-medium text-slate-700 dark:text-[var(--foreground)]">
-                            {templateLabels[templateKey]}
+                            {t(templateLabels[templateKey])}
                         </h4>
                         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                             {themes.map((themeKey) => (

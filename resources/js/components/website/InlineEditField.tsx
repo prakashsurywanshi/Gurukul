@@ -23,7 +23,7 @@ export default function InlineEditField({
     isEditing,
     as: Tag = 'p',
     className = '',
-    placeholder = 'Click to edit...',
+    placeholder,
     multiline = false,
     rows = 3,
     fieldKey,
@@ -36,6 +36,8 @@ export default function InlineEditField({
     const [showTranslations, setShowTranslations] = useState(false);
     const ref = useRef<HTMLElement>(null);
 
+    const resolvedPlaceholder = placeholder ?? t('Click to edit...');
+
     const languages = settings?.languages ?? { mr: 'मराठी (Marathi)', hi: 'हिन्दी (Hindi)' };
     const addableLocales = Object.keys(languages).filter((code) => code !== 'en');
     const canTranslate = Boolean(fieldKey && onTranslationChange && isEditing && addableLocales.length > 0);
@@ -46,7 +48,7 @@ export default function InlineEditField({
     }, [value]);
 
     if (!isEditing) {
-        return <Tag className={className}>{value || placeholder}</Tag>;
+        return <Tag className={className}>{value || resolvedPlaceholder}</Tag>;
     }
 
     const languagesButton = canTranslate ? (
@@ -107,7 +109,7 @@ export default function InlineEditField({
                     }}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    placeholder={placeholder}
+                    placeholder={resolvedPlaceholder}
                     className={`w-full rounded-lg border-2 border-dashed border-blue-400 bg-blue-50/50 px-3 py-2 text-inherit font-inherit resize-y transition-all focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 ${className}`}
                     style={{ minHeight: `${rows * 1.5}em` }}
                 />
@@ -133,7 +135,7 @@ export default function InlineEditField({
                 }}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 className={`w-full rounded-lg border-2 border-dashed border-blue-400 bg-blue-50/50 px-3 py-1 text-inherit font-inherit transition-all focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 ${className}`}
             />
             {!isFocused && (

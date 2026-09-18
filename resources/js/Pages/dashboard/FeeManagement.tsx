@@ -1488,10 +1488,13 @@ ADM-1002, Tuition Fee, 2026-08-10, 5000, 2000, August, 2026`}
                                     </div>
                                     <textarea
                                         className="min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
-                                        placeholder="ADM-1001, Tuition Fee, 2026-08-10, 5000, 0, August, 2026&#10;ADM-1002, Tuition Fee, 2026-08-10, 5000, 2000, August, 2026"
+                                        placeholder={t(
+                                            'ADM-1001, Tuition Fee, 2026-08-10, 5000, 0, August, 2026 ADM-1002, Tuition Fee, 2026-08-10, 5000, 2000, August, 2026',
+                                        )}
                                         value={importText}
                                         onChange={(event) => handleImportTextChange(event.target.value)}
                                     />
+
                                     {importRows.length > 0 && (
                                         <div className="rounded-md border">
                                             <div className="flex items-center justify-between border-b px-3 py-2 text-xs font-medium text-muted-foreground">

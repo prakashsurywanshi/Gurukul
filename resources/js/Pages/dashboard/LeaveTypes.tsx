@@ -139,7 +139,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Code')}</Label>
-                                <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CL" />
+                                <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder={t('CL')} />
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Days Per Year')}</Label>
@@ -158,7 +158,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="true">{t('Yes')}</SelectItem>
-                                        <SelectItem value="false">No</SelectItem>
+                                        <SelectItem value="false">{t('No')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -170,7 +170,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="true">{t('Yes')}</SelectItem>
-                                        <SelectItem value="false">No</SelectItem>
+                                        <SelectItem value="false">{t('No')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -267,6 +267,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
                                                 className="mr-2 inline-block h-3 w-3 rounded-full"
                                                 style={{ backgroundColor: row.color ?? '#8b5cf6' }}
                                             />
+
                                             {row.name}
                                         </TableCell>
                                         <TableCell>{row.code ?? '—'}</TableCell>

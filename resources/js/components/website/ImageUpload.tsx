@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import axios from 'axios';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 
+import { useLanguage } from '../../i18n/LanguageProvider';
+
 interface ImageUploadProps {
     value?: string;
     onChange: (url: string) => void;
@@ -12,6 +14,7 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ value, onChange, onRemove, folder, className = '', label }: ImageUploadProps) {
+    const { t } = useLanguage();
     const [isUploading, setIsUploading] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
@@ -28,12 +31,12 @@ export default function ImageUpload({ value, onChange, onRemove, folder, classNa
                 });
                 onChange(response.data.url);
             } catch {
-                alert('Failed to upload image. Please try again.');
+                alert(t('Failed to upload image. Please try again.'));
             } finally {
                 setIsUploading(false);
             }
         },
-        [onChange, folder],
+        [onChange, folder, t],
     );
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,7 +62,7 @@ export default function ImageUpload({ value, onChange, onRemove, folder, classNa
                         onClick={() => fileRef.current?.click()}
                         className="rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow hover:bg-slate-50"
                     >
-                        Replace
+                        {t('Replace')}
                     </button>
                     {onRemove && (
                         <button
@@ -67,7 +70,7 @@ export default function ImageUpload({ value, onChange, onRemove, folder, classNa
                             onClick={onRemove}
                             className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-red-600"
                         >
-                            Remove
+                            {t('Remove')}
                         </button>
                     )}
                 </div>
@@ -98,8 +101,8 @@ export default function ImageUpload({ value, onChange, onRemove, folder, classNa
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                         <ImageIcon className="h-5 w-5 text-blue-600" />
                     </div>
-                    <p className="text-sm font-medium text-slate-600">{label || 'Click or drag to upload image'}</p>
-                    <p className="text-xs text-slate-400">JPG, PNG, WebP up to 10MB</p>
+                    <p className="text-sm font-medium text-slate-600">{label || t('Click or drag to upload image')}</p>
+                    <p className="text-xs text-slate-400">{t('JPG, PNG, WebP up to 10MB')}</p>
                 </>
             )}
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />

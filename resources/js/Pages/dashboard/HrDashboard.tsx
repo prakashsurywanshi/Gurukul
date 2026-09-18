@@ -88,8 +88,12 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <LayoutDashboard className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('HR Dashboard')}</h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Staff overview, leave, payroll and people insights at a glance.')}</p>
+                        <LayoutDashboard className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        {t('HR Dashboard')}
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {t('Staff overview, leave, payroll and people insights at a glance.')}
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
@@ -97,7 +101,10 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                         <CardContent className="p-4">
                             <p className="text-xs text-gray-500 dark:text-gray-400">{t('Total Staff')}</p>
                             <p className="text-2xl font-bold">{staff.total}</p>
-                            <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">{staff.active} active</p>
+                            <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                                {staff.active}
+                                {t('active')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -117,7 +124,8 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                             <p className="text-xs text-gray-500 dark:text-gray-400">{t('Active Loans')}</p>
                             <p className="text-2xl font-bold">{staff.activeLoans}</p>
                             <p className="mt-1 text-xs text-gray-400">
-                                ₹{staff.outstandingLoans.toLocaleString('en-IN')} outstanding
+                                ₹{staff.outstandingLoans.toLocaleString('en-IN')}
+                                {t('outstanding')}
                             </p>
                         </CardContent>
                     </Card>
@@ -142,11 +150,15 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-indigo-500" />{t('Staff by Department')}</CardTitle>
+                                <Users className="h-4 w-4 text-indigo-500" />
+                                {t('Staff by Department')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {departmentBreakdown.length === 0 && (
-                                <p className="py-8 text-center text-sm text-gray-400">{t('No department assignments yet.')}</p>
+                                <p className="py-8 text-center text-sm text-gray-400">
+                                    {t('No department assignments yet.')}
+                                </p>
                             )}
                             {departmentBreakdown.map((entry) => (
                                 <div key={entry.name}>
@@ -168,11 +180,15 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-emerald-500" />{t('Recent Activity')}</CardTitle>
+                                <Activity className="h-4 w-4 text-emerald-500" />
+                                {t('Recent Activity')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="divide-y divide-gray-100 dark:divide-gray-800">
                             {recentActivity.length === 0 && (
-                                <p className="py-8 text-center text-sm text-gray-400">{t('No recent staff activity.')}</p>
+                                <p className="py-8 text-center text-sm text-gray-400">
+                                    {t('No recent staff activity.')}
+                                </p>
                             )}
                             {recentActivity.map((entry) => (
                                 <div key={entry.id} className="py-3 first:pt-0 last:pb-0">
@@ -192,7 +208,9 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <CalendarClock className="h-4 w-4 text-amber-500" />{t('Pending Leave Requests')}</CardTitle>
+                                <CalendarClock className="h-4 w-4 text-amber-500" />
+                                {t('Pending Leave Requests')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
@@ -207,7 +225,9 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                                 <TableBody>
                                     {pendingLeaveRequests.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="py-8 text-center text-gray-400">{t('No pending leave requests.')}</TableCell>
+                                            <TableCell colSpan={4} className="py-8 text-center text-gray-400">
+                                                {t('No pending leave requests.')}
+                                            </TableCell>
                                         </TableRow>
                                     )}
                                     {pendingLeaveRequests.map((leave) => (
@@ -228,11 +248,15 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Cake className="h-4 w-4 text-pink-500" />{t('Upcoming Birthdays (30 days)')}</CardTitle>
+                                <Cake className="h-4 w-4 text-pink-500" />
+                                {t('Upcoming Birthdays (30 days)')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="divide-y divide-gray-100 dark:divide-gray-800">
                             {upcomingBirthdays.length === 0 && (
-                                <p className="py-8 text-center text-sm text-gray-400">{t('No birthdays in the next 30 days.')}</p>
+                                <p className="py-8 text-center text-sm text-gray-400">
+                                    {t('No birthdays in the next 30 days.')}
+                                </p>
                             )}
                             {upcomingBirthdays.map((entry) => (
                                 <div
@@ -257,7 +281,9 @@ export default function HrDashboard(pageProps: HrDashboardProps) {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <HeartHandshake className="h-4 w-4 text-indigo-500" />{t('People Operations')}</CardTitle>
+                            <HeartHandshake className="h-4 w-4 text-indigo-500" />
+                            {t('People Operations')}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-wrap gap-3">

@@ -46,21 +46,28 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                        <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Face Search')}</h1>
+                        <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                        {t('Face Search')}
+                    </h1>
                     <div className="mt-2 flex items-center gap-2">
                         <Badge variant="secondary">{t('Spike preview')}</Badge>
-                        <Badge variant="outline">Mode: {mode}</Badge>
+                        <Badge variant="outline">
+                            {t('Mode:')}
+                            {mode}
+                        </Badge>
                     </div>
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Experimental facial-detection pipeline that analyzes a photo for record-matching suitability.
-                        This is a spike: it validates the vision path and pipeline shape before a production embedding
-                        system is built.
+                        {t(
+                            'Experimental facial-detection pipeline that analyzes a photo for record-matching suitability. This is a spike: it validates the vision path and pipeline shape before a production embedding system is built.',
+                        )}
                     </p>
                 </div>
 
                 <Alert variant={configured ? 'default' : 'destructive'}>
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>{configured ? `AI provider ready (${mode})` : t('AI provider not configured')}</AlertTitle>
+                    <AlertTitle>
+                        {configured ? `AI provider ready (${mode})` : t('AI provider not configured')}
+                    </AlertTitle>
                     <AlertDescription>
                         {configured
                             ? 'Vision requests will be sent to the configured model. Results are previews for suitability analysis.'
@@ -72,8 +79,12 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
-                                <Camera className="h-4 w-4 text-indigo-500" />{t('Upload a photo')}</CardTitle>
-                            <CardDescription>{t('JPEG, PNG or WebP up to 4 MB. The image is processed in-memory only.')}</CardDescription>
+                                <Camera className="h-4 w-4 text-indigo-500" />
+                                {t('Upload a photo')}
+                            </CardTitle>
+                            <CardDescription>
+                                {t('JPEG, PNG or WebP up to 4 MB. The image is processed in-memory only.')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form onSubmit={submit} className="space-y-4">
@@ -85,11 +96,17 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                                     }`}
                                 >
                                     {preview ? (
-                                        <img src={preview} alt={t('Preview')} className="max-h-48 rounded-md object-cover" />
+                                        <img
+                                            src={preview}
+                                            alt={t('Preview')}
+                                            className="max-h-48 rounded-md object-cover"
+                                        />
                                     ) : (
                                         <>
                                             <Upload className="h-8 w-8 text-gray-400" />
-                                            <span className="text-sm text-gray-500 dark:text-gray-400">{t('Click to choose a photo')}</span>
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                                {t('Click to choose a photo')}
+                                            </span>
                                         </>
                                     )}
                                     <input
@@ -106,11 +123,13 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                                     {processing ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Analyzing…
+                                            {t('Analyzing…')}
                                         </>
                                     ) : (
                                         <>
-                                            <ScanFace className="mr-2 h-4 w-4" />{t('Analyze photo')}</>
+                                            <ScanFace className="mr-2 h-4 w-4" />
+                                            {t('Analyze photo')}
+                                        </>
                                     )}
                                 </Button>
                             </form>
@@ -121,7 +140,8 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <FileQuestion className="h-4 w-4 text-indigo-500" />
-                                {t('Result')}</CardTitle>
+                                {t('Result')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             {faceResult ? (
@@ -135,7 +155,9 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                                     </pre>
                                 </div>
                             ) : (
-                                <div className="flex h-48 items-center justify-center rounded-md border border-dashed border-gray-200 text-sm text-gray-400 dark:border-gray-700">{t('No analysis yet. Upload a photo to begin.')}</div>
+                                <div className="flex h-48 items-center justify-center rounded-md border border-dashed border-gray-200 text-sm text-gray-400 dark:border-gray-700">
+                                    {t('No analysis yet. Upload a photo to begin.')}
+                                </div>
                             )}
                         </CardContent>
                     </Card>
@@ -146,13 +168,26 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
                         <CardTitle className="text-base">{t('Production roadmap (fallback plan)')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                        <p>{t('If the vision pipeline is unavailable, Face Search degrades gracefully to the manual student search screen (')}<a className="text-indigo-600 dark:text-indigo-400" href="/search_students">
-                                {t('Search Students')}</a>
-                            ), which continues to work without any AI dependency.
+                        <p>
+                            {t(
+                                'If the vision pipeline is unavailable, Face Search degrades gracefully to the manual student search screen (',
+                            )}
+                            <a className="text-indigo-600 dark:text-indigo-400" href="/search_students">
+                                {t('Search Students')}
+                            </a>
+                            {t('), which continues to work without any AI dependency.')}
                         </p>
                         <ul className="list-disc space-y-1 pl-5">
-                            <li>{t('Phase 1 (this spike): validate the AI vision provider contract and photo suitability.')}</li>
-                            <li>{t('Phase 2: capture and store face embeddings on student profiles using a local ONNX model.')}</li>
+                            <li>
+                                {t(
+                                    'Phase 1 (this spike): validate the AI vision provider contract and photo suitability.',
+                                )}
+                            </li>
+                            <li>
+                                {t(
+                                    'Phase 2: capture and store face embeddings on student profiles using a local ONNX model.',
+                                )}
+                            </li>
                             <li>{t('Phase 3: nearest-neighbour matching to surface candidate student records.')}</li>
                         </ul>
                     </CardContent>

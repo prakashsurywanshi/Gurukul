@@ -80,6 +80,7 @@ function scaleDesign(element: DesignElement, scale: number): DesignElement {
 }
 
 function CardFace({ card, cardW, cardH, back }: { card: Card; cardW: number; cardH: number; back?: boolean }) {
+    const { t } = useLanguage();
     const pxW = cardW * MM_TO_PX;
     const pxH = cardH * MM_TO_PX;
 
@@ -168,7 +169,7 @@ function CardFace({ card, cardW, cardH, back }: { card: Card; cardW: number; car
                             color: '#94a3b8',
                         }}
                     >
-                        BACK
+                        {t('BACK')}
                     </div>
                 ) : null}
             </div>
@@ -318,8 +319,12 @@ export default function GenerateDocumentPreview({
                         {schoolName} — {className}
                     </h1>
                     <p className="text-xs text-slate-500">
-                        {cards.length} cards · {sheetCount} sheet{sheetCount === 1 ? '' : 's'} ·{' '}
-                        {sheet.card.toUpperCase()} · {sheet.paper.toUpperCase()} · {sheet.orientation}
+                        {cards.length}
+                        {t('cards ·')}
+                        {sheetCount}
+                        {t('sheet')}
+                        {sheetCount === 1 ? '' : 's'} · {sheet.card.toUpperCase()} · {sheet.paper.toUpperCase()} ·{' '}
+                        {sheet.orientation}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -327,13 +332,16 @@ export default function GenerateDocumentPreview({
                         onClick={() => window.print()}
                         className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
                     >
-                        <Printer className="h-4 w-4" />{t('Print / Save PDF')}</button>
+                        <Printer className="h-4 w-4" />
+                        {t('Print / Save PDF')}
+                    </button>
                     <button
                         onClick={() => window.close()}
                         className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
                     >
                         <X className="h-4 w-4" />
-                        {t('Close')}</button>
+                        {t('Close')}
+                    </button>
                 </div>
             </div>
 

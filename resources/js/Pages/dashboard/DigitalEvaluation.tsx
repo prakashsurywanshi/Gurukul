@@ -192,12 +192,17 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <ScanText className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Digital Evaluation')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Online subjective answer script marking and moderation.')}</p>
+                            <ScanText className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                            {t('Digital Evaluation')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {t('Online subjective answer script marking and moderation.')}
+                        </p>
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
-                        {t('New Evaluation')}</Button>
+                        {t('New Evaluation')}
+                    </Button>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -232,7 +237,10 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">{t('Evaluations (')}{evaluations.length})</CardTitle>
+                        <CardTitle className="text-base">
+                            {t('Evaluations (')}
+                            {evaluations.length})
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -276,10 +284,12 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 }}
                             >
                                 <RefreshCw className="mr-2 h-4 w-4" />
-                                {t('Reset')}</Button>
+                                {t('Reset')}
+                            </Button>
                             <Button onClick={applyFilters}>
                                 <Search className="mr-2 h-4 w-4" />
-                                {t('Apply')}</Button>
+                                {t('Apply')}
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -302,10 +312,13 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                             <TableBody>
                                 {evaluations.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">{t('No evaluations found.')}</TableCell>
+                                        <TableCell colSpan={8} className="py-10 text-center text-gray-400">
+                                            {t('No evaluations found.')}
+                                        </TableCell>
                                     </TableRow>
                                 )}
                                 {evaluations.map((evaluation) => {
+                                    const { t } = useLanguage();
                                     const percent =
                                         evaluation.total_scripts > 0
                                             ? Math.round(
@@ -318,7 +331,8 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                                 {evaluation.title}
                                                 {evaluation.evaluator_name && (
                                                     <p className="text-xs text-gray-400">
-                                                        by {evaluation.evaluator_name}
+                                                        {t('by')}
+                                                        {evaluation.evaluator_name}
                                                     </p>
                                                 )}
                                             </TableCell>
@@ -402,7 +416,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <Label>Title *</Label>
+                                <Label>{t('Title *')}</Label>
                                 <Input
                                     value={form.title}
                                     onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -467,7 +481,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Status *</Label>
+                                <Label>{t('Status *')}</Label>
                                 <Select
                                     value={form.status}
                                     onValueChange={(value) => setForm({ ...form, status: value })}
@@ -514,7 +528,8 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    {t('Cancel')}</Button>
+                                    {t('Cancel')}
+                                </Button>
                                 <Button type="submit" disabled={saving}>
                                     {editing ? t('Save Changes') : t('Create Evaluation')}
                                 </Button>
@@ -541,7 +556,7 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Status *</Label>
+                                <Label>{t('Status *')}</Label>
                                 <Select value={progressStatus} onValueChange={setProgressStatus}>
                                     <SelectTrigger>
                                         <SelectValue />
@@ -555,8 +570,11 @@ export default function DigitalEvaluation(pageProps: DigitalEvaluationProps) {
                             </div>
                             <div className="flex items-center justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setProgressFor(null)}>
-                                    {t('Cancel')}</Button>
-                                <Button type="submit" disabled={saving}>{t('Save Progress')}</Button>
+                                    {t('Cancel')}
+                                </Button>
+                                <Button type="submit" disabled={saving}>
+                                    {t('Save Progress')}
+                                </Button>
                             </div>
                         </form>
                     </DialogContent>

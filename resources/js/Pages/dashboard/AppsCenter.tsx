@@ -127,11 +127,14 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                             <PanelsTopLeft className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            {t('Apps Center')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('AI and productivity tools for your school.')}</p>
+                            {t('Apps Center')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {t('AI and productivity tools for your school.')}
+                        </p>
                     </div>
                     {!aiConfigured && (
-                        <Badge variant="outline">AI provider not configured — some apps are unavailable</Badge>
+                        <Badge variant="outline">{t('AI provider not configured — some apps are unavailable')}</Badge>
                     )}
                 </div>
 
@@ -142,7 +145,8 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                             size="sm"
                             onClick={() => setCategory('all')}
                         >
-                            {t('All')}</Button>
+                            {t('All')}
+                        </Button>
                         {categories.map((entry) => (
                             <Button
                                 key={entry}
@@ -164,9 +168,12 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredApps.length === 0 && (
-                        <div className="col-span-full rounded-xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-400 dark:border-gray-700">{t('No apps match your search.')}</div>
+                        <div className="col-span-full rounded-xl border border-dashed border-gray-300 py-12 text-center text-sm text-gray-400 dark:border-gray-700">
+                            {t('No apps match your search.')}
+                        </div>
                     )}
                     {filteredApps.map((app) => {
+                        const { t } = useLanguage();
                         const Icon = ICONS[app.icon] ?? Wand2;
                         const isAction = app.type === 'action';
                         const isComingSoon = app.status === 'coming_soon';
@@ -187,7 +194,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                             <Badge variant="secondary">{t('Coming soon')}</Badge>
                                         ) : (
                                             <>
-                                                {isAction && <Badge variant="secondary">AI</Badge>}
+                                                {isAction && <Badge variant="secondary">{t('AI')}</Badge>}
                                                 {app.type === 'link' && (
                                                     <ArrowUpRight className="h-4 w-4 text-gray-400" />
                                                 )}
@@ -207,7 +214,11 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                             openApp(app);
                                         }}
                                     >
-                                        {isComingSoon ? t('Coming soon') : app.type === 'action' ? t('Open') : t('Launch')}
+                                        {isComingSoon
+                                            ? t('Coming soon')
+                                            : app.type === 'action'
+                                              ? t('Open')
+                                              : t('Launch')}
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -220,10 +231,13 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                         <CardHeader>
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-base flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4 text-indigo-500" />{t('Generated Question Paper')}</CardTitle>
+                                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                                    {t('Generated Question Paper')}
+                                </CardTitle>
                                 <div className="flex items-center gap-2">
                                     <Badge variant="outline">
-                                        {result.meta.subject} · {result.meta.class} · {result.meta.marks} marks
+                                        {result.meta.subject} · {result.meta.class} · {result.meta.marks}
+                                        {t('marks')}
                                     </Badge>
                                     <Button variant="outline" size="sm" onClick={copyResult}>
                                         {copied ? (
@@ -231,7 +245,8 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                         ) : (
                                             <>
                                                 <Copy className="mr-2 h-4 w-4" />
-                                                {t('Copy')}</>
+                                                {t('Copy')}
+                                            </>
                                         )}
                                     </Button>
                                 </div>
@@ -249,11 +264,13 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
                             <DialogTitle>{t('Question Paper Generator')}</DialogTitle>
-                            <DialogDescription>{t('Describe the paper and generate a complete question set with AI.')}</DialogDescription>
+                            <DialogDescription>
+                                {t('Describe the paper and generate a complete question set with AI.')}
+                            </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={generate} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <Label>Subject *</Label>
+                                <Label>{t('Subject *')}</Label>
                                 <Input
                                     value={form.subject}
                                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
@@ -262,7 +279,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Class *</Label>
+                                <Label>{t('Class *')}</Label>
                                 <Input
                                     value={form.class}
                                     onChange={(e) => setForm({ ...form, class: e.target.value })}
@@ -302,17 +319,18 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
                             </div>
                             <div className="flex items-center justify-end gap-2 sm:col-span-2">
                                 <Button type="button" variant="outline" onClick={() => setGeneratorOpen(false)}>
-                                    {t('Cancel')}</Button>
+                                    {t('Cancel')}
+                                </Button>
                                 <Button type="submit" disabled={generating || !aiConfigured}>
                                     {generating ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Generating…
+                                            {t('Generating…')}
                                         </>
                                     ) : (
                                         <>
                                             <Wand2 className="mr-2 h-4 w-4" />
-                                            Generate
+                                            {t('Generate')}
                                         </>
                                     )}
                                 </Button>

@@ -251,36 +251,39 @@ export default function EnterMarks({
                                                 <TableHead className="sticky left-0 z-20 w-[220px] bg-slate-50">
                                                     {t('Student')}
                                                 </TableHead>
-                                                {subjects.map((subject, subjectIndex) => (
-                                                    <TableHead
-                                                        key={subject.scheduleId}
-                                                        className="min-w-[140px] border-l border-slate-200 bg-slate-50"
-                                                    >
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="font-semibold">{subject.subject}</span>
-                                                            <span className="text-xs text-slate-500">
-                                                                {subject.examDate} · {subject.room}
-                                                            </span>
-                                                            <span className="text-xs text-slate-500">
-                                                                Max:{' '}
-                                                                <strong className="font-semibold text-slate-700">
-                                                                    {subject.maxMarks}
-                                                                </strong>
-                                                            </span>
-                                                            <Button
-                                                                size="sm"
-                                                                className="mt-1 w-[110px] gap-1 text-xs"
-                                                                disabled={savingSchedule === subject.scheduleId}
-                                                                onClick={() => saveSubject(subjectIndex)}
-                                                            >
-                                                                <Save className="h-3 w-3" />
-                                                                {savingSchedule === subject.scheduleId
-                                                                    ? t('Saving...')
-                                                                    : t('Save')}
-                                                            </Button>
-                                                        </div>
-                                                    </TableHead>
-                                                ))}
+                                                {subjects.map((subject, subjectIndex) => {
+                                                    const { t } = useLanguage();
+                                                    return (
+                                                        <TableHead
+                                                            key={subject.scheduleId}
+                                                            className="min-w-[140px] border-l border-slate-200 bg-slate-50"
+                                                        >
+                                                            <div className="flex flex-col gap-1">
+                                                                <span className="font-semibold">{subject.subject}</span>
+                                                                <span className="text-xs text-slate-500">
+                                                                    {subject.examDate} · {subject.room}
+                                                                </span>
+                                                                <span className="text-xs text-slate-500">
+                                                                    {t('Max:')}{' '}
+                                                                    <strong className="font-semibold text-slate-700">
+                                                                        {subject.maxMarks}
+                                                                    </strong>
+                                                                </span>
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="mt-1 w-[110px] gap-1 text-xs"
+                                                                    disabled={savingSchedule === subject.scheduleId}
+                                                                    onClick={() => saveSubject(subjectIndex)}
+                                                                >
+                                                                    <Save className="h-3 w-3" />
+                                                                    {savingSchedule === subject.scheduleId
+                                                                        ? t('Saving...')
+                                                                        : t('Save')}
+                                                                </Button>
+                                                            </div>
+                                                        </TableHead>
+                                                    );
+                                                })}
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -334,6 +337,7 @@ export default function EnterMarks({
                                                                             })
                                                                         }
                                                                     />
+
                                                                     <button
                                                                         type="button"
                                                                         className="h-5 w-5 rounded border border-red-300 bg-red-50 text-[10px] font-bold leading-none text-red-600 hover:bg-red-100"

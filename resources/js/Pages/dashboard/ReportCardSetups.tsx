@@ -121,8 +121,12 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                            <LayoutTemplate className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />{t('Report Card Setups')}</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('Design custom report card templates, layouts and remarks.')}</p>
+                            <LayoutTemplate className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                            {t('Report Card Setups')}
+                        </h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {t('Design custom report card templates, layouts and remarks.')}
+                        </p>
                     </div>
                     <Button onClick={openCreate}>
                         <Plus className="mr-2 h-4 w-4" />
@@ -133,76 +137,92 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {templates.length === 0 && (
                         <Card className="lg:col-span-2">
-                            <CardContent className="py-10 text-center text-gray-400">{t('No report card templates yet. Create your first one.')}</CardContent>
-                        </Card>
-                    )}
-                    {templates.map((template) => (
-                        <Card
-                            key={template.id}
-                            className={template.is_default ? 'border-indigo-300 dark:border-indigo-500/60' : ''}
-                        >
-                            <CardHeader>
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <CardTitle className="text-base">
-                                            {template.name}
-                                            {template.is_default && (
-                                                <Badge className="ml-2 bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
-                                                    {t('Default')}</Badge>
-                                            )}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Layout: {template.layout} · Header color {template.header_color}
-                                        </CardDescription>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="grid grid-cols-2 gap-1 text-sm text-gray-600 dark:text-gray-300">
-                                    <li className={`flex items-center gap-1 ${template.show_rank ? '' : 'opacity-40'}`}>
-                                        • Rank
-                                    </li>
-                                    <li
-                                        className={`flex items-center gap-1 ${template.show_percentage ? '' : 'opacity-40'}`}
-                                    >
-                                        • Percentage
-                                    </li>
-                                    <li
-                                        className={`flex items-center gap-1 ${template.show_remarks ? '' : 'opacity-40'}`}
-                                    >
-                                        • Remarks
-                                    </li>
-                                    <li
-                                        className={`flex items-center gap-1 ${template.show_subject_wise_grade ? '' : 'opacity-40'}`}
-                                    >
-                                        • Subject-wise grade
-                                    </li>
-                                </ul>
-                                {template.remarks && (
-                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('Default remark:')}{template.remarks}
-                                    </p>
-                                )}
-                                <div className="mt-4 flex items-center justify-end gap-2">
-                                    {!template.is_default && (
-                                        <Button variant="outline" size="sm" onClick={() => setDefault(template)}>
-                                            <Star className="mr-2 h-4 w-4" />
-                                            {t('Set Default')}</Button>
-                                    )}
-                                    <Button variant="ghost" size="sm" onClick={() => openEdit(template)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        {t('Edit')}</Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-rose-500 hover:text-rose-600"
-                                        onClick={() => confirmDelete(template)}
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        {t('Delete')}</Button>
-                                </div>
+                            <CardContent className="py-10 text-center text-gray-400">
+                                {t('No report card templates yet. Create your first one.')}
                             </CardContent>
                         </Card>
-                    ))}
+                    )}
+                    {templates.map((template) => {
+                        const { t } = useLanguage();
+                        return (
+                            <Card
+                                key={template.id}
+                                className={template.is_default ? 'border-indigo-300 dark:border-indigo-500/60' : ''}
+                            >
+                                <CardHeader>
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <CardTitle className="text-base">
+                                                {template.name}
+                                                {template.is_default && (
+                                                    <Badge className="ml-2 bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300">
+                                                        {t('Default')}
+                                                    </Badge>
+                                                )}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {t('Layout:')}
+                                                {template.layout}
+                                                {t('· Header color')}
+                                                {template.header_color}
+                                            </CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <ul className="grid grid-cols-2 gap-1 text-sm text-gray-600 dark:text-gray-300">
+                                        <li
+                                            className={`flex items-center gap-1 ${template.show_rank ? '' : 'opacity-40'}`}
+                                        >
+                                            {t('• Rank')}
+                                        </li>
+                                        <li
+                                            className={`flex items-center gap-1 ${template.show_percentage ? '' : 'opacity-40'}`}
+                                        >
+                                            {t('• Percentage')}
+                                        </li>
+                                        <li
+                                            className={`flex items-center gap-1 ${template.show_remarks ? '' : 'opacity-40'}`}
+                                        >
+                                            {t('• Remarks')}
+                                        </li>
+                                        <li
+                                            className={`flex items-center gap-1 ${template.show_subject_wise_grade ? '' : 'opacity-40'}`}
+                                        >
+                                            {t('• Subject-wise grade')}
+                                        </li>
+                                    </ul>
+                                    {template.remarks && (
+                                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                            {t('Default remark:')}
+                                            {template.remarks}
+                                        </p>
+                                    )}
+                                    <div className="mt-4 flex items-center justify-end gap-2">
+                                        {!template.is_default && (
+                                            <Button variant="outline" size="sm" onClick={() => setDefault(template)}>
+                                                <Star className="mr-2 h-4 w-4" />
+                                                {t('Set Default')}
+                                            </Button>
+                                        )}
+                                        <Button variant="ghost" size="sm" onClick={() => openEdit(template)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            {t('Edit')}
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-rose-500 hover:text-rose-600"
+                                            onClick={() => confirmDelete(template)}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            {t('Delete')}
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
 
                 <Dialog
@@ -221,7 +241,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                         </DialogHeader>
                         <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <Label>Template Name *</Label>
+                                <Label>{t('Template Name *')}</Label>
                                 <Input
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -229,7 +249,7 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                 />
                             </div>
                             <div>
-                                <Label>Layout *</Label>
+                                <Label>{t('Layout *')}</Label>
                                 <Select
                                     value={form.layout}
                                     onValueChange={(value) => setForm({ ...form, layout: value })}
@@ -305,7 +325,8 @@ export default function ReportCardSetups(pageProps: ReportCardSetupsProps) {
                                         setEditing(null);
                                     }}
                                 >
-                                    {t('Cancel')}</Button>
+                                    {t('Cancel')}
+                                </Button>
                                 <Button type="submit" disabled={saving}>
                                     {editing ? t('Save Changes') : t('Create Template')}
                                 </Button>
