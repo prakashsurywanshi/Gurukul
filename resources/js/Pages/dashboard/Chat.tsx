@@ -174,7 +174,7 @@ export default function Chat(pageProps: ChatProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-4">
+            <div className="space-y-4 p-4 sm:p-6">
                 <header className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 text-white">
                         <MessageCircle className="h-6 w-6" />

@@ -325,7 +325,7 @@ export default function StudentOfflineExams({
                                 </CardHeader>
 
                                 <CardContent>
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-200">
                                         <table className="w-full min-w-[860px]">
                                             <thead className="border-b border-slate-200 text-left text-sm text-slate-500">
                                                 <tr>

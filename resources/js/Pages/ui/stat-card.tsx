@@ -36,7 +36,12 @@ export function StatCard({ label, value, icon: Icon, hint, tone = 'default', cla
         <Card className={cn('gap-2 p-0', className)}>
             <CardContent className="flex items-center gap-4 px-4 py-4">
                 {Icon && (
-                    <div className={cn('flex size-10 shrink-0 items-center justify-center rounded-lg', toneIconClasses[tone])}>
+                    <div
+                        className={cn(
+                            'flex size-10 shrink-0 items-center justify-center rounded-lg',
+                            toneIconClasses[tone],
+                        )}
+                    >
                         <Icon className="size-5" />
                     </div>
                 )}

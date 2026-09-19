@@ -79,8 +79,11 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
     const { props } = usePage();
     const { staffPermissions } = props as any;
 
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
-    const can = (feature: string) => user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(
+        user?.role,
+    );
+    const can = (feature: string) =>
+        user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
 
     const attendance = hub?.attendance;
     const payroll = hub?.payroll;
@@ -161,7 +164,9 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                             {staff.status === 'inactive' ? (
                                 <Badge className="bg-red-100 text-red-700 hover:bg-red-100">{t('Inactive')}</Badge>
                             ) : (
-                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">{t('Active')}</Badge>
+                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                                    {t('Active')}
+                                </Badge>
                             )}
                         </div>
                     </div>
@@ -180,9 +185,21 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
 
                         <TabsContent value="overview" className="m-0 space-y-6">
                             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                                <StatChip label={t('This Month Present')} value={attendance?.this_month_present ?? 0} tone="success" />
-                                <StatChip label={t('Leave Pending')} value={leave?.pending ?? 0} tone={(leave?.pending ?? 0) > 0 ? 'danger' : 'default'} />
-                                <StatChip label={t('Active Loans')} value={loans?.active ?? 0} tone={(loans?.active ?? 0) > 0 ? 'danger' : 'default'} />
+                                <StatChip
+                                    label={t('This Month Present')}
+                                    value={attendance?.this_month_present ?? 0}
+                                    tone="success"
+                                />
+                                <StatChip
+                                    label={t('Leave Pending')}
+                                    value={leave?.pending ?? 0}
+                                    tone={(leave?.pending ?? 0) > 0 ? 'danger' : 'default'}
+                                />
+                                <StatChip
+                                    label={t('Active Loans')}
+                                    value={loans?.active ?? 0}
+                                    tone={(loans?.active ?? 0) > 0 ? 'danger' : 'default'}
+                                />
                                 <StatChip label={t('Latest Net Pay')} value={formatMoney(payroll?.net_pay)} />
                             </div>
 
@@ -195,11 +212,27 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                         <InfoRow icon={IdCard} label={t('Employee ID')} value={staff.employee_id} />
                                         <InfoRow icon={Mail} label={t('Email')} value={staff.email} />
                                         <InfoRow icon={Phone} label={t('Phone')} value={staff.phone} />
-                                        <InfoRow icon={CalendarDays} label={t('Joining Date')} value={staff.joining_date} />
+                                        <InfoRow
+                                            icon={CalendarDays}
+                                            label={t('Joining Date')}
+                                            value={staff.joining_date}
+                                        />
                                         <InfoRow icon={User} label={t('Gender')} value={staff.gender} />
-                                        <InfoRow icon={CalendarDays} label={t('Date of Birth')} value={staff.date_of_birth} />
-                                        <InfoRow icon={ShieldCheck} label={t('Blood Group')} value={staff.blood_group} />
-                                        <InfoRow icon={Phone} label={t('Emergency Contact')} value={staff.emergency_contact} />
+                                        <InfoRow
+                                            icon={CalendarDays}
+                                            label={t('Date of Birth')}
+                                            value={staff.date_of_birth}
+                                        />
+                                        <InfoRow
+                                            icon={ShieldCheck}
+                                            label={t('Blood Group')}
+                                            value={staff.blood_group}
+                                        />
+                                        <InfoRow
+                                            icon={Phone}
+                                            label={t('Emergency Contact')}
+                                            value={staff.emergency_contact}
+                                        />
                                         <InfoRow icon={BadgeCheck} label={t('Address')} value={staff.address} />
                                     </CardContent>
                                 </Card>
@@ -213,19 +246,31 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                     </CardHeader>
                                     <CardContent className="grid gap-3 sm:grid-cols-2">
                                         {can('Payroll Management') && (
-                                            <OpenPageButton href="/staff/payroll-management" label={t('Open Payroll Page')} />
+                                            <OpenPageButton
+                                                href="/staff/payroll-management"
+                                                label={t('Open Payroll Page')}
+                                            />
                                         )}
                                         {can('Leave Management') && (
-                                            <OpenPageButton href="/staff/leave-management" label={t('Open Leave Page')} />
+                                            <OpenPageButton
+                                                href="/staff/leave-management"
+                                                label={t('Open Leave Page')}
+                                            />
                                         )}
                                         {can('Teacher Evaluations') && (
-                                            <OpenPageButton href="/staff/appraisals" label={t('Open Appraisals Page')} />
+                                            <OpenPageButton
+                                                href="/staff/appraisals"
+                                                label={t('Open Appraisals Page')}
+                                            />
                                         )}
                                         {can('Payroll Management') && (
                                             <OpenPageButton href="/staff/loans" label={t('Open Loans Page')} />
                                         )}
                                         {can('Staff Attendance') && (
-                                            <OpenPageButton href="/staff/daily-attendance" label={t('Open Attendance Page')} />
+                                            <OpenPageButton
+                                                href="/staff/daily-attendance"
+                                                label={t('Open Attendance Page')}
+                                            />
                                         )}
                                     </CardContent>
                                 </Card>
@@ -244,8 +289,16 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                     <CardContent>
                                         <div className="mt-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                                             <StatChip label={t('Total')} value={attendance?.total ?? 0} />
-                                            <StatChip label={t('Present')} value={attendance?.present ?? 0} tone="success" />
-                                            <StatChip label={t('Absent')} value={attendance?.absent ?? 0} tone="danger" />
+                                            <StatChip
+                                                label={t('Present')}
+                                                value={attendance?.present ?? 0}
+                                                tone="success"
+                                            />
+                                            <StatChip
+                                                label={t('Absent')}
+                                                value={attendance?.absent ?? 0}
+                                                tone="danger"
+                                            />
                                             <StatChip label={t('Late')} value={attendance?.late ?? 0} />
                                             <StatChip label={t('Leave')} value={attendance?.leave ?? 0} />
                                         </div>
@@ -272,7 +325,11 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                             <StatChip label={t('Base Pay')} value={formatMoney(payroll?.base_pay)} />
                                             <StatChip label={t('Allowance')} value={formatMoney(payroll?.allowance)} />
                                             <StatChip label={t('Deduction')} value={formatMoney(payroll?.deduction)} />
-                                            <StatChip label={t('Net Pay')} value={formatMoney(payroll?.net_pay)} tone="success" />
+                                            <StatChip
+                                                label={t('Net Pay')}
+                                                value={formatMoney(payroll?.net_pay)}
+                                                tone="success"
+                                            />
                                             <StatChip label={t('Entries')} value={payroll?.total_entries ?? 0} />
                                         </div>
                                         <p className="mt-4 text-sm text-slate-500">
@@ -289,7 +346,11 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                             <TabsContent value="leave" className="m-0 space-y-6">
                                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                     <StatChip label={t('Leave Pending')} value={leave?.pending ?? 0} />
-                                    <StatChip label={t('Approved Days')} value={leave?.approved_days ?? 0} tone="success" />
+                                    <StatChip
+                                        label={t('Approved Days')}
+                                        value={leave?.approved_days ?? 0}
+                                        tone="success"
+                                    />
                                 </div>
                                 <Card>
                                     <CardHeader>
@@ -300,7 +361,9 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                     </CardHeader>
                                     <CardContent>
                                         {!leave?.balances || leave.balances.length === 0 ? (
-                                            <p className="text-sm text-slate-500">{t('No leave balances recorded for this year yet.')}</p>
+                                            <p className="text-sm text-slate-500">
+                                                {t('No leave balances recorded for this year yet.')}
+                                            </p>
                                         ) : (
                                             <div className="space-y-3">
                                                 {leave.balances.map((balance) => (
@@ -308,7 +371,9 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                                         key={balance.leave_type}
                                                         className="flex items-center justify-between rounded-xl border border-slate-200 p-4"
                                                     >
-                                                        <p className="font-medium text-slate-900">{balance.leave_type}</p>
+                                                        <p className="font-medium text-slate-900">
+                                                            {balance.leave_type}
+                                                        </p>
                                                         <Badge variant="outline" className="px-3 py-1 text-sm">
                                                             {balance.entitled_days}
                                                         </Badge>
@@ -352,7 +417,11 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                             <TabsContent value="loans" className="m-0 space-y-6">
                                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                     <StatChip label={t('Loans')} value={loans?.total ?? 0} />
-                                    <StatChip label={t('Active Loans')} value={loans?.active ?? 0} tone={loans?.active ? 'danger' : 'default'} />
+                                    <StatChip
+                                        label={t('Active Loans')}
+                                        value={loans?.active ?? 0}
+                                        tone={loans?.active ? 'danger' : 'default'}
+                                    />
                                     <StatChip label={t('Outstanding')} value={formatMoney(loans?.outstanding)} />
                                 </div>
                                 <OpenPageButton href="/staff/loans" label={t('Open Loans Page')} />

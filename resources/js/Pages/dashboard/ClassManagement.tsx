@@ -501,14 +501,14 @@ export default function ClassManagement({ user, classRecords, sectionRecords, te
                                             {classes.map((classItem) => (
                                                 <TableRow key={classItem.id}>
                                                     <TableCell className="font-medium">
-                                                            <Link
-                                                                href={`/classes/${classItem.id}`}
-                                                                className="inline-flex items-center gap-1.5 rounded underline-offset-4 hover:underline"
-                                                            >
-                                                                {classItem.name}
-                                                                <ExternalLink className="h-3.5 w-3.5 text-blue-600" />
-                                                            </Link>
-                                                        </TableCell>
+                                                        <Link
+                                                            href={`/classes/${classItem.id}`}
+                                                            className="inline-flex items-center gap-1.5 rounded underline-offset-4 hover:underline"
+                                                        >
+                                                            {classItem.name}
+                                                            <ExternalLink className="h-3.5 w-3.5 text-blue-600" />
+                                                        </Link>
+                                                    </TableCell>
                                                     <TableCell>
                                                         <Badge variant="outline">
                                                             {t('Section')}

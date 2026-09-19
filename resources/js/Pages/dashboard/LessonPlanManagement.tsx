@@ -525,7 +525,7 @@ export default function LessonPlanManagement({
                                     {t('Create the timetable first.')}
                                 </p>
                             ) : (
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto rounded-xl border border-slate-200">
                                     <table className="w-full min-w-[980px] border-collapse">
                                         <thead>
                                             <tr>
@@ -740,7 +740,7 @@ export default function LessonPlanManagement({
                                     {t('yet.')}
                                 </p>
                             ) : (
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto rounded-xl border border-slate-200">
                                     <table className="w-full min-w-[1100px] border-collapse">
                                         <thead>
                                             <tr>

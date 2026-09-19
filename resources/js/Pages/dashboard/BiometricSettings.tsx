@@ -12,6 +12,7 @@ interface BiometricSettingsProps {
     hasKey: boolean;
     keyHint: string;
     endpoint: string;
+    logsEndpoint: string;
     statusEndpoint: string;
 }
 
@@ -22,6 +23,7 @@ export default function BiometricSettings(pageProps: BiometricSettingsProps) {
     const hasKey = pageProps.hasKey;
     const keyHint = pageProps.keyHint ?? '';
     const endpoint = pageProps.endpoint;
+    const logsEndpoint = pageProps.logsEndpoint;
     const statusEndpoint = pageProps.statusEndpoint;
 
     const [regenerating, setRegenerating] = useState(false);
@@ -67,7 +69,7 @@ export default function BiometricSettings(pageProps: BiometricSettingsProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-violet-600 text-white">
                         <Fingerprint className="h-6 w-6" />
@@ -164,6 +166,12 @@ export default function BiometricSettings(pageProps: BiometricSettingsProps) {
                             <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50">
                                 <span className="text-gray-500">{t('POST')}</span>
                                 <code className="truncate text-xs text-gray-800 dark:text-gray-200">{endpoint}</code>
+                            </div>
+                            <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50">
+                                <span className="text-gray-500">{t('POST')}</span>
+                                <code className="truncate text-xs text-gray-800 dark:text-gray-200">
+                                    {logsEndpoint}
+                                </code>
                             </div>
                             <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 dark:bg-gray-800/50">
                                 <span className="text-gray-500">GET</span>

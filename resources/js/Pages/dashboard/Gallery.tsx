@@ -42,9 +42,15 @@ export default function Gallery(pageProps: GalleryProps) {
     const [form, setForm] = useState({ title: '', description: '', is_published: true });
     const [coverFile, setCoverFile] = useState<File | null>(null);
 
-    const canManage = ['admin', 'super_admin', 'branch_admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(
-        pageProps.user?.role,
-    );
+    const canManage = [
+        'admin',
+        'super_admin',
+        'branch_admin',
+        'teacher',
+        'receptionist',
+        'accountant',
+        'librarian',
+    ].includes(pageProps.user?.role);
 
     const openCreate = () => {
         setEditing(null);
@@ -92,7 +98,7 @@ export default function Gallery(pageProps: GalleryProps) {
 
     return (
         <DashboardLayout user={pageProps.user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">

@@ -267,7 +267,9 @@ export default function ReportBuilder({
                                     </div>
                                     {semesterOptions.length > 0 && (
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-slate-700">{t('Semester')}</label>
+                                            <label className="text-sm font-medium text-slate-700">
+                                                {t('Semester')}
+                                            </label>
                                             <Select value={semester} onValueChange={setSemester}>
                                                 <SelectTrigger className="w-full bg-white">
                                                     <SelectValue placeholder={t('Select semester')} />
@@ -418,11 +420,7 @@ export default function ReportBuilder({
                                                         variant="outline"
                                                         className="bg-white"
                                                         onClick={() => toggle(report)}
-                                                        title={
-                                                            report.is_active === false
-                                                                ? t('Enable')
-                                                                : t('Disable')
-                                                        }
+                                                        title={report.is_active === false ? t('Enable') : t('Disable')}
                                                     >
                                                         <Power className="h-4 w-4" />
                                                     </Button>

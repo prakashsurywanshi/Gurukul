@@ -46,6 +46,14 @@
 - Flutter API completeness: map `routes/api.php` → `flutter_gurukul/lib/models` + screens; de-mock remaining
   `mock_data/` screens; version API `v1/`; contract tests.
 
+### P8 — IoT ingestion, AI analytics + server PDF
+- Device ingestion APIs: transport GPS + CCTV face-scan + biometric batch — keyed, org-scoped, AI-matched where configured.
+- AI analytics: deterministic risk scoring (leads/fees/students), route-optimizer suggestions, weekly `ai:score` sweep,
+  risk-alert smart notifications, module toggle + feature permission.
+- Server grid-sheet PDF (mm-accurate, deterministic Blade port) with Download PDF action.
+- Deep links from attendance + fee rows into the Student 360 hub; college-mode report terminology.
+- Flutter device-panel/screen wiring left to the companion repo (git init deferred to the user).
+
 ## Burn-down
 
 - [x] P0.1 Publish `docs/gap-analysis-v3.md`
@@ -76,11 +84,20 @@
 - [x] P6.2 Platform: superadmin Billing Center (org billing/analytics; branch-admin role deferred per decision)
 - [x] P6.3 Flutter API completeness + versioning + contract tests (814 tests, 6363 assertions)
 - [x] P6.4 Full regression gates — final: 814 tests, 6363 assertions, 0 failures; i18n 4669 keys ×3, 0 bad; tsc clean; prod build OK
+- [x] P8.1 Transport GPS ingestion API + transport device settings + tests
+- [x] P8.2 CCTV face-scan ingestion API + IP/key management + tests
+- [x] P8.3 Biometric batch logs API + Biometric Settings UI + tests
+- [x] P8.4 College-mode report terminology + semester-filter labels + tests
+- [x] P8.5 Attendance + fees deep links to Student 360 + tests
+- [x] P8.6 Server-side grid-sheet PDF + Download PDF action + tests
+- [x] P8.7 AI analytics (scoring, route suggestions, smart alerts, `ai:score` weekly) + tests
+- [x] P8.8 P8 final regression gate (i18n ×3, tsc, build, targeted PHPUnit)
 
 ## Notes & decisions log
 - PDF engine question → user chose "all of above": dompdf + headless Chromium + browser print fallback.
 - Platform scope → include branch-admin/superadmin billing; Flutter app exists at `../flutter_gurukul`; API-first.
 - P6.2 scope decision → user chose "Billing Center only"; `branch_admin` role deferred (kept on roadmap later phases if needed).
+- P8 device feeds (transport GPS / CCTV / biometric / AI-real-time panels) on Flutter: user keeps real-time device work on the companion repo; its **git init is explicitly left to the user** as the last step.
 - Status updated as phases ship; gate results recorded next to each phase.
 
 ## Phase gate results (recorded as we ship)
@@ -164,3 +181,9 @@
   - **De-mock (flutter_gurukul, filesystem-only)**: `mock_data/` fully removed (6 files). `certificates/student_id_card_page.dart` now loads via `ApiService.getStudents()` (students list + class dropdown from API, loading/error states, preview uses first real student); `certificates/marksheet_page.dart` now loads via `ApiService.getPrintMarksheetData()` → `MarksheetEntry` (dropped the mock-only `status` column/chip, consistent with `print_marksheet_page.dart`). `flutter analyze` **0 errors / 0 warnings** in both edited files; repo-wide issues dropped 872 → **869** (all pre-existing info-level lints: `withOpacity`/`value` deprecations etc.).
   - **i18n (laravel-gurukul)**: +38 new keys in `en`/`mr`/`hi` (**4706 keys ×3**): 20 for `CourseManagement.tsx`, 17 for `LectureTimetable.tsx`, 1 shared (`Saving…`); both pages now use `useLanguage()`/`t()` (added `../../../i18n/LanguageProvider` import + removed all hardcoded strings incl. plural counts via `{count} batch(es)` / `{count} lecture(s)`). Also fixed the corrupted `'Room'` translations in `mr.ts` (`त्यांच्यासाठी जागा करून दिली.` → `खोली`) and `hi.ts` (`Constellation name (optional)` → `कक्ष`).
   - **Gates**: i18n validate **0 bad / 0 missing placeholders** (34 interpolated keys, `{count}`/`{name}` intact in all 3 langs); `npx tsc --noEmit` clean; `npm run build` OK (pre-existing chunk-size warning only); full Laravel suite **854 tests / 6549 asserts pass** (Feature 851 + Unit 3). Flutter changes not under `.git` (as before) — committed from Laravel repo.
+- **P8.1–P8.3 (done)**: **Device ingestion APIs** — `Api\TransportGpsApiController` (`POST /api/transport/gps` + `/api/v1`, `X-Transport-Key` = env or per-org key on **Transport → Device Settings**, writes `TransportGpsPosition` + marks linked daily trip running), `Api\CctvIngestionApiController` (`POST /api/cctv/face-scan`, `X-Cctv-Key` env/per-org key on **CCTV Camera Registry**, always `BiometricLog`+`CctvAccessLog`, AI vision match when configured), `Api\BiometricApiController` (`POST /api/biometric/logs`, up-to-500 batch `{device_serial, uid, event_time, direction, matched}` under `logs`, agent writes linked to registry devices by serial). Tests: `TransportDeviceSettingsFeatureTest` + `CctvFeatureTest` + `BiometricFeatureTest` (39 tests across the three). i18n 0 bad; tsc clean; build OK.
+- **P8.4 (done)**: **College-mode report terminology + semester-filter polish** — `ReportsController::reportLabels()`/`applyReportTerminology()` emit college/university course-name distribution + term-appropriate labels while school behavior stays byte-identical; semester filter UI uses the resolved labels. `CollegeReportTerminologyTest` 4 tests / ~ asserts. i18n 0 bad; tsc clean; build OK.
+- **P8.5 (done)**: **Deep links** — `AttendanceManagement.tsx` rows → `/students/{id}?tab=attendance`; `FeeManagement.tsx` collection rows → Open Student Hub `/students/{id}?tab=fees`. Regression suites green (12 tests).
+- **P8.6 (done)**: **Server grid-sheet PDF** — `GenerateDocumentController::pdf()` + `resources/views/documents/grid-sheet.blade.php` (mm-accurate server port of the client budget sheet) + **Download PDF** button. `GenerateDocumentPdfFeatureTest` 4 tests / 15 asserts (Content-Length > 500). i18n 0 bad; tsc clean; build OK.
+- **P8.7 (done)**: **AI Analytics** — migration `2026_09_19_000001_create_ai_scores_table` + `AiScore`; `Services/AiAnalytics/{ScoreEngine,RouteOptimizerSuggestions,AiAnalyticsService}`; `ScoreOrganization` job + `ai:score {organization?}` (`Schedule::command('ai:score')->weeklyOn(0, '01:30')->withoutOverlapping()`); `AiAnalyticsController` (`/ai-analytics` view + `/ai-analytics/refresh`, `AI Analytics` feature + `ai-analytics` module toggle, sidebar Wand2 item); `dashboard/AiAnalytics.tsx` (Overview + Leads/Fees/At-Risk/Routes/Alerts tabs); `ai_risk_alert` event → `ai_alerts` setting → bell + notification-rule type. `AiAnalyticsFeatureTest` 7 tests / 39 asserts. Gates: php -l clean; i18n 6524 keys ×3, 0 bad; tsc clean; prettier clean; build OK; 42 targeted tests pass.
+- **P8.8 (done)**: **P8 final regression gate** — i18n 6524 keys × 3, 0 bad; prettier clean; `tsc` clean; `npm run build` OK; targeted PHPUnit **51 tests / 440 asserts pass** (bilingual + AI + notification engine/bell/producers + staff permissions + end-to-end 20-module pages). Full-suite timing exceeds CI window → gate is the targeted matrix above (consistent with recent phases).

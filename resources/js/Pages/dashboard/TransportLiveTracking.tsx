@@ -77,7 +77,7 @@ export default function TransportLiveTracking({ user, trips, summary }: Transpor
 
     return (
         <DashboardLayout user={user} pageTitle={t('Live Vehicle Tracking')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-start gap-3">

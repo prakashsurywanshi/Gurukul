@@ -23,7 +23,7 @@ export default function Sections({ user, sectionRecords }: SectionsProps) {
 
     return (
         <DashboardLayout user={user} pageTitle={t('Sections')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardContent className="flex items-start justify-between gap-4 pt-6">
                         <div className="flex items-start gap-4">

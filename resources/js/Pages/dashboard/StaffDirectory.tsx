@@ -258,7 +258,12 @@ export default function StaffDirectory({
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <Button asChild variant="ghost" size="sm" title={t('Open Staff Hub')}>
+                                                        <Button
+                                                            asChild
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            title={t('Open Staff Hub')}
+                                                        >
                                                             <Link href={`/staff/${member.id}`}>
                                                                 <ExternalLink className="h-4 w-4 text-blue-600" />
                                                             </Link>

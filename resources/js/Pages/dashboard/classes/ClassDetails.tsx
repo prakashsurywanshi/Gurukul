@@ -59,8 +59,11 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
     const { props } = usePage();
     const { staffPermissions } = props as any;
 
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
-    const can = (feature: string) => user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(
+        user?.role,
+    );
+    const can = (feature: string) =>
+        user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
 
     const subjects = hub?.subjects || [];
     const timetable = hub?.timetable || [];
@@ -142,20 +145,21 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                         <div className="flex items-center gap-3">
                             {classInfo.student_count > 0 && (
                                 <Badge variant="outline" className="px-3 py-1 text-sm">
-                                    {classInfo.student_count}
-                                    {' '}{t('Students')}
+                                    {classInfo.student_count} {t('Students')}
                                 </Badge>
                             )}
                             {classInfo.status === 'inactive' ? (
                                 <Badge className="bg-red-100 text-red-700 hover:bg-red-100">{t('Inactive')}</Badge>
                             ) : (
-                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">{t('Active')}</Badge>
+                                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                                    {t('Active')}
+                                </Badge>
                             )}
                         </div>
                     </div>
 
                     <Tabs defaultValue="overview">
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto rounded-xl border border-slate-200">
                             <TabsList className="h-10">
                                 {hubTabs.map((tab) => (
                                     <TabsTrigger key={tab.id} value={tab.id} className="gap-1.5 px-3">
@@ -170,8 +174,16 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 <StatChip label={t('Students Enrolled')} value={classInfo.student_count ?? 0} />
                                 <StatChip label={t('Subjects')} value={subjects.length} />
-                                <StatChip label={t('Timetable Entries')} value={timetable.length} tone={timetable.length ? 'success' : 'default'} />
-                                <StatChip label={t('Capacity Utilisation')} value={capacityPct > 0 ? `${capacityPct}%` : '-'} tone={capacityPct >= 100 ? 'danger' : 'default'} />
+                                <StatChip
+                                    label={t('Timetable Entries')}
+                                    value={timetable.length}
+                                    tone={timetable.length ? 'success' : 'default'}
+                                />
+                                <StatChip
+                                    label={t('Capacity Utilisation')}
+                                    value={capacityPct > 0 ? `${capacityPct}%` : '-'}
+                                    tone={capacityPct >= 100 ? 'danger' : 'default'}
+                                />
                             </div>
 
                             <Card>
@@ -179,10 +191,18 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                                     <CardTitle>{t('Class Information')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <InfoRow icon={GraduationCap} label={t('Class & Section')} value={`${classInfo.name}${classInfo.section ? ` - ${classInfo.section}` : ''}`} />
+                                    <InfoRow
+                                        icon={GraduationCap}
+                                        label={t('Class & Section')}
+                                        value={`${classInfo.name}${classInfo.section ? ` - ${classInfo.section}` : ''}`}
+                                    />
                                     <InfoRow icon={DoorOpen} label={t('Room')} value={classInfo.room_number} />
                                     <InfoRow icon={Users} label={t('Capacity')} value={classInfo.capacity ?? '-'} />
-                                    <InfoRow icon={Building2} label={t('Academic Year')} value={classInfo.academic_year} />
+                                    <InfoRow
+                                        icon={Building2}
+                                        label={t('Academic Year')}
+                                        value={classInfo.academic_year}
+                                    />
                                     <InfoRow icon={Users} label={t('Class Teacher')} value={classInfo.teacher_name} />
                                 </CardContent>
                             </Card>
@@ -199,7 +219,9 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                                 </CardHeader>
                                 <CardContent>
                                     {subjects.length === 0 ? (
-                                        <p className="text-sm text-slate-500">{t('No subjects assigned to this class yet.')}</p>
+                                        <p className="text-sm text-slate-500">
+                                            {t('No subjects assigned to this class yet.')}
+                                        </p>
                                     ) : (
                                         <div className="space-y-3">
                                             {subjects.map((subject) => (
@@ -240,9 +262,11 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                                     </CardHeader>
                                     <CardContent>
                                         {timetable.length === 0 ? (
-                                            <p className="text-sm text-slate-500">{t('No timetable entries for this class yet.')}</p>
+                                            <p className="text-sm text-slate-500">
+                                                {t('No timetable entries for this class yet.')}
+                                            </p>
                                         ) : (
-                                            <div className="overflow-x-auto">
+                                            <div className="overflow-x-auto rounded-xl border border-slate-200">
                                                 <table className="w-full text-sm">
                                                     <thead>
                                                         <tr className="border-b text-left text-slate-500">
@@ -258,8 +282,12 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                                                             <tr key={entry.id} className="border-b last:border-0">
                                                                 <td className="py-2 pr-4 capitalize">{entry.day}</td>
                                                                 <td className="py-2 pr-4">{entry.periodId || '-'}</td>
-                                                                <td className="py-2 pr-4 font-medium text-slate-900">{entry.subject}</td>
-                                                                <td className="py-2 pr-4 text-slate-600">{entry.teacherName}</td>
+                                                                <td className="py-2 pr-4 font-medium text-slate-900">
+                                                                    {entry.subject}
+                                                                </td>
+                                                                <td className="py-2 pr-4 text-slate-600">
+                                                                    {entry.teacherName}
+                                                                </td>
                                                                 <td className="py-2 text-slate-600">
                                                                     {entry.startTime} – {entry.endTime}
                                                                 </td>
@@ -285,13 +313,21 @@ export default function ClassDetails({ user, classId, classInfo, hub }: ClassDet
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                        <StatChip label={t('Active Students')} value={classInfo.student_count ?? 0} tone="success" />
+                                        <StatChip
+                                            label={t('Active Students')}
+                                            value={classInfo.student_count ?? 0}
+                                            tone="success"
+                                        />
                                         <StatChip label={t('Capacity')} value={classInfo.capacity ?? '-'} />
-                                        <StatChip label={t('Capacity Utilisation')} value={capacityPct > 0 ? `${capacityPct}%` : '-'} tone={capacityPct >= 100 ? 'danger' : 'default'} />
+                                        <StatChip
+                                            label={t('Capacity Utilisation')}
+                                            value={capacityPct > 0 ? `${capacityPct}%` : '-'}
+                                            tone={capacityPct >= 100 ? 'danger' : 'default'}
+                                        />
                                     </div>
-<p className="mt-4 text-sm text-slate-500">
-        {t('Manage the full student list for this class from the search.')}
-    </p>
+                                    <p className="mt-4 text-sm text-slate-500">
+                                        {t('Manage the full student list for this class from the search.')}
+                                    </p>
                                 </CardContent>
                             </Card>
                             <OpenPageButton href="/search_students" label={t('Open Search Students')} />

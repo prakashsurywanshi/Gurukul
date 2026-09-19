@@ -95,7 +95,7 @@ export default function ApprovalActionCenter({ user, requests }: Props) {
 
     return (
         <DashboardLayout user={user} activeTab="approvals-action-center">
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                     <Inbox className="h-6 w-6 text-primary" />
                     <div>

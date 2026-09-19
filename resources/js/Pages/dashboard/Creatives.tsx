@@ -24,7 +24,7 @@ export default function Creatives({ user, festivals }: CreativesProps) {
 
     return (
         <DashboardLayout user={user} pageTitle={t('Creatives')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardContent className="flex items-start gap-4 pt-6">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">

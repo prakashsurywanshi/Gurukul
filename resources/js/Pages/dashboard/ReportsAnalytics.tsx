@@ -284,7 +284,12 @@ export default function ReportsAnalytics({
         [activeModule, moduleReports],
     );
 
-    const applyFilters = (nextMonth: string, nextSession: string, nextModule = activeModule, nextSemester = selectedSemester) => {
+    const applyFilters = (
+        nextMonth: string,
+        nextSession: string,
+        nextModule = activeModule,
+        nextSemester = selectedSemester,
+    ) => {
         setSelectedMonth(nextMonth);
         setSelectedSession(nextSession);
         setActiveModule(nextModule);
@@ -499,7 +504,9 @@ export default function ReportsAnalytics({
                         {semesterOptions.length > 0 && (
                             <Select
                                 value={selectedSemester}
-                                onValueChange={(value) => applyFilters(selectedMonth, selectedSession, activeModule, value)}
+                                onValueChange={(value) =>
+                                    applyFilters(selectedMonth, selectedSession, activeModule, value)
+                                }
                             >
                                 <SelectTrigger className="w-44 bg-white">
                                     <SelectValue placeholder={t('Select semester')} />

@@ -89,7 +89,7 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
 
     return (
         <DashboardLayout user={user} activeTab="compliance-calendar">
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <PageHeader
                     title={t('Compliance Calendar')}
                     description={t('View compliance deadlines and upcoming renewals on a calendar.')}
@@ -103,7 +103,12 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard label={t('Compliance Items')} value={summary.events} icon={ListChecks} tone="info" />
                     <StatCard label={t('Overdue')} value={summary.overdue} icon={FileClock} tone="danger" />
-                    <StatCard label={t('Due This Month')} value={summary.dueThisMonth} icon={ShieldCheck} tone="warning" />
+                    <StatCard
+                        label={t('Due This Month')}
+                        value={summary.dueThisMonth}
+                        icon={ShieldCheck}
+                        tone="warning"
+                    />
                     <StatCard label={t('Upcoming Deadlines')} value={upcoming.length} icon={Clock} tone="success" />
                 </div>
 
@@ -123,7 +128,9 @@ export default function ComplianceCalendar({ user, events, upcoming, summary }: 
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => setCursor({ year: today.getFullYear(), month: today.getMonth() })}
+                                        onClick={() =>
+                                            setCursor({ year: today.getFullYear(), month: today.getMonth() })
+                                        }
                                     >
                                         {t('Today')}
                                     </Button>

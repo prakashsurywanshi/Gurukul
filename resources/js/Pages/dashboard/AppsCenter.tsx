@@ -122,7 +122,7 @@ export default function AppsCenter(pageProps: AppsCenterProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">

@@ -72,7 +72,7 @@ export default function ChatModeration({ user, messages, summary }: ChatModerati
 
     return (
         <DashboardLayout user={user} pageTitle={t('Chat Moderation')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="grid gap-3 sm:grid-cols-4">
                     <Card>
                         <CardContent className="flex items-center justify-between pt-6">

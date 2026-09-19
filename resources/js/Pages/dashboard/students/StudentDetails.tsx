@@ -86,7 +86,14 @@ interface StudentHub {
     };
     certificates?: {
         count: number;
-        latest?: { id: string; certificate_number?: string; class?: string | null; section?: string | null; reason?: string | null; issue_date?: string | null }[];
+        latest?: {
+            id: string;
+            certificate_number?: string;
+            class?: string | null;
+            section?: string | null;
+            reason?: string | null;
+            issue_date?: string | null;
+        }[];
     };
     behavior?: {
         total: number;
@@ -96,7 +103,16 @@ interface StudentHub {
     };
     health?: {
         count: number;
-        latest?: { id: string; record_date?: string | null; blood_group?: string | null; height_cm?: number | null; weight_kg?: number | null; blood_pressure?: string | null; medical_conditions?: string | null; allergies?: string | null } | null;
+        latest?: {
+            id: string;
+            record_date?: string | null;
+            blood_group?: string | null;
+            height_cm?: number | null;
+            weight_kg?: number | null;
+            blood_pressure?: string | null;
+            medical_conditions?: string | null;
+            allergies?: string | null;
+        } | null;
     };
     exit?: {
         id: string;
@@ -248,8 +264,11 @@ export default function StudentDetails({
             ? relatedStudents[currentStudentIndex + 1]
             : null;
 
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
-    const can = (feature: string) => user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(
+        user?.role,
+    );
+    const can = (feature: string) =>
+        user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
 
     const fees = hub?.fees;
     const attendance = hub?.attendance;
@@ -373,10 +392,15 @@ export default function StudentDetails({
                         </div>
                     </div>
 
-                    <Tabs value={enabledTabIds.includes(activeTab) ? activeTab : (enabledTabIds[0] ?? 'overview')}
+                    <Tabs
+                        value={enabledTabIds.includes(activeTab) ? activeTab : (enabledTabIds[0] ?? 'overview')}
                         onValueChange={(value) => {
                             setActiveTab(value);
-                            router.get(`/students/${studentId}`, { tab: value }, { preserveState: true, preserveScroll: true });
+                            router.get(
+                                `/students/${studentId}`,
+                                { tab: value },
+                                { preserveState: true, preserveScroll: true },
+                            );
                         }}
                     >
                         <div className="overflow-x-auto">
@@ -542,7 +566,9 @@ export default function StudentDetails({
                                                 <User className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t('Roll Number')}</p>
-                                                    <p className="font-medium text-slate-900">{student.roll_number || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.roll_number || '-'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-3">
@@ -578,14 +604,17 @@ export default function StudentDetails({
                                                                     <div className="flex flex-wrap items-center gap-2">
                                                                         <p className="font-semibold text-slate-900">
                                                                             {history.session || t('Session not set')} |{' '}
-                                                                            {history.class || '-'} - {history.section || '-'}
+                                                                            {history.class || '-'} -{' '}
+                                                                            {history.section || '-'}
                                                                         </p>
                                                                         {history.is_current ? (
                                                                             <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
                                                                                 {t('Current')}
                                                                             </Badge>
                                                                         ) : (
-                                                                            <Badge variant="outline">{t('History')}</Badge>
+                                                                            <Badge variant="outline">
+                                                                                {t('History')}
+                                                                            </Badge>
                                                                         )}
                                                                     </div>
                                                                     <p className="mt-1 text-sm text-slate-500">
@@ -597,7 +626,8 @@ export default function StudentDetails({
                                                                 </div>
                                                                 <div className="flex flex-wrap gap-2">
                                                                     <Badge variant="outline" className="capitalize">
-                                                                        {history.entry_type?.replace('_', ' ') || t('record')}
+                                                                        {history.entry_type?.replace('_', ' ') ||
+                                                                            t('record')}
                                                                     </Badge>
                                                                     <Badge
                                                                         className={
@@ -611,7 +641,9 @@ export default function StudentDetails({
                                                                 </div>
                                                             </div>
                                                             {history.notes ? (
-                                                                <p className="mt-3 text-sm text-slate-600">{history.notes}</p>
+                                                                <p className="mt-3 text-sm text-slate-600">
+                                                                    {history.notes}
+                                                                </p>
                                                             ) : null}
                                                         </div>
                                                     ))}
@@ -629,7 +661,9 @@ export default function StudentDetails({
                                                 <CalendarDays className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t('Date of Birth')}</p>
-                                                    <p className="font-medium text-slate-900">{student.date_of_birth || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.date_of_birth || '-'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-3">
@@ -645,7 +679,9 @@ export default function StudentDetails({
                                                 <User className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t('Blood Group')}</p>
-                                                    <p className="font-medium text-slate-900">{student.blood_group || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.blood_group || '-'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-3">
@@ -674,9 +710,13 @@ export default function StudentDetails({
                                                 <Users className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t("Father's Name")}</p>
-                                                    <p className="font-medium text-slate-900">{student.father_name || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.father_name || '-'}
+                                                    </p>
                                                     {dualLanguageEnabled && student.father_name_mr && (
-                                                        <p className="text-sm text-slate-600">{student.father_name_mr}</p>
+                                                        <p className="text-sm text-slate-600">
+                                                            {student.father_name_mr}
+                                                        </p>
                                                     )}
                                                 </div>
                                             </div>
@@ -684,16 +724,22 @@ export default function StudentDetails({
                                                 <Phone className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t("Father's Phone")}</p>
-                                                    <p className="font-medium text-slate-900">{student.father_phone || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.father_phone || '-'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-3">
                                                 <Users className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t("Mother's Name")}</p>
-                                                    <p className="font-medium text-slate-900">{student.mother_name || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.mother_name || '-'}
+                                                    </p>
                                                     {dualLanguageEnabled && student.mother_name_mr && (
-                                                        <p className="text-sm text-slate-600">{student.mother_name_mr}</p>
+                                                        <p className="text-sm text-slate-600">
+                                                            {student.mother_name_mr}
+                                                        </p>
                                                     )}
                                                 </div>
                                             </div>
@@ -701,7 +747,9 @@ export default function StudentDetails({
                                                 <Phone className="mt-0.5 h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t("Mother's Phone")}</p>
-                                                    <p className="font-medium text-slate-900">{student.mother_phone || '-'}</p>
+                                                    <p className="font-medium text-slate-900">
+                                                        {student.mother_phone || '-'}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -820,7 +868,9 @@ export default function StudentDetails({
                                                 <div>
                                                     <p className="text-sm text-slate-500">{t('Vehicle Details')}</p>
                                                     <p className="font-medium text-slate-900">
-                                                        {student.transport_required ? student.transport_vehicle || '-' : '-'}
+                                                        {student.transport_required
+                                                            ? student.transport_vehicle || '-'
+                                                            : '-'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -858,7 +908,11 @@ export default function StudentDetails({
                                                 value={fees?.outstanding_bills ?? 0}
                                                 tone={(fees?.outstanding_bills ?? 0) > 0 ? 'danger' : 'success'}
                                             />
-                                            <StatChip label={t('Total Paid')} value={formatMoney(fees?.total_paid)} tone="success" />
+                                            <StatChip
+                                                label={t('Total Paid')}
+                                                value={formatMoney(fees?.total_paid)}
+                                                tone="success"
+                                            />
                                             <StatChip
                                                 label={t('Total Pending')}
                                                 value={formatMoney(fees?.total_pending)}
@@ -882,8 +936,16 @@ export default function StudentDetails({
                                     </CardHeader>
                                     <CardContent>
                                         <div className="mt-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-                                            <StatChip label={t('Present')} value={attendance?.present ?? 0} tone="success" />
-                                            <StatChip label={t('Absent')} value={attendance?.absent ?? 0} tone="danger" />
+                                            <StatChip
+                                                label={t('Present')}
+                                                value={attendance?.present ?? 0}
+                                                tone="success"
+                                            />
+                                            <StatChip
+                                                label={t('Absent')}
+                                                value={attendance?.absent ?? 0}
+                                                tone="danger"
+                                            />
                                             <StatChip label={t('Late')} value={attendance?.late ?? 0} />
                                             <StatChip label={t('Half Day')} value={attendance?.half_day ?? 0} />
                                             <StatChip label={t('Leave')} value={attendance?.leave ?? 0} />
@@ -910,10 +972,26 @@ export default function StudentDetails({
                                                 <div className="rounded-xl border border-slate-200 p-4">
                                                     <p className="text-sm text-slate-500">{t('Latest Result')}</p>
                                                     <div className="mt-3 grid gap-4 md:grid-cols-4">
-                                                        <InfoRow icon={GraduationCap} label={t('Exam')} value={exam.exam_name} />
-                                                        <InfoRow icon={User} label={t('Obtained')} value={exam.obtained ?? '-'} />
-                                                        <InfoRow icon={Award} label={t('Max Marks')} value={exam.max ?? '-'} />
-                                                        <InfoRow icon={Award} label={t('Grade')} value={exam.grade ?? '-'} />
+                                                        <InfoRow
+                                                            icon={GraduationCap}
+                                                            label={t('Exam')}
+                                                            value={exam.exam_name}
+                                                        />
+                                                        <InfoRow
+                                                            icon={User}
+                                                            label={t('Obtained')}
+                                                            value={exam.obtained ?? '-'}
+                                                        />
+                                                        <InfoRow
+                                                            icon={Award}
+                                                            label={t('Max Marks')}
+                                                            value={exam.max ?? '-'}
+                                                        />
+                                                        <InfoRow
+                                                            icon={Award}
+                                                            label={t('Grade')}
+                                                            value={exam.grade ?? '-'}
+                                                        />
                                                     </div>
                                                 </div>
                                             </>
@@ -960,7 +1038,10 @@ export default function StudentDetails({
                                         ) : (
                                             <div className="space-y-3">
                                                 {certificates.latest.map((cert) => (
-                                                    <div key={cert.id} className="rounded-xl border border-slate-200 p-4">
+                                                    <div
+                                                        key={cert.id}
+                                                        className="rounded-xl border border-slate-200 p-4"
+                                                    >
                                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                                             <p className="font-medium text-slate-900">
                                                                 {cert.certificate_number || '-'}
@@ -999,14 +1080,26 @@ export default function StudentDetails({
                                     <CardContent className="space-y-4">
                                         <div className="mt-2 grid gap-4 sm:grid-cols-3">
                                             <StatChip label={t('Total')} value={behavior?.total ?? 0} />
-                                            <StatChip label={t('Open Incidents')} value={behavior?.open ?? 0} tone="danger" />
-                                            <StatChip label={t('Resolved')} value={behavior?.resolved ?? 0} tone="success" />
+                                            <StatChip
+                                                label={t('Open Incidents')}
+                                                value={behavior?.open ?? 0}
+                                                tone="danger"
+                                            />
+                                            <StatChip
+                                                label={t('Resolved')}
+                                                value={behavior?.resolved ?? 0}
+                                                tone="success"
+                                            />
                                         </div>
                                         {behavior?.latest ? (
                                             <div className="rounded-xl border border-slate-200 p-4">
                                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <p className="font-medium text-slate-900">{behavior.latest.title || '-'}</p>
-                                                    <Badge variant="outline">{behavior.latest.incident_date || '-'}</Badge>
+                                                    <p className="font-medium text-slate-900">
+                                                        {behavior.latest.title || '-'}
+                                                    </p>
+                                                    <Badge variant="outline">
+                                                        {behavior.latest.incident_date || '-'}
+                                                    </Badge>
                                                 </div>
                                                 <p className="mt-1 text-sm text-slate-500">{t('Latest Incident')}</p>
                                             </div>
@@ -1038,17 +1131,55 @@ export default function StudentDetails({
                                         {health?.latest ? (
                                             <>
                                                 <div className="rounded-xl border border-slate-200 p-4">
-                                                    <p className="text-sm text-slate-500">{t('Latest Health Record')}</p>
+                                                    <p className="text-sm text-slate-500">
+                                                        {t('Latest Health Record')}
+                                                    </p>
                                                     <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                                        <InfoRow icon={CalendarDays} label={t('Record Date')} value={health.latest.record_date} />
-                                                        <InfoRow icon={User} label={t('Blood Group')} value={health.latest.blood_group} />
-                                                        <InfoRow icon={HeartPulse} label={t('Height')} value={health.latest.height_cm != null ? `${health.latest.height_cm} cm` : null} />
-                                                        <InfoRow icon={HeartPulse} label={t('Weight')} value={health.latest.weight_kg != null ? `${health.latest.weight_kg} kg` : null} />
-                                                        <InfoRow icon={HeartPulse} label={t('Blood Pressure')} value={health.latest.blood_pressure} />
-                                                        <InfoRow icon={HeartPulse} label={t('Medical Conditions')} value={health.latest.medical_conditions} />
+                                                        <InfoRow
+                                                            icon={CalendarDays}
+                                                            label={t('Record Date')}
+                                                            value={health.latest.record_date}
+                                                        />
+                                                        <InfoRow
+                                                            icon={User}
+                                                            label={t('Blood Group')}
+                                                            value={health.latest.blood_group}
+                                                        />
+                                                        <InfoRow
+                                                            icon={HeartPulse}
+                                                            label={t('Height')}
+                                                            value={
+                                                                health.latest.height_cm != null
+                                                                    ? `${health.latest.height_cm} cm`
+                                                                    : null
+                                                            }
+                                                        />
+                                                        <InfoRow
+                                                            icon={HeartPulse}
+                                                            label={t('Weight')}
+                                                            value={
+                                                                health.latest.weight_kg != null
+                                                                    ? `${health.latest.weight_kg} kg`
+                                                                    : null
+                                                            }
+                                                        />
+                                                        <InfoRow
+                                                            icon={HeartPulse}
+                                                            label={t('Blood Pressure')}
+                                                            value={health.latest.blood_pressure}
+                                                        />
+                                                        <InfoRow
+                                                            icon={HeartPulse}
+                                                            label={t('Medical Conditions')}
+                                                            value={health.latest.medical_conditions}
+                                                        />
                                                     </div>
                                                     <div className="mt-4">
-                                                        <InfoRow icon={HeartPulse} label={t('Allergies')} value={health.latest.allergies} />
+                                                        <InfoRow
+                                                            icon={HeartPulse}
+                                                            label={t('Allergies')}
+                                                            value={health.latest.allergies}
+                                                        />
                                                     </div>
                                                 </div>
                                             </>
@@ -1078,8 +1209,7 @@ export default function StudentDetails({
                                     <CardContent className="space-y-4">
                                         <div className="flex items-center gap-3">
                                             <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">
-                                                {t('Enrollment Status')}:
-                                                {hub?.enrollment_status || t('active')}
+                                                {t('Enrollment Status')}:{hub?.enrollment_status || t('active')}
                                             </Badge>
                                         </div>
                                         {exitRecord ? (
@@ -1090,10 +1220,26 @@ export default function StudentDetails({
                                                         <Badge variant="outline">{exitRecord.status || '-'}</Badge>
                                                     </div>
                                                     <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                                                        <InfoRow icon={DoorOpen} label={t('Reason')} value={exitRecord.reason} />
-                                                        <InfoRow icon={CalendarDays} label={t('Exit Date')} value={exitRecord.exit_date} />
-                                                        <InfoRow icon={Award} label={t('TC Number')} value={exitRecord.tc_number} />
-                                                        <InfoRow icon={CalendarDays} label={t('TC Issue Date')} value={exitRecord.tc_issued_date} />
+                                                        <InfoRow
+                                                            icon={DoorOpen}
+                                                            label={t('Reason')}
+                                                            value={exitRecord.reason}
+                                                        />
+                                                        <InfoRow
+                                                            icon={CalendarDays}
+                                                            label={t('Exit Date')}
+                                                            value={exitRecord.exit_date}
+                                                        />
+                                                        <InfoRow
+                                                            icon={Award}
+                                                            label={t('TC Number')}
+                                                            value={exitRecord.tc_number}
+                                                        />
+                                                        <InfoRow
+                                                            icon={CalendarDays}
+                                                            label={t('TC Issue Date')}
+                                                            value={exitRecord.tc_issued_date}
+                                                        />
                                                     </div>
                                                 </div>
                                             </>

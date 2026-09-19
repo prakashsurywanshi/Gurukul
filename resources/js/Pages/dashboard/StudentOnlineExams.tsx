@@ -796,7 +796,7 @@ export default function StudentOnlineExams({ user, onlineExams, attempts, studen
                                 {t('You have not submitted any online exams yet.')}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto rounded-xl border border-slate-200">
                                 <table className="w-full">
                                     <thead className="border-b border-slate-200 text-left text-sm text-slate-500">
                                         <tr>

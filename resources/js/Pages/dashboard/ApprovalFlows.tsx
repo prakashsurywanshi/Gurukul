@@ -109,7 +109,7 @@ export default function ApprovalFlows({ user, flows, staffUsers, roleOptions }: 
 
     return (
         <DashboardLayout user={user} activeTab="approvals-config">
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                     <Settings className="h-6 w-6 text-primary" />
                     <div>

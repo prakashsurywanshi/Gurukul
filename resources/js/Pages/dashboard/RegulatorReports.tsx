@@ -37,7 +37,7 @@ export default function RegulatorReports({ user, school, disclosure, government 
 
     return (
         <DashboardLayout user={user} pageTitle={t('Regulator Reports')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex flex-wrap items-center gap-2">

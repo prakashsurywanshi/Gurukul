@@ -189,7 +189,7 @@ export default function PointOfSale({ user, catalog, sales, filters, summary }: 
 
     return (
         <DashboardLayout user={user} pageTitle={t('Point of Sale')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>
                         <TabsTrigger value="pos">{t('New Sale')}</TabsTrigger>

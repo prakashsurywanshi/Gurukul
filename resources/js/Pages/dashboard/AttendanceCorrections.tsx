@@ -92,10 +92,14 @@ export default function AttendanceCorrections({ user, corrections, students, sta
 
     const review = (correction: Correction, action: 'approve' | 'reject') => {
         setSaving(true);
-        router.patch(`/attendance-corrections/${correction.id}/review`, { action }, {
-            preserveScroll: true,
-            onFinish: () => setSaving(false),
-        });
+        router.patch(
+            `/attendance-corrections/${correction.id}/review`,
+            { action },
+            {
+                preserveScroll: true,
+                onFinish: () => setSaving(false),
+            },
+        );
     };
 
     const statusBadge = (status: string) => {
@@ -144,7 +148,7 @@ export default function AttendanceCorrections({ user, corrections, students, sta
                                 {t('No corrections found for the selected filter.')}
                             </p>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto rounded-xl border border-slate-200">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-xs uppercase text-muted-foreground">
@@ -189,7 +193,10 @@ export default function AttendanceCorrections({ user, corrections, students, sta
                                                         {correction.reason || '—'}
                                                     </p>
                                                     {correction.review_note && (
-                                                        <p className="text-xs text-muted-foreground" title={correction.review_note}>
+                                                        <p
+                                                            className="text-xs text-muted-foreground"
+                                                            title={correction.review_note}
+                                                        >
                                                             {correction.review_note}
                                                         </p>
                                                     )}
@@ -239,7 +246,9 @@ export default function AttendanceCorrections({ user, corrections, students, sta
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg">
                         <h2 className="text-lg font-semibold">{t('New Attendance Correction')}</h2>
-                        <p className="mb-4 text-sm text-muted-foreground">{t('Select a student, date and requested status.')}</p>
+                        <p className="mb-4 text-sm text-muted-foreground">
+                            {t('Select a student, date and requested status.')}
+                        </p>
                         <form onSubmit={submit} className="space-y-4">
                             <div>
                                 <Label>{t('Student')}</Label>
@@ -253,7 +262,8 @@ export default function AttendanceCorrections({ user, corrections, students, sta
                                     <SelectContent>
                                         {students.map((student) => (
                                             <SelectItem key={student.id} value={student.id}>
-                                                {student.admission_no} — {student.first_name} {student.last_name} ({student.class})
+                                                {student.admission_no} — {student.first_name} {student.last_name} (
+                                                {student.class})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

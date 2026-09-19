@@ -86,10 +86,14 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
 
     const review = (request: ConcessionRequest, action: 'approve' | 'reject') => {
         setSaving(true);
-        router.patch(`/fees/concession-requests/${request.id}/review`, { action }, {
-            preserveScroll: true,
-            onFinish: () => setSaving(false),
-        });
+        router.patch(
+            `/fees/concession-requests/${request.id}/review`,
+            { action },
+            {
+                preserveScroll: true,
+                onFinish: () => setSaving(false),
+            },
+        );
     };
 
     const statusBadge = (status: string) => {
@@ -107,9 +111,7 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
                                 <BadgePercent className="mr-2 inline size-5" />
                                 {t('Fee Concession')}
                             </CardTitle>
-                            <CardDescription>
-                                {t('Request and approve fee concessions for students.')}
-                            </CardDescription>
+                            <CardDescription>{t('Request and approve fee concessions for students.')}</CardDescription>
                         </div>
                         <Button onClick={openCreate}>
                             <Plus className="size-4" />
@@ -136,7 +138,7 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
                                 {t('No concession requests found for the selected filter.')}
                             </p>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto rounded-xl border border-slate-200">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-xs uppercase text-muted-foreground">
@@ -175,7 +177,10 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
                                                         {request.reason}
                                                     </p>
                                                     {request.review_note && (
-                                                        <p className="text-xs text-muted-foreground" title={request.review_note}>
+                                                        <p
+                                                            className="text-xs text-muted-foreground"
+                                                            title={request.review_note}
+                                                        >
                                                             {request.review_note}
                                                         </p>
                                                     )}
@@ -214,7 +219,9 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
                                                         </div>
                                                     )}
                                                     {request.status !== 'pending' && request.reviewed_at && (
-                                                        <div className="text-xs text-muted-foreground">{request.reviewed_at}</div>
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {request.reviewed_at}
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
@@ -237,14 +244,18 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
                         <form onSubmit={submit} className="space-y-4">
                             <div>
                                 <Label>{t('Student')}</Label>
-                                <Select value={form.student_id} onValueChange={(v) => setForm((f) => ({ ...f, student_id: v }))}>
+                                <Select
+                                    value={form.student_id}
+                                    onValueChange={(v) => setForm((f) => ({ ...f, student_id: v }))}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder={t('Select student')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {students.map((student) => (
                                             <SelectItem key={student.id} value={student.id}>
-                                                {student.admission_no} — {student.first_name} {student.last_name} ({student.class})
+                                                {student.admission_no} — {student.first_name} {student.last_name} (
+                                                {student.class})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -265,7 +276,10 @@ export default function FeeConcessions({ user, requests, students, canReview }: 
                             </div>
                             <div>
                                 <Label>{t('Reason')}</Label>
-                                <Textarea value={form.reason} onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))} />
+                                <Textarea
+                                    value={form.reason}
+                                    onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
+                                />
                             </div>
                             <div className="flex justify-end gap-2">
                                 <Button type="button" variant="outline" onClick={() => setShowModal(false)}>

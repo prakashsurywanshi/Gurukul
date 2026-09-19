@@ -58,7 +58,13 @@ export type CustomFieldRecord = {
 export type CustomFieldsProps = {
     user: any;
     definitions: { entity: string; fields: CustomFieldRow[] }[];
-    records: { entity: string; label: string; records: CustomFieldRecord[]; totalFields: number; requiredFields: number }[];
+    records: {
+        entity: string;
+        label: string;
+        records: CustomFieldRecord[];
+        totalFields: number;
+        requiredFields: number;
+    }[];
     summary: {
         totalDefinitions: number;
         activeDefinitions: number;
@@ -231,10 +237,7 @@ export default function CustomFields({ user, definitions, records, summary }: Cu
         setEditing({ entity: entityName, record });
         setDraft(
             Object.fromEntries(
-                Object.entries(record.values).map(([key, value]) => [
-                    key,
-                    typeof value === 'string' ? value : '',
-                ]),
+                Object.entries(record.values).map(([key, value]) => [key, typeof value === 'string' ? value : '']),
             ),
         );
     };
@@ -347,7 +350,7 @@ export default function CustomFields({ user, definitions, records, summary }: Cu
 
     return (
         <DashboardLayout user={user} pageTitle={t('Custom Fields & Data Records')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="grid flex-1 gap-3 sm:grid-cols-3">
                         <Card>
@@ -449,9 +452,8 @@ export default function CustomFields({ user, definitions, records, summary }: Cu
                                                             {field.fieldKey}
                                                         </code>
                                                         <Badge variant="outline">
-                                                            {FIELD_TYPES.find(
-                                                                (type) => type.value === field.fieldType,
-                                                            )?.label ?? field.fieldType}
+                                                            {FIELD_TYPES.find((type) => type.value === field.fieldType)
+                                                                ?.label ?? field.fieldType}
                                                         </Badge>
                                                         {field.isRequired && (
                                                             <Badge variant="destructive">{t('Required')}</Badge>
@@ -579,7 +581,11 @@ export default function CustomFields({ user, definitions, records, summary }: Cu
                                                 </span>
                                             )}
                                         </div>
-                                        <Button size="sm" variant="outline" onClick={() => openEdit(entityFilter, record)}>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => openEdit(entityFilter, record)}
+                                        >
                                             {t('Fill Values')}
                                         </Button>
                                     </div>

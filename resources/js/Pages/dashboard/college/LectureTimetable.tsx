@@ -60,10 +60,11 @@ interface LectureTimetableProps {
     daysOfWeek: DayOption[];
 }
 
-const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
 export default function LectureTimetable(pageProps: LectureTimetableProps) {
-    const { classes, selectedClassId, selectedClassName, lectures, subjects, teachers, semester, daysOfWeek } = pageProps;
+    const { classes, selectedClassId, selectedClassName, lectures, subjects, teachers, semester, daysOfWeek } =
+        pageProps;
     const { t } = useLanguage();
     const { orgType } = usePage<{ orgType?: string }>().props;
     const features = orgTypeFeatures(orgType);
@@ -143,7 +144,7 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
 
     return (
         <DashboardLayout user={pageProps.user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -164,14 +165,12 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                 <div className="flex items-center gap-4">
                     <div className="w-64 space-y-1">
                         <Label>{groupWord}</Label>
-                        <Select
-                            value={classId}
-                            onValueChange={switchClass}
-                        >
+                        <Select value={classId} onValueChange={switchClass}>
                             <option value="">{t('Select {group}…', { group: groupWord })}</option>
                             {classes.map((c) => (
                                 <option key={c.id} value={c.id}>
-                                    {c.name}{c.section ? ` ${c.section}` : ''}
+                                    {c.name}
+                                    {c.section ? ` ${c.section}` : ''}
                                 </option>
                             ))}
                         </Select>
@@ -192,8 +191,13 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                 </div>
 
                 {showForm && selectedClassId && (
-                    <form onSubmit={submitLecture} className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
-                        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">{t('New Lecture')}</h2>
+                    <form
+                        onSubmit={submitLecture}
+                        className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm"
+                    >
+                        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            {t('New Lecture')}
+                        </h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                             <div className="space-y-1">
                                 <Label>{t('Day *')}</Label>
@@ -240,7 +244,11 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Room')}</Label>
-                                <Input value={formRoom} onChange={(e) => setFormRoom(e.target.value)} placeholder={t('e.g. Lab 2')} />
+                                <Input
+                                    value={formRoom}
+                                    onChange={(e) => setFormRoom(e.target.value)}
+                                    placeholder={t('e.g. Lab 2')}
+                                />
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Subject')}</Label>
@@ -248,7 +256,8 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                     <option value="">{t('None')}</option>
                                     {subjects.map((s) => (
                                         <option key={s.id} value={s.id}>
-                                            {s.name}{s.code ? ` (${s.code})` : ''}
+                                            {s.name}
+                                            {s.code ? ` (${s.code})` : ''}
                                         </option>
                                     ))}
                                 </Select>
@@ -293,10 +302,17 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                         {daysOfWeek.map((day) => {
                             const dayLectures = lecturesByDay[day.value] ?? [];
                             return (
-                                <div key={day.value} className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                                <div
+                                    key={day.value}
+                                    className="rounded-lg border bg-card text-card-foreground shadow-sm"
+                                >
                                     <div className="border-b px-4 py-2">
-                                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{day.label}</h3>
-                                        <p className="text-xs text-gray-500">{t('{count} lecture(s)', { count: dayLectures.length })}</p>
+                                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                            {day.label}
+                                        </h3>
+                                        <p className="text-xs text-gray-500">
+                                            {t('{count} lecture(s)', { count: dayLectures.length })}
+                                        </p>
                                     </div>
                                     <ul className="divide-y">
                                         {dayLectures.map((lecture) => (
@@ -309,9 +325,7 @@ export default function LectureTimetable(pageProps: LectureTimetableProps) {
                                                     {lecture.teacher_name && (
                                                         <p className="text-gray-500">{lecture.teacher_name}</p>
                                                     )}
-                                                    {lecture.room && (
-                                                        <p className="text-gray-400">{lecture.room}</p>
-                                                    )}
+                                                    {lecture.room && <p className="text-gray-400">{lecture.room}</p>}
                                                 </div>
                                                 <button
                                                     className="ml-2 mt-0.5 text-red-400 hover:text-red-600"

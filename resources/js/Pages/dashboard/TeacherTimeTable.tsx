@@ -462,7 +462,7 @@ export default function TeacherTimeTable({
                             {!selectedTeacher ? (
                                 <p className="text-sm text-slate-500">{t('Select a teacher to view the timetable.')}</p>
                             ) : (
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto rounded-xl border border-slate-200">
                                     <table className="w-full min-w-[980px] border-collapse">
                                         <thead>
                                             <tr>

@@ -37,6 +37,8 @@ interface ExamManagementProps {
     students: any[];
     classOptions: { id: number; name: string; section: string }[];
     subjectOptions: { id: number; name: string }[];
+    semesters: { id: number; name: string; sem_no: number }[];
+    selectedSemester: number | null;
     examGroups: GroupedExam[];
 }
 
@@ -461,6 +463,8 @@ export default function ExamManagement({
     students,
     classOptions,
     subjectOptions,
+    semesters,
+    selectedSemester,
     examGroups,
 }: ExamManagementProps) {
     const { t } = useLanguage();
@@ -766,10 +770,34 @@ export default function ExamManagement({
         }
 
         if (!selectedGroupId) {
-            router.post('/exams', createForm, {
+            router.post(
+                '/exams',
+                { ...createForm, semesterId: selectedSemester },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setActivePanel(null);
+                        setCreateForm({
+                            name: '',
+                            publishStatus: 'draft',
+                            className: defaultExamClassSelection.className,
+                            section: defaultExamClassSelection.section,
+                            testKind: 'general',
+                        });
+                    },
+                },
+            );
+            return;
+        }
+
+        router.patch(
+            `/exams/${selectedGroupId}`,
+            { ...createForm, semesterId: selectedSemester },
+            {
                 preserveScroll: true,
                 onSuccess: () => {
                     setActivePanel(null);
+                    setSelectedGroupId(null);
                     setCreateForm({
                         name: '',
                         publishStatus: 'draft',
@@ -778,24 +806,8 @@ export default function ExamManagement({
                         testKind: 'general',
                     });
                 },
-            });
-            return;
-        }
-
-        router.patch(`/exams/${selectedGroupId}`, createForm, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setActivePanel(null);
-                setSelectedGroupId(null);
-                setCreateForm({
-                    name: '',
-                    publishStatus: 'draft',
-                    className: defaultExamClassSelection.className,
-                    section: defaultExamClassSelection.section,
-                    testKind: 'general',
-                });
             },
-        });
+        );
     };
 
     const addSubjectRow = () => {
@@ -1780,14 +1792,44 @@ export default function ExamManagement({
                     <CardHeader className="gap-3 pb-4">
                         <div className="flex flex-col items-start gap-4">
                             <CardTitle className="text-left">{t('Exam Records')}</CardTitle>
-                            <div className="relative min-w-[260px]">
-                                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                                <Input
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder={t('Search exam records')}
-                                    className="h-9 pl-10"
-                                />
+                            <div className="flex flex-wrap items-center gap-3">
+                                {semesters.length > 0 && (
+                                    <Select
+                                        value={selectedSemester ? String(selectedSemester) : 'all'}
+                                        onValueChange={(value) => {
+                                            router.get(
+                                                '/exams',
+                                                { semester: value === 'all' ? '' : value },
+                                                {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
+                                                    only: ['semesters', 'selectedSemester', 'examGroups'],
+                                                },
+                                            );
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-9 w-[180px]">
+                                            <SelectValue placeholder={t('All Terms')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">{t('All Terms')}</SelectItem>
+                                            {semesters.map((semester) => (
+                                                <SelectItem key={semester.id} value={String(semester.id)}>
+                                                    {semester.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                <div className="relative min-w-[260px]">
+                                    <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+                                    <Input
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder={t('Search exam records')}
+                                        className="h-9 pl-10"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </CardHeader>
@@ -1797,7 +1839,9 @@ export default function ExamManagement({
                                 <p>{t('No exam records found.')}</p>
                                 {isCoachingOrg && (
                                     <p className="mt-2 text-sm text-slate-400">
-                                        {t('Create weekly tests and full mock tests per batch to track chapter-wise progress.')}
+                                        {t(
+                                            'Create weekly tests and full mock tests per batch to track chapter-wise progress.',
+                                        )}
                                     </p>
                                 )}
                             </div>

@@ -79,9 +79,13 @@ export default function SubjectsManagement({ user, subjects }: SubjectsManagemen
         }
 
         return subjects.filter((subject) =>
-            [subject.name, subject.code || '', subject.type, String(subject.credits ?? ''), subject.description || ''].some((value) =>
-                value.toLowerCase().includes(normalizedQuery),
-            ),
+            [
+                subject.name,
+                subject.code || '',
+                subject.type,
+                String(subject.credits ?? ''),
+                subject.description || '',
+            ].some((value) => value.toLowerCase().includes(normalizedQuery)),
         );
     }, [searchQuery, subjects]);
 

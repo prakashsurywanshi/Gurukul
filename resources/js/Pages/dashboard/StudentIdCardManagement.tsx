@@ -71,7 +71,11 @@ const escapeHtml = (value: string) =>
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-export default function StudentIdCardManagement({ user, students = [], design: designInput }: StudentIdCardManagementProps) {
+export default function StudentIdCardManagement({
+    user,
+    students = [],
+    design: designInput,
+}: StudentIdCardManagementProps) {
     const { t } = useLanguage();
     const design = normalizeDesign(designInput);
     const availableStudents = students;
@@ -858,7 +862,9 @@ export default function StudentIdCardManagement({ user, students = [], design: d
                             {selectedStudent ? (
                                 <CardFace
                                     design={{ ...design, show_qr: design.show_qr && showQrCode }}
-                                    orgName={user?.organization?.name ?? user?.organization?.school_name ?? 'Gurukul School'}
+                                    orgName={
+                                        user?.organization?.name ?? user?.organization?.school_name ?? 'Gurukul School'
+                                    }
                                     title={cardTitle || t('Student ID Card')}
                                     coachLabel={`${t('Template')} ${templateCode}`}
                                     onDownloadPdf={handleDownloadPdf}
@@ -879,9 +885,7 @@ export default function StudentIdCardManagement({ user, students = [], design: d
                                             printLanguage === 'mr' &&
                                             (selectedStudent.father_name_mr || selectedStudent.mother_name_mr)
                                                 ? selectedStudent.father_name_mr || selectedStudent.mother_name_mr
-                                                : selectedStudent.father_name ||
-                                                  selectedStudent.mother_name ||
-                                                  null,
+                                                : selectedStudent.father_name || selectedStudent.mother_name || null,
                                         address:
                                             printLanguage === 'mr' && selectedStudent.address_mr
                                                 ? selectedStudent.address_mr

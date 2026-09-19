@@ -166,7 +166,7 @@ export default function ReportCard(pageProps: ReportProps) {
     return (
         <DashboardLayout user={user}>
             <div data-print-root>
-                <div className="no-print space-y-6">
+                <div className="no-print space-y-6 p-4 sm:p-6">
                     <div className="flex flex-col gap-1">
                         <h2 className="text-2xl font-bold text-slate-900">
                             <FileText className="mr-2 inline-block h-6 w-6 text-indigo-600" />
@@ -512,7 +512,9 @@ export default function ReportCard(pageProps: ReportProps) {
                                 <p className="font-semibold text-slate-900">{report.student.admission_no || '—'}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-medium uppercase text-slate-400">{t(orgFeatures.groupWordKey)}</p>
+                                <p className="text-xs font-medium uppercase text-slate-400">
+                                    {t(orgFeatures.groupWordKey)}
+                                </p>
                                 <p className="font-semibold text-slate-900">
                                     {report.student.course ?? report.student.class ?? '—'}
                                     {report.student.batch
@@ -586,7 +588,11 @@ export default function ReportCard(pageProps: ReportProps) {
                                                 ) : null}
                                                 <TableCell className="text-center">
                                                     <span className={subjectPass ? 'text-emerald-600' : 'text-red-600'}>
-                                                        {row.isAbsent ? t('Absent') : subjectPass ? t('Pass') : t('Fail')}
+                                                        {row.isAbsent
+                                                            ? t('Absent')
+                                                            : subjectPass
+                                                              ? t('Pass')
+                                                              : t('Fail')}
                                                     </span>
                                                 </TableCell>
                                             </TableRow>
@@ -610,7 +616,9 @@ export default function ReportCard(pageProps: ReportProps) {
                                 </div>
                                 {appearance.show_grades ? (
                                     <div>
-                                        <p className="text-xs font-medium uppercase text-slate-400">{t('Overall Grade')}</p>
+                                        <p className="text-xs font-medium uppercase text-slate-400">
+                                            {t('Overall Grade')}
+                                        </p>
                                         <p className="font-semibold text-slate-900">
                                             {report.overallGrade ?? '—'}{' '}
                                             {report.overallGradePoint ? `(${report.overallGradePoint})` : ''}
@@ -619,11 +627,17 @@ export default function ReportCard(pageProps: ReportProps) {
                                 ) : null}
                                 {report.creditBased ? (
                                     <div>
-                                        <p className="text-xs font-medium uppercase text-slate-400">{t('SGPA / CGPA')}</p>
+                                        <p className="text-xs font-medium uppercase text-slate-400">
+                                            {t('SGPA / CGPA')}
+                                        </p>
                                         <p className="font-semibold text-slate-900">
                                             {report.sgpa ?? '—'}
-                                            {report.cgpa !== null && report.cgpa !== undefined ? ` / ${report.cgpa}` : ''}{' '}
-                                            <span className="text-sm text-slate-500">({t('Credits')}: {report.totalCredits})</span>
+                                            {report.cgpa !== null && report.cgpa !== undefined
+                                                ? ` / ${report.cgpa}`
+                                                : ''}{' '}
+                                            <span className="text-sm text-slate-500">
+                                                ({t('Credits')}: {report.totalCredits})
+                                            </span>
                                         </p>
                                     </div>
                                 ) : null}

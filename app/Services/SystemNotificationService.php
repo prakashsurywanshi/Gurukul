@@ -19,6 +19,7 @@ class SystemNotificationService
         'fee_concession' => 'fee_due_reminders',
         'approval_request' => 'push_notifications',
         'fee_due' => 'fee_due_reminders',
+        'ai_risk_alert' => 'ai_alerts',
     ];
 
     public function notifyAdmins(Organization $organization, string $type, string $title, string $message, array $data = []): void
@@ -84,6 +85,7 @@ class SystemNotificationService
             'event_reminders' => true,
             'fee_due_reminders' => true,
             'attendance_alerts' => true,
+            'ai_alerts' => true,
         ];
 
         $settings = [];

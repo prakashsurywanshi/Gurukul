@@ -1278,6 +1278,15 @@ export const sidebarConfig: {
                 feature: 'AI Assistant',
             },
             {
+                id: 'ai-analytics',
+                label: 'AI Analytics',
+                icon: Wand2,
+                href: '/ai-analytics',
+                roles: ['super_admin', 'admin'],
+                feature: 'AI Analytics',
+                module: 'ai-analytics',
+            },
+            {
                 id: 'module-management',
                 label: 'Module Settings',
                 icon: Blocks,
@@ -3166,6 +3175,7 @@ export const sidebarConfig: {
             'transport-live',
             'transport-live-ops',
             'transport-drivers',
+            'transport-device-settings',
         ],
         items: [
             {
@@ -3231,6 +3241,14 @@ export const sidebarConfig: {
                 href: '/transport-fee-collection',
                 roles: ['admin', 'receptionist'],
                 feature: 'Transport Fee Collection',
+            },
+            {
+                id: 'transport-device-settings',
+                label: 'Device Settings',
+                icon: KeyRound,
+                href: '/transport/device-settings',
+                roles: ['admin'],
+                feature: 'Transport Device Settings',
             },
         ],
     },

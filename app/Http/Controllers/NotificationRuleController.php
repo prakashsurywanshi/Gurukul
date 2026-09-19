@@ -22,6 +22,7 @@ class NotificationRuleController extends Controller
         'fee_concession' => 'Fee Concession',
         'approval_request' => 'Approval Request',
         'fee_due' => 'Fee Due',
+        'ai_risk_alert' => 'AI Risk Alert',
         'daily_digest' => 'Daily Digest',
     ];
 

@@ -81,9 +81,7 @@ export default function AdmissionCustomFields({ fields, values, onChange }: Prop
                                 }
                                 step={fieldType === 'currency' ? '0.01' : undefined}
                                 inputMode={fieldType === 'phone' ? 'tel' : undefined}
-                                placeholder={
-                                    fieldType === 'file' ? '/uploads/… or https://…' : undefined
-                                }
+                                placeholder={fieldType === 'file' ? '/uploads/… or https://…' : undefined}
                                 value={current(key)}
                                 onChange={(e) => onChange(key, e.target.value)}
                             />
@@ -95,11 +93,7 @@ export default function AdmissionCustomFields({ fields, values, onChange }: Prop
                     return (
                         <div key={key} className="col-span-2 space-y-2">
                             <Label>{label}</Label>
-                            <Textarea
-                                rows={3}
-                                value={current(key)}
-                                onChange={(e) => onChange(key, e.target.value)}
-                            />
+                            <Textarea rows={3} value={current(key)} onChange={(e) => onChange(key, e.target.value)} />
                         </div>
                     );
                 }
@@ -108,10 +102,7 @@ export default function AdmissionCustomFields({ fields, values, onChange }: Prop
                     return (
                         <div key={key} className="space-y-2">
                             <Label>{label}</Label>
-                            <Select
-                                value={current(key) || undefined}
-                                onValueChange={(value) => onChange(key, value)}
-                            >
+                            <Select value={current(key) || undefined} onValueChange={(value) => onChange(key, value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={t('Select')} />
                                 </SelectTrigger>

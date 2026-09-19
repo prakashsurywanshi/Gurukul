@@ -256,7 +256,7 @@ export default function StudentFees({ user, activeSession, studentRecord, feeDat
                                         {t('No pending fees for this session.')}
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-200">
                                         <table className="w-full">
                                             <thead className="border-b border-slate-200 text-left text-sm text-slate-500">
                                                 <tr>
@@ -331,7 +331,7 @@ export default function StudentFees({ user, activeSession, studentRecord, feeDat
                                         {t('No paid fees for this session yet.')}
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-200">
                                         <table className="w-full">
                                             <thead className="border-b border-slate-200 text-left text-sm text-slate-500">
                                                 <tr>
@@ -392,7 +392,7 @@ export default function StudentFees({ user, activeSession, studentRecord, feeDat
                                         {t('No payment history available.')}
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-200">
                                         <table className="w-full">
                                             <thead className="border-b border-slate-200 text-left text-sm text-slate-500">
                                                 <tr>

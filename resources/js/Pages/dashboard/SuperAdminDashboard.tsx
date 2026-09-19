@@ -380,7 +380,7 @@ export default function SuperAdminDashboard({
 
             {isOrganizationsView && (
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
@@ -413,7 +413,7 @@ export default function SuperAdminDashboard({
                                                 <div className="text-sm text-gray-500">{org.email}</div>
                                             </div>
                                         </td>
-<td className="px-6 py-4">
+                                        <td className="px-6 py-4">
                                             <div className="font-medium text-gray-900">{org.name}</div>
                                             <div className="text-sm text-gray-500">{org.email}</div>
                                             {org.type && (
@@ -769,7 +769,9 @@ function OrganizationForm({
                                     <p className="mb-1 font-semibold">{t('Recommended setup for this type')}</p>
                                     <ul className="list-inside list-disc space-y-0.5">
                                         <li>{t('Organizing unit: {unit}', { unit: t(features.groupWordKey) })}</li>
-                                        <li>{t('Academic structure: {unit}', { unit: t(features.academicUnitKey) })}</li>
+                                        <li>
+                                            {t('Academic structure: {unit}', { unit: t(features.academicUnitKey) })}
+                                        </li>
                                         <li>{t('Timetable: {unit}', { unit: t(features.timetableWordKey) })}</li>
                                         <li>{t('Assessments: {unit}', { unit: t(features.testsWordKey) })}</li>
                                         <li>

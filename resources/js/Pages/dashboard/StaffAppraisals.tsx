@@ -187,7 +187,7 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
 
     return (
         <DashboardLayout user={user} pageTitle={t('Appraisals')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>
                         <CardContent className="flex items-center justify-between pt-6">
@@ -261,11 +261,7 @@ export default function StaffAppraisals({ user, cycles, appraisals, staffOptions
                         </div>
                         <Button onClick={submitCycle} disabled={cycleSaving}>
                             <Plus className="mr-2 h-4 w-4" />
-                            {cycleSaving
-                                ? t('Saving...')
-                                : editingCycle
-                                  ? t('Update Cycle')
-                                  : t('Create Cycle')}
+                            {cycleSaving ? t('Saving...') : editingCycle ? t('Update Cycle') : t('Create Cycle')}
                         </Button>
                     </CardContent>
                 </Card>

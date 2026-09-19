@@ -145,7 +145,7 @@ export default function ManagePeriods({ user, slots }: { user: any; slots: SlotR
                         <div>
                             <h1 className="text-3xl font-bold text-slate-900">{t('Manage Periods')}</h1>
                             <p className="mt-1 text-sm text-slate-600">
-                                {t('Define the school day\'s period and break time slots used across timetables.')}
+                                {t("Define the school day's period and break time slots used across timetables.")}
                             </p>
                         </div>
                         <Button className="gap-2" onClick={openAdd}>

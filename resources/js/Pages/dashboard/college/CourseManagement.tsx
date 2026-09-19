@@ -164,7 +164,7 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
 
     return (
         <DashboardLayout user={pageProps.user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
@@ -188,7 +188,10 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                 </div>
 
                 {showCourseForm && (
-                    <form onSubmit={submitCourse} className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+                    <form
+                        onSubmit={submitCourse}
+                        className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm"
+                    >
                         <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {editingCourseId !== null ? t('Edit Course') : t('New Course')}
                         </h2>
@@ -199,7 +202,11 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Code')}</Label>
-                                <Input value={courseCode} onChange={(e) => setCourseCode(e.target.value)} placeholder={t('e.g. BSC-CS')} />
+                                <Input
+                                    value={courseCode}
+                                    onChange={(e) => setCourseCode(e.target.value)}
+                                    placeholder={t('e.g. BSC-CS')}
+                                />
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Department')}</Label>
@@ -207,11 +214,23 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Duration (years)')}</Label>
-                                <Input type="number" min="1" max="8" value={courseDuration} onChange={(e) => setCourseDuration(e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min="1"
+                                    max="8"
+                                    value={courseDuration}
+                                    onChange={(e) => setCourseDuration(e.target.value)}
+                                />
                             </div>
                             <div className="space-y-1">
                                 <Label>{t('Total Semesters')}</Label>
-                                <Input type="number" min="1" max="12" value={courseTotalSems} onChange={(e) => setCourseTotalSems(e.target.value)} />
+                                <Input
+                                    type="number"
+                                    min="1"
+                                    max="12"
+                                    value={courseTotalSems}
+                                    onChange={(e) => setCourseTotalSems(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="mt-4 space-y-1">
@@ -246,8 +265,15 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                         return (
                             <div key={course.id} className="rounded-lg border bg-card text-card-foreground shadow-sm">
                                 <div className="flex items-center justify-between px-6 py-4">
-                                    <div className="flex cursor-pointer items-center gap-3" onClick={() => toggleExpanded(course.id)}>
-                                        {isExpanded ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+                                    <div
+                                        className="flex cursor-pointer items-center gap-3"
+                                        onClick={() => toggleExpanded(course.id)}
+                                    >
+                                        {isExpanded ? (
+                                            <ChevronDown className="h-4 w-4 text-gray-400" />
+                                        ) : (
+                                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                                        )}
                                         <div>
                                             <p className="font-medium text-gray-900 dark:text-gray-100">
                                                 {course.name}
@@ -260,7 +286,9 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 {course.department && <>{course.department} · </>}
                                                 {t('{count} batch(es)', { count: course.batches_count })}
-                                                {course.total_semesters && <> · {t('{count} semesters', { count: course.total_semesters })}</>}
+                                                {course.total_semesters && (
+                                                    <> · {t('{count} semesters', { count: course.total_semesters })}</>
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -276,13 +304,26 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                 {isExpanded && (
                                     <div className="border-t px-6 py-4">
                                         <div className="mb-2 flex items-center justify-between">
-                                            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t('Batches')}</h3>
-                                            <Button variant="outline" size="sm" onClick={() => setAddingBatchToCourseId(add => add === course.id ? null : course.id)}>
+                                            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                {t('Batches')}
+                                            </h3>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    setAddingBatchToCourseId((add) =>
+                                                        add === course.id ? null : course.id,
+                                                    )
+                                                }
+                                            >
                                                 <Plus className="mr-1 h-3.5 w-3.5" /> {t('Add Batch')}
                                             </Button>
                                         </div>
                                         {addingBatchToCourseId === course.id && (
-                                            <form onSubmit={submitBatch} className="mb-4 flex items-end gap-3 rounded border p-3">
+                                            <form
+                                                onSubmit={submitBatch}
+                                                className="mb-4 flex items-end gap-3 rounded border p-3"
+                                            >
                                                 <div className="flex-1 space-y-1">
                                                     <Label className="text-xs">{t('Batch Name *')}</Label>
                                                     <Input
@@ -302,24 +343,46 @@ export default function CourseManagement(pageProps: CourseManagementProps) {
                                                         className="h-8 text-sm"
                                                     />
                                                 </div>
-                                                <Button type="submit" size="sm" disabled={batchSaving || !batchName} className="h-8">
-                                                    {batchSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t('Save')}
+                                                <Button
+                                                    type="submit"
+                                                    size="sm"
+                                                    disabled={batchSaving || !batchName}
+                                                    className="h-8"
+                                                >
+                                                    {batchSaving ? (
+                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                    ) : (
+                                                        t('Save')
+                                                    )}
                                                 </Button>
                                             </form>
                                         )}
                                         {course.batches.length === 0 ? (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('No batches yet.')}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                {t('No batches yet.')}
+                                            </p>
                                         ) : (
                                             <ul className="divide-y text-sm">
                                                 {course.batches.map((batch) => (
-                                                    <li key={batch.id} className="flex items-center justify-between py-2">
+                                                    <li
+                                                        key={batch.id}
+                                                        className="flex items-center justify-between py-2"
+                                                    >
                                                         <div>
-                                                            <span className="font-medium text-gray-800 dark:text-gray-200">{batch.name}</span>
+                                                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                                {batch.name}
+                                                            </span>
                                                             {batch.start_date && (
-                                                                <span className="ml-2 text-xs text-gray-500">{t('Started')} {batch.start_date}</span>
+                                                                <span className="ml-2 text-xs text-gray-500">
+                                                                    {t('Started')} {batch.start_date}
+                                                                </span>
                                                             )}
                                                         </div>
-                                                        <Button variant="ghost" size="icon" onClick={() => deleteBatch(course.id, batch.id)}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => deleteBatch(course.id, batch.id)}
+                                                        >
                                                             <Trash2 className="h-3.5 w-3.5 text-red-400" />
                                                         </Button>
                                                     </li>

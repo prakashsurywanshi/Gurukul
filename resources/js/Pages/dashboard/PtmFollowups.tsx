@@ -44,7 +44,7 @@ export default function PtmFollowups({ user, appointments, filter, summary }: Pt
 
     return (
         <DashboardLayout user={user} pageTitle={t('PTM Follow-ups')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-start gap-3">

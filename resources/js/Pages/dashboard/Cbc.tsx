@@ -251,7 +251,7 @@ export default function Cbc(pageProps: CbcProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                         <Shapes className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />
@@ -1034,34 +1034,36 @@ export default function Cbc(pageProps: CbcProps) {
                                         {t('No assessment data recorded yet.')}
                                     </p>
                                 ) : (
-                                    <table className="w-full text-sm">
-                                        <thead>
-                                            <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                                <th className="py-2 pr-4">{t('Strand')}</th>
-                                                <th className="py-2 pr-4">{t('Assessments')}</th>
-                                                {Object.keys(LEVEL_LABELS).map((level) => (
-                                                    <th key={level} className="py-2 pr-4">
-                                                        {LEVEL_LABELS[level]}
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {reports.byStrand
-                                                .filter((report) => report.assessments > 0)
-                                                .map((report) => (
-                                                    <tr key={report.id} className="border-b last:border-0">
-                                                        <td className="py-2 pr-4 font-medium">{report.name}</td>
-                                                        <td className="py-2 pr-4">{report.assessments}</td>
-                                                        {Object.keys(LEVEL_LABELS).map((level) => (
-                                                            <td key={level} className="py-2 pr-4">
-                                                                {report.levels[level] ?? 0}
-                                                            </td>
-                                                        ))}
-                                                    </tr>
-                                                ))}
-                                        </tbody>
-                                    </table>
+                                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b text-left text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                                    <th className="py-2 pr-4">{t('Strand')}</th>
+                                                    <th className="py-2 pr-4">{t('Assessments')}</th>
+                                                    {Object.keys(LEVEL_LABELS).map((level) => (
+                                                        <th key={level} className="py-2 pr-4">
+                                                            {LEVEL_LABELS[level]}
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {reports.byStrand
+                                                    .filter((report) => report.assessments > 0)
+                                                    .map((report) => (
+                                                        <tr key={report.id} className="border-b last:border-0">
+                                                            <td className="py-2 pr-4 font-medium">{report.name}</td>
+                                                            <td className="py-2 pr-4">{report.assessments}</td>
+                                                            {Object.keys(LEVEL_LABELS).map((level) => (
+                                                                <td key={level} className="py-2 pr-4">
+                                                                    {report.levels[level] ?? 0}
+                                                                </td>
+                                                            ))}
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>

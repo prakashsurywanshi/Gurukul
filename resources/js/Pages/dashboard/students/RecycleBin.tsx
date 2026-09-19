@@ -49,15 +49,20 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
             <div className="space-y-6 p-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-slate-900">
-                        {t('Students Recycle Bin')}<span className="sr-only">{t('Students Recycle Bin')}</span>
+                        {t('Students Recycle Bin')}
+                        <span className="sr-only">{t('Students Recycle Bin')}</span>
                     </h1>
-                    <p className="mt-1 text-sm text-slate-500">{t('Restore wrongly deleted students or permanently remove them.')}</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                        {t('Restore wrongly deleted students or permanently remove them.')}
+                    </p>
                 </div>
 
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Trash2 className="h-4 w-4 text-slate-400" />{t('Deleted Students (')}{filtered.length})
+                            <Trash2 className="h-4 w-4 text-slate-400" />
+                            {t('Deleted Students (')}
+                            {filtered.length})
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -120,7 +125,8 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                                                             }
                                                         >
                                                             <ArchiveRestore className="h-4 w-4" />
-                                                            {t('Restore')}</Button>
+                                                            {t('Restore')}
+                                                        </Button>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -135,7 +141,8 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                                                             }
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                            {t('Delete')}</Button>
+                                                            {t('Delete')}
+                                                        </Button>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -147,7 +154,9 @@ export default function RecycleBin({ user, students }: RecycleBinProps) {
                             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
                                 <RefreshCw className="h-8 w-8 text-slate-300" />
                                 <p className="mt-3 text-sm font-medium text-slate-600">{t('Recycle bin is empty')}</p>
-                                <p className="mt-1 text-sm text-slate-400">{t('Deleted students will appear here until then.')}{t('no_records_found')}
+                                <p className="mt-1 text-sm text-slate-400">
+                                    {t('Deleted students will appear here until then.')}
+                                    {t('no_records_found')}
                                 </p>
                             </div>
                         )}

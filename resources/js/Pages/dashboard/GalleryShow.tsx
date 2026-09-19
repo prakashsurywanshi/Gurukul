@@ -56,9 +56,15 @@ export default function GalleryShow(pageProps: GalleryShowProps) {
     const [captionDraft, setCaptionDraft] = useState('');
     const [savingCaption, setSavingCaption] = useState(false);
 
-    const canManage = ['admin', 'super_admin', 'branch_admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(
-        pageProps.user?.role,
-    );
+    const canManage = [
+        'admin',
+        'super_admin',
+        'branch_admin',
+        'teacher',
+        'receptionist',
+        'accountant',
+        'librarian',
+    ].includes(pageProps.user?.role);
 
     const handleUpload = async (files: FileList | null) => {
         if (!files || files.length === 0) return;
@@ -129,7 +135,7 @@ export default function GalleryShow(pageProps: GalleryShowProps) {
 
     return (
         <DashboardLayout user={pageProps.user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <a
                     href="/gallery"
                     className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"

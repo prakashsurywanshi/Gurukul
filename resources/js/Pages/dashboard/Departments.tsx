@@ -39,7 +39,7 @@ export default function Departments({ user, departments }: DepartmentsProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-start gap-3">
@@ -172,10 +172,7 @@ function DepartmentSection({ departments }: { departments: DepartmentRecord[] })
                                                 {department.name}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="gap-1 bg-indigo-50 text-indigo-700"
-                                                >
+                                                <Badge variant="outline" className="gap-1 bg-indigo-50 text-indigo-700">
                                                     <Users className="h-3 w-3" />
                                                     {department.users_count ?? 0}
                                                 </Badge>
@@ -213,9 +210,7 @@ function DepartmentSection({ departments }: { departments: DepartmentRecord[] })
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{editing ? t('Edit Department') : t('Add Department')}</DialogTitle>
-                        <DialogDescription>
-                            {t('Enter the name of the department.')}
-                        </DialogDescription>
+                        <DialogDescription>{t('Enter the name of the department.')}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">

@@ -43,7 +43,7 @@ export default function FaceSearch(pageProps: FaceSearchProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                         <ScanFace className="mr-2 inline-block h-6 w-6 text-indigo-600 dark:text-indigo-400" />

@@ -15,6 +15,7 @@ import {
     Target,
     UserPlus,
     Wallet,
+    Sparkles,
     type LucideIcon,
 } from 'lucide-react';
 import { createEcho } from '../../lib/echo';
@@ -35,6 +36,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
     fee_due: Wallet,
     daily_digest: BellRing,
     approval_request: ClipboardCheck,
+    ai_risk_alert: Sparkles,
     info: Info,
 };
 

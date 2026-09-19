@@ -509,30 +509,36 @@ export default function Settings({ user, organization, sessionRecords }: Setting
                                     </div>
 
                                     <div className="space-y-2">
-                                            <Label>{t('Portal Routing')}</Label>
-                                            <Select
-                                                value={formData.portalRouting}
-                                                onValueChange={(value) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        portalRouting: value,
-                                                    })
-                                                }
-                                                disabled={!isEditing}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={t('Session-based organization picker')} />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="session">{t('Session-based organization picker')}</SelectItem>
-                                                    <SelectItem value="path">{t('URL path (domain.com/slug)')}</SelectItem>
-                                                    <SelectItem value="subdomain">{t('Subdomain (slug.domain.com)')}</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <p className="text-xs text-slate-500 dark:text-[var(--muted-foreground)]">
-                                                {t('Controls how public visitors are routed to this organization on the shared website.')}
-                                            </p>
-                                        </div>
+                                        <Label>{t('Portal Routing')}</Label>
+                                        <Select
+                                            value={formData.portalRouting}
+                                            onValueChange={(value) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    portalRouting: value,
+                                                })
+                                            }
+                                            disabled={!isEditing}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t('Session-based organization picker')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="session">
+                                                    {t('Session-based organization picker')}
+                                                </SelectItem>
+                                                <SelectItem value="path">{t('URL path (domain.com/slug)')}</SelectItem>
+                                                <SelectItem value="subdomain">
+                                                    {t('Subdomain (slug.domain.com)')}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-xs text-slate-500 dark:text-[var(--muted-foreground)]">
+                                            {t(
+                                                'Controls how public visitors are routed to this organization on the shared website.',
+                                            )}
+                                        </p>
+                                    </div>
 
                                     <div className="space-y-2">
                                         <Label>{t('Academic Session')}</Label>

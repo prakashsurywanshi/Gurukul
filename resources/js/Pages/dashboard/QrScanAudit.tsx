@@ -57,7 +57,7 @@ export default function QrScanAudit({ user, logs, date, summary }: QrScanAuditPr
 
     return (
         <DashboardLayout user={user} pageTitle={t('QR Scan Audit')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="grid gap-3 sm:grid-cols-5">
                         <Card>

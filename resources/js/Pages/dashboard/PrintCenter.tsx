@@ -1,13 +1,5 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
-import {
-    BadgeDollarSign,
-    FileBarChart,
-    FileText,
-    IdCard,
-    LayoutDashboard,
-    Printer,
-    ShieldCheck,
-} from 'lucide-react';
+import { BadgeDollarSign, FileBarChart, FileText, IdCard, LayoutDashboard, Printer, ShieldCheck } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';

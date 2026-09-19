@@ -823,7 +823,7 @@ export default function RolesPermissions({
                         )}
 
                         <CardContent className="p-0">
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto rounded-xl border border-slate-200">
                                 <table className="w-full min-w-[860px] border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50">

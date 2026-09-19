@@ -488,6 +488,17 @@ Route::middleware(['auth:sanctum', 'staff.permission:Roles & Permissions,view'])
 Route::prefix('biometric')->group(function () {
     Route::get('/status', [\App\Http\Controllers\Api\BiometricApiController::class, 'status']);
     Route::post('/attendance', [\App\Http\Controllers\Api\BiometricApiController::class, 'attendance']);
+    Route::post('/logs', [\App\Http\Controllers\Api\BiometricApiController::class, 'logs']);
+});
+
+Route::prefix('transport/gps')->group(function () {
+    Route::get('/status', [\App\Http\Controllers\Api\TransportGpsApiController::class, 'status']);
+    Route::post('/', [\App\Http\Controllers\Api\TransportGpsApiController::class, 'position']);
+});
+
+Route::prefix('cctv')->group(function () {
+    Route::get('/status', [\App\Http\Controllers\Api\CctvIngestionApiController::class, 'status']);
+    Route::post('/face-scan', [\App\Http\Controllers\Api\CctvIngestionApiController::class, 'faceScan']);
 });
 
 Route::middleware('auth:sanctum')->prefix('parent')->group(function () {

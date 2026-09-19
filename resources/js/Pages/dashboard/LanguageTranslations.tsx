@@ -77,25 +77,31 @@ export default function LanguageTranslations({ user, languageSettings }: Languag
     const rangeStart = filtered.length === 0 ? 0 : safePage * PAGE_SIZE + 1;
     const rangeEnd = Math.min((safePage + 1) * PAGE_SIZE, filtered.length);
     const modifiedCount = Object.values(edits).reduce((count, entry) => {
-        return count + (entry.en !== undefined ? 1 : 0) + (entry.mr !== undefined ? 1 : 0) + (entry.hi !== undefined ? 1 : 0);
+        return (
+            count +
+            (entry.en !== undefined ? 1 : 0) +
+            (entry.mr !== undefined ? 1 : 0) +
+            (entry.hi !== undefined ? 1 : 0)
+        );
     }, 0);
 
     useEffect(() => {
         setPage(0);
     }, [query, missingOnly]);
 
-    const setEdit = (key: string, locale: typeof EDITABLE_LOCALES[number], value: string) => {
+    const setEdit = (key: string, locale: (typeof EDITABLE_LOCALES)[number], value: string) => {
         setEdits((current) => {
             const next = { ...(current[key] ?? {}), [locale]: value };
             return { ...current, [key]: next };
         });
     };
 
-    const displayValue = (key: string, locale: typeof EDITABLE_LOCALES[number]): string => {
+    const displayValue = (key: string, locale: (typeof EDITABLE_LOCALES)[number]): string => {
         return edits[key]?.[locale] ?? overrides[locale]?.[key] ?? DICTIONARIES[locale][key] ?? '';
     };
 
-    const isModified = (key: string, locale: typeof EDITABLE_LOCALES[number]): boolean => edits[key]?.[locale] !== undefined;
+    const isModified = (key: string, locale: (typeof EDITABLE_LOCALES)[number]): boolean =>
+        edits[key]?.[locale] !== undefined;
 
     const saveTranslations = () => {
         const changes: { locale: string; key: string; value: string }[] = [];

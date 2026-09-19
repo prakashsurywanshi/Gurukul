@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\IssuedCertificate;
+use App\Services\PdfService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,6 +37,48 @@ class GenerateDocumentController extends Controller
     public function preview(Request $request): Response
     {
         $user = Auth::user();
+        $project = $this->resolveSheetProject($request, $user);
+
+        $organization = $project['organization'];
+
+        return Inertia::render('dashboard/GenerateDocumentPreview', [
+            'user' => $user,
+            'schoolName' => $organization->name,
+            'className' => $project['className'],
+            'cards' => $project['cards'],
+            'sheet' => $project['sheet'],
+        ]);
+    }
+
+    public function pdf(Request $request)
+    {
+        $user = Auth::user();
+        $project = $this->resolveSheetProject($request, $user);
+
+        $organization = $project['organization'];
+
+        $html = view('documents.grid-sheet', [
+            'schoolName' => $organization->name,
+            'className' => $project['className'],
+            'cards' => $project['cards'],
+            'sheet' => $project['sheet'],
+        ])->render();
+
+        $base = str_replace(' ', '-', trim($organization->name));
+        $filename = $base . '-documents-' . now()->format('Y-m-d') . '.pdf';
+
+        return app(PdfService::class)->download(
+            $html,
+            $filename,
+            [
+                'paper' => $project['sheet']['paper'],
+                'orientation' => $project['sheet']['orientation'],
+            ]
+        );
+    }
+
+    private function resolveSheetProject(Request $request, User $user): array
+    {
         $organization = $this->resolveOrganizationForUser($user);
 
         abort_unless($organization, 403);
@@ -93,9 +136,8 @@ class GenerateDocumentController extends Controller
             return $this->buildCard($student, $design, $context);
         })->values()->all();
 
-        return Inertia::render('dashboard/GenerateDocumentPreview', [
-            'user' => $user,
-            'schoolName' => $organization->name,
+        return [
+            'organization' => $organization,
             'className' => trim($class->name . ($class->section ? ' - ' . $class->section : '')),
             'cards' => $cards,
             'sheet' => [
@@ -111,7 +153,7 @@ class GenerateDocumentController extends Controller
                 'alignCenter' => $request->boolean('align_center'),
                 'duplexType' => $validated['duplex_type'] ?? 'front_only',
             ],
-        ]);
+        ];
     }
 
     public function archive(Request $request): RedirectResponse

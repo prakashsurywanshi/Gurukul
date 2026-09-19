@@ -122,7 +122,7 @@ export default function LeaveTypes({ user, types, summary }: Props) {
 
     return (
         <DashboardLayout user={user} pageTitle={t('Leave Types')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>{editing ? t('Edit Leave Type') : t('Add Leave Type')}</CardTitle>

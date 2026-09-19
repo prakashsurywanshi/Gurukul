@@ -156,7 +156,7 @@ export default function HostelRoomTypes({
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">

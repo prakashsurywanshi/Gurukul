@@ -88,7 +88,7 @@ export default function FeeAudit({ user, organization, auditLogs, actions, filte
 
     return (
         <DashboardLayout user={user} organization={organization} flash={undefined} layoutProps={layoutProps}>
-            <div className="space-y-4">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">

@@ -1249,7 +1249,9 @@ export default function InventoryManagement({
                             <FeaturePanel
                                 icon={Tags}
                                 title={t('Item Category')}
-                                description={t('Organize goods into reusable categories for easier reporting and filtering.')}
+                                description={t(
+                                    'Organize goods into reusable categories for easier reporting and filtering.',
+                                )}
                             >
                                 <div className="grid gap-4 md:grid-cols-[1fr_1.5fr_auto]">
                                     <div className="space-y-2">

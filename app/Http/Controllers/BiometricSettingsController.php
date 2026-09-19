@@ -24,6 +24,7 @@ class BiometricSettingsController extends Controller
             'hasKey' => filled($key),
             'keyHint' => $key ? '••••' . substr($key, -4) : '',
             'endpoint' => url('/api/biometric/attendance'),
+            'logsEndpoint' => url('/api/biometric/logs'),
             'statusEndpoint' => url('/api/biometric/status'),
         ]);
     }

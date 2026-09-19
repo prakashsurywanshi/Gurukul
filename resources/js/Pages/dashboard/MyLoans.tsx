@@ -31,7 +31,7 @@ export default function MyLoans({ user, loans, summary }: MyLoansProps) {
 
     return (
         <DashboardLayout user={user} pageTitle={t('My Loans & Advances')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-start gap-3">

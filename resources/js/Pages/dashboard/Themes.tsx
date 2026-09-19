@@ -105,7 +105,7 @@ export default function Themes(pageProps: ThemesProps) {
 
     return (
         <DashboardLayout user={user} appearance={appearance}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-[var(--foreground)]">
                         <Palette className="mr-2 inline-block h-6 w-6 text-[var(--primary)]" />

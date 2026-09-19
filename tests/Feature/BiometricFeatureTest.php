@@ -100,6 +100,62 @@ class BiometricFeatureTest extends TestCase
         $this->assertDatabaseCount('attendance', 1);
     }
 
+    public function test_logs_batch_rejected_without_key_when_unconfigured(): void
+    {
+        $this->postJson('/api/biometric/logs', ['logs' => [['uid' => '1']]])
+            ->assertStatus(503);
+    }
+
+    public function test_logs_batch_rejected_with_invalid_key_when_configured(): void
+    {
+        $this->organization()->update(['settings' => ['biometric' => ['sync_key' => 'org-key-123']]]);
+
+        $this->postJson('/api/biometric/logs', ['logs' => [['uid' => '1']]])
+            ->assertStatus(401);
+    }
+
+    public function test_logs_batch_records_agent_logs_scoped_to_org(): void
+    {
+        $org = $this->organization();
+        $org->update(['settings' => ['biometric' => ['sync_key' => 'org-key-123']]]);
+
+        $deviceId = DB::table('biometric_devices')->insertGetId([
+            'organization_id' => $org->id,
+            'name' => 'Front Gate',
+            'device_type' => 'windows-agent',
+            'serial_number' => 'AGENT-001',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->postJson('/api/biometric/logs', [
+            'logs' => [
+                ['device_serial' => 'AGENT-001', 'uid' => '101', 'direction' => 'in', 'matched' => true, 'event_time' => '2026-09-09 08:40:00'],
+                ['uid' => '202', 'direction' => 'out', 'event_time' => '2026-09-09 13:10:00'],
+            ],
+        ], ['X-Biometric-Key' => 'org-key-123'])
+            ->assertStatus(201)
+            ->assertJsonPath('recorded', 2);
+
+        $this->assertDatabaseHas('biometric_logs', [
+            'organization_id' => $org->id,
+            'biometric_device_id' => $deviceId,
+            'log_type' => 'agent',
+            'uid' => '101',
+            'direction' => 'in',
+            'matched' => true,
+            'event_time' => '2026-09-09 08:40:00',
+        ]);
+        $this->assertDatabaseHas('biometric_logs', [
+            'organization_id' => $org->id,
+            'biometric_device_id' => null,
+            'log_type' => 'agent',
+            'uid' => '202',
+            'direction' => 'out',
+        ]);
+    }
+
     private function organization(): Organization
     {
         if ($org = Organization::first()) {

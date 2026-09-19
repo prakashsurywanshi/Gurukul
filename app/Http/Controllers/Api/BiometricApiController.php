@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\BiometricDevice;
+use App\Models\BiometricLog;
 use App\Models\Organization;
 use App\Models\Student;
 use Carbon\Carbon;
@@ -112,6 +114,68 @@ class BiometricApiController extends Controller
             'time' => $time,
             'direction' => $direction,
         ]);
+    }
+
+    public function logs(Request $request): JsonResponse
+    {
+        if (!$this->anyKeyConfigured()) {
+            return response()->json(['message' => 'Biometric sync is not configured.'], 503);
+        }
+
+        $resolved = $this->resolveKey($request);
+
+        if (!$resolved['authenticated']) {
+            return response()->json(['message' => 'Invalid biometric sync key.'], 401);
+        }
+
+        $validated = $request->validate([
+            'logs' => ['required', 'array', 'min:1', 'max:500'],
+            'logs.*.device_serial' => ['nullable', 'string', 'max:100'],
+            'logs.*.uid' => ['nullable', 'string', 'max:200'],
+            'logs.*.event_time' => ['nullable', 'date'],
+            'logs.*.direction' => ['nullable', 'in:in,out'],
+            'logs.*.matched' => ['sometimes', 'boolean'],
+            'logs.*.action' => ['nullable', 'string', 'max:255'],
+            'logs.*.person_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $devices = BiometricDevice::query()
+            ->when($resolved['organization_id'], fn ($query, $orgId) => $query->where('organization_id', $orgId))
+            ->whereIn('serial_number', collect($validated['logs'])->pluck('device_serial')->filter()->unique()->values())
+            ->get()
+            ->keyBy('serial_number');
+
+        $created = 0;
+
+        foreach ($validated['logs'] as $entry) {
+            $deviceId = !empty($entry['device_serial']) ? $devices->get($entry['device_serial'])?->id : null;
+
+            BiometricLog::query()->create([
+                'organization_id' => $resolved['organization_id'],
+                'biometric_device_id' => $deviceId,
+                'log_type' => 'agent',
+                'person_type' => !empty($entry['person_name']) ? 'unknown' : null,
+                'person_name' => $entry['person_name'] ?? null,
+                'uid' => $entry['uid'] ?? null,
+                'direction' => $entry['direction'] ?? null,
+                'matched' => $entry['matched'] ?? false,
+                'action' => $entry['action'] ?? 'agent:punch',
+                'details' => json_encode([
+                    'device_serial' => $entry['device_serial'] ?? null,
+                    'source' => 'windows-agent',
+                ], JSON_UNESCAPED_SLASHES),
+                'event_time' => isset($entry['event_time'])
+                    ? Carbon::parse($entry['event_time'])
+                    : now(),
+            ]);
+
+            $created++;
+        }
+
+        return response()->json([
+            'message' => $created . ' biometric log(s) recorded.',
+            'recorded' => $created,
+        ], 201);
     }
 
     private function anyKeyConfigured(): bool

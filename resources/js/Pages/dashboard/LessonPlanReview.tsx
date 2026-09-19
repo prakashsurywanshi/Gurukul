@@ -42,7 +42,7 @@ export default function LessonPlanReview({ user, entries }: LessonPlanReviewProp
 
     return (
         <DashboardLayout user={user} pageTitle={t('Lesson Plan Review')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-start gap-3">

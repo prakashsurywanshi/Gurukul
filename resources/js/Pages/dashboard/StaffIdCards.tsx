@@ -82,13 +82,14 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
         const photo = member.profile_photo
             ? `<img src="${member.profile_photo}" alt="photo" class="photo" />`
             : `<div class="initial">${initials}</div>`;
-        const qrBlock = showQrCode && design.show_qr
-            ? `
+        const qrBlock =
+            showQrCode && design.show_qr
+                ? `
               <div class="qr-scan">
                 ${qrSvgToken(member.qr_token || `EMP-${member.id}`, 72)}
                 <p class="qr-hint">${t('Scan For Attendance')}</p>
               </div>`
-            : '';
+                : '';
 
         printWindow.document.write(`
       <!DOCTYPE html>
@@ -352,7 +353,13 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
                                                     <div className="h-1.5" style={{ backgroundColor: accent }} />
                                                     <CardContent className="p-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold" style={{ backgroundColor: `${accent}26`, color: accent }}>
+                                                            <div
+                                                                className="flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold"
+                                                                style={{
+                                                                    backgroundColor: `${accent}26`,
+                                                                    color: accent,
+                                                                }}
+                                                            >
                                                                 {member.name.charAt(0).toUpperCase()}
                                                             </div>
                                                             <div className="min-w-0">

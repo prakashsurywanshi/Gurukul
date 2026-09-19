@@ -93,7 +93,7 @@ export default function ErpNavigator({ user, categories, orgName }: ErpNavigator
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div>
                     <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                         <Compass className="h-6 w-6 text-blue-600" />

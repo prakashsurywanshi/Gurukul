@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('backup:database')->dailyAt('02:00')->withoutOverlapping();
 Schedule::command('notifications:digest')->dailyAt('07:00')->withoutOverlapping();
+Schedule::command('ai:score')->weeklyOn(0, '01:30')->withoutOverlapping();

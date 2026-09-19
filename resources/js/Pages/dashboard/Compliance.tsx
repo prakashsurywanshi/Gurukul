@@ -196,10 +196,12 @@ export default function Compliance({ user, packs, items, summary, liveStats }: C
 
     return (
         <DashboardLayout user={user} pageTitle={t('Compliance Overview')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <PageHeader
                     title={t('Compliance Overview')}
-                    description={t('Live statutory indicators drawn from your student, staff, fee and attendance data.')}
+                    description={t(
+                        'Live statutory indicators drawn from your student, staff, fee and attendance data.',
+                    )}
                     actions={
                         <>
                             <Button variant="outline" onClick={() => router.visit('/compliance/export')}>
@@ -217,7 +219,12 @@ export default function Compliance({ user, packs, items, summary, liveStats }: C
                     <StatCard label={t('Total Items')} value={summary.totalItems} icon={ClipboardCheck} tone="info" />
                     <StatCard label={t('Compliant')} value={summary.compliant} icon={CheckCircle2} tone="success" />
                     <StatCard label={t('Overdue')} value={summary.overdue} icon={FileClock} tone="danger" />
-                    <StatCard label={t('Due This Month')} value={summary.dueThisMonth} icon={ShieldCheck} tone="warning" />
+                    <StatCard
+                        label={t('Due This Month')}
+                        value={summary.dueThisMonth}
+                        icon={ShieldCheck}
+                        tone="warning"
+                    />
                     <StatCard label={t('Completion')} value={`${summary.completion}%`} icon={Activity} tone="success" />
                 </div>
 

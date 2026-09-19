@@ -313,6 +313,26 @@ class ReportsController extends Controller
             ->with('schoolClass:id,name')
             ->get();
 
+        if (app(\App\Services\OrgTypePolicy::class)->isCollegeMode($organization)) {
+            $palette = ['#3b82f6', '#8b5cf6', '#ec4899', '#2563EB', '#06b6d4', '#eab308'];
+
+            return $students
+                ->groupBy(fn (Student $student) => $student->schoolClass?->name ?: 'Unassigned')
+                ->map(fn (Collection $courseStudents, string $courseName) => [
+                    'class' => $courseName,
+                    'students' => $courseStudents->count(),
+                    'color' => '#3b82f6',
+                ])
+                ->sortByDesc('students')
+                ->take(6)
+                ->values()
+                ->map(function (array $entry, int $index) use ($palette) {
+                    $entry['color'] = $palette[$index % count($palette)];
+
+                    return $entry;
+                });
+        }
+
         $groups = [
             ['label' => 'Class 1-5', 'from' => 1, 'to' => 5, 'color' => '#3b82f6'],
             ['label' => 'Class 6-8', 'from' => 6, 'to' => 8, 'color' => '#8b5cf6'],
@@ -421,7 +441,7 @@ class ReportsController extends Controller
 
     private function moduleReports(Organization $organization, string $selectedClass, string $selectedMonth, AcademicYear $selectedAcademicYear, int $page = 1, string $search = '', ?string $dateFrom = null, ?string $dateTo = null, ?Semester $semester = null): array
     {
-        return [
+        $reports = [
             $this->studentModuleReport($organization, $selectedClass, $page, $search),
             $this->attendanceModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $semester),
             $this->feesModuleReport($organization, $selectedClass, $selectedMonth, $selectedAcademicYear, $page, $search, $semester),
@@ -439,6 +459,45 @@ class ReportsController extends Controller
             $this->activityLogModuleReport($organization, $selectedMonth, $page, $search),
             $this->auditTrailModuleReport($organization, $selectedMonth, $page, $search),
         ];
+
+        return $this->applyReportTerminology($organization, $reports);
+    }
+
+    private function reportLabels(Organization $organization): array
+    {
+        if (! app(\App\Services\OrgTypePolicy::class)->isCollegeMode($organization)) {
+            return [];
+        }
+
+        return [
+            'Class' => 'Course',
+            'Exam' => 'Term Exam',
+        ];
+    }
+
+    private function applyReportTerminology(Organization $organization, array $reports): array
+    {
+        $labels = $this->reportLabels($organization);
+
+        if ($labels === []) {
+            return $reports;
+        }
+
+        return collect($reports)->map(function (array $report) use ($labels) {
+            $report['columns'] = array_map(
+                fn (string $column) => $labels[$column] ?? $column,
+                $report['columns']
+            );
+            $report['stats'] = array_map(
+                fn (array $stat) => [
+                    'label' => $labels[$stat['label']] ?? $stat['label'],
+                    'value' => $stat['value'],
+                ],
+                $report['stats']
+            );
+
+            return $report;
+        })->values()->all();
     }
 
     private function studentModuleReport(Organization $organization, string $selectedClass, int $page = 1, string $search = ''): array

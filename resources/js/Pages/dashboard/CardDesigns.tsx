@@ -105,7 +105,9 @@ export default function CardDesigns({ user, design }: { user: any; design: Desig
                                         <Label htmlFor="card-layout">{t('Layout')}</Label>
                                         <Select
                                             value={form.layout}
-                                            onValueChange={(value) => setForm((c) => ({ ...c, layout: value as IdCardDesign['layout'] }))}
+                                            onValueChange={(value) =>
+                                                setForm((c) => ({ ...c, layout: value as IdCardDesign['layout'] }))
+                                            }
                                         >
                                             <SelectTrigger id="card-layout">
                                                 <SelectValue />
@@ -122,7 +124,9 @@ export default function CardDesigns({ user, design }: { user: any; design: Desig
                                             id="card-color"
                                             type="color"
                                             value={form.primary_color}
-                                            onChange={(event) => setForm((c) => ({ ...c, primary_color: event.target.value }))}
+                                            onChange={(event) =>
+                                                setForm((c) => ({ ...c, primary_color: event.target.value }))
+                                            }
                                         />
                                     </div>
                                     <div className="sm:col-span-2">
@@ -144,7 +148,9 @@ export default function CardDesigns({ user, design }: { user: any; design: Desig
                                                         }
                                                         className="mt-1 h-4 w-4 rounded border-slate-300 accent-indigo-600"
                                                     />
-                                                    <span className="text-sm font-medium text-slate-800">{t(label)}</span>
+                                                    <span className="text-sm font-medium text-slate-800">
+                                                        {t(label)}
+                                                    </span>
                                                 </label>
                                             ))}
                                         </div>

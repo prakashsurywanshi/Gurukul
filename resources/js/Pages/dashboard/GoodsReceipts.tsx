@@ -118,7 +118,7 @@ export default function GoodsReceipts({ user, receipts, itemOptions, supplierOpt
 
     return (
         <DashboardLayout user={user} pageTitle={t('Goods Receipts')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Card>
                         <CardContent className="flex items-center justify-between pt-6">

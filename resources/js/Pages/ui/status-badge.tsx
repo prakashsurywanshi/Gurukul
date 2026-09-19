@@ -17,13 +17,32 @@ const toneClasses: Record<StatusTone, string> = {
 
 export function toneFromStatus(status: string): StatusTone {
     const normalized = status.toLowerCase();
-    if (['compliant', 'verified', 'paid', 'complete', 'completed', 'approved', 'active', 'success', 'present', 'delivered', 'granted'].includes(normalized)) {
+    if (
+        [
+            'compliant',
+            'verified',
+            'paid',
+            'complete',
+            'completed',
+            'approved',
+            'active',
+            'success',
+            'present',
+            'delivered',
+            'granted',
+        ].includes(normalized)
+    ) {
         return 'success';
     }
-    if (['overdue', 'failed', 'refused', 'rejected', 'absent', 'overdue'].includes(normalized) || normalized.includes('over')) {
+    if (
+        ['overdue', 'failed', 'refused', 'rejected', 'absent', 'overdue'].includes(normalized) ||
+        normalized.includes('over')
+    ) {
         return 'danger';
     }
-    if (['pending', 'partial', 'review', 'in_progress', 'scheduled', 'due', 'processing', 'hold'].includes(normalized)) {
+    if (
+        ['pending', 'partial', 'review', 'in_progress', 'scheduled', 'due', 'processing', 'hold'].includes(normalized)
+    ) {
         return 'warning';
     }
     if (['info', 'new', 'archived', 'cancelled', 'canceled', 'inactive', 'disabled', 'closed'].includes(normalized)) {

@@ -104,7 +104,9 @@ export default function SemesterSettings({ user, academicYear, semesters, nextSe
                                 {t('Semesters (College Mode)')}
                             </CardTitle>
                             <CardDescription>
-                                {t('Divide the current academic session into semesters and manage which one is active.')}
+                                {t(
+                                    'Divide the current academic session into semesters and manage which one is active.',
+                                )}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -187,9 +189,7 @@ export default function SemesterSettings({ user, academicYear, semesters, nextSe
                                         <Input
                                             id="semester-name"
                                             value={formData.name}
-                                            onChange={(event) =>
-                                                setFormData({ ...formData, name: event.target.value })
-                                            }
+                                            onChange={(event) => setFormData({ ...formData, name: event.target.value })}
                                         />
                                     </div>
                                     <div className="space-y-2">

@@ -34,11 +34,12 @@ export function EmptyState({
             </div>
             {(action || actionLabel) && (
                 <div className="mt-1">
-                    {action ?? (actionLabel && onAction && (
-                        <Button size="sm" variant="outline" onClick={onAction}>
-                            {actionLabel}
-                        </Button>
-                    ))}
+                    {action ??
+                        (actionLabel && onAction && (
+                            <Button size="sm" variant="outline" onClick={onAction}>
+                                {actionLabel}
+                            </Button>
+                        ))}
                 </div>
             )}
         </div>

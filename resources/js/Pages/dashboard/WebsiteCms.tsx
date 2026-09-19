@@ -791,7 +791,9 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Shared Brand, SEO, and Navigation')}
-                                    description={t('Update common branding and navigation labels once for all templates.')}
+                                    description={t(
+                                        'Update common branding and navigation labels once for all templates.',
+                                    )}
                                     data={content.shared as Record<string, string>}
                                     fields={sharedFields}
                                     onChange={updateSharedField}
@@ -1017,7 +1019,9 @@ export default function WebsiteCms({ user, websiteContent }: WebsiteCmsProps) {
 
                                 <FieldGrid
                                     title={t('Template 1 Campus, Outcomes, Journey, and Visit')}
-                                    description={t('Main editorial sections for campus life and admissions storytelling.')}
+                                    description={t(
+                                        'Main editorial sections for campus life and admissions storytelling.',
+                                    )}
                                     data={content.template1 as Record<string, string>}
                                     fields={[
                                         {

@@ -572,7 +572,8 @@ export default function UserManagement({
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
-                                                        <Button asChild
+                                                        <Button
+                                                            asChild
                                                             variant="ghost"
                                                             size="sm"
                                                             title={t('Open Staff Hub')}

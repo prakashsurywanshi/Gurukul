@@ -124,7 +124,19 @@
 - **Credits/CBCS grading** shipped: `subjects.credits` + subject form/validation; report card emits `credits`, `creditBased`, `totalCredits`, `sgpa`/`cgpa` (credit-weighted grade points). Pure-marks cards unchanged (non-credit-based).
 - Remaining (deferred to later P6 phases): lecture-mode timetables, course/batch CRUD, per-type terminology in reports, semester-aware exam term grouping.
 
-## 8. Tracking
+## 9. Post-P7.4 shipping notes (P8)
+
+- **P8.1 transport GPS ingestion (DONE)**: `Post /api/transport/gps` + `TransportGpsPosition` writing + daily-trip "running" mark, keyed by `X-Transport-Key`(`TRANSPORT_GPS_KEY` env or per-org key managed on **Transport → Device Settings**). Org-scoped key store; tests in `TransportDeviceSettingsFeatureTest`.
+- **P8.2 CCTV face-scan ingestion (DONE)**: `Post /api/cctv/face-scan` keyed by `X-Cctv-Key`(`CCTV_SYNC_KEY` env or per-org key on the **CCTV Camera Registry**); always writes `BiometricLog`(`face`) + `CctvAccessLog`; AI-image matching when a vision-capable provider is configured. Tests in `CctvFeatureTest`.
+- **P8.3 biometric batch API + UI (DONE)**: `Post /api/biometric/logs` (array of up to 500 `{device_serial, uid, event_time, direction, matched}` under `logs`), agent-written, linked to registry devices by serial; **Biometric Settings** page manages devices/keys. Tests in `BiometricFeatureTest`.
+- **P8.4 college-mode report terminology (DONE)**: shared `ReportsController::reportLabels()`/`applyReportTerminology()` — reports, PDFs, and the semester filter UI render college/university course-name distribution and term-appropriate labels (e.g. marks/credits headings) for `college/coaching/university` orgs; school behavior byte-identical. `CollegeReportTerminologyTest` (4 tests).
+- **P8.5 attendance + fees deep links (DONE)**: attendance rows deep-link to the Student 360 hub (`/students/{id}?tab=attendance`); Fees collection rows gained an "Open Student Hub" action (`/students/{id}?tab=fees`). `Student360HubTest`/fees home-route tests green.
+- **P8.6 server grid-sheet PDF (DONE)**: `GenerateDocumentController::pdf()` + `grid-sheet.blade.php` port the client-side mm-accurate budget sheet geometry to a server-rendered deterministic PDF (CR80-style cells, cut marks); **Download PDF** button on Generate Document. `GenerateDocumentPdfFeatureTest` (4 tests, Content-Length > 500).
+- **P8.7 AI analytics (DONE)**: `ai_scores` table + `AiScore` model; `ScoreEngine` (deterministic 0–100, high≥70/medium≥40, SQL-safe ActiveRecord math) for leads/fee defaulters/at-risk students; `RouteOptimizerSuggestions` (capacity overflow/underuse, no-vehicle routes, unassigned routes, stop overlap); `AiAnalyticsService@refreshOrganization` + optional LLM narration; `ScoreOrganization` job + `AiAnalyticsController` (dashboard **AI Analytics** page with Leads/Fees/At-Risk/Routes/Alerts tabs); weekly `ai:score` command; tier-crossing `ai_risk_alert` smart notification (`ai_alerts` setting, bell + notification-rule types); module toggle `ai-analytics` + `AI Analytics` feature permission. `AiAnalyticsFeatureTest` (7 tests / 39 asserts).
+- **P8.9 final gate (DONE)**: i18n 6,524 keys × 3, 0 bad; `tsc` clean; `npm run build` OK; targeted PHPUnit suites green (bilingual + AI + notification + permissions + end-to-end module pages).
+- Flutter wiring for device feeds (real-time transport/CCTV/biometric) remains on the companion repo (`flutter_gurukul`, filesystem-only — no `.git`); its git init is left to the user as an explicit follow-up.
+
+## 10. Tracking
 
 This doc is the mutable reference. Per-module deep-compare notes, card/template/preview specs, and the interconnection
 map get appended under section 9 as each module ships (roadmap in `docs/roadmap-v1.md`). Status is re-verified on every

@@ -2031,17 +2031,29 @@ ADM-1002, Tuition Fee, 2026-08-10, 5000, 2000, August, 2026`}
                             {/* Fee Details */}
                             <Card className="lg:col-span-2">
                                 <CardHeader>
-                                    <CardTitle>
-                                        {selectedStudent
-                                            ? t(
-                                                  'Fee Details - {selectedStudent.first_name} {selectedStudent.last_name}',
-                                                  {
-                                                      'selectedStudent.first_name': selectedStudent.first_name,
-                                                      'selectedStudent.last_name': selectedStudent.last_name,
-                                                  },
-                                              )
-                                            : t('Select a student to view fees')}
-                                    </CardTitle>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <CardTitle>
+                                            {selectedStudent
+                                                ? t(
+                                                      'Fee Details - {selectedStudent.first_name} {selectedStudent.last_name}',
+                                                      {
+                                                          'selectedStudent.first_name': selectedStudent.first_name,
+                                                          'selectedStudent.last_name': selectedStudent.last_name,
+                                                      },
+                                                  )
+                                                : t('Select a student to view fees')}
+                                        </CardTitle>
+                                        {selectedStudent && (
+                                            <Link
+                                                href={`/students/${selectedStudent.id}?tab=fees`}
+                                                onClick={(event) => event.stopPropagation()}
+                                                className="inline-flex shrink-0 items-center gap-1 rounded p-1 text-blue-600 hover:bg-blue-100"
+                                                title={t('Open Student Hub')}
+                                            >
+                                                <ExternalLink className="h-4 w-4" />
+                                            </Link>
+                                        )}
+                                    </div>
                                 </CardHeader>
                                 <CardContent>
                                     {!selectedStudent ? (

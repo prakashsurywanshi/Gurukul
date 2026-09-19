@@ -88,7 +88,7 @@ export default function HrSettings(pageProps: HrSettingsProps) {
 
     return (
         <DashboardLayout user={pageProps.user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-600 text-white">
@@ -198,7 +198,8 @@ export default function HrSettings(pageProps: HrSettingsProps) {
                                             {t(day)}
                                             {selected && (
                                                 <Badge className="ml-1.5 hidden bg-indigo-100 text-indigo-700 sm:inline-flex">
-                                                    {t('OFF')}</Badge>
+                                                    {t('OFF')}
+                                                </Badge>
                                             )}
                                         </button>
                                     );

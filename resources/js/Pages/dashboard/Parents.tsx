@@ -85,7 +85,7 @@ export default function Parents({
 
     return (
         <DashboardLayout user={user} activeTab="parents">
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex flex-col gap-2">
                     <h1 className="text-2xl font-bold">{t('Parents & Guardians')}</h1>
                     <p className="text-sm text-muted-foreground">

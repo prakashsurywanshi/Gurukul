@@ -201,37 +201,45 @@ export default function BillingCenter({
 
     const submitPayment = () => {
         if (paymentForm.organization_id === null) return;
-        router.post(`/billing-center/organizations/${paymentForm.organization_id}/payments`, {
-            amount: paymentForm.amount,
-            plan_name: paymentForm.plan_name || 'Renewal',
-            transaction_id: paymentForm.transaction_id || null,
-            payment_method: paymentForm.payment_method,
-            payment_date: paymentForm.payment_date,
-            renew_months: paymentForm.renew_months ? Number(paymentForm.renew_months) : null,
-            notes: paymentForm.notes || null,
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setPaymentOpen(false);
+        router.post(
+            `/billing-center/organizations/${paymentForm.organization_id}/payments`,
+            {
+                amount: paymentForm.amount,
+                plan_name: paymentForm.plan_name || 'Renewal',
+                transaction_id: paymentForm.transaction_id || null,
+                payment_method: paymentForm.payment_method,
+                payment_date: paymentForm.payment_date,
+                renew_months: paymentForm.renew_months ? Number(paymentForm.renew_months) : null,
+                notes: paymentForm.notes || null,
             },
-        });
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setPaymentOpen(false);
+                },
+            },
+        );
     };
 
     const submitSubscription = () => {
         if (subscriptionForm.organization_id === null) return;
-        router.patch(`/billing-center/organizations/${subscriptionForm.organization_id}`, {
-            plan: subscriptionForm.plan,
-            status: subscriptionForm.status,
-            start_date: subscriptionForm.start_date,
-            end_date: subscriptionForm.end_date,
-            max_students: Number(subscriptionForm.max_students),
-            max_staff: Number(subscriptionForm.max_staff),
-        }, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setSubscriptionOpen(false);
+        router.patch(
+            `/billing-center/organizations/${subscriptionForm.organization_id}`,
+            {
+                plan: subscriptionForm.plan,
+                status: subscriptionForm.status,
+                start_date: subscriptionForm.start_date,
+                end_date: subscriptionForm.end_date,
+                max_students: Number(subscriptionForm.max_students),
+                max_staff: Number(subscriptionForm.max_staff),
             },
-        });
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSubscriptionOpen(false);
+                },
+            },
+        );
     };
 
     const toggleStatus = (org: BillingOrganization) => {
@@ -245,11 +253,7 @@ export default function BillingCenter({
 
     const statusBadge = (org: BillingOrganization) => {
         if (!org.activeAccess) {
-            return (
-                <Badge variant="destructive">
-                    {org.isExpired ? t('Expired') : t(org.status)}
-                </Badge>
-            );
+            return <Badge variant="destructive">{org.isExpired ? t('Expired') : t(org.status)}</Badge>;
         }
 
         return <Badge variant="default">{t('Active')}</Badge>;
@@ -260,8 +264,16 @@ export default function BillingCenter({
         { label: t('Active'), value: kpis.activeOrgs, icon: ShieldCheck },
         { label: t('Expiring Soon'), value: kpis.expiringSoon, icon: CalendarClock },
         { label: t('Expired'), value: kpis.expiredOrgs, icon: AlertTriangle },
-        { label: t('Total Collected'), value: `₹${kpis.totalCollected.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, icon: IndianRupee },
-        { label: t('This Month'), value: `₹${kpis.monthCollected.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, icon: Wallet },
+        {
+            label: t('Total Collected'),
+            value: `₹${kpis.totalCollected.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+            icon: IndianRupee,
+        },
+        {
+            label: t('This Month'),
+            value: `₹${kpis.monthCollected.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+            icon: Wallet,
+        },
     ];
 
     return (
@@ -308,7 +320,9 @@ export default function BillingCenter({
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Organizations')}</CardTitle>
-                            <CardDescription>{t('Subscription status across all organizations on the platform.')}</CardDescription>
+                            <CardDescription>
+                                {t('Subscription status across all organizations on the platform.')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -339,7 +353,9 @@ export default function BillingCenter({
                                                 <TableCell>{statusBadge(org)}</TableCell>
                                                 <TableCell>
                                                     <p>{org.subscription_start_date ?? '—'}</p>
-                                                    <p className="text-xs text-slate-400">→ {org.subscription_end_date ?? '—'}</p>
+                                                    <p className="text-xs text-slate-400">
+                                                        → {org.subscription_end_date ?? '—'}
+                                                    </p>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     {org.daysRemaining != null ? org.daysRemaining : '—'}
@@ -349,8 +365,15 @@ export default function BillingCenter({
                                                 <TableCell className="text-right">
                                                     {org.lastPayment ? (
                                                         <>
-                                                            <p>₹{org.lastPayment.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
-                                                            <p className="text-xs text-slate-400">{org.lastPayment.payment_date}</p>
+                                                            <p>
+                                                                ₹
+                                                                {org.lastPayment.amount.toLocaleString('en-IN', {
+                                                                    maximumFractionDigits: 0,
+                                                                })}
+                                                            </p>
+                                                            <p className="text-xs text-slate-400">
+                                                                {org.lastPayment.payment_date}
+                                                            </p>
                                                         </>
                                                     ) : (
                                                         '—'
@@ -358,11 +381,19 @@ export default function BillingCenter({
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
-                                                        <Button variant="outline" size="sm" onClick={() => openPayment(org)}>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => openPayment(org)}
+                                                        >
                                                             <Receipt className="mr-1 h-3.5 w-3.5" />
                                                             {t('Payment')}
                                                         </Button>
-                                                        <Button variant="outline" size="sm" onClick={() => openSubscription(org)}>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => openSubscription(org)}
+                                                        >
                                                             <Pencil className="mr-1 h-3.5 w-3.5" />
                                                             {t('Edit')}
                                                         </Button>
@@ -393,7 +424,9 @@ export default function BillingCenter({
                     <Card>
                         <CardHeader>
                             <CardTitle>{t('Recent Payments')}</CardTitle>
-                            <CardDescription>{t('Latest recorded subscription payments across the platform.')}</CardDescription>
+                            <CardDescription>
+                                {t('Latest recorded subscription payments across the platform.')}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -418,12 +451,26 @@ export default function BillingCenter({
                                         ) : (
                                             payments.map((payment) => (
                                                 <TableRow key={payment.id}>
-                                                    <TableCell className="font-medium">{payment.organization_name}</TableCell>
-                                                    <TableCell>₹{payment.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</TableCell>
+                                                    <TableCell className="font-medium">
+                                                        {payment.organization_name}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        ₹
+                                                        {payment.amount.toLocaleString('en-IN', {
+                                                            maximumFractionDigits: 0,
+                                                        })}
+                                                    </TableCell>
                                                     <TableCell>{payment.plan_name}</TableCell>
-                                                    <TableCell>{payment.payment_method ? METHOD_LABELS[payment.payment_method] ?? payment.payment_method : '—'}</TableCell>
+                                                    <TableCell>
+                                                        {payment.payment_method
+                                                            ? (METHOD_LABELS[payment.payment_method] ??
+                                                              payment.payment_method)
+                                                            : '—'}
+                                                    </TableCell>
                                                     <TableCell>{payment.payment_date ?? '—'}</TableCell>
-                                                    <TableCell className="text-xs text-slate-400">{payment.transaction_id ?? '—'}</TableCell>
+                                                    <TableCell className="text-xs text-slate-400">
+                                                        {payment.transaction_id ?? '—'}
+                                                    </TableCell>
                                                 </TableRow>
                                             ))
                                         )}
@@ -438,7 +485,9 @@ export default function BillingCenter({
             <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
                 <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>{t('Record payment for')} {paymentForm.organization_name}</DialogTitle>
+                        <DialogTitle>
+                            {t('Record payment for')} {paymentForm.organization_name}
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -465,7 +514,9 @@ export default function BillingCenter({
                                     </SelectTrigger>
                                     <SelectContent>
                                         {Object.entries(METHOD_LABELS).map(([value, label]) => (
-                                            <SelectItem key={value} value={value}>{t(label)}</SelectItem>
+                                            <SelectItem key={value} value={value}>
+                                                {t(label)}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -476,7 +527,9 @@ export default function BillingCenter({
                                 <Label>{t('Plan name')}</Label>
                                 <Input
                                     value={paymentForm.plan_name}
-                                    onChange={(event) => setPaymentForm((c) => ({ ...c, plan_name: event.target.value }))}
+                                    onChange={(event) =>
+                                        setPaymentForm((c) => ({ ...c, plan_name: event.target.value }))
+                                    }
                                     placeholder={t('Premium Annual')}
                                 />
                                 {errors.plan_name && <p className="text-sm text-red-600">{errors.plan_name}</p>}
@@ -486,7 +539,9 @@ export default function BillingCenter({
                                 <Input
                                     type="date"
                                     value={paymentForm.payment_date}
-                                    onChange={(event) => setPaymentForm((c) => ({ ...c, payment_date: event.target.value }))}
+                                    onChange={(event) =>
+                                        setPaymentForm((c) => ({ ...c, payment_date: event.target.value }))
+                                    }
                                 />
                                 {errors.payment_date && <p className="text-sm text-red-600">{errors.payment_date}</p>}
                             </div>
@@ -499,7 +554,9 @@ export default function BillingCenter({
                                     min="0"
                                     max="60"
                                     value={paymentForm.renew_months}
-                                    onChange={(event) => setPaymentForm((c) => ({ ...c, renew_months: event.target.value }))}
+                                    onChange={(event) =>
+                                        setPaymentForm((c) => ({ ...c, renew_months: event.target.value }))
+                                    }
                                     placeholder={t('e.g. 12')}
                                 />
                                 <p className="text-xs text-slate-400">{t('Extends the subscription end date.')}</p>
@@ -508,7 +565,9 @@ export default function BillingCenter({
                                 <Label>{t('Transaction ID')}</Label>
                                 <Input
                                     value={paymentForm.transaction_id}
-                                    onChange={(event) => setPaymentForm((c) => ({ ...c, transaction_id: event.target.value }))}
+                                    onChange={(event) =>
+                                        setPaymentForm((c) => ({ ...c, transaction_id: event.target.value }))
+                                    }
                                 />
                             </div>
                         </div>
@@ -521,7 +580,9 @@ export default function BillingCenter({
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setPaymentOpen(false)}>{t('Cancel')}</Button>
+                        <Button variant="outline" onClick={() => setPaymentOpen(false)}>
+                            {t('Cancel')}
+                        </Button>
                         <Button onClick={submitPayment} className="bg-blue-600 text-white hover:bg-blue-700">
                             <Receipt className="mr-2 h-4 w-4" />
                             {t('Record payment')}
@@ -533,7 +594,9 @@ export default function BillingCenter({
             <Dialog open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
                 <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>{t('Update subscription for')} {subscriptionForm.organization_name}</DialogTitle>
+                        <DialogTitle>
+                            {t('Update subscription for')} {subscriptionForm.organization_name}
+                        </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -548,7 +611,9 @@ export default function BillingCenter({
                                     </SelectTrigger>
                                     <SelectContent>
                                         {Object.entries(PLAN_LABELS).map(([value, label]) => (
-                                            <SelectItem key={value} value={value}>{t(label)}</SelectItem>
+                                            <SelectItem key={value} value={value}>
+                                                {t(label)}
+                                            </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -578,7 +643,9 @@ export default function BillingCenter({
                                 <Input
                                     type="date"
                                     value={subscriptionForm.start_date}
-                                    onChange={(event) => setSubscriptionForm((c) => ({ ...c, start_date: event.target.value }))}
+                                    onChange={(event) =>
+                                        setSubscriptionForm((c) => ({ ...c, start_date: event.target.value }))
+                                    }
                                 />
                                 {errors.start_date && <p className="text-sm text-red-600">{errors.start_date}</p>}
                             </div>
@@ -587,7 +654,9 @@ export default function BillingCenter({
                                 <Input
                                     type="date"
                                     value={subscriptionForm.end_date}
-                                    onChange={(event) => setSubscriptionForm((c) => ({ ...c, end_date: event.target.value }))}
+                                    onChange={(event) =>
+                                        setSubscriptionForm((c) => ({ ...c, end_date: event.target.value }))
+                                    }
                                 />
                                 {errors.end_date && <p className="text-sm text-red-600">{errors.end_date}</p>}
                             </div>
@@ -599,7 +668,9 @@ export default function BillingCenter({
                                     type="number"
                                     min="1"
                                     value={subscriptionForm.max_students}
-                                    onChange={(event) => setSubscriptionForm((c) => ({ ...c, max_students: event.target.value }))}
+                                    onChange={(event) =>
+                                        setSubscriptionForm((c) => ({ ...c, max_students: event.target.value }))
+                                    }
                                 />
                                 {errors.max_students && <p className="text-sm text-red-600">{errors.max_students}</p>}
                             </div>
@@ -609,14 +680,18 @@ export default function BillingCenter({
                                     type="number"
                                     min="1"
                                     value={subscriptionForm.max_staff}
-                                    onChange={(event) => setSubscriptionForm((c) => ({ ...c, max_staff: event.target.value }))}
+                                    onChange={(event) =>
+                                        setSubscriptionForm((c) => ({ ...c, max_staff: event.target.value }))
+                                    }
                                 />
                                 {errors.max_staff && <p className="text-sm text-red-600">{errors.max_staff}</p>}
                             </div>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setSubscriptionOpen(false)}>{t('Cancel')}</Button>
+                        <Button variant="outline" onClick={() => setSubscriptionOpen(false)}>
+                            {t('Cancel')}
+                        </Button>
                         <Button onClick={submitSubscription} className="bg-blue-600 text-white hover:bg-blue-700">
                             {t('Save changes')}
                         </Button>

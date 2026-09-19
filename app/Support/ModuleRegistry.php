@@ -46,6 +46,7 @@ class ModuleRegistry
             ['key' => 'report-cards', 'label' => 'Report Card Setups', 'description' => 'Custom report card templates, remarks and layouts.', 'group' => 'Academics'],
             ['key' => 'cbc', 'label' => 'CBC (Competency Based)', 'description' => 'Competency strands, outcomes, pathways and CBC reports.', 'group' => 'Academics'],
             ['key' => 'apps-center', 'label' => 'Apps Center', 'description' => 'AI and productivity apps: question paper, 360 view, exports and more.', 'group' => 'AI & Apps'],
+            ['key' => 'ai-analytics', 'label' => 'AI Analytics', 'description' => 'AI scoring for leads, fee defaulters, at-risk students and transport route suggestions.', 'group' => 'AI & Apps'],
             ['key' => 'dashboard-themes', 'label' => 'Dashboard Themes', 'description' => 'Switchable dashboard colour themes.', 'group' => 'System'],
             ['key' => 'face-search', 'label' => 'Face Search', 'description' => 'Face-based student record lookup.', 'group' => 'Students'],
             ['key' => 'branch-admin', 'label' => 'Branch Admin', 'description' => 'Head-office login spanning multiple branches.', 'group' => 'System'],

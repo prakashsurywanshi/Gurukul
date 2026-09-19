@@ -153,7 +153,9 @@ export default function NotificationRules({ user, rules, eventOptions, roleOptio
                                                     </p>
                                                     <p className="mt-0.5 truncate text-xs text-slate-500">
                                                         {rule.channels?.join(', ')}
-                                                        {rule.recipient_roles?.length ? ` · ${rule.recipient_roles.join(', ')}` : ''}
+                                                        {rule.recipient_roles?.length
+                                                            ? ` · ${rule.recipient_roles.join(', ')}`
+                                                            : ''}
                                                     </p>
                                                 </button>
                                                 <div className="flex shrink-0 items-center gap-1">
@@ -197,7 +199,8 @@ export default function NotificationRules({ user, rules, eventOptions, roleOptio
                                             onChange={(event) => {
                                                 setNewEvent(event.target.value);
                                                 setLabel(
-                                                    eventOptions.find((o) => o.event === event.target.value)?.label ?? '',
+                                                    eventOptions.find((o) => o.event === event.target.value)?.label ??
+                                                        '',
                                                 );
                                             }}
                                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"

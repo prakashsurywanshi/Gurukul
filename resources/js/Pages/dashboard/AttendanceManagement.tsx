@@ -1,6 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -403,7 +403,13 @@ export default function AttendanceManagement({
                                         >
                                             <div className="col-span-2">
                                                 <p className="font-medium">
-                                                    {student.first_name} {student.last_name}
+                                                    <Link
+                                                        href={`/students/${student.id}?tab=attendance`}
+                                                        onClick={(event) => event.stopPropagation()}
+                                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                    >
+                                                        {student.first_name} {student.last_name}
+                                                    </Link>
                                                 </p>
                                                 <p className="text-sm text-gray-500">{student.admission_no}</p>
                                             </div>

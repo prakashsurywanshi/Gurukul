@@ -70,7 +70,12 @@ export function DataTable<T>({
                             return (
                                 <TableHead
                                     key={column.key}
-                                    className={cn('text-xs font-semibold uppercase tracking-wide', hidden, align, column.headerClassName)}
+                                    className={cn(
+                                        'text-xs font-semibold uppercase tracking-wide',
+                                        hidden,
+                                        align,
+                                        column.headerClassName,
+                                    )}
                                 >
                                     {column.header}
                                 </TableHead>
@@ -118,7 +123,11 @@ export function DataTable<T>({
                 </TableBody>
             </Table>
             {showEmpty && (
-                <EmptyState title={emptyTitle ?? 'No records found'} description={emptyDescription} action={emptyAction} />
+                <EmptyState
+                    title={emptyTitle ?? 'No records found'}
+                    description={emptyDescription}
+                    action={emptyAction}
+                />
             )}
         </div>
     );

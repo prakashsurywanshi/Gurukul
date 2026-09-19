@@ -60,7 +60,7 @@ export default function SSOSettings(pageProps: SSOSettingsProps) {
 
     return (
         <DashboardLayout user={user}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                     <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 text-white">
                         <KeyRound className="h-6 w-6" />

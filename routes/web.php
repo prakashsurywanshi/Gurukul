@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdmissionInquiryController;
 use App\Http\Controllers\AiAssistantController;
+use App\Http\Controllers\AiAnalyticsController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceCorrectionController;
 use App\Http\Controllers\AssignSubjectsController;
@@ -141,6 +142,7 @@ use App\Http\Controllers\BranchAdminController;
 use App\Http\Controllers\BillingCenterController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\LectureController;
+use App\Http\Controllers\TransportDeviceSettingsController;
 use App\Http\Controllers\TransportManagementController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UsersController;
@@ -387,6 +389,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/cctv/{camera}/toggle', [CctvController::class, 'toggle'])->middleware('staff.permission:Biometric Settings,edit')->name('cctv.toggle');
     Route::delete('/cctv/{camera}', [CctvController::class, 'destroy'])->middleware('staff.permission:Biometric Settings,edit')->name('cctv.destroy');
     Route::post('/cctv/{camera}/access', [CctvController::class, 'logAction'])->middleware('staff.permission:Biometric Settings,view')->name('cctv.access');
+   Route::post('/cctv/regenerate', [CctvController::class, 'regenerateKey'])->middleware('staff.permission:Biometric Settings,edit')->name('cctv.regenerate');
+   Route::get('/cctv/reveal', [CctvController::class, 'revealKey'])->middleware('staff.permission:Biometric Settings,view')->name('cctv.reveal');
     Route::get('/qr-scan-audit', [QrScanAuditController::class, 'index'])->middleware('staff.permission:QR Code Attendance,view')->name('qr-scan-audit');
     Route::post('/staff/leave-management', [UsersController::class, 'storeLeaveRequest'])->middleware('staff.permission:Leave Management,add')->name('staff.leave-management.store');
     Route::patch('/staff/leave-management/{leaveRequest}', [UsersController::class, 'updateLeaveRequest'])->middleware('staff.permission:Leave Management,edit')->name('staff.leave-management.update');
@@ -705,6 +709,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/certificates/student-id-card', [CertificateController::class, 'studentIdCard'])->middleware('staff.permission:Student ID Card Management,view')->name('certificates.student-id-card');
     Route::get('/documents/generate', [GenerateDocumentController::class, 'index'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate');
     Route::get('/documents/generate/preview', [GenerateDocumentController::class, 'preview'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate.preview');
+    Route::get('/documents/generate/pdf', [GenerateDocumentController::class, 'pdf'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate.pdf');
     Route::post('/documents/generate/archive', [GenerateDocumentController::class, 'archive'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate.archive');
     Route::get('/feedback', [FeedbackController::class, 'index'])->middleware('staff.permission:Feedback Management,view')->name('feedback');
     Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('staff.permission:Feedback Management,add')->name('feedback.store');
@@ -840,6 +845,9 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/settings/biometric', [BiometricSettingsController::class, 'index'])->middleware('staff.permission:Biometric Settings,view')->name('settings.biometric');
     Route::post('/settings/biometric/regenerate', [BiometricSettingsController::class, 'regenerate'])->middleware('staff.permission:Biometric Settings,edit')->name('settings.biometric.regenerate');
     Route::get('/settings/biometric/reveal', [BiometricSettingsController::class, 'reveal'])->middleware('staff.permission:Biometric Settings,view')->name('settings.biometric.reveal');
+    Route::get('/transport/device-settings', [TransportDeviceSettingsController::class, 'index'])->middleware('staff.permission:Transport Device Settings,view')->name('transport.device-settings');
+    Route::post('/transport/device-settings/regenerate', [TransportDeviceSettingsController::class, 'regenerate'])->middleware('staff.permission:Transport Device Settings,edit')->name('transport.device-settings.regenerate');
+    Route::get('/transport/device-settings/reveal', [TransportDeviceSettingsController::class, 'reveal'])->middleware('staff.permission:Transport Device Settings,view')->name('transport.device-settings.reveal');
     Route::get('/biometric-devices', [BiometricDeviceController::class, 'index'])->middleware('staff.permission:Biometric Settings,view')->name('biometric-devices');
     Route::post('/biometric-devices', [BiometricDeviceController::class, 'store'])->middleware('staff.permission:Biometric Settings,edit')->name('biometric-devices.store');
     Route::put('/biometric-devices/{device}', [BiometricDeviceController::class, 'update'])->middleware('staff.permission:Biometric Settings,edit')->name('biometric-devices.update');
@@ -981,6 +989,8 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/ai-assistant', [AiAssistantController::class, 'index'])->middleware('staff.permission:AI Assistant,view')->name('ai-assistant');
     Route::patch('/settings/ai-assistant', [AiAssistantController::class, 'updateSettings'])->middleware('staff.permission:AI Assistant,edit')->name('ai-assistant.settings');
     Route::post('/ai-assistant/ask', [AiAssistantController::class, 'ask'])->middleware('staff.permission:AI Assistant,view')->name('ai-assistant.ask');
+    Route::get('/ai-analytics', [AiAnalyticsController::class, 'index'])->middleware('staff.permission:AI Analytics,view', 'module.enabled:ai-analytics')->name('ai-analytics');
+    Route::post('/ai-analytics/refresh', [AiAnalyticsController::class, 'refresh'])->middleware('staff.permission:AI Analytics,edit', 'module.enabled:ai-analytics')->name('ai-analytics.refresh');
     Route::get('/module-management', [ModuleManagementController::class, 'index'])->middleware('staff.permission:Module Management,view')->name('module-management');
     Route::post('/module-management', [ModuleManagementController::class, 'update'])->middleware('staff.permission:Module Management,edit')->name('module-management.update');
     Route::get('/audit-trail', [AuditTrailController::class, 'index'])->middleware('staff.permission:Audit Trail,view', 'module.enabled:audit-trail')->name('audit-trail');

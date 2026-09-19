@@ -439,7 +439,7 @@ export default function ClassTimeTable({
                             {!selectedClass ? (
                                 <p className="text-sm text-slate-500">{t('Select a class to view its timetable.')}</p>
                             ) : (
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto rounded-xl border border-slate-200">
                                     <table className="w-full min-w-[980px] border-collapse">
                                         <thead>
                                             <tr>

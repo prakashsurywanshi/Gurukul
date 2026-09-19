@@ -1,7 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useRef, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { FileText, Info, Printer, Save, Users, Grid3X3, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { FileText, Info, Printer, Save, Download, Users, Grid3X3, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -102,7 +102,7 @@ export default function GenerateDocument({
     const audienceStudents =
         wholeSection || selectedStudents.length === 0 ? studentsInClass.map((student) => student.id) : selectedStudents;
 
-    const buildPreviewUrl = () => {
+    const buildPreviewUrl = (viewPath: string = '/documents/generate/preview') => {
         const params = new URLSearchParams();
 
         if (!classId) return null;
@@ -186,6 +186,22 @@ export default function GenerateDocument({
         }
 
         openPreview();
+    };
+
+    const downloadServerPdf = () => {
+        const url = buildPreviewUrl('/documents/generate/pdf');
+
+        if (!url) {
+            toast.error(t('Select a class first.'));
+            return;
+        }
+
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
     };
 
     const templateSelected = templates.find((template) => template.id === templateId);
@@ -584,6 +600,10 @@ export default function GenerateDocument({
                                         <Button variant="outline" onClick={openPreview} className="gap-2">
                                             <Printer className="h-4 w-4" />
                                             {t('Print Preview')}
+                                        </Button>
+                                        <Button variant="outline" onClick={downloadServerPdf} className="gap-2">
+                                            <Download className="h-4 w-4" />
+                                            {t('Download PDF')}
                                         </Button>
                                         <Button onClick={generatePdf} disabled={archiving} className="gap-2">
                                             <Save className="h-4 w-4" />

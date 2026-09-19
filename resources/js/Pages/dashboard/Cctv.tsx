@@ -39,11 +39,14 @@ export type CctvProps = {
     cameras: CctvCameraRow[];
     logs: CctvLogRow[];
     summary: { cameras: number; active: number; views: number; exports: number };
+    hasKey: boolean;
+    keyHint: string;
+    endpoint: string;
 };
 
 const CAMERA_TYPES = ['indoor', 'outdoor', 'gate', 'classroom', 'corridor'] as const;
 
-export default function Cctv({ user, cameras, logs, summary }: CctvProps) {
+export default function Cctv({ user, cameras, logs, summary, hasKey, keyHint, endpoint }: CctvProps) {
     const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
@@ -52,6 +55,32 @@ export default function Cctv({ user, cameras, logs, summary }: CctvProps) {
     const [cameraType, setCameraType] = useState<string>('indoor');
     const [notes, setNotes] = useState('');
     const [saving, setSaving] = useState(false);
+    const [revealedKey, setRevealedKey] = useState('');
+    const [copied, setCopied] = useState(false);
+
+    const regenerateKey = () => {
+        if (!window.confirm(t('Regenerate the CCTV sync key? Existing devices will stop working until updated.')))
+            return;
+        setRevealedKey('');
+        router.post('/cctv/regenerate', {}, { preserveScroll: true });
+    };
+
+    const revealKey = () => {
+        fetch('/cctv/reveal', { headers: { Accept: 'application/json' } })
+            .then((res) => res.json())
+            .then((data) => setRevealedKey(data.key ?? ''))
+            .catch(() => {});
+    };
+
+    const copyKey = () => {
+        navigator.clipboard
+            ?.writeText(revealedKey)
+            .then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            })
+            .catch(() => {});
+    };
 
     const submitCamera = () => {
         if (!name.trim()) {
@@ -123,7 +152,7 @@ export default function Cctv({ user, cameras, logs, summary }: CctvProps) {
 
     return (
         <DashboardLayout user={user} pageTitle={t('CCTV Camera Registry')}>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="grid gap-3 sm:grid-cols-4">
                         <Card>
@@ -167,6 +196,58 @@ export default function Cctv({ user, cameras, logs, summary }: CctvProps) {
                         <Plus className="mr-1 h-4 w-4" /> {t('Add Camera')}
                     </Button>
                 </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <Video className="h-4 w-4 text-primary" />
+                            {t('CCTV Device Sync')}
+                            {hasKey ? (
+                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                                    {t('Configured')}
+                                </Badge>
+                            ) : (
+                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                    {t('Not configured')}
+                                </Badge>
+                            )}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 pt-0 text-sm">
+                        <p className="text-muted-foreground">
+                            {t('Sync face scans from CCTV cameras using a per-school API key.')}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
+                            <code className="truncate text-xs text-muted-foreground">{endpoint}</code>
+                            <div className="ml-auto flex gap-2">
+                                {revealedKey && (
+                                    <Button size="sm" variant="outline" className="h-7" onClick={copyKey}>
+                                        {copied ? t('Copied') : t('Copy')}
+                                    </Button>
+                                )}
+                                {revealedKey ? null : (
+                                    <Button size="sm" variant="outline" className="h-7" onClick={revealKey}>
+                                        {t('Show Key')}
+                                    </Button>
+                                )}
+                                <Button size="sm" variant="outline" className="h-7" onClick={regenerateKey}>
+                                    {t('Regenerate Key')}
+                                </Button>
+                            </div>
+                        </div>
+                        {revealedKey && (
+                            <p className="break-all font-mono text-xs text-emerald-600 dark:text-emerald-400">
+                                {revealedKey}
+                            </p>
+                        )}
+                        {hasKey && !revealedKey && <p className="font-mono text-xs text-gray-400">{keyHint}</p>}
+                        <p className="text-xs text-muted-foreground">
+                            {t(
+                                'Send the key in the X-Cctv-Key header. The endpoint logs camera frames and optionally matches students via vision.',
+                            )}
+                        </p>
+                    </CardContent>
+                </Card>
 
                 {cameras.length > 0 && (
                     <Card>

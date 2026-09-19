@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Str;
 
 class CctvController extends Controller
 {
@@ -57,6 +58,9 @@ class CctvController extends Controller
             ])
             ->values();
 
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $key = $settings['cctv']['sync_key'] ?? '';
+
         return Inertia::render('dashboard/Cctv', [
             'user' => $user,
             'cameras' => $cameras,
@@ -67,6 +71,39 @@ class CctvController extends Controller
                 'views' => $logs->filter(fn ($log) => $log['action'] === 'view')->count(),
                 'exports' => $logs->filter(fn ($log) => $log['action'] === 'export')->count(),
             ],
+            'hasKey' => filled($key),
+            'keyHint' => $key ? '••••' . substr($key, -4) : '',
+            'endpoint' => url('/api/cctv/face-scan'),
+        ]);
+    }
+
+    public function regenerateKey(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($user);
+
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        $settings['cctv']['sync_key'] = Str::random(32);
+
+        $organization->settings = $settings;
+        $organization->save();
+
+        return back()->with('success', 'CCTV sync key regenerated. Copy it once, it is shown only now.');
+    }
+
+    public function revealKey(Request $request)
+    {
+        $user = $request->user();
+        $organization = $this->resolveOrganizationForUser($user);
+        abort_unless($organization, 403);
+        $this->abortUnlessAdmin($user);
+
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+
+        return response()->json([
+            'key' => $settings['cctv']['sync_key'] ?? '',
         ]);
     }
 
