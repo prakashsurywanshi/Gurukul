@@ -122,7 +122,23 @@ class DashboardController extends Controller
             'organizations' => $this->getOrganizationsPayload(),
             'smtpSettings' => null,
             'knowledgeBaseContent' => null,
+            'integrationKeys' => $this->getIntegrationKeysPayload(),
             'superAdminView' => 'organizations',
+        ]);
+    }
+
+    public function integrationKeys(): Response
+    {
+        $user = Auth::user();
+        abort_unless($user->role === 'super_admin', 403);
+
+        return Inertia::render('Dashboard', [
+            'user' => $user,
+            'organizations' => [],
+            'smtpSettings' => null,
+            'knowledgeBaseContent' => null,
+            'integrationKeys' => $this->getIntegrationKeysPayload(),
+            'superAdminView' => 'integration-keys',
         ]);
     }
 
@@ -387,6 +403,34 @@ class DashboardController extends Controller
         $this->applySmtpSettings($settings);
 
         return redirect()->route('superadmin.smtp-settings')->with('success', 'SMTP settings updated successfully.');
+    }
+
+    public function updateIntegrationKeys(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        abort_unless($user->role === 'super_admin', 403);
+
+        if (! Schema::hasTable('super_admin_settings')) {
+            return redirect()
+                ->route('superadmin.integration-keys')
+                ->with('error', 'Run migrations first to create the super admin settings table.');
+        }
+
+        $validated = $request->validate([
+            'biometric_sync_key' => ['nullable', 'string', 'max:255'],
+            'cctv_sync_key' => ['nullable', 'string', 'max:255'],
+            'transport_gps_sync_key' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $settings = SuperAdminSetting::query()->firstOrNew(['id' => 1]);
+        $settings->fill([
+            'biometric_sync_key' => $validated['biometric_sync_key'] ?? null,
+            'cctv_sync_key' => $validated['cctv_sync_key'] ?? null,
+            'transport_gps_sync_key' => $validated['transport_gps_sync_key'] ?? null,
+        ]);
+        $settings->save();
+
+        return redirect()->route('superadmin.integration-keys')->with('success', 'Integration keys updated successfully.');
     }
 
     public function sendTestSmtpMail(Request $request): RedirectResponse
@@ -1124,6 +1168,25 @@ class DashboardController extends Controller
     private function getKnowledgeBaseContentPayload(): array
     {
         return $this->knowledgeBaseService->content();
+    }
+
+    private function getIntegrationKeysPayload(): array
+    {
+        if (! Schema::hasTable('super_admin_settings')) {
+            return [
+                'biometric_sync_key' => '',
+                'cctv_sync_key' => '',
+                'transport_gps_sync_key' => '',
+            ];
+        }
+
+        $settings = SuperAdminSetting::query()->first();
+
+        return [
+            'biometric_sync_key' => $settings?->biometric_sync_key ?? '',
+            'cctv_sync_key' => $settings?->cctv_sync_key ?? '',
+            'transport_gps_sync_key' => $settings?->transport_gps_sync_key ?? '',
+        ];
     }
 
     private function applySmtpSettings(SuperAdminSetting $settings): void

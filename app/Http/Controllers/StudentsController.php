@@ -185,7 +185,7 @@ class StudentsController extends Controller
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
-        $student = Student::withTrashed()->with('schoolClass')->findOrFail($studentId);
+        $student = Student::with('schoolClass')->findOrFail($studentId);
 
         abort_unless($organization, 403);
         $this->ensureStudentBelongsToOrganization($student, $organization->id);
@@ -535,6 +535,7 @@ class StudentsController extends Controller
         abort_unless($student->organization_id === $organization->id, 404);
 
         $student->restore();
+        $this->syncStudentUser($student, $organization, false);
 
         return back()->with('success', 'Student restored successfully.');
     }
@@ -579,13 +580,13 @@ class StudentsController extends Controller
         }
 
         foreach ($students as $student) {
-            $student->forceDelete();
+            $student->delete();
             $this->deleteStudentUser($student);
         }
 
         return redirect()
             ->route('bulk-delete-students')
-            ->with('success', $students->count().' student'.($students->count() === 1 ? '' : 's').' deleted permanently.');
+            ->with('success', $students->count().' student'.($students->count() === 1 ? '' : 's').' moved to the recycle bin.');
     }
 
     public function bulkDelete()
@@ -1314,6 +1315,15 @@ class StudentsController extends Controller
     private function deleteStudentUser(Student $student): void
     {
         if (! $student->user_id) {
+            return;
+        }
+
+        $sharedReference = Student::query()
+            ->where('user_id', $student->user_id)
+            ->where('id', '!=', $student->id)
+            ->exists();
+
+        if ($sharedReference) {
             return;
         }
 

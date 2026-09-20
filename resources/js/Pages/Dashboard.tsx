@@ -1,12 +1,13 @@
 import { useLanguage } from '../i18n/LanguageProvider';
 import { Button } from './ui/button';
 import SuperAdminDashboard from './dashboard/SuperAdminDashboard';
+import SuperAdminIntegrationKeys from './dashboard/SuperAdminIntegrationKeys';
 import SuperAdminKnowledgeBaseCms from './dashboard/SuperAdminKnowledgeBaseCms';
 import SuperAdminSmtpSettings from './dashboard/SuperAdminSmtpSettings';
 import { SuperAdminProfile } from './Profile';
 import EditProfile from './EditProfile';
 import { router } from '@inertiajs/react';
-import { BookText, Building2, LayoutDashboard, Mail, PanelLeft, UserRound, X } from 'lucide-react';
+import { BookText, Building2, KeyRound, LayoutDashboard, Mail, PanelLeft, UserRound, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface DashboardProps {
@@ -14,8 +15,15 @@ interface DashboardProps {
     organizations?: any[];
     smtpSettings?: any;
     knowledgeBaseContent?: any;
+    integrationKeys?: any;
     superAdminView?:
-        'dashboard' | 'organizations' | 'smtp-settings' | 'knowledge-base-cms' | 'profile' | 'profile-edit';
+        | 'dashboard'
+        | 'organizations'
+        | 'smtp-settings'
+        | 'knowledge-base-cms'
+        | 'integration-keys'
+        | 'profile'
+        | 'profile-edit';
 }
 
 export default function Dashboard({
@@ -23,6 +31,7 @@ export default function Dashboard({
     organizations = [],
     smtpSettings = null,
     knowledgeBaseContent = null,
+    integrationKeys = null,
     superAdminView = 'dashboard',
 }: DashboardProps) {
     const { t } = useLanguage();
@@ -56,6 +65,12 @@ export default function Dashboard({
             label: 'SMTP Settings',
             path: '/superadmin/smtp-settings',
             icon: Mail,
+        },
+        {
+            id: 'integration-keys',
+            label: 'Integration Keys',
+            path: '/superadmin/integration-keys',
+            icon: KeyRound,
         },
         {
             id: 'knowledge-base-cms',
@@ -183,6 +198,8 @@ export default function Dashboard({
                 <main className="min-h-0 flex-1 overflow-y-auto">
                     {superAdminView === 'smtp-settings' ? (
                         <SuperAdminSmtpSettings smtpSettings={smtpSettings} />
+                    ) : superAdminView === 'integration-keys' ? (
+                        <SuperAdminIntegrationKeys integrationKeys={integrationKeys} />
                     ) : superAdminView === 'knowledge-base-cms' ? (
                         <SuperAdminKnowledgeBaseCms knowledgeBaseContent={knowledgeBaseContent} />
                     ) : superAdminView === 'profile' ? (

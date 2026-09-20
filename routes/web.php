@@ -19,7 +19,8 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\CocurricularController;
 use App\Http\Controllers\ComplianceController;
-use App\Http\Controllers\ComplianceProfileController;use App\Http\Controllers\TransportDriversController;
+use App\Http\Controllers\ComplianceProfileController;
+use App\Http\Controllers\TransportDriversController;
 use App\Http\Controllers\NotificationSettingsController;
 use App\Http\Controllers\OrganizationGatewayController;
 use App\Http\Controllers\LiveClassSettingsController;
@@ -190,7 +191,7 @@ Route::get('/{orgSlug}/login', function (string $orgSlug) {
 
     return app(LoginController::class)->viewLogin();
 })->where('orgSlug', '[a-z0-9-]+')->name('org.login');
-if (filter_var(env('SSO_ENABLED', false), FILTER_VALIDATE_BOOL)) {
+if (filter_var(config('sso.enabled'), FILTER_VALIDATE_BOOL)) {
     Route::get('/auth/sso/{provider}', [SsoController::class, 'redirect'])->name('sso.redirect');
     Route::get('/auth/sso/{provider}/callback', [SsoController::class, 'callback'])->name('sso.callback');
 }
@@ -241,6 +242,8 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/superadmin/smtp-settings', [DashboardController::class, 'smtpSettings'])->name('superadmin.smtp-settings');
     Route::patch('/superadmin/smtp-settings', [DashboardController::class, 'updateSmtpSettings'])->name('superadmin.smtp-settings.update');
     Route::post('/superadmin/smtp-settings/test', [DashboardController::class, 'sendTestSmtpMail'])->name('superadmin.smtp-settings.test');
+    Route::get('/superadmin/integration-keys', [DashboardController::class, 'integrationKeys'])->name('superadmin.integration-keys');
+    Route::patch('/superadmin/integration-keys', [DashboardController::class, 'updateIntegrationKeys'])->name('superadmin.integration-keys.update');
     Route::get('/superadmin/knowledge-base-cms', [DashboardController::class, 'knowledgeBaseCms'])->name('superadmin.knowledge-base-cms');
     Route::patch('/superadmin/knowledge-base-cms', [DashboardController::class, 'updateKnowledgeBaseCms'])->name('superadmin.knowledge-base-cms.update');
     Route::get('/superadmin/profile', [DashboardController::class, 'profile'])->name('superadmin.profile');
@@ -315,7 +318,6 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::post('/online-admission/{admissionInquiry}/enroll', [AdmissionInquiryController::class, 'enroll'])->middleware('staff.permission:Online Admission,add')->name('online-admission.enroll');
     Route::patch('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'update'])->middleware('staff.permission:Online Admission,edit')->name('online-admission.update');
     Route::delete('/online-admission/{admissionInquiry}', [AdmissionInquiryController::class, 'destroy'])->middleware('staff.permission:Online Admission,delete')->name('online-admission.destroy');
-    Route::get('/staff', [UsersController::class, 'index'])->middleware('staff.permission:User Management,view')->name('users');
     Route::get('/import-center', [ImportCenterController::class, 'index'])->middleware('staff.permission:User Management,view')->name('import-center');
     Route::post('/import-center/staff', [ImportCenterController::class, 'importStaff'])->middleware('staff.permission:User Management,add')->name('import-center.staff');
     Route::delete('/import-center/imports/{userImport}', [ImportCenterController::class, 'destroyImport'])->middleware('staff.permission:User Management,delete')->name('import-center.imports.destroy');

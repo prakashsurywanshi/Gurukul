@@ -263,10 +263,10 @@ class FaceSearchController extends Controller
         $settings = is_array($organization->settings) ? $organization->settings : [];
         $saved = $settings['ai'] ?? [];
 
-        $mode = $saved['mode'] ?? env('AI_MODE', 'openai');
-        $baseUrl = ($saved['base_url'] ?? '') ?: env('AI_BASE_URL', 'https://api.openai.com/v1');
-        $model = ($saved['model'] ?? '') ?: env('AI_MODEL', 'gpt-4o-mini');
-        $apiKey = !empty($saved['api_key'] ?? '') ? $saved['api_key'] : (env('AI_API_KEY') ?: '');
+        $mode = $saved['mode'] ?? config('ai.mode');
+        $baseUrl = ($saved['base_url'] ?? '') ?: (config('ai.base_url') ?: config('ai.default_base_url'));
+        $model = ($saved['model'] ?? '') ?: (config('ai.model') ?: config('ai.default_model'));
+        $apiKey = !empty($saved['api_key'] ?? '') ? $saved['api_key'] : (config('ai.api_key') ?: '');
         $temperature = 0.2;
 
         return [

@@ -9,6 +9,7 @@ use App\Models\CctvCamera;
 use App\Models\Organization;
 use App\Services\Ai\AiProviderClient;
 use App\Services\Ai\FaceCandidateMatcher;
+use App\Services\IntegrationKeyService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -173,10 +174,10 @@ class CctvIngestionApiController extends Controller
         $settings = $organization && is_array($organization->settings) ? $organization->settings : [];
         $saved = $settings['ai'] ?? [];
 
-        $mode = $saved['mode'] ?? env('AI_MODE', 'openai');
-        $baseUrl = ($saved['base_url'] ?? '') ?: env('AI_BASE_URL', 'https://api.openai.com/v1');
-        $model = ($saved['model'] ?? '') ?: env('AI_MODEL', 'gpt-4o-mini');
-        $apiKey = !empty($saved['api_key'] ?? '') ? $saved['api_key'] : (env('AI_API_KEY') ?: '');
+        $mode = $saved['mode'] ?? config('ai.mode');
+        $baseUrl = ($saved['base_url'] ?? '') ?: (config('ai.base_url') ?: config('ai.default_base_url'));
+        $model = ($saved['model'] ?? '') ?: (config('ai.model') ?: config('ai.default_model'));
+        $apiKey = !empty($saved['api_key'] ?? '') ? $saved['api_key'] : (config('ai.api_key') ?: '');
 
         return [
             'configured' => $mode === 'local' || !empty($apiKey),
@@ -221,7 +222,7 @@ class CctvIngestionApiController extends Controller
 
     private function anyKeyConfigured(): bool
     {
-        if ((bool) env('CCTV_SYNC_KEY', false)) {
+        if (app(IntegrationKeyService::class)->hasGlobalKey('cctv')) {
             return true;
         }
 
@@ -238,8 +239,8 @@ class CctvIngestionApiController extends Controller
             return ['authenticated' => false, 'organization_id' => null];
         }
 
-        $envKey = env('CCTV_SYNC_KEY', '');
-        if (filled($envKey) && hash_equals($envKey, $requestKey)) {
+        $globalKey = app(IntegrationKeyService::class)->globalKey('cctv');
+        if (filled($globalKey) && hash_equals($globalKey, $requestKey)) {
             return ['authenticated' => true, 'organization_id' => null];
         }
 

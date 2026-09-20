@@ -7,6 +7,7 @@ use App\Models\DailyTrip;
 use App\Models\Organization;
 use App\Models\TransportGpsPosition;
 use App\Models\TransportVehicle;
+use App\Services\IntegrationKeyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -96,7 +97,7 @@ class TransportGpsApiController extends Controller
 
     private function anyKeyConfigured(): bool
     {
-        if ((bool) env('TRANSPORT_GPS_KEY', false)) {
+        if (app(IntegrationKeyService::class)->hasGlobalKey('transport_gps')) {
             return true;
         }
 
@@ -113,8 +114,8 @@ class TransportGpsApiController extends Controller
             return ['authenticated' => false, 'organization_id' => null];
         }
 
-        $envKey = env('TRANSPORT_GPS_KEY', '');
-        if (filled($envKey) && hash_equals($envKey, $requestKey)) {
+        $globalKey = app(IntegrationKeyService::class)->globalKey('transport_gps');
+        if (filled($globalKey) && hash_equals($globalKey, $requestKey)) {
             return ['authenticated' => true, 'organization_id' => null];
         }
 

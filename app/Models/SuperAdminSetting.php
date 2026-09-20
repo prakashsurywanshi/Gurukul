@@ -23,10 +23,16 @@ class SuperAdminSetting extends Model
         'reply_to_email',
         'is_active',
         'queue_worker_status',
+        'biometric_sync_key',
+        'cctv_sync_key',
+        'transport_gps_sync_key',
     ];
 
     protected $casts = [
         'smtp_password' => 'encrypted',
+        'biometric_sync_key' => 'encrypted',
+        'cctv_sync_key' => 'encrypted',
+        'transport_gps_sync_key' => 'encrypted',
         'is_active' => 'boolean',
     ];
 

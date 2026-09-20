@@ -81,7 +81,7 @@ class SsoController extends Controller
 
     private function enabled(): bool
     {
-        return (bool) env('SSO_ENABLED', false);
+        return (bool) config('sso.enabled');
     }
 
     private function providers(): array

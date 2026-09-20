@@ -21,12 +21,12 @@ class AiProviderClient
 
     public function __construct(array $config = [])
     {
-        $this->mode = (string) ($config['mode'] ?? env('AI_MODE', 'openai'));
-        $this->baseUrl = rtrim((string) ($config['base_url'] ?? env('AI_BASE_URL', 'https://api.openai.com/v1')), '/');
+        $this->mode = (string) ($config['mode'] ?? config('ai.mode'));
+        $this->baseUrl = rtrim((string) ($config['base_url'] ?? (config('ai.base_url') ?: config('ai.default_base_url'))), '/');
         $this->apiKey = filled($config['api_key'] ?? null)
             ? (string) $config['api_key']
-            : (env('AI_API_KEY') ?: null);
-        $this->model = (string) ($config['model'] ?? env('AI_MODEL', 'gpt-4o-mini'));
+            : (config('ai.api_key') ?: null);
+        $this->model = (string) ($config['model'] ?? (config('ai.model') ?: config('ai.default_model')));
         $this->temperature = (float) ($config['temperature'] ?? 0.3);
         $this->timeout = (int) ($config['timeout'] ?? 60);
     }

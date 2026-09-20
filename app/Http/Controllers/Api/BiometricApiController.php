@@ -8,6 +8,7 @@ use App\Models\BiometricDevice;
 use App\Models\BiometricLog;
 use App\Models\Organization;
 use App\Models\Student;
+use App\Services\IntegrationKeyService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -180,7 +181,7 @@ class BiometricApiController extends Controller
 
     private function anyKeyConfigured(): bool
     {
-        if ((bool) env('BIOMETRIC_SYNC_KEY', false)) {
+        if (app(IntegrationKeyService::class)->hasGlobalKey('biometric')) {
             return true;
         }
 
@@ -197,8 +198,8 @@ class BiometricApiController extends Controller
             return ['authenticated' => false, 'organization_id' => null];
         }
 
-        $envKey = env('BIOMETRIC_SYNC_KEY', '');
-        if (filled($envKey) && hash_equals($envKey, $requestKey)) {
+        $globalKey = app(IntegrationKeyService::class)->globalKey('biometric');
+        if (filled($globalKey) && hash_equals($globalKey, $requestKey)) {
             return ['authenticated' => true, 'organization_id' => null];
         }
 

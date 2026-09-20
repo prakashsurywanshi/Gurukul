@@ -2136,7 +2136,7 @@ class SettingsController extends Controller
 
         return inertia('dashboard/SSOSettings', [
             'user' => $user,
-            'enabled' => (bool) env('SSO_ENABLED', false),
+            'enabled' => (bool) config('sso.enabled'),
             'installed' => class_exists(\Laravel\Socialite\Facades\Socialite::class),
             'providers' => $providers,
         ]);

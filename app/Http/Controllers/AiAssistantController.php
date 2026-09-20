@@ -59,13 +59,13 @@ class AiAssistantController extends Controller
         $saved = $settings['ai'] ?? [];
 
         $newKey = trim((string) $request->input('api_key', ''));
-        $hasSavedKey = !empty($saved['api_key'] ?? '') || filled(env('AI_API_KEY'));
+        $hasSavedKey = !empty($saved['api_key'] ?? '') || filled(config('ai.api_key'));
 
         $settings['ai_assistant_enabled'] = $request->boolean('enabled');
         $settings['ai'] = [
-            'mode' => $request->input('mode', $saved['mode'] ?? env('AI_MODE', 'openai')),
-            'base_url' => trim((string) $request->input('base_url', $saved['base_url'] ?? env('AI_BASE_URL', ''))),
-            'model' => trim((string) $request->input('model', $saved['model'] ?? env('AI_MODEL', ''))),
+            'mode' => $request->input('mode', $saved['mode'] ?? config('ai.mode')),
+            'base_url' => trim((string) $request->input('base_url', $saved['base_url'] ?? config('ai.base_url'))),
+            'model' => trim((string) $request->input('model', $saved['model'] ?? config('ai.model'))),
             'api_key' => $newKey !== '' ? $newKey : ($saved['api_key'] ?? ''),
             'temperature' => (float) $request->input('temperature', $saved['temperature'] ?? 0.3),
             'timeout' => (int) $request->input('timeout', $saved['timeout'] ?? 60),
@@ -126,17 +126,17 @@ class AiAssistantController extends Controller
         $settings = is_array($organization->settings) ? $organization->settings : [];
         $saved = $settings['ai'] ?? [];
 
-        $mode = $saved['mode'] ?? env('AI_MODE', 'openai');
-        $baseUrl = ($saved['base_url'] ?? '') ?: env('AI_BASE_URL', 'https://api.openai.com/v1');
-        $model = ($saved['model'] ?? '') ?: env('AI_MODEL', 'gpt-4o-mini');
-        $apiKey = !empty($saved['api_key'] ?? '') ? $saved['api_key'] : (env('AI_API_KEY') ?: '');
+        $mode = $saved['mode'] ?? config('ai.mode');
+        $baseUrl = ($saved['base_url'] ?? '') ?: (config('ai.base_url') ?: config('ai.default_base_url'));
+        $model = ($saved['model'] ?? '') ?: (config('ai.model') ?: config('ai.default_model'));
+        $apiKey = !empty($saved['api_key'] ?? '') ? $saved['api_key'] : (config('ai.api_key') ?: '');
         $temperature = (float) ($saved['temperature'] ?? 0.3);
         $timeout = (int) ($saved['timeout'] ?? 60);
 
         return [
             'visible' => [
                 'mode' => $mode,
-                'base_url' => $saved['base_url'] ?? env('AI_BASE_URL', ''),
+                'base_url' => $saved['base_url'] ?? config('ai.base_url'),
                 'model' => $model,
                 'temperature' => $temperature,
                 'timeout' => $timeout,

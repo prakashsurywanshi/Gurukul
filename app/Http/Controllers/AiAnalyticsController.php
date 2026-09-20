@@ -33,7 +33,7 @@ class AiAnalyticsController extends Controller
         $routeRows = $scores->where('category', 'route')->values()->map(fn ($score) => $this->serialize($score));
 
         $setting = is_array($organization->settings) ? ($organization->settings['ai'] ?? []) : [];
-        $aiConfigured = ($setting['mode'] ?? env('AI_MODE', 'openai')) === 'local' || ! empty($setting['api_key']) || filled(env('AI_API_KEY'));
+        $aiConfigured = ($setting['mode'] ?? config('ai.mode')) === 'local' || ! empty($setting['api_key']) || filled(config('ai.api_key'));
 
         $alerts = SystemNotification::query()
             ->where('organization_id', $organization->id)
@@ -78,7 +78,7 @@ class AiAnalyticsController extends Controller
         abort_unless($organization, 403);
 
         $setting = is_array($organization->settings) ? ($organization->settings['ai'] ?? []) : [];
-        $aiConfigured = ($setting['mode'] ?? env('AI_MODE', 'openai')) === 'local' || ! empty($setting['api_key']) || filled(env('AI_API_KEY'));
+        $aiConfigured = ($setting['mode'] ?? config('ai.mode')) === 'local' || ! empty($setting['api_key']) || filled(config('ai.api_key'));
 
         $result = $this->analyticsService->refreshOrganization($organization->id, ['narrate' => $aiConfigured]);
 
