@@ -8,6 +8,11 @@ final class IdCardDesignService
 {
     public const LAYOUTS = ['landscape', 'portrait'];
 
+    public const DESIGN_SETTING_KEYS = [
+        'student' => 'id_card_design',
+        'staff' => 'staff_id_card_design',
+    ];
+
     private const DEFAULT_DESIGN = [
         'layout' => 'landscape',
         'primary_color' => '#1d4ed8',
@@ -33,10 +38,12 @@ final class IdCardDesignService
         return self::DEFAULT_DESIGN;
     }
 
-    public function normalizeForOrganization(Organization $organization): array
+    public function normalizeForOrganization(Organization $organization, string $type = 'student'): array
     {
-        $stored = is_array($organization->settings['id_card_design'] ?? null)
-            ? $organization->settings['id_card_design']
+        $key = self::DESIGN_SETTING_KEYS[$type] ?? self::DESIGN_SETTING_KEYS['student'];
+
+        $stored = is_array($organization->settings[$key] ?? null)
+            ? $organization->settings[$key]
             : [];
 
         return $this->normalize($stored);

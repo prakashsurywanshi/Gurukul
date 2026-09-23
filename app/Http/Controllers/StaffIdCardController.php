@@ -64,7 +64,7 @@ class StaffIdCardController extends Controller
             'user' => $user,
             'organization' => ['id' => $organization->id, 'name' => $organization->name],
             'staff' => $staff,
-            'design' => app(IdCardDesignService::class)->normalizeForOrganization($organization),
+            'design' => app(IdCardDesignService::class)->normalizeForOrganization($organization, 'staff'),
             'assignedTemplate' => $assignments->serializeAssignedTemplate($assignedTemplate),
         ]);
     }

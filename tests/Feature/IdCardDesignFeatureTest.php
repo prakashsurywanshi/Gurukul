@@ -89,6 +89,90 @@ class IdCardDesignFeatureTest extends TestCase
             );
     }
 
+    public function test_admin_can_persist_staff_id_card_design_separately(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+
+        $this->actingAs($admin)
+            ->from('/id-cards/designs')
+            ->patch('/id-cards/designs', [
+                'type' => 'student',
+                'layout' => 'portrait',
+                'primary_color' => '#b91c1c',
+            ])
+            ->assertRedirect('/id-cards/designs');
+
+        $this->actingAs($admin)
+            ->patch('/id-cards/designs', [
+                'type' => 'staff',
+                'layout' => 'portrait',
+                'primary_color' => '#0f766e',
+                'show_photo' => true,
+                'show_admission_no' => false,
+                'show_qr' => true,
+                'show_guardian' => true,
+                'show_blood_group' => true,
+                'show_dob' => false,
+            ])
+            ->assertRedirect('/id-cards/designs');
+
+        $settings = $organization->fresh()->settings;
+        $this->assertSame('#b91c1c', $settings['id_card_design']['primary_color']);
+        $this->assertSame('portrait', $settings['staff_id_card_design']['layout']);
+        $this->assertSame('#0f766e', $settings['staff_id_card_design']['primary_color']);
+        $this->assertFalse($settings['staff_id_card_design']['show_admission_no']);
+        $this->assertTrue($settings['staff_id_card_design']['show_blood_group']);
+        $this->assertFalse($settings['staff_id_card_design']['show_dob']);
+
+        $this->actingAs($admin)
+            ->get('/id-cards/designs')
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/CardDesigns')
+                ->where('design.primary_color', '#b91c1c')
+                ->where('design.layout', 'portrait')
+                ->where('staffDesign.primary_color', '#0f766e')
+                ->where('staffDesign.show_admission_no', false)
+                ->where('staffDesign.show_dob', false)
+            );
+
+        $this->actingAs($admin)
+            ->get('/staff/id-cards')
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/StaffIdCards')
+                ->where('design.primary_color', '#0f766e')
+                ->where('design.show_admission_no', false)
+            );
+
+        $this->actingAs($admin)
+            ->get('/certificates/student-id-card')
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/StudentIdCardManagement')
+                ->where('design.primary_color', '#b91c1c')
+            );
+    }
+
+    public function test_invalid_type_is_rejected_and_nothing_is_saved(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+
+        $this->actingAs($admin)
+            ->from('/id-cards/designs')
+            ->patch('/id-cards/designs', [
+                'type' => 'visitor',
+                'primary_color' => '#111827',
+            ])
+            ->assertRedirect('/id-cards/designs')
+            ->assertSessionHasErrors('type');
+
+        $settings = $organization->fresh()->settings ?? [];
+        $this->assertArrayNotHasKey('id_card_design', $settings);
+        $this->assertArrayNotHasKey('staff_id_card_design', $settings);
+    }
+
     public function test_non_admin_cannot_access_design_settings(): void
     {
         $organization = $this->createOrganization();
