@@ -1,11 +1,16 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { router, usePage, Link } from '@inertiajs/react';
 import { CreditCard, Save, Sparkles } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import CardFace from '../../components/designer/CardFace';
 import { CardEntity, IdCardDesign } from '../../components/designer/cardTypes';
-import { AssignedIdCardTemplate } from '../../lib/templateTwin';
+import {
+    AssignedIdCardTemplate,
+    TokenContext,
+    idCardFaces,
+    withQrCode,
+} from '../../lib/templateTwin';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -95,6 +100,63 @@ const SAMPLE_ENTITIES: Record<CardType, CardEntity> = {
     },
 };
 
+const svgDataUri = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+
+const SAMPLE_SCHOOL: TokenContext = {
+    school_name: 'Gurukul Model School',
+    school_address: '12, MG Road, Jaipur, Rajasthan, India',
+    school_phone: '+91 98765 43210',
+    school_email: 'info@gurukul.edu',
+    school_website: 'www.gurukul.edu',
+};
+
+const SAMPLE_PHOTO = svgDataUri(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="0 0 120 150"><rect width="120" height="150" fill="#e2e8f0"/><circle cx="60" cy="58" r="32" fill="#94a3b8"/><path d="M18 150a42 52 0 0 1 84 0z" fill="#94a3b8"/></svg>`,
+);
+
+const SAMPLE_LOGO = svgDataUri(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1d4ed8"/><text x="32" y="44" font-family="Arial, sans-serif" font-size="34" font-weight="bold" fill="#ffffff" text-anchor="middle">G</text></svg>`,
+);
+
+const SAMPLE_CONTEXTS: Record<CardType, TokenContext> = {
+    student: {
+        student_name: SAMPLE_ENTITIES.student.name,
+        admission_no: SAMPLE_ENTITIES.student.admissionNo,
+        roll_no: '24',
+        class: '5',
+        section: 'A',
+        class_section: SAMPLE_ENTITIES.student.classLabel,
+        dob: SAMPLE_ENTITIES.student.dob,
+        blood_group: SAMPLE_ENTITIES.student.bloodGroup,
+        gender: SAMPLE_ENTITIES.student.gender,
+        phone: SAMPLE_ENTITIES.student.phone,
+        guardian_name: SAMPLE_ENTITIES.student.guardian,
+        guardian_phone: SAMPLE_ENTITIES.student.phone,
+        address: SAMPLE_ENTITIES.student.address,
+        academic_session: '2025-26',
+        student_photo_url: SAMPLE_PHOTO,
+        school_logo_url: SAMPLE_LOGO,
+        ...SAMPLE_SCHOOL,
+    },
+    staff: {
+        staff_name: SAMPLE_ENTITIES.staff.name,
+        staff_no: SAMPLE_ENTITIES.staff.idLabel,
+        designation: SAMPLE_ENTITIES.staff.roleLabel,
+        department: 'Science',
+        date_of_joining: SAMPLE_ENTITIES.staff.dob,
+        blood_group: SAMPLE_ENTITIES.staff.bloodGroup,
+        gender: SAMPLE_ENTITIES.staff.gender,
+        phone: SAMPLE_ENTITIES.staff.phone,
+        mobile_no: SAMPLE_ENTITIES.staff.phone,
+        mobile_number: SAMPLE_ENTITIES.staff.phone,
+        address: SAMPLE_ENTITIES.staff.address,
+        staff_photo_url: SAMPLE_PHOTO,
+        student_photo_url: SAMPLE_PHOTO,
+        school_logo_url: SAMPLE_LOGO,
+        ...SAMPLE_SCHOOL,
+    },
+};
+
 export default function CardDesigns({
     user,
     design,
@@ -120,6 +182,17 @@ export default function CardDesigns({
     const form = forms[type];
     const activeTemplate = type === 'staff' ? staffAssignedTemplate : assignedTemplate;
     const cardLabel = type === 'staff' ? t('Staff ID Card') : t('Student ID Card');
+    const templateEnabled = Boolean(activeTemplate && activeTemplate.content);
+    const previewFaces = useMemo(
+        () =>
+            activeTemplate && templateEnabled
+                ? idCardFaces(
+                      activeTemplate,
+                      withQrCode({ ...SAMPLE_CONTEXTS[type] }, SAMPLE_ENTITIES[type].qrToken),
+                  )
+                : [],
+        [activeTemplate, templateEnabled, type],
+    );
 
     const setField = (key: keyof DesignShape, value: DesignShape[keyof DesignShape]) => {
         setForms((current) => ({ ...current, [type]: { ...current[type], [key]: value } }));
@@ -281,16 +354,45 @@ export default function CardDesigns({
                                     <CardTitle>{t('Live Preview')}</CardTitle>
                                 </div>
                                 <CardDescription>
-                                    {t('Preview shows the active design on the next generated ID card.')}
+                                    {templateEnabled && activeTemplate
+                                        ? t('Preview shows the assigned default template on the next generated ID card.')
+                                        : t('Preview shows the active design on the next generated ID card.')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <CardFace
-                                    design={form}
-                                    entity={SAMPLE_ENTITIES[type]}
-                                    orgName={user?.organization?.name ?? 'Gurukul Public School'}
-                                    title={cardLabel}
-                                />
+                                {templateEnabled && activeTemplate ? (
+                                    <div>
+                                        <p className="mb-2 text-xs font-medium text-slate-600">
+                                            {activeTemplate.title}
+                                        </p>
+                                        <div className="space-y-3">
+                                            {previewFaces.map((face, index) => (
+                                                <div key={index}>
+                                                    {index > 0 && (
+                                                        <p className="mb-1 text-[10px] uppercase tracking-wide text-slate-400">
+                                                            {t('Back')}
+                                                        </p>
+                                                    )}
+                                                    <div
+                                                        className="relative overflow-hidden rounded-sm border border-slate-300 bg-white"
+                                                        style={{
+                                                            width: `${face.widthMm}mm`,
+                                                            height: `${face.heightMm}mm`,
+                                                        }}
+                                                        dangerouslySetInnerHTML={{ __html: face.html }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <CardFace
+                                        design={form}
+                                        entity={SAMPLE_ENTITIES[type]}
+                                        orgName={user?.organization?.name ?? 'Gurukul Public School'}
+                                        title={cardLabel}
+                                    />
+                                )}
                             </CardContent>
                         </Card>
                     </div>
