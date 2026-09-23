@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CertificateTemplate;
 use App\Models\Organization;
 use App\Models\Student;
+use App\Models\User;
 use App\Support\TemplateCatalog;
 
 /**
@@ -185,5 +186,62 @@ class TemplateRenderService
             '_name' => '',
             'achievement' => '',
         ];
+    }
+
+    /**
+     * Token context for an identity-card twin (student-id-card / staff-id-card).
+     *
+     * Covers both the student and staff vocabularies so one substitute serves
+     * either slot: keys for the "other" person type simply stay empty. The QR
+     * is intentionally left blank — the client substitutes an inline data-URI
+     * generated from the member's QR token, mirroring the printable pages.
+     */
+    public function idCardContext(Organization $organization, ?Student $student = null, ?User $member = null): array
+    {
+        $context = $this->schoolAndStudentContext($organization, $student);
+
+        if ($member) {
+            $photo = $member->profile_photo
+                ? (str_starts_with((string) $member->profile_photo, 'http')
+                    ? $member->profile_photo
+                    : asset('storage/'.$member->profile_photo))
+                : '';
+
+            $context['staff_name'] = trim($member->name ?? '');
+            $context['staff_no'] = (string) ($member->employee_id ?? $member->id);
+            $context['designation'] = $member->designation ?? '';
+            $context['department'] = $member->department ?? '';
+            $context['gender'] = $member->gender ?? '';
+            $context['blood_group'] = $member->blood_group ?? '';
+            $context['phone'] = $member->phone ?? '';
+            $context['mobile_no'] = $member->phone ?? '';
+            $context['mobile_number'] = $member->phone ?? '';
+            $context['date_of_joining'] = $member->joining_date ? $member->joining_date->format('j M Y') : '';
+            $context['staff_photo_url'] = $photo;
+            $context['student_photo_url'] = $photo;
+            $context['qr_code_url'] = '';
+
+            return $context;
+        }
+
+        if (! $student) {
+            $context['qr_code_url'] = '';
+
+            return $context;
+        }
+
+        $studentPhone = (string) ($student->phone ?? '');
+
+        $context['student_name'] = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+        $context['gender'] = $student->gender ?? '';
+        $context['phone'] = $studentPhone;
+        $context['mobile_no'] = $studentPhone;
+        $context['mobile_number'] = $studentPhone;
+        $context['guardian_name'] = $student->guardian_name ?? '';
+        $context['guardian_phone'] = (string) ($student->guardian_phone ?? $student->father_phone ?? $studentPhone);
+        $context['address'] = (string) ($student->current_address ?: $student->permanent_address);
+        $context['qr_code_url'] = '';
+
+        return $context;
     }
 }

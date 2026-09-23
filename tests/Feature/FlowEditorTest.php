@@ -299,6 +299,7 @@ class FlowEditorTest extends TestCase
         $this->assertStringContainsString('@page', $clean);
         $this->assertStringContainsString('<table>', $clean);
         $this->assertStringContainsString('{{school_name}}', $clean);
+        $this->assertStringContainsString('<img src="{{qr_code_url}}" width="40" height="40">', $clean);
         $this->assertStringContainsString('{{qr_code_url}}', $clean);
         $this->assertStringContainsString('style="width:100%"', $clean);
         $this->assertStringNotContainsString('<script', $clean);

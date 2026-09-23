@@ -176,14 +176,14 @@ class FlowContentSanitizer
             $html .= $dom->saveHTML($child);
         }
 
-        // libxml percent-encodes `{`/`}` inside URL attributes, turning
+        // libxml percent-encodes `{`/`}` inside URL attribute values, turning
         // `<img src="{{qr_code_url}}">` into `%7B%7Bqr_code_url%7D%7D`. Restore
-        // the braces so `{{token}}` placeholders still resolve at print time.
+        // the braces within the attribute value so `{{token}}` placeholders
+        // still resolve at print time (without duplicating the attr prefix).
         $attr = '/(\s(?:'.implode('|', self::URL_ATTRS).')=")[^"]*"/i';
         $html = preg_replace_callback(
             $attr,
-            static fn (array $match): string => $match[1]
-                .str_ireplace(['%7B', '%7D'], ['{', '}'], $match[0]),
+            static fn (array $match): string => str_ireplace(['%7B', '%7D'], ['{', '}'], $match[0]),
             $html
         ) ?? $html;
 

@@ -1,10 +1,11 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { useEffect, useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
-import { CreditCard, Save } from 'lucide-react';
+import { router, usePage, Link } from '@inertiajs/react';
+import { CreditCard, Save, Sparkles } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
 import CardFace from '../../components/designer/CardFace';
 import { IdCardDesign } from '../../components/designer/cardTypes';
+import { AssignedIdCardTemplate } from '../../lib/templateTwin';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
@@ -32,7 +33,15 @@ type DesignShape = {
     show_dob: boolean;
 };
 
-export default function CardDesigns({ user, design }: { user: any; design: DesignShape }) {
+export default function CardDesigns({
+    user,
+    design,
+    assignedTemplate,
+}: {
+    user: any;
+    design: DesignShape;
+    assignedTemplate?: AssignedIdCardTemplate | null;
+}) {
     const { t } = useLanguage();
     const flash = (usePage().props as any).flash ?? {};
     const [form, setForm] = useState<DesignShape>({
@@ -95,6 +104,27 @@ export default function CardDesigns({ user, design }: { user: any; design: Desig
 
                     <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
                         <div className="space-y-6">
+                            {assignedTemplate && assignedTemplate.content ? (
+                                <div className="flex items-start gap-3 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                                    <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
+                                    <div className="text-sm">
+                                        <p className="font-medium text-indigo-900">
+                                            {t('A default template is assigned to Student ID Cards.')}
+                                        </p>
+                                        <p className="mt-1 text-indigo-700">
+                                            <span className="font-medium">{assignedTemplate.title}</span>
+                                            {t(' is now used for ID card previews and printing. The design below still applies when no default template is assigned.')}
+                                        </p>
+                                        <Link
+                                            href="/template-assignments"
+                                            className="mt-2 inline-flex items-center gap-1 font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+                                        >
+                                            {t('Manage default templates')}
+                                        </Link>
+                                    </div>
+                                </div>
+                            ) : null}
+
                             <Card>
                                 <CardHeader className="pb-2">
                                     <CardTitle>{t('Card Template')}</CardTitle>

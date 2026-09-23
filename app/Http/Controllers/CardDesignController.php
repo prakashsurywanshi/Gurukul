@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\IdCardDesignService;
+use App\Services\TemplateAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,9 +23,14 @@ class CardDesignController extends Controller
         abort_unless($organization, 403);
         abort_unless(in_array($user->role, ['admin', 'super_admin'], true), 403);
 
+        $assignments = app(TemplateAssignmentService::class);
+
         return Inertia::render('dashboard/CardDesigns', [
             'user' => $user,
             'design' => $this->designService->normalizeForOrganization($organization),
+            'assignedTemplate' => $assignments->serializeAssignedTemplate(
+                $assignments->defaultFor($organization, 'student-id-card')
+            ),
         ]);
     }
 

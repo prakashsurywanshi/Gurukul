@@ -11,6 +11,8 @@ use App\Models\Organization;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\IdCardDesignService;
+use App\Services\TemplateAssignmentService;
+use App\Services\TemplateRenderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -232,10 +234,16 @@ class CertificateController extends Controller
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
 
+        $assignments = app(TemplateAssignmentService::class);
+        $assignedTemplate = $organization
+            ? $assignments->defaultFor($organization, 'student-id-card')
+            : null;
+
         return inertia('dashboard/StudentIdCardManagement', [
             'user' => $user,
-            'students' => $organization ? $this->getStudentIdCardStudents($organization) : [],
+            'students' => $organization ? $this->getStudentIdCardStudents($organization, $assignedTemplate !== null) : [],
             'design' => $organization ? app(IdCardDesignService::class)->normalizeForOrganization($organization) : app(IdCardDesignService::class)->defaults(),
+            'assignedTemplate' => $assignments->serializeAssignedTemplate($assignedTemplate),
         ]);
     }
 
@@ -366,21 +374,23 @@ class CertificateController extends Controller
         ];
     }
 
-    private function getStudentIdCardStudents(Organization $organization): array
+    private function getStudentIdCardStudents(Organization $organization, bool $withCardContext = false): array
     {
+        $renderer = app(TemplateRenderService::class);
+
         return Student::query()
             ->forCurrentSession($organization->id)
             ->with('schoolClass:id,name,section')
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get()
-            ->map(function (Student $student) use ($organization) {
+            ->map(function (Student $student) use ($organization, $withCardContext, $renderer) {
                 if (! $student->qr_token) {
                     $student->qr_token = \App\Support\QrToken::generate('QR', $organization->id, (int) $student->id);
                     $student->save();
                 }
 
-                return [
+                $row = [
                     'id' => (string) $student->id,
                     'organization_id' => $student->organization_id,
                     'admission_no' => $student->admission_no,
@@ -403,6 +413,12 @@ class CertificateController extends Controller
                     'address_mr' => $student->address_mr,
                     'qr_token' => $student->qr_token,
                 ];
+
+                if ($withCardContext) {
+                    $row['idCardContext'] = $renderer->idCardContext($organization, $student);
+                }
+
+                return $row;
             })
             ->all();
     }

@@ -2,6 +2,12 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState } from 'react';
 import { CreditCard, Printer, Search } from 'lucide-react';
 import { qrSvgToken } from '../../utils/qr';
+import {
+    AssignedIdCardTemplate,
+    idCardFaces,
+    openIdCardPrintWindow,
+    withQrCode,
+} from '../../lib/templateTwin';
 import DashboardLayout from '../DashboardLayout';
 import CardFace from '../../components/designer/CardFace';
 import { normalizeDesign, IdCardDesign } from '../../components/designer/cardTypes';
@@ -25,6 +31,7 @@ interface StaffMember {
     joining_date?: string | null;
     profile_photo?: string | null;
     qr_token?: string | null;
+    idCardContext?: Record<string, string | number | null | undefined> | null;
 }
 
 interface StaffIdCardsProps {
@@ -32,6 +39,7 @@ interface StaffIdCardsProps {
     organization?: any;
     staff: StaffMember[];
     design?: Partial<IdCardDesign> | null;
+    assignedTemplate?: AssignedIdCardTemplate | null;
 }
 
 function roleLabel(role: string): string {
@@ -51,7 +59,17 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
     const organization = pageProps.organization;
     const staff = pageProps.staff ?? [];
     const design = normalizeDesign(pageProps.design);
+    const assignedTemplate = pageProps.assignedTemplate ?? null;
     const accent = design.primary_color;
+    const templateEnabled = Boolean(assignedTemplate && assignedTemplate.content);
+
+    const facesForMember = (member: StaffMember) =>
+        assignedTemplate
+            ? idCardFaces(
+                  assignedTemplate,
+                  withQrCode(member.idCardContext ?? {}, member.qr_token || `EMP-${member.id}`),
+              )
+            : [];
 
     const [query, setQuery] = useState('');
     const [showQrCode, setShowQrCode] = useState(true);
@@ -67,6 +85,11 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
     });
 
     const printCard = (member: StaffMember) => {
+        if (templateEnabled && assignedTemplate) {
+            openIdCardPrintWindow(`Staff ID Card - ${member.name}`, [facesForMember(member)]);
+            return;
+        }
+
         const printWindow = window.open('', '_blank', 'width=900,height=700');
         if (!printWindow) return;
 
@@ -321,25 +344,52 @@ export default function StaffIdCards(pageProps: StaffIdCardsProps) {
                                     <Card className="h-fit">
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-sm">{t('Live Preview')}</CardTitle>
+                                            {templateEnabled && assignedTemplate && (
+                                                <p className="text-xs text-slate-400">{assignedTemplate.title}</p>
+                                            )}
                                         </CardHeader>
                                         <CardContent>
-                                            <CardFace
-                                                design={{ ...design, show_qr: design.show_qr && showQrCode }}
-                                                orgName={organization?.name ?? 'Gurukul School'}
-                                                title={t('Staff ID Card')}
-                                                coachLabel="ESTD."
-                                                entity={{
-                                                    name: filtered[0].name,
-                                                    email: filtered[0].email || null,
-                                                    phone: filtered[0].phone || null,
-                                                    roleLabel: filtered[0].designation || roleLabel(filtered[0].role),
-                                                    idLabel: filtered[0].employee_id || `UID-${filtered[0].id}`,
-                                                    bloodGroup: filtered[0].blood_group || null,
-                                                    gender: filtered[0].gender || null,
-                                                    dob: filtered[0].joining_date || null,
-                                                    qrToken: filtered[0].qr_token || `EMP-${filtered[0].id}`,
-                                                }}
-                                            />
+                                            {templateEnabled && assignedTemplate ? (
+                                                <div className="overflow-x-auto pb-2">
+                                                    {facesForMember(filtered[0]).map((face, index) => (
+                                                        <div key={index} className={index > 0 ? 'mt-3' : ''}>
+                                                            {index > 0 && (
+                                                                <p className="mb-1 text-[10px] uppercase tracking-wide text-slate-400">
+                                                                    {t('Back')}
+                                                                </p>
+                                                            )}
+                                                            <div
+                                                                className="relative overflow-hidden rounded-sm border border-slate-300 bg-white"
+                                                                style={{
+                                                                    width: `${face.widthMm}mm`,
+                                                                    height: `${face.heightMm}mm`,
+                                                                }}
+                                                                dangerouslySetInnerHTML={{ __html: face.html }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <CardFace
+                                                    design={{ ...design, show_qr: design.show_qr && showQrCode }}
+                                                    orgName={organization?.name ?? 'Gurukul School'}
+                                                    title={t('Staff ID Card')}
+                                                    coachLabel="ESTD."
+                                                    entity={{
+                                                        name: filtered[0].name,
+                                                        email: filtered[0].email || null,
+                                                        phone: filtered[0].phone || null,
+                                                        roleLabel:
+                                                            filtered[0].designation || roleLabel(filtered[0].role),
+                                                        idLabel:
+                                                            filtered[0].employee_id || `UID-${filtered[0].id}`,
+                                                        bloodGroup: filtered[0].blood_group || null,
+                                                        gender: filtered[0].gender || null,
+                                                        dob: filtered[0].joining_date || null,
+                                                        qrToken: filtered[0].qr_token || `EMP-${filtered[0].id}`,
+                                                    }}
+                                                />
+                                            )}
                                         </CardContent>
                                     </Card>
                                     <div>

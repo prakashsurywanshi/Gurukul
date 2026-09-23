@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\IdCardDesignService;
+use App\Services\TemplateAssignmentService;
+use App\Services\TemplateRenderService;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 
@@ -19,18 +21,22 @@ class StaffIdCardController extends Controller
 
         abort_unless($organization, 403);
 
+        $assignments = app(TemplateAssignmentService::class);
+        $assignedTemplate = $assignments->defaultFor($organization, 'staff-id-card');
+        $withCardContext = $assignedTemplate !== null;
+
         $staff = User::query()
             ->where('organization_id', $organization->id)
             ->whereIn('role', self::STAFF_ROLES)
             ->orderBy('name')
             ->get()
-            ->map(function (User $member) use ($organization) {
+            ->map(function (User $member) use ($organization, $withCardContext) {
                 if (! $member->qr_token) {
                     $member->qr_token = \App\Support\QrToken::generate('EMP', $organization->id, (int) $member->id);
                     $member->save();
                 }
 
-                return [
+                $row = [
                     'id' => (string) $member->id,
                     'name' => $member->name,
                     'email' => $member->email,
@@ -45,6 +51,12 @@ class StaffIdCardController extends Controller
                     'profile_photo' => $member->profile_photo,
                     'qr_token' => $member->qr_token,
                 ];
+
+                if ($withCardContext) {
+                    $row['idCardContext'] = app(TemplateRenderService::class)->idCardContext($organization, null, $member);
+                }
+
+                return $row;
             })
             ->all();
 
@@ -53,6 +65,7 @@ class StaffIdCardController extends Controller
             'organization' => ['id' => $organization->id, 'name' => $organization->name],
             'staff' => $staff,
             'design' => app(IdCardDesignService::class)->normalizeForOrganization($organization),
+            'assignedTemplate' => $assignments->serializeAssignedTemplate($assignedTemplate),
         ]);
     }
 

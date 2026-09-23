@@ -1,6 +1,13 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import React, { useEffect, useMemo, useState } from 'react';
 import { qrSvgToken } from '../../utils/qr';
+import {
+    AssignedIdCardTemplate,
+    IdCardFace,
+    idCardFaces,
+    openIdCardPrintWindow,
+    withQrCode,
+} from '../../lib/templateTwin';
 import DashboardLayout from '../DashboardLayout';
 import CardFace from '../../components/designer/CardFace';
 import { normalizeDesign, IdCardDesign } from '../../components/designer/cardTypes';
@@ -18,6 +25,7 @@ interface StudentIdCardManagementProps {
     user: any;
     students?: StudentIdCardStudent[];
     design?: Partial<IdCardDesign> | null;
+    assignedTemplate?: AssignedIdCardTemplate | null;
 }
 
 interface StudentIdCardStudent {
@@ -42,6 +50,7 @@ interface StudentIdCardStudent {
     address?: string | null;
     address_mr?: string | null;
     qr_token?: string | null;
+    idCardContext?: Record<string, string | number | null | undefined> | null;
 }
 
 interface GeneratedCard {
@@ -75,10 +84,23 @@ export default function StudentIdCardManagement({
     user,
     students = [],
     design: designInput,
+    assignedTemplate = null,
 }: StudentIdCardManagementProps) {
     const { t } = useLanguage();
     const design = normalizeDesign(designInput);
     const availableStudents = students;
+    const templateEnabled = Boolean(assignedTemplate && assignedTemplate.content);
+
+    const facesForStudent = (student: StudentIdCardStudent): IdCardFace[] => {
+        if (!assignedTemplate) {
+            return [];
+        }
+
+        return idCardFaces(
+            assignedTemplate,
+            withQrCode(student.idCardContext ?? {}, student.qr_token || buildStudentCardId(student)),
+        );
+    };
 
     const classOptions = useMemo(
         () =>
@@ -189,7 +211,7 @@ export default function StudentIdCardManagement({
         studentName: `${student.first_name} ${student.last_name}`,
         studentCardId: buildStudentCardId(student),
         classLabel: `${student.class}-${student.section}`,
-        templateTitle: cardTitle,
+        templateTitle: templateEnabled && assignedTemplate ? assignedTemplate.title : cardTitle,
         issuedOn: new Date().toISOString().split('T')[0],
         status: 'Generated',
     });
@@ -219,6 +241,14 @@ export default function StudentIdCardManagement({
 
     const handleDownloadPdf = () => {
         if (!selectedStudent) {
+            return;
+        }
+
+        if (templateEnabled && assignedTemplate) {
+            const studentName = `${selectedStudent.first_name} ${selectedStudent.last_name}`.trim();
+            openIdCardPrintWindow(`${cardTitle || t('Student ID Card')} - ${studentName}`, [
+                facesForStudent(selectedStudent),
+            ]);
             return;
         }
 
@@ -453,6 +483,14 @@ export default function StudentIdCardManagement({
 
     const handleBulkDownloadPdf = () => {
         if (filteredStudents.length === 0) {
+            return;
+        }
+
+        if (templateEnabled && assignedTemplate) {
+            openIdCardPrintWindow(
+                `${cardTitle || t('Student ID Card')} - ${t('Bulk PDF')}`,
+                filteredStudents.map((student) => facesForStudent(student)),
+            );
             return;
         }
 
@@ -859,7 +897,33 @@ export default function StudentIdCardManagement({
                             <CardTitle>{t('Student ID Card Preview')}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {selectedStudent ? (
+                            {selectedStudent && templateEnabled && assignedTemplate ? (
+                                <div className="space-y-3">
+                                    <p className="text-xs text-slate-500">
+                                        {t('Default template:')}
+                                        <span className="font-medium text-slate-700"> {assignedTemplate.title}</span>
+                                    </p>
+                                    <div className="overflow-x-auto pb-2">
+                                        {facesForStudent(selectedStudent).map((face, index) => (
+                                            <div key={index} className={index > 0 ? 'mt-3' : ''}>
+                                                {index > 0 && (
+                                                    <p className="mb-1 text-[10px] uppercase tracking-wide text-slate-400">
+                                                        {t('Back')}
+                                                    </p>
+                                                )}
+                                                <div
+                                                    className="relative overflow-hidden rounded-sm border border-slate-300 bg-white"
+                                                    style={{
+                                                        width: `${face.widthMm}mm`,
+                                                        height: `${face.heightMm}mm`,
+                                                    }}
+                                                    dangerouslySetInnerHTML={{ __html: face.html }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : selectedStudent ? (
                                 <CardFace
                                     design={{ ...design, show_qr: design.show_qr && showQrCode }}
                                     orgName={

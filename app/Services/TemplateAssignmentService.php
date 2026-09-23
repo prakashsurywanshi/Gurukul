@@ -166,4 +166,30 @@ class TemplateAssignmentService
             'isSystem' => $template->isLibraryTemplate(),
         ];
     }
+
+    /**
+     * The assigned template twin shipped to a printable react slot (id cards).
+     *
+     * Unlike the picker card (which omits content), this carries the full
+     * printable HTML plus the card's physical dimensions so the page can render
+     * a live preview and generate print output client-side. Only ever shipped
+     * for the single template assigned to a slot.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function serializeAssignedTemplate(?CertificateTemplate $template): ?array
+    {
+        if (! $template) {
+            return null;
+        }
+
+        return [
+            'id' => (string) $template->id,
+            'title' => $template->localized('title'),
+            'content' => $template->content ?? '',
+            'backContent' => $template->back_content ?? null,
+            'cardWidthMm' => $template->card_width_mm ? (float) $template->card_width_mm : null,
+            'cardHeightMm' => $template->card_height_mm ? (float) $template->card_height_mm : null,
+        ];
+    }
 }
