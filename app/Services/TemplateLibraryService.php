@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CertificateTemplate;
 use App\Models\Organization;
+use App\Models\TemplateAssignment;
 use Illuminate\Support\Str;
 
 /**
@@ -104,29 +105,67 @@ class TemplateLibraryService
     }
 
     /**
-     * Ensure every slot has a default assignment. Uses the first library row of
-     * the slot's primary category; unassigned slots keep the system default
-     * behavior (the resolution layer falls back).
+     * Ensure every slot has a default assignment. Each slot's category may
+     * advertise a preferred default row (design_settings.preferred_default);
+     * when present that row is assigned, otherwise the first library row of
+     * the category (ordered by title) is used — the previous behaviour.
+     *
+     * A slot that already holds an organization-owned template (a library copy
+     * or a user design) is left untouched, and an existing assignment to the
+     * preferred default is never rewritten. Only the automatically provisioned
+     * *system* default is swapped so the advertised default always wins.
      */
     public function provisionDefaults(Organization $organization): void
     {
         $service = app(TemplateAssignmentService::class);
 
         foreach ($service->slotsPayload($organization) as $slot) {
-            if ($slot['template'] !== null) {
+            $preferred = $this->preferredForCategory($slot['category']);
+            if (! $preferred) {
                 continue;
             }
 
-            $library = CertificateTemplate::query()
-                ->whereNull('organization_id')
-                ->where('category', $slot['category'])
-                ->orderBy('title')
+            $current = TemplateAssignment::query()
+                ->where('organization_id', $organization->id)
+                ->where('slot', $slot['key'])
+                ->with('template')
                 ->first();
 
-            if ($library) {
-                $service->assign($organization, $slot['key'], $library->id);
+            if ($current) {
+                $currentTemplate = $current->template;
+                $samePreferred = $currentTemplate && (int) $currentTemplate->id === (int) $preferred->id;
+                $orgOwned = $currentTemplate && $currentTemplate->organization_id !== null;
+
+                if ($samePreferred || $orgOwned) {
+                    continue;
+                }
             }
+
+            $service->assign($organization, $slot['key'], $preferred->id);
         }
+    }
+
+    /**
+     * The library row a slot's category prefers as its default, falling back
+     * to the first row of the category (ordered by title).
+     */
+    private function preferredForCategory(string $category): ?CertificateTemplate
+    {
+        $preferred = CertificateTemplate::query()
+            ->whereNull('organization_id')
+            ->where('category', $category)
+            ->where('design_settings->preferred_default', true)
+            ->first();
+
+        if ($preferred) {
+            return $preferred;
+        }
+
+        return CertificateTemplate::query()
+            ->whereNull('organization_id')
+            ->where('category', $category)
+            ->orderBy('title')
+            ->first();
     }
 
     /**

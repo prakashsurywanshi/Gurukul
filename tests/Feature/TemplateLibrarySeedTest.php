@@ -39,10 +39,10 @@ class TemplateLibrarySeedTest extends TestCase
 
         $this->seed(TemplateLibrarySeeder::class);
 
-        $this->assertSame(133, CertificateTemplate::query()->whereNull('organization_id')->count());
+        $this->assertSame(135, CertificateTemplate::query()->whereNull('organization_id')->count());
         $this->assertSame(20, CertificateTemplate::query()->whereNull('organization_id')->distinct('category')->count('category'));
         $this->assertSame(
-            133,
+            135,
             CertificateTemplate::query()->whereNull('organization_id')->whereNotNull('thumbnail_data')->count()
         );
 
@@ -53,7 +53,7 @@ class TemplateLibrarySeedTest extends TestCase
             ->pluck('total', 'editor_type')
             ->all();
 
-        $this->assertSame(89, (int) ($editorCounts['flow'] ?? 0));
+        $this->assertSame(91, (int) ($editorCounts['flow'] ?? 0));
         $this->assertSame(44, (int) ($editorCounts['fabric'] ?? 0));
 
         $this->assertSame(
@@ -90,6 +90,70 @@ class TemplateLibrarySeedTest extends TestCase
             $this->assertNotNull($assignment->template_id, "Slot [{$slot['key']}] has no default template.");
             $this->assertTrue($assignment->template_id === $assignment->template->id);
         }
+
+        $this->assertPreferredDefaultAssigned($organization, 'student-id-card', 'Classic Blue Student ID Card');
+        $this->assertPreferredDefaultAssigned($organization, 'staff-id-card', 'Classic Blue Staff ID Card');
+    }
+
+    private function assertPreferredDefaultAssigned(Organization $organization, string $slot, string $title): void
+    {
+        $assignment = TemplateAssignment::query()
+            ->where('organization_id', $organization->id)
+            ->where('slot', $slot)
+            ->with('template')
+            ->first();
+
+        $this->assertNotNull($assignment, "Slot [{$slot}] default template missing.");
+        $this->assertSame($title, $assignment->template->title);
+        $this->assertTrue($assignment->template->design_settings['preferred_default'] ?? false);
+        $this->assertEquals(85.6, (float) $assignment->template->card_width_mm);
+        $this->assertEquals(54, (float) $assignment->template->card_height_mm);
+    }
+
+    public function test_provisioning_swaps_non_preferred_system_default_but_keeps_org_copy(): void
+    {
+        $organization = $this->createOrganizationForProvisioning();
+
+        $this->seed(TemplateLibrarySeeder::class);
+
+        $service = app(TemplateAssignmentService::class);
+        $library = app(\App\Services\TemplateLibraryService::class);
+
+        $classic = CertificateTemplate::query()
+            ->whereNull('organization_id')
+            ->where('category', 'id_card')
+            ->where('title', 'Classic Blue Student ID Card')
+            ->firstOrFail();
+
+        // Fresh provisioning assigns the advertised preferred default.
+        $this->assertSame((string) $classic->id, (string) $service->defaultFor($organization, 'student-id-card')->id);
+
+        // A different automatic (system) default is swapped back on re-provision.
+        $otherSystemDefault = CertificateTemplate::query()
+            ->whereNull('organization_id')
+            ->where('category', 'id_card')
+            ->where('title', '!=', 'Classic Blue Student ID Card')
+            ->orderBy('title')
+            ->firstOrFail();
+
+        $service->assign($organization, 'student-id-card', (int) $otherSystemDefault->id);
+
+        $this->seed(TemplateLibrarySeeder::class);
+
+        $restored = $service->defaultFor($organization, 'student-id-card');
+        $this->assertSame((string) $classic->id, (string) $restored->id);
+
+        // An organization-owned copy is an explicit user pick — provisioning
+        // must leave it alone.
+        $copy = $library->copyToOrg($organization, $classic, 'My Edited Card');
+        $service->assign($organization, 'staff-id-card', (int) $copy->id);
+
+        $this->seed(TemplateLibrarySeeder::class);
+
+        $kept = $service->defaultFor($organization, 'staff-id-card');
+        $this->assertNotNull($kept);
+        $this->assertSame((string) $copy->id, (string) $kept->id);
+        $this->assertSame('My Edited Card', $kept->title);
     }
 
     public function test_gallery_payload_serializes_library_designs_with_thumbnails(): void
@@ -169,5 +233,29 @@ class TemplateLibrarySeedTest extends TestCase
             $this->assertArrayNotHasKey('contentJson', $item);
             $this->assertArrayNotHasKey('backContent', $item);
         }
+    }
+
+    private function createOrganizationForProvisioning(): Organization
+    {
+        $this->counter ??= 0;
+        $this->counter++;
+
+        return Organization::query()->create([
+            'name' => 'Gurukul Public School',
+            'slug' => 'gurukul-public-school-'.$this->counter,
+            'email' => "admin{$this->counter}@gurukul.test",
+            'phone' => '9999999999',
+            'address' => 'Main Road',
+            'city' => 'Jaipur',
+            'state' => 'Rajasthan',
+            'country' => 'India',
+            'pincode' => '302001',
+            'type' => 'school',
+            'status' => 'active',
+            'subscription_plan' => 'premium',
+            'max_students' => 1000,
+            'max_staff' => 100,
+            'settings' => [],
+        ]);
     }
 }
