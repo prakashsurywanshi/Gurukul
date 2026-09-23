@@ -1,0 +1,17 @@
+{
+  "title": "Classic School Performance (indigo)",
+  "category": "school_report",
+  "type": "completion",
+  "description": "Classic School Performance School Report design for indigo accent. Editable in the Canvas Designer.",
+  "editor_type": "fabric",
+  "content": "<div class=\"cd-page\" style=\"position:relative;width:210mm;height:297mm;overflow:hidden;background:#fff;\">\n</div>",
+  "content_json": {
+    "version": "6.9.1",
+    "objects": []
+  },
+  "back_content": null,
+  "back_content_json": null,
+  "thumbnail_data": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMTBtbSIgaGVpZ2h0PSIyOTdtbSIgdmlld0JveD0iMCAwIDIxMCAyOTciPjxyZWN0IHdpZHRoPSIyMTAiIGhlaWdodD0iMjk3IiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+",
+  "card_width_mm": 210,
+  "card_height_mm": 297
+}

@@ -2970,6 +2970,22 @@ export const sidebarConfig: {
                 feature: 'Certificate Management',
             },
             {
+                id: 'template-gallery',
+                label: 'Template Gallery',
+                icon: LayoutTemplate,
+                href: '/template-gallery',
+                roles: ['super_admin', 'admin', 'teacher'],
+                feature: 'Template Gallery',
+            },
+            {
+                id: 'template-assignments',
+                label: 'Default Templates',
+                icon: Boxes,
+                href: '/template-assignments',
+                roles: ['super_admin', 'admin'],
+                feature: 'Default Template Assignments',
+            },
+            {
                 id: 'student-certificates',
                 label: 'My Certificates',
                 icon: Award,

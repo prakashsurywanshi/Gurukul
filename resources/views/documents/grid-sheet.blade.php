@@ -119,11 +119,17 @@
                 $card = $face['card'];
                 $watermark = $card['design']['watermark'] ?? [];
                 $elements = $card['design']['elements'] ?? [];
+                $twin = $card['design']['twin'] ?? null;
             @endphp
             <div
                 class="card-face"
                 style="left: {{ $left }}mm; top: {{ $top }}mm; width: {{ $cardW }}mm; height: {{ $cardH }}mm;{{ $face['back'] ? ' transform: scaleX(-1);' : '' }}"
             >
+                @if ($twin)
+                    <div style="position: absolute; left: 0; top: 0; width: {{ $cardW }}mm; height: {{ $cardH }}mm;">
+                        {!! $twin !!}
+                    </div>
+                @else
                 <div class="design-workspace" style="left: {{ $offsetX }}px; top: {{ $offsetY }}px; width: {{ $designW * $scale }}px; height: {{ $designH * $scale }}px;">
                     @if (!empty($watermark['enabled']) && !empty($watermark['text']))
                         <div
@@ -153,6 +159,7 @@
                         </div>
                     @endif
                 </div>
+                @endif
             </div>
         @endforeach
 

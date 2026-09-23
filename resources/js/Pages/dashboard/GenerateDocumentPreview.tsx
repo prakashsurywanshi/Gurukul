@@ -41,6 +41,9 @@ interface Card {
             color: string;
         };
         elements: DesignElement[];
+        twin?: string | null;
+        twinWidth?: number | null;
+        twinHeight?: number | null;
     };
 }
 
@@ -89,6 +92,17 @@ function CardFace({ card, cardW, cardH, back }: { card: Card; cardW: number; car
     const offsetY = (pxH - DESIGN_H * scale) / 2;
 
     const watermark = card.design.watermark;
+
+    if (card.design.twin) {
+        return (
+            <div
+                className="card-face relative overflow-hidden rounded-[2px] border border-slate-300 bg-white"
+                style={{ width: `${cardW}mm`, height: `${cardH}mm` }}
+            >
+                <div className="absolute inset-0" dangerouslySetInnerHTML={{ __html: card.design.twin }} />
+            </div>
+        );
+    }
 
     return (
         <div

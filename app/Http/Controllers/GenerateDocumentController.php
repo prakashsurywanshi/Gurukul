@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Models\IssuedCertificate;
 use App\Services\PdfService;
+use App\Services\TemplateRenderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,10 @@ use Inertia\Response;
 class GenerateDocumentController extends Controller
 {
     private const PRESETS = ['red', 'blue', 'yellow', 'green', 'orange', 'all'];
+
+    public function __construct(private readonly TemplateRenderService $renderer)
+    {
+    }
 
     public function index(): Response
     {
@@ -122,7 +127,7 @@ class GenerateDocumentController extends Controller
         $achievement = $template?->description ?: 'Issued by the school.';
 
         $cards = $students->map(function (Student $student) use ($design, $issueDate, $issuedBy, $achievement, $organization) {
-            $context = [
+            $context = array_merge($this->renderer->schoolAndStudentContext($organization, $student), [
                 'student_name' => trim($student->first_name . ' ' . $student->last_name),
                 'admission_no' => $student->admission_no ?? '',
                 'class' => $student->schoolClass?->name ?? '',
@@ -131,10 +136,20 @@ class GenerateDocumentController extends Controller
                 'issued_by' => $issuedBy,
                 'achievement' => $achievement,
                 'school_name' => $organization->name,
-            ];
+                'school_logo_url' => $organization->logo ? asset('storage/' . $organization->logo) : '',
+                'student_photo_url' => $student->profile_photo ? asset('storage/' . $student->profile_photo) : '',
+            ]);
 
             return $this->buildCard($student, $design, $context);
         })->values()->all();
+
+        $cardW = $validated['card'] === 'custom' ? (float) $validated['w'] : $this->cardSize($validated['card'])[0];
+        $cardH = $validated['card'] === 'custom' ? (float) $validated['h'] : $this->cardSize($validated['card'])[1];
+
+        if ($design['twin'] ?? null) {
+            $cardW = $design['twinWidth'] ?: $cardW;
+            $cardH = $design['twinHeight'] ?: $cardH;
+        }
 
         return [
             'organization' => $organization,
@@ -143,8 +158,8 @@ class GenerateDocumentController extends Controller
             'sheet' => [
                 'layout' => $validated['layout'],
                 'card' => $validated['card'],
-                'cardW' => $validated['card'] === 'custom' ? (float) $validated['w'] : $this->cardSize($validated['card'])[0],
-                'cardH' => $validated['card'] === 'custom' ? (float) $validated['h'] : $this->cardSize($validated['card'])[1],
+                'cardW' => $cardW,
+                'cardH' => $cardH,
                 'paper' => $validated['paper'],
                 'orientation' => $validated['orientation'],
                 'margin' => (float) $validated['margin'],
@@ -173,7 +188,11 @@ class GenerateDocumentController extends Controller
         ]);
 
         $template = CertificateTemplate::query()
-            ->where('organization_id', $organization->id)
+            ->where(function ($query) use ($organization) {
+                $query
+                    ->where('organization_id', $organization->id)
+                    ->orWhereNull('organization_id');
+            })
             ->find($validated['template']);
 
         if (! $template) {
@@ -250,24 +269,18 @@ class GenerateDocumentController extends Controller
                 'preset' => $design['preset'],
                 'watermark' => $watermark,
                 'elements' => $elements,
+                'twin' => ! empty($design['twin'])
+                    ? $this->substitute($design['twin'], $context)
+                    : null,
+                'twinWidth' => $design['twinWidth'] ?? null,
+                'twinHeight' => $design['twinHeight'] ?? null,
             ],
         ];
     }
 
     private function substitute(string $content, array $context): string
     {
-        $replacements = [
-            '{{student_name}}' => $context['student_name'] ?? '',
-            '{{admission_no}}' => $context['admission_no'] ?? '',
-            '{{class}}' => $context['class'] ?? '',
-            '{{section}}' => $context['section'] ?? '',
-            '{{school_name}}' => $context['school_name'] ?? '',
-            '{{issue_date}}' => $context['issue_date'] ?? '',
-            '{{issued_by}}' => $context['issued_by'] ?? '',
-            '{{achievement}}' => $context['achievement'] ?? '',
-        ];
-
-        return strtr($content, $replacements);
+        return $this->renderer->substitute($content, $context);
     }
 
     private function normalizeDesign(?CertificateTemplate $template, string $schoolName, string $layout): array
@@ -294,6 +307,17 @@ class GenerateDocumentController extends Controller
                         is_array($raw['watermark'] ?? null) ? $raw['watermark'] : []
                     ),
                     'elements' => $raw['elements'],
+                ];
+            }
+
+            if (! empty($template->content)) {
+                return [
+                    'preset' => $preset,
+                    'watermark' => [],
+                    'elements' => [],
+                    'twin' => $template->content,
+                    'twinWidth' => $template->card_width_mm ? (float) $template->card_width_mm : null,
+                    'twinHeight' => $template->card_height_mm ? (float) $template->card_height_mm : null,
                 ];
             }
         }
@@ -470,7 +494,11 @@ class GenerateDocumentController extends Controller
     private function getTemplateOptions(Organization $organization): array
     {
         return CertificateTemplate::query()
-            ->where('organization_id', $organization->id)
+            ->where(function ($query) use ($organization) {
+                $query
+                    ->where('organization_id', $organization->id)
+                    ->orWhereNull('organization_id');
+            })
             ->where('status', 'active')
             ->latest()
             ->get()

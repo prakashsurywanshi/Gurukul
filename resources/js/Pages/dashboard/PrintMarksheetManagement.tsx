@@ -192,6 +192,41 @@ export default function PrintMarksheetManagement({
         printWindow.document.close();
     };
 
+    const openRawPrintWindow = (title: string, content: string) => {
+        const printWindow = window.open('', '_blank', 'width=1000,height=700');
+        if (!printWindow) {
+            toast.error('Unable to open print preview.');
+            return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(content);
+        printWindow.document.close();
+    };
+
+    const fetchServerTemplatePrint = async (slot: string, studentIds: number[], examId?: number): Promise<string | null> => {
+        try {
+            const response = await fetch('/template-print', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ slot, student_ids: studentIds, exam_id: examId }),
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const payload = (await response.json()) as { html?: string | null };
+            return payload.html ?? null;
+        } catch {
+            return null;
+        }
+    };
+
     const buildMarksheetData = (student: any) => {
         const rows = (selectedGroup?.exams || []).map((exam: any) => {
             const result = (exam.results || []).find((entry: any) => String(entry.student_id) === String(student.id));
@@ -288,9 +323,17 @@ export default function PrintMarksheetManagement({
         [eligibleStudents, selectedGroup],
     );
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
         if (!selectedGroup || !selectedStudent || marksheetRows.length === 0) {
             toast.error('Select an examination and student with result data first.');
+            return;
+        }
+
+        const examId = Number(selectedGroup.groupId) || undefined;
+        const serverHtml = await fetchServerTemplatePrint('marksheet', [Number(selectedStudent.id)], examId);
+
+        if (serverHtml) {
+            openRawPrintWindow(`Marksheet - ${escapeHtml(studentDisplayName(selectedStudent))}`, serverHtml);
             return;
         }
 
@@ -300,9 +343,24 @@ export default function PrintMarksheetManagement({
         );
     };
 
-    const handleBulkPrint = () => {
+    const handleBulkPrint = async () => {
         if (!selectedGroup || bulkEligibleStudents.length === 0) {
             toast.error('No marksheets are available for bulk printing in this examination.');
+            return;
+        }
+
+        const studentIds = bulkEligibleStudents.map((student) => Number(student.id)).filter(Boolean);
+        const examId = Number(selectedGroup.groupId) || undefined;
+        const serverHtml = await fetchServerTemplatePrint('marksheet', studentIds, examId);
+
+        if (serverHtml) {
+            openRawPrintWindow(
+                `Bulk Marksheet - ${escapeHtml(String(selectedGroup.name || 'Examination'))}`,
+                serverHtml,
+            );
+            toast.success(
+                `Prepared ${bulkEligibleStudents.length} marksheet${bulkEligibleStudents.length === 1 ? '' : 's'} for printing.`,
+            );
             return;
         }
 

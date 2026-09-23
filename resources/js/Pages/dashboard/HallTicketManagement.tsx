@@ -165,6 +165,41 @@ export default function HallTicketManagement({ user, organization, students, exa
         printWindow.document.close();
     };
 
+    const openRawPrintWindow = (title: string, content: string) => {
+        const printWindow = window.open('', '_blank', 'width=1000,height=700');
+        if (!printWindow) {
+            toast.error('Unable to open print preview.');
+            return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(content);
+        printWindow.document.close();
+    };
+
+    const fetchServerTemplatePrint = async (slot: string, studentIds: number[], examId?: number): Promise<string | null> => {
+        try {
+            const response = await fetch('/template-print', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ slot, student_ids: studentIds, exam_id: examId }),
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const payload = (await response.json()) as { html?: string | null };
+            return payload.html ?? null;
+        } catch {
+            return null;
+        }
+    };
+
     const buildHallTicketMarkup = (student: any) => {
         const rows = printableRows
             .map(
@@ -228,9 +263,20 @@ export default function HallTicketManagement({ user, organization, students, exa
     `;
     };
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
         if (!selectedGroup || !selectedStudent) {
             toast.error('Please select an examination and student first.');
+            return;
+        }
+
+        const examId = Number(selectedGroup.groupId) || undefined;
+        const serverHtml = await fetchServerTemplatePrint('hall-ticket', [Number(selectedStudent.id)], examId);
+
+        if (serverHtml) {
+            openRawPrintWindow(
+                `Hall Ticket - ${escapeHtml(selectedStudent.first_name)} ${escapeHtml(selectedStudent.last_name)}`,
+                serverHtml,
+            );
             return;
         }
 
@@ -240,9 +286,24 @@ export default function HallTicketManagement({ user, organization, students, exa
         );
     };
 
-    const handleBulkPrint = () => {
+    const handleBulkPrint = async () => {
         if (!selectedGroup || eligibleStudents.length === 0) {
             toast.error('No students are available for bulk hall ticket printing.');
+            return;
+        }
+
+        const studentIds = eligibleStudents.map((student) => Number(student.id)).filter(Boolean);
+        const examId = Number(selectedGroup.groupId) || undefined;
+        const serverHtml = await fetchServerTemplatePrint('hall-ticket', studentIds, examId);
+
+        if (serverHtml) {
+            openRawPrintWindow(
+                `Bulk Hall Tickets - ${escapeHtml(String(selectedGroup.name || 'Examination'))}`,
+                serverHtml,
+            );
+            toast.success(
+                `Prepared ${eligibleStudents.length} hall ticket${eligibleStudents.length === 1 ? '' : 's'} for printing.`,
+            );
             return;
         }
 

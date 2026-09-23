@@ -62,13 +62,21 @@ class CertificateController extends Controller
 
         $validated = $this->validateTemplate($request);
 
+        $starter = \App\Support\FabricStarter::certificate();
+
         CertificateTemplate::query()->create([
             'organization_id' => $organization->id,
             'title' => $validated['title'],
             'type' => $validated['type'],
             'description' => $validated['description'] ?: null,
+            'category' => 'certificate',
+            'editor_type' => 'fabric',
             'template_design' => $validated['template_data']['preset'],
             'design_settings' => $validated['template_data'],
+            'content' => $starter['content'],
+            'content_json' => $starter['content_json'],
+            'card_width_mm' => \App\Support\FabricStarter::W_MM,
+            'card_height_mm' => \App\Support\FabricStarter::H_MM,
             'status' => 'active',
         ]);
 
@@ -84,13 +92,26 @@ class CertificateController extends Controller
 
         $validated = $this->validateTemplate($request);
 
-        $certificateTemplate->update([
+        $updates = [
             'title' => $validated['title'],
             'type' => $validated['type'],
             'description' => $validated['description'] ?: null,
             'template_design' => $validated['template_data']['preset'],
             'design_settings' => $validated['template_data'],
-        ]);
+        ];
+
+        // Rows created before the designer integration carry no fabric content.
+        // Back-fill a designer-ready design so they open in the Canvas Designer.
+        if (empty($certificateTemplate->content_json) || empty($certificateTemplate->content)) {
+            $updates['category'] = 'certificate';
+            $updates['editor_type'] = 'fabric';
+            $updates['card_width_mm'] = \App\Support\FabricStarter::W_MM;
+            $updates['card_height_mm'] = \App\Support\FabricStarter::H_MM;
+            $updates['content'] = \App\Support\FabricStarter::certificate()['content'];
+            $updates['content_json'] = \App\Support\FabricStarter::certificate()['content_json'];
+        }
+
+        $certificateTemplate->update($updates);
 
         return redirect()->route('certificates')->with('success', 'Certificate template updated successfully.');
     }

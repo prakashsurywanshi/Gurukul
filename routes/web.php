@@ -15,6 +15,7 @@ use App\Http\Controllers\BiometricSettingsController;
 use App\Http\Controllers\BiometricDeviceController;
 use App\Http\Controllers\CctvController;
 use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\CanvasDesignerController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ClassesController;
 use App\Http\Controllers\CocurricularController;
@@ -28,6 +29,8 @@ use App\Http\Controllers\BookCategoriesController;
 use App\Http\Controllers\CardDesignController;
 use App\Http\Controllers\ApprovalFlowController;
 use App\Http\Controllers\ApprovalInboxController;
+
+use App\Http\Controllers\FlowEditorController;
 
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AdmissionSettingsController;
@@ -45,6 +48,9 @@ use App\Http\Controllers\ExamScheduleSetupController;
 use App\Http\Controllers\ExamTypeController;
 use App\Http\Controllers\GradeScaleController;
 use App\Http\Controllers\GenerateDocumentController;
+use App\Http\Controllers\TemplateGalleryController;
+use App\Http\Controllers\TemplateAssignmentController;
+use App\Http\Controllers\TemplatePrintController;
 use App\Http\Controllers\AssignClassTeacherController;
 use App\Http\Controllers\AssignElectivesController;
 use App\Http\Controllers\ChapterTopicController;
@@ -625,6 +631,7 @@ Route::get('/gate-passes', [GatePassController::class, 'index'])->middleware('st
     Route::get('/exams', [ExamController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams');
     Route::get('/exams/hall-ticket', [ExamController::class, 'hallTicket'])->middleware('staff.permission:Hall Ticket,view')->name('exams.hall-ticket');
     Route::get('/exams/print-marksheet', [ExamController::class, 'printMarksheet'])->middleware('staff.permission:Print Marksheet,view')->name('exams.print-marksheet');
+    Route::post('/template-print', [TemplatePrintController::class, 'print'])->middleware('staff.permission:Hall Ticket,view')->name('template-print');
     Route::get('/exams/report-card', [ReportCardController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams.report-card');
     Route::get('/marksheet-remarks', [ReportCardRemarksController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('marksheet-remarks');
     Route::post('/marksheet-remarks', [ReportCardRemarksController::class, 'save'])->middleware('staff.permission:Exam Management,edit')->name('marksheet-remarks.save');
@@ -713,6 +720,27 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/documents/generate/preview', [GenerateDocumentController::class, 'preview'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate.preview');
     Route::get('/documents/generate/pdf', [GenerateDocumentController::class, 'pdf'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate.pdf');
     Route::post('/documents/generate/archive', [GenerateDocumentController::class, 'archive'])->middleware('staff.permission:Certificate Management,view')->name('documents.generate.archive');
+
+    // Template Gallery + Canvas Designer + default template assignments
+    Route::get('/template-gallery', [TemplateGalleryController::class, 'index'])->middleware('staff.permission:Certificate Management,view')->name('template-gallery');
+    Route::post('/template-gallery/use/{template}', [TemplateGalleryController::class, 'use'])->middleware('staff.permission:Certificate Management,add')->name('template-gallery.use');
+
+    Route::get('/canvas-designer', [CanvasDesignerController::class, 'edit'])->middleware('staff.permission:Certificate Management,view')->name('canvas-designer.create');
+    Route::get('/canvas-designer/{template}', [CanvasDesignerController::class, 'edit'])->middleware('staff.permission:Certificate Management,view')->name('canvas-designer.edit');
+    Route::post('/canvas-designer', [CanvasDesignerController::class, 'save'])->middleware('staff.permission:Certificate Management,add')->name('canvas-designer.save');
+    Route::post('/canvas-designer/{template}', [CanvasDesignerController::class, 'save'])->middleware('staff.permission:Certificate Management,edit')->name('canvas-designer.update');
+    Route::post('/canvas-designer/{template}/duplicate', [CanvasDesignerController::class, 'duplicate'])->middleware('staff.permission:Certificate Management,add')->name('canvas-designer.duplicate');
+    Route::delete('/canvas-designer/{template}', [CanvasDesignerController::class, 'destroy'])->middleware('staff.permission:Certificate Management,delete')->name('canvas-designer.destroy');
+
+    Route::get('/flow-editor', [FlowEditorController::class, 'edit'])->middleware('staff.permission:Certificate Management,view')->name('flow-editor.create');
+    Route::post('/flow-editor', [FlowEditorController::class, 'save'])->middleware('staff.permission:Certificate Management,add')->name('flow-editor.store');
+    Route::get('/flow-editor/{template}', [FlowEditorController::class, 'edit'])->middleware('staff.permission:Certificate Management,view')->name('flow-editor.edit');
+    Route::post('/flow-editor/{template}', [FlowEditorController::class, 'save'])->middleware('staff.permission:Certificate Management,edit')->name('flow-editor.update');
+    Route::post('/flow-editor/{template}/duplicate', [FlowEditorController::class, 'duplicate'])->middleware('staff.permission:Certificate Management,add')->name('flow-editor.duplicate');
+
+    Route::get('/template-assignments', [TemplateAssignmentController::class, 'index'])->middleware('staff.permission:Default Template Assignments,view')->name('template-assignments');
+    Route::post('/template-assignments/assign', [TemplateAssignmentController::class, 'assign'])->middleware('staff.permission:Default Template Assignments,edit')->name('template-assignments.assign');
+    Route::post('/template-assignments/reset', [TemplateAssignmentController::class, 'reset'])->middleware('staff.permission:Default Template Assignments,edit')->name('template-assignments.reset');
     Route::get('/feedback', [FeedbackController::class, 'index'])->middleware('staff.permission:Feedback Management,view')->name('feedback');
     Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('staff.permission:Feedback Management,add')->name('feedback.store');
     Route::patch('/feedback/{feedbackCampaign}', [FeedbackController::class, 'update'])->middleware('staff.permission:Feedback Management,edit')->name('feedback.update');
