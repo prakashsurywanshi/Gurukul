@@ -121,10 +121,53 @@ class IdCardTemplateAssignmentTest extends TestCase
                 ->where('assignedTemplate.cardWidthMm', 85.6));
     }
 
+    public function test_certificate_management_page_exposes_assigned_template_and_per_student_context(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        $year = $this->createAcademicYear($organization);
+        $class = $this->createClass($organization, $year);
+        $student = $this->createStudent($organization, $class, 'CERT-001');
+
+        $template = $this->createCertificateTemplate($organization);
+        app(TemplateAssignmentService::class)->assign($organization, 'certificate', $template->id);
+
+        $this->actingAs($admin)
+            ->get('/certificates')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/CertificateManagement')
+                ->where('assignedTemplate.title', 'Certificate Design')
+                ->where('assignedTemplate.cardWidthMm', 297)
+                ->where('assignedTemplate.cardHeightMm', 210)
+                ->where('students.0.certificateContext.student_name', 'Aarav Mehta')
+                ->where('students.0.certificateContext.school_name', 'Gurukul Public School')
+                ->where('students.0.certificateContext.father_name', 'Rajesh Mehta'));
+    }
+
+    public function test_certificate_management_page_omits_context_when_no_template_assigned(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        $year = $this->createAcademicYear($organization);
+        $class = $this->createClass($organization, $year);
+        $this->createStudent($organization, $class, 'CERT-002');
+
+        $this->actingAs($admin)
+            ->get('/certificates')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard/CertificateManagement')
+                ->where('assignedTemplate', null)
+                ->missing('students.0.certificateContext'));
+    }
+
     private function createIdCardTemplate(Organization $organization, array $tokens): CertificateTemplate
     {
         $twins = '<img src="{{qr_code_url}}" width="40" height="40" />'
-            .'<div>' . ($tokens[0] ?? '{{student_name}}') . ' — {{school_name}}</div>';
+            .'<div>'.($tokens[0] ?? '{{student_name}}').' — {{school_name}}</div>';
 
         return CertificateTemplate::query()->create([
             'organization_id' => $organization->id,
@@ -137,6 +180,23 @@ class IdCardTemplateAssignmentTest extends TestCase
             'back_content' => '<div>{{school_name}}</div>',
             'card_width_mm' => 85.6,
             'card_height_mm' => 54,
+            'status' => 'active',
+        ]);
+    }
+
+    private function createCertificateTemplate(Organization $organization): CertificateTemplate
+    {
+        return CertificateTemplate::query()->create([
+            'organization_id' => $organization->id,
+            'title' => 'Certificate Design',
+            'type' => 'achievement',
+            'category' => 'certificate',
+            'editor_type' => 'fabric',
+            'description' => 'Assigned certificate design',
+            'content' => '<div>{{student_name}} — {{academic_session}} — {{class_section}} — {{father_name}}</div>',
+            'back_content' => null,
+            'card_width_mm' => 297.0,
+            'card_height_mm' => 210.0,
             'status' => 'active',
         ]);
     }

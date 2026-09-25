@@ -17,9 +17,7 @@ use App\Support\TemplateCatalog;
  */
 class TemplateRenderService
 {
-    public function __construct(private readonly TemplateAssignmentService $assignments)
-    {
-    }
+    public function __construct(private readonly TemplateAssignmentService $assignments) {}
 
     /**
      * Resolve the template assigned to a slot (or null when unassigned).
@@ -96,7 +94,7 @@ class TemplateRenderService
         $affiliation = trim($settings['compliance_profile']['affiliation_no'] ?? '');
 
         return [
-            'student_name' => $student ? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) : '',
+            'student_name' => $student ? trim(($student->first_name ?? '').' '.($student->last_name ?? '')) : '',
             'first_name' => $student?->first_name ?? '',
             'last_name' => $student?->last_name ?? '',
             'admission_no' => $student?->admission_no ?? '',
@@ -124,7 +122,7 @@ class TemplateRenderService
             'class_name' => $student?->schoolClass?->name ?? '',
             'section_name' => $student?->schoolClass?->section ?? '',
             'class_section' => $student
-                ? trim(($student->schoolClass?->name ?? '') . ($student->schoolClass?->section ? ' - ' . $student->schoolClass->section : ''))
+                ? trim(($student->schoolClass?->name ?? '').($student->schoolClass?->section ? ' - '.$student->schoolClass->section : ''))
                 : '',
             'school_name' => $organization->name,
             'school_address' => $organization->address ?? '',
@@ -134,8 +132,8 @@ class TemplateRenderService
             'school_email' => $organization->email ?? '',
             'school_website' => $organization->website ?? '',
             'school_affiliation' => $affiliation,
-            'school_logo_url' => $organization->logo ? asset('storage/' . $organization->logo) : '',
-            'student_photo_url' => $student?->profile_photo ? asset('storage/' . $student->profile_photo) : '',
+            'school_logo_url' => $organization->logo ? asset('storage/'.$organization->logo) : '',
+            'student_photo_url' => $student?->profile_photo ? asset('storage/'.$student->profile_photo) : '',
             'currency_code' => $currency,
             'currency_symbol' => $currencySymbol,
             'academic_session' => $session,
@@ -243,5 +241,25 @@ class TemplateRenderService
         $context['qr_code_url'] = '';
 
         return $context;
+    }
+
+    /**
+     * Token context for a certificate twin (certificate slot), covering the
+     * school + student vocabulary plus the issue-time fields a certificate
+     * template typically renders. Values that depend on the issuing form
+     * (achievement/reason, issue date, issued by) start empty and callers pass
+     * them through $overrides.
+     */
+    public function certificateContext(Organization $organization, Student $student, array $overrides = []): array
+    {
+        $context = $this->schoolAndStudentContext($organization, $student);
+        $context['student_name'] = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+        $context['roll_no'] = $student->roll_number ?? $context['roll_no'] ?? '';
+        $context['achievement'] = '';
+        $context['signatory_name'] = '';
+        $context['issue_date'] = now()->format('j F Y');
+        $context['issued_by'] = '';
+
+        return array_merge($context, $overrides);
     }
 }

@@ -28,12 +28,18 @@ class CertificateController extends Controller
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
 
+        $assignments = app(TemplateAssignmentService::class);
+        $assignedTemplate = $organization
+            ? $assignments->defaultFor($organization, 'certificate')
+            : null;
+
         return Inertia::render('dashboard/CertificateManagement', [
             'user' => $user,
             'schoolName' => $organization?->name ?? 'Gurukul School',
             'certificates' => $organization ? $this->getCertificateTemplates($organization) : [],
-            'students' => $organization ? $this->getStudents($organization) : [],
+            'students' => $organization ? $this->getStudents($organization, $assignedTemplate !== null) : [],
             'issuedCertificates' => $organization ? $this->getIssuedCertificates($organization) : [],
+            'assignedTemplate' => $assignments->serializeAssignedTemplate($assignedTemplate),
         ]);
     }
 
@@ -186,7 +192,7 @@ class CertificateController extends Controller
                 'certificate_template_id' => $template->id,
                 'student_id' => $student->id,
                 'certificate_number' => $this->generateCertificateNumber($organization),
-                'student_name' => trim($student->first_name . ' ' . $student->last_name),
+                'student_name' => trim($student->first_name.' '.$student->last_name),
                 'student_name_mr' => $this->regionalStudentName($student, 'mr'),
                 'student_name_hi' => $this->regionalStudentName($student, 'hi'),
                 'class' => $student->schoolClass?->name ?? '',
@@ -209,7 +215,7 @@ class CertificateController extends Controller
 
         return redirect()
             ->route('certificates')
-            ->with('success', $count . ' certificate' . ($count === 1 ? '' : 's') . ' issued successfully.');
+            ->with('success', $count.' certificate'.($count === 1 ? '' : 's').' issued successfully.');
     }
 
     public function marksheet()
@@ -279,25 +285,35 @@ class CertificateController extends Controller
             ->all();
     }
 
-    private function getStudents(Organization $organization): array
+    private function getStudents(Organization $organization, bool $withContext = false): array
     {
+        $renderer = app(TemplateRenderService::class);
+
         return Student::query()
             ->forCurrentSession($organization->id)
             ->with('schoolClass:id,name,section')
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->get()
-            ->map(fn (Student $student) => [
-                'id' => (string) $student->id,
-                'admission_no' => $student->admission_no,
-                'first_name' => $student->first_name,
-                'first_name_mr' => $student->first_name_mr,
-                'last_name' => $student->last_name,
-                'last_name_mr' => $student->last_name_mr,
-                'class' => $student->schoolClass?->name,
-                'section' => $student->schoolClass?->section,
-                'roll_number' => $student->roll_number,
-            ])
+            ->map(function (Student $student) use ($organization, $withContext, $renderer) {
+                $row = [
+                    'id' => (string) $student->id,
+                    'admission_no' => $student->admission_no,
+                    'first_name' => $student->first_name,
+                    'first_name_mr' => $student->first_name_mr,
+                    'last_name' => $student->last_name,
+                    'last_name_mr' => $student->last_name_mr,
+                    'class' => $student->schoolClass?->name,
+                    'section' => $student->schoolClass?->section,
+                    'roll_number' => $student->roll_number,
+                ];
+
+                if ($withContext) {
+                    $row['certificateContext'] = $renderer->certificateContext($organization, $student);
+                }
+
+                return $row;
+            })
             ->all();
     }
 
@@ -512,7 +528,7 @@ class CertificateController extends Controller
         $suffix = $language === 'hi' ? 'hi' : 'mr';
         $firstName = $student->{'first_name_'.$suffix} ?? '';
         $lastName = $student->{'last_name_'.$suffix} ?? '';
-        $regionalName = trim($firstName . ' ' . $lastName);
+        $regionalName = trim($firstName.' '.$lastName);
 
         return $regionalName !== '' ? $regionalName : null;
     }

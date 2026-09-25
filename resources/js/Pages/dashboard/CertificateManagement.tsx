@@ -31,6 +31,7 @@ import {
     Italic,
     Move,
     Plus,
+    Sparkles,
     Trash2,
     Type,
     Underline,
@@ -44,6 +45,12 @@ import DashboardLayout from '../DashboardLayout';
 import { Textarea } from '../ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { formatDate } from '../ui/utils';
+import {
+    AssignedIdCardTemplate,
+    IdCardFace,
+    idCardFaces,
+    openIdCardPrintWindow,
+} from '../../lib/templateTwin';
 
 interface CertificateManagementProps {
     user: any;
@@ -51,6 +58,7 @@ interface CertificateManagementProps {
     certificates: Certificate[];
     students: StudentRecord[];
     issuedCertificates: IssuedCertificateRecord[];
+    assignedTemplate?: AssignedIdCardTemplate | null;
 }
 
 type TemplatePreset = 'red' | 'blue' | 'yellow' | 'green' | 'orange' | 'all';
@@ -107,6 +115,8 @@ interface StudentRecord {
     last_name_mr?: string | null;
     class?: string | null;
     section?: string | null;
+    roll_number?: string | null;
+    certificateContext?: Record<string, string | number | boolean | null>;
 }
 
 interface IssuedCertificateRecord {
@@ -401,12 +411,58 @@ const escapeHtml = (value: string) =>
 const getStudentFullName = (student: StudentRecord) =>
     [student.first_name, student.last_name].filter(Boolean).join(' ').trim();
 
+const PX_PER_MM = 96 / 25.4;
+
+function ScaledCertificatePreview({ faces }: { faces: IdCardFace[] }) {
+    const { t } = useLanguage();
+    const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
+    const [availableWidth, setAvailableWidth] = useState(760);
+
+    useEffect(() => {
+        if (!containerRef) return;
+        const update = () => setAvailableWidth(containerRef.clientWidth || 760);
+        update();
+        const observer = new ResizeObserver(update);
+        observer.observe(containerRef);
+        return () => observer.disconnect();
+    }, [containerRef]);
+
+    if (faces.length === 0) {
+        return <div className="py-10 text-center text-sm text-gray-500">{t('No preview available.')}</div>;
+    }
+
+    const face = faces[0];
+    const nativeWidth = Math.max(1, face.widthMm * PX_PER_MM);
+    const nativeHeight = Math.max(1, face.heightMm * PX_PER_MM);
+    const scale = Math.min(1, availableWidth / nativeWidth) || 1;
+
+    return (
+        <div ref={setContainerRef} className="w-full">
+            <div className="flex justify-center overflow-hidden py-2">
+                <div style={{ width: nativeWidth * scale, height: nativeHeight * scale }}>
+                    <div
+                        className="relative overflow-hidden rounded-sm border border-slate-300 bg-white shadow-sm"
+                        style={{
+                            width: nativeWidth,
+                            height: nativeHeight,
+                            transform: `scale(${scale})`,
+                            transformOrigin: 'top left',
+                        }}
+                        dangerouslySetInnerHTML={{ __html: face.html }}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function CertificateManagement({
     user,
     schoolName,
     certificates,
     students,
     issuedCertificates,
+    assignedTemplate = null,
 }: CertificateManagementProps) {
     const { t } = useLanguage();
     const page = usePage<{
@@ -711,6 +767,62 @@ export default function CertificateManagement({
         }),
         [formData, schoolName, students, printLanguage],
     );
+
+    const templateEnabled = Boolean(assignedTemplate && assignedTemplate.content);
+
+    const asText = (value: unknown) => (value == null ? '' : String(value));
+
+    const applicationContext = useMemo(() => {
+        const previewStudent =
+            students.find((student) => student.id === formData.previewStudentId) ?? null;
+        const base = previewStudent?.certificateContext ?? {};
+
+        return {
+            ...base,
+            student_name:
+                localizedStudentName(previewStudent, printLanguage) ||
+                formData.studentName ||
+                'Student Name',
+            admission_no: formData.admissionNo || asText(base.admission_no) || '',
+            class: formData.className || asText(base.class) || '',
+            section: formData.section || asText(base.section) || '',
+            roll_no: asText(base.roll_no) || '',
+            achievement: formData.reason || 'Achievement',
+            issue_date: formatIssueDate(formData.date) || '',
+            issued_by: formData.issuedBy || '',
+            school_name: formData.schoolName || schoolName,
+        };
+    }, [
+        students,
+        formData.previewStudentId,
+        formData.studentName,
+        formData.admissionNo,
+        formData.className,
+        formData.section,
+        formData.reason,
+        formData.date,
+        formData.issuedBy,
+        formData.schoolName,
+        printLanguage,
+        schoolName,
+    ]);
+
+    const certificateFaces = useMemo(() => {
+        if (!templateEnabled || !assignedTemplate) return [];
+        return idCardFaces(assignedTemplate, applicationContext);
+    }, [assignedTemplate, templateEnabled, applicationContext]);
+
+    const handleDownloadDefaultCertificate = () => {
+        if (!templateEnabled || !assignedTemplate || certificateFaces.length === 0) {
+            toast.error(t('No default certificate template is assigned.'));
+            return;
+        }
+
+        openIdCardPrintWindow(
+            `${assignedTemplate.title} - ${formData.studentName || 'Certificate'}`,
+            [certificateFaces],
+        );
+    };
 
     const availableClassOptions = useMemo(() => {
         const dynamicOptions = students
@@ -2272,6 +2384,126 @@ export default function CertificateManagement({
                         </CardContent>
                     </Card>
                 </div>
+
+                {templateEnabled && assignedTemplate ? (
+                    <Card className="overflow-hidden border-indigo-200">
+                        <CardHeader className="border-b bg-indigo-50/70">
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Sparkles className="h-5 w-5 text-indigo-600" />
+                                        {t('Default Certificate (Template Gallery)')}
+                                    </CardTitle>
+                                    <p className="mt-1 text-sm text-indigo-700">
+                                        {t('Certificate previews and downloads use the default gallery template:')}
+                                        <span className="font-medium"> {assignedTemplate.title}</span>
+                                        {t('. Manage it from the default template assignments.')}
+                                    </p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <div className="flex overflow-hidden rounded-md border border-slate-200 bg-white">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPrintLanguage('en')}
+                                            className={`px-3 py-2 text-sm font-medium transition ${printLanguage === 'en' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
+                                        >
+                                            {t('English')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPrintLanguage('mr')}
+                                            className={`px-3 py-2 text-sm font-medium transition ${printLanguage === 'mr' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'}`}
+                                        >
+                                            मराठी
+                                        </button>
+                                    </div>
+                                    <Button onClick={handleDownloadDefaultCertificate}>
+                                        <Download className="mr-2 h-4 w-4" />
+                                        {t('Download')}
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-6 p-5">
+                            <div className="rounded-xl border bg-slate-100 p-4">
+                                <ScaledCertificatePreview faces={certificateFaces} />
+                            </div>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-base">{t('Certificate Variables')}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                                        <div className="space-y-2">
+                                            <Label>{t('Select Student')}</Label>
+                                            <Select
+                                                value={formData.previewStudentId}
+                                                onValueChange={handlePreviewStudentChange}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue
+                                                        placeholder={
+                                                            students.length
+                                                                ? t('Select student')
+                                                                : t('No students available')
+                                                        }
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {students.map((student) => (
+                                                        <SelectItem key={student.id} value={student.id}>
+                                                            {getStudentFullName(student)}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Student Name')}</Label>
+                                            <Input value={formData.studentName} readOnly />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Admission No')}</Label>
+                                            <Input value={formData.admissionNo} readOnly />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Class')}</Label>
+                                            <Input value={formData.className} readOnly />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Section')}</Label>
+                                            <Input value={formData.section} readOnly />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <div className="space-y-2">
+                                            <Label>{t('Achievement / Reason')}</Label>
+                                            <Input
+                                                value={formData.reason}
+                                                onChange={(event) => handleInputChange('reason', event.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Issue Date')}</Label>
+                                            <Input
+                                                type="date"
+                                                value={formData.date}
+                                                onChange={(event) => handleInputChange('date', event.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Issued By')}</Label>
+                                            <Input
+                                                value={formData.issuedBy}
+                                                onChange={(event) => handleInputChange('issuedBy', event.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </CardContent>
+                    </Card>
+                ) : null}
 
                 <Tabs defaultValue="templates" className="space-y-4">
                     <TabsList className="h-auto w-full justify-start gap-2 rounded-2xl bg-white p-2 shadow-sm">
