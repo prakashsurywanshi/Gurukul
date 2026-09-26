@@ -2,7 +2,15 @@ import { router } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 import { GraduationCap, Users, School, Wallet, ShieldAlert, HeartPulse, Search } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../../Pages/ui/command';
+import { buttonShineClasses } from '../../Pages/ui/button';
+import {
+    CommandDialog,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '../../Pages/ui/command';
 
 interface SearchResult {
     id: string;
@@ -101,7 +109,7 @@ export default function GlobalSearch() {
             <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 shadow-sm transition hover:bg-[var(--accent)] md:w-64 lg:w-80"
+                className={`dashboard-header-button ${buttonShineClasses} flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 shadow-sm transition md:w-64 lg:w-80`}
             >
                 <Search className="h-4 w-4 shrink-0 text-[var(--primary)]" />
                 <span className="hidden w-full text-left text-sm text-[var(--muted-foreground)] md:inline">
@@ -113,15 +121,9 @@ export default function GlobalSearch() {
             </button>
 
             <CommandDialog open={open} onOpenChange={setOpen}>
-                <CommandInput
-                    placeholder={t('Search students / staff')}
-                    value={q}
-                    onValueChange={setQ}
-                />
+                <CommandInput placeholder={t('Search students / staff')} value={q} onValueChange={setQ} />
                 <CommandList>
-                    <CommandEmpty>
-                        {loading ? '' : t('No results found.')}
-                    </CommandEmpty>
+                    <CommandEmpty>{loading ? '' : t('No results found.')}</CommandEmpty>
 
                     {GROUP_KEYS.map((groupKey) => {
                         const items = results[groupKey];
@@ -141,7 +143,9 @@ export default function GlobalSearch() {
                                         <span className="min-w-0 flex-1 truncate">
                                             <span className="font-medium text-[var(--foreground)]">{item.name}</span>
                                             {item.subtitle && (
-                                                <span className="ml-2 text-xs text-[var(--muted-foreground)]">{item.subtitle}</span>
+                                                <span className="ml-2 text-xs text-[var(--muted-foreground)]">
+                                                    {item.subtitle}
+                                                </span>
                                             )}
                                         </span>
                                     </CommandItem>

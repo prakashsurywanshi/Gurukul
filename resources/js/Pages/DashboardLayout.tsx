@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { User, LogOut, Menu, X, ChevronDown, Pencil, CalendarCheck, Globe } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import Sidebar from './Sidebar';
-import { Button } from './ui/button';
+import { Button, buttonShineClasses } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import {
     DropdownMenu,
@@ -23,40 +23,50 @@ import { panelStyleVars, type PanelAppearance } from '../lib/panelTheme';
 
 export default function DashboardLayout({ user, activeTab, onLogout, appearance, children }: any) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { activeSession, subscriptionNotice, impersonation, staffPermissions, headerNotifications, chatUnread, panelAppearance } =
-        usePage<{
-            activeSession?: string | null;
-            staffPermissions?: Record<string, Record<string, boolean>>;
-            subscriptionNotice?: {
+    const {
+        activeSession,
+        subscriptionNotice,
+        impersonation,
+        staffPermissions,
+        headerNotifications,
+        chatUnread,
+        panelAppearance,
+    } = usePage<{
+        activeSession?: string | null;
+        staffPermissions?: Record<string, Record<string, boolean>>;
+        subscriptionNotice?: {
+            message: string;
+            daysUntilExpiry: number;
+            expiryDate: string;
+        } | null;
+        impersonation?: {
+            isImpersonating: boolean;
+            impersonator: {
+                id: number;
+                name: string;
+                email: string;
+                role: string;
+            };
+        } | null;
+        headerNotifications?: {
+            items: {
+                id: string;
+                title: string;
                 message: string;
-                daysUntilExpiry: number;
-                expiryDate: string;
-            } | null;
-            impersonation?: {
-                isImpersonating: boolean;
-                impersonator: {
-                    id: number;
-                    name: string;
-                    email: string;
-                    role: string;
-                };
-            } | null;
-            headerNotifications?: {
-                items: {
-                    id: string;
-                    title: string;
-                    message: string;
-                    read: boolean;
-                    created_at?: string | null;
-                }[];
-                unreadCount: number;
-            } | null;
-            chatUnread?: number;
-            panelAppearance?: PanelAppearance | null;
-        }>().props;
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user?.role);
+                read: boolean;
+                created_at?: string | null;
+            }[];
+            unreadCount: number;
+        } | null;
+        chatUnread?: number;
+        panelAppearance?: PanelAppearance | null;
+    }>().props;
+    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(
+        user?.role,
+    );
     const canViewTodo = user?.role === 'super_admin' || (isManagedStaffRole && Boolean(staffPermissions?.Todo?.view));
-    const canSearchPeople = ['super_admin', 'branch_admin'].includes(user?.role) || Boolean(staffPermissions?.['Search Students']?.view);
+    const canSearchPeople =
+        ['super_admin', 'branch_admin'].includes(user?.role) || Boolean(staffPermissions?.['Search Students']?.view);
     const { t } = useLanguage();
 
     const formatRole = (role: string) =>
@@ -90,12 +100,15 @@ export default function DashboardLayout({ user, activeTab, onLogout, appearance,
     }, []);
 
     return (
-        <div className="dashboard-theme flex h-screen bg-[var(--background)]" style={panelStyleVars(appearance ?? panelAppearance)}>
+        <div
+            className="dashboard-theme flex h-screen bg-[var(--background)]"
+            style={panelStyleVars(appearance ?? panelAppearance)}
+        >
             <div className="lg:hidden fixed top-4 left-4 z-50">
                 <Button
                     variant="outline"
                     size="icon"
-                    className="border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm hover:bg-[var(--accent)]"
+                    className="dashboard-header-button border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm hover:translate-y-0 hover:bg-[var(--card)] hover:text-[var(--foreground)]"
                     onClick={() => setSidebarOpen(!sidebarOpen)}
                 >
                     {sidebarOpen ? <X /> : <Menu />}
@@ -127,8 +140,9 @@ export default function DashboardLayout({ user, activeTab, onLogout, appearance,
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-sm shadow-sm">
                             <CalendarCheck className="h-4 w-4 text-[var(--primary)]" />
-                            <span className="text-[var(--muted-foreground)]">{t('nav.session')}:</span>
-                            <span className="font-semibold text-[var(--foreground)]">{activeSession || t('Not Set')}</span>
+                            <span className="font-semibold text-[var(--foreground)]">
+                                {activeSession || t('Not Set')}
+                            </span>
                         </div>
 
                         {canViewTodo && <TodoBell active={activeTab === 'todo'} />}
@@ -143,7 +157,7 @@ export default function DashboardLayout({ user, activeTab, onLogout, appearance,
 
                         <button
                             onClick={() => window.open('/', '_blank')}
-                            className="inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--secondary)] p-2 shadow-sm transition hover:bg-[var(--accent)]"
+                            className={`dashboard-header-button ${buttonShineClasses} inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--secondary)] p-2 shadow-sm transition`}
                             title={t('nav.visitWebsite')}
                         >
                             <Globe className="h-4 w-4 text-[var(--primary)]" />
@@ -151,7 +165,9 @@ export default function DashboardLayout({ user, activeTab, onLogout, appearance,
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-left shadow-sm transition hover:bg-[var(--accent)]">
+                                <button
+                                    className={`dashboard-header-button ${buttonShineClasses} flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--secondary)] px-3 py-2 text-left shadow-sm transition`}
+                                >
                                     <Avatar className="h-9 w-9">
                                         <AvatarFallback className="bg-[linear-gradient(135deg,#bfdbfe,#60a5fa)] font-semibold text-[#08131f]">
                                             {user.name?.charAt(0).toUpperCase()}

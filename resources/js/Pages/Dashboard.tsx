@@ -1,5 +1,6 @@
 import { useLanguage } from '../i18n/LanguageProvider';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import SuperAdminDashboard from './dashboard/SuperAdminDashboard';
 import SuperAdminIntegrationKeys from './dashboard/SuperAdminIntegrationKeys';
 import SuperAdminKnowledgeBaseCms from './dashboard/SuperAdminKnowledgeBaseCms';
@@ -7,8 +8,15 @@ import SuperAdminSmtpSettings from './dashboard/SuperAdminSmtpSettings';
 import { SuperAdminProfile } from './Profile';
 import EditProfile from './EditProfile';
 import { router } from '@inertiajs/react';
-import { BookText, Building2, KeyRound, LayoutDashboard, Mail, PanelLeft, UserRound, X } from 'lucide-react';
-import { useState } from 'react';
+import { BookText, Building2, KeyRound, LayoutDashboard, Mail, PanelLeft, Search, UserRound, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+
+const normalizeSuperAdminSearchValue = (value: string) => value.normalize('NFKD').toLocaleLowerCase().trim();
+
+const superAdminSearchMatches = (tokens: string[], values: string[]) => {
+    const normalizedValues = values.map(normalizeSuperAdminSearchValue);
+    return tokens.every((token) => normalizedValues.some((value) => value.includes(token)));
+};
 
 interface DashboardProps {
     user: any;
@@ -36,6 +44,8 @@ export default function Dashboard({
 }: DashboardProps) {
     const { t } = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarSearch, setSidebarSearch] = useState('');
+    const sidebarSearchRef = useRef<HTMLInputElement>(null);
     const handleLogout = () => {
         if (confirm('Are you sure you want to logout?')) {
             router.post('/logout');
@@ -86,6 +96,12 @@ export default function Dashboard({
         },
     ];
 
+    const searchTokens = normalizeSuperAdminSearchValue(sidebarSearch).split(/\s+/).filter(Boolean);
+    const filteredNavigationItems = navigationItems.filter((item) =>
+        superAdminSearchMatches(searchTokens, [t(item.label), item.id, item.path]),
+    );
+    const isSearching = searchTokens.length > 0;
+
     return (
         <div className="dashboard-theme flex h-screen bg-transparent">
             <div className="fixed left-4 top-4 z-50 lg:hidden">
@@ -119,30 +135,90 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    <nav className="flex-1 space-y-2 px-4 py-6">
-                        {navigationItems.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = superAdminView === item.id;
-
-                            return (
+                    <div className="border-b border-[rgba(59,130,246,0.12)] px-4 py-3">
+                        <div className="relative">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-[rgba(226,232,240,0.48)]" />
+                            <Input
+                                ref={sidebarSearchRef}
+                                type="search"
+                                value={sidebarSearch}
+                                onChange={(event) => setSidebarSearch(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Escape') {
+                                        event.preventDefault();
+                                        setSidebarSearch('');
+                                    }
+                                }}
+                                placeholder={t('Search')}
+                                aria-label={t('Search')}
+                                aria-controls="super-admin-navigation-results"
+                                autoComplete="off"
+                                spellCheck={false}
+                                className="sidebar-search-input h-9 pl-10 pr-10 text-[var(--sidebar-foreground)] [&::-webkit-search-cancel-button]:hidden"
+                            />
+                            {sidebarSearch && (
                                 <button
-                                    key={item.id}
                                     type="button"
                                     onClick={() => {
-                                        setSidebarOpen(false);
-                                        router.visit(item.path);
+                                        setSidebarSearch('');
+                                        sidebarSearchRef.current?.focus();
                                     }}
-                                    className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition ${
-                                        isActive
-                                            ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)]'
-                                            : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
-                                    }`}
+                                    className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[rgba(226,232,240,0.6)] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3b82f6]"
+                                    aria-label={t('Clear search')}
                                 >
-                                    <Icon className="h-5 w-5" />
-                                    <span className="font-medium">{t(item.label)}</span>
+                                    <X className="h-3.5 w-3.5" />
                                 </button>
-                            );
-                        })}
+                            )}
+                        </div>
+                        <span className="sr-only" aria-live="polite">
+                            {isSearching ? `${filteredNavigationItems.length} ${t('Results')}` : ''}
+                        </span>
+                    </div>
+
+                    <nav
+                        id="super-admin-navigation-results"
+                        aria-label={t('Menu')}
+                        className="flex-1 space-y-2 overflow-y-auto px-4 py-6"
+                    >
+                        {isSearching && filteredNavigationItems.length === 0 ? (
+                            <div className="flex flex-col items-center px-4 py-10 text-center" role="status">
+                                <Search className="mb-3 h-7 w-7 text-[rgba(226,232,240,0.35)]" />
+                                <p className="text-sm font-medium text-[rgba(226,232,240,0.8)]">
+                                    {t('No results found.')}
+                                </p>
+                                <p className="mt-1 text-xs text-[rgba(226,232,240,0.5)]">
+                                    {t('Try a different search term.')}
+                                </p>
+                            </div>
+                        ) : (
+                            filteredNavigationItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive =
+                                    superAdminView === item.id ||
+                                    (item.id === 'profile' && superAdminView === 'profile-edit');
+
+                                return (
+                                    <button
+                                        key={item.id}
+                                        type="button"
+                                        aria-current={isActive ? 'page' : undefined}
+                                        onClick={() => {
+                                            setSidebarOpen(false);
+                                            setSidebarSearch('');
+                                            router.visit(item.path);
+                                        }}
+                                        className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition ${
+                                            isActive
+                                                ? 'border border-[rgba(59,130,246,0.42)] bg-[linear-gradient(135deg,#93c5fd,#3b82f6)] text-[#08131f] shadow-[0_14px_28px_rgba(59,130,246,0.22)]'
+                                                : 'text-[rgba(226,232,240,0.76)] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                                        }`}
+                                    >
+                                        <Icon className="h-5 w-5" />
+                                        <span className="font-medium">{t(item.label)}</span>
+                                    </button>
+                                );
+                            })
+                        )}
                     </nav>
 
                     <div className="border-t border-[rgba(59,130,246,0.16)] px-6 py-5">

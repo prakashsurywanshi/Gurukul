@@ -4,6 +4,7 @@ import { MessageCircle, ChevronRight } from 'lucide-react';
 import { createEcho } from '../../lib/echo';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { Badge } from '../../Pages/ui/badge';
+import { buttonShineClasses } from '../../Pages/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../Pages/ui/popover';
 
 interface ChatContact {
@@ -106,7 +107,7 @@ export default function ChatBell({ initialUnread, userId }: ChatBellProps) {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
-                    className="relative inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--secondary)] p-2 shadow-sm transition hover:bg-[var(--accent)]"
+                    className={`dashboard-header-button ${buttonShineClasses} inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--secondary)] p-2 shadow-sm transition`}
                     title={t('Chat')}
                     aria-label={t('Chat')}
                 >
