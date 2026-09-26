@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ChevronRight, Clock3, Flag, Inbox, ListTodo } from 'lucide-react';
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { Badge } from '../../Pages/ui/badge';
+import { buttonShineClasses } from '../../Pages/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../../Pages/ui/popover';
 
 interface UpcomingTodo {
@@ -84,16 +85,15 @@ export default function TodoBell({ active }: TodoBellProps) {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
-                    className={`relative inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-3 py-2 text-sm shadow-sm transition ${
+                    className={`dashboard-header-button ${buttonShineClasses} inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-3 py-2 text-sm shadow-sm transition ${
                         active
-                            ? 'bg-[var(--primary)] text-[var(--primary-foreground)] hover:bg-[var(--primary)]'
-                            : 'bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--accent)]'
+                            ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
+                            : 'bg-[var(--secondary)] text-[var(--foreground)]'
                     }`}
                     title={t('TO DO')}
                     aria-label={t('TO DO')}
                 >
                     <ListTodo className="h-4 w-4" />
-                    {t('TO DO')}
                     {activeCount > 0 && (
                         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
                             {activeCount > 99 ? '99+' : activeCount}

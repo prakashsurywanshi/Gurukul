@@ -4,8 +4,11 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from './utils';
 
+const buttonShineClasses =
+    'relative isolate overflow-hidden after:pointer-events-none after:absolute after:inset-y-0 after:left-[-140%] after:w-[65%] after:-skew-x-12 after:bg-linear-to-r after:from-transparent after:via-white/35 after:to-transparent after:opacity-0 after:transition-all after:duration-700 hover:after:left-[140%] hover:after:opacity-100';
+
 const buttonVariants = cva(
-    "relative isolate inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-md border border-transparent text-sm font-semibold transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive after:pointer-events-none after:absolute after:inset-y-0 after:left-[-140%] after:w-[65%] after:-skew-x-12 after:bg-linear-to-r after:from-transparent after:via-white/35 after:to-transparent after:opacity-0 after:transition-all after:duration-700 hover:-translate-y-0.5 hover:after:left-[140%] hover:after:opacity-100 active:translate-y-0",
+    `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border border-transparent text-sm font-semibold transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive ${buttonShineClasses} hover:-translate-y-0.5 active:translate-y-0`,
     {
         variants: {
             variant: {
@@ -56,4 +59,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button';
 
-export { Button, buttonVariants };
+export { Button, buttonVariants, buttonShineClasses };

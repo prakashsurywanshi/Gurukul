@@ -11,7 +11,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
         <Button
             variant="outline"
             size="icon"
-            className={`relative h-9 w-9 rounded-xl border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] ${className}`}
+            className={`dashboard-header-button relative h-9 w-9 rounded-xl border-[var(--border)] bg-[var(--card)] text-[var(--foreground)] shadow-sm transition-all hover:translate-y-0 hover:bg-[var(--card)] hover:text-[var(--foreground)] ${className}`}
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >

@@ -54,7 +54,7 @@
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "embla-carousel-react": "^8.6.0",
-        "fabric": "^6.9.1",
+        "fabric": "^7.4.0",
         "input-otp": "^1.4.2",
         "laravel-echo": "^2.5.0",
         "lucide-react": "^0.577.0",
