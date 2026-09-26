@@ -7199,6 +7199,21 @@ const en = {
     'Bring forward': 'Bring forward',
     'Send backward': 'Send backward',
     'Click to preview': 'Click to preview',
+    'Preferred Language': 'Preferred Language',
+    "Today's focus": "Today's focus",
+    "We'll email a reset link to the address you provide.": "We'll email a reset link to the address you provide.",
+    "Any questions or details you'd like to share...": "Any questions or details you'd like to share...",
+    "Choose something unique that you don't reuse across other services.": "Choose something unique that you don't reuse across other services.",
+    "Enter student's full name": "Enter student's full name",
+    "Enter the student's details below.": "Enter the student's details below.",
+    "Father's Name": "Father's Name",
+    "Father's Occupation": "Father's Occupation",
+    "Father's Phone": "Father's Phone",
+    "Mother's Name": "Mother's Name",
+    "Mother's Occupation": "Mother's Occupation",
+    "Mother's Phone": "Mother's Phone",
+    'Used when regional WhatsApp templates are sent in Auto language.': 'Used when regional WhatsApp templates are sent in Auto language.',
+    "You don't have permission to access user management.": "You don't have permission to access user management.",
 };
 
 export default en;
