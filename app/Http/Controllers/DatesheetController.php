@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\ExamSchedule;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\QwaAutoAlertService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -120,6 +121,12 @@ class DatesheetController extends Controller
             'publish_status' => 'published',
             'datesheet_note' => $validated['note'] ?? null,
         ]);
+
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'exam_results_published',
+            ['exam' => $exam]
+        );
 
         $target = ($validated['scope'] ?? 'all') === 'all' ? 'all classes' : 'the selected class';
 

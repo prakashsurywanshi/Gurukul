@@ -90,6 +90,7 @@ class Student extends Model
         'photo',
         'other_documents',
         'status',
+        'preferred_language',
         'enrollment_status',
         'notes',
         'address_mr',

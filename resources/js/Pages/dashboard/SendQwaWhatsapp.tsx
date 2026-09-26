@@ -2,8 +2,21 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { Activity, Eye, Loader2, MessageSquare, Plus, QrCode, RefreshCw, Trash2 } from 'lucide-react';
+import {
+    Activity,
+    ChevronDown,
+    ChevronRight,
+    Eye,
+    Loader2,
+    MessageSquare,
+    Plus,
+    QrCode,
+    RefreshCw,
+    Trash2,
+} from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
+import QwaAutoAlerts, { QwaAutoAlertRulePayload, QwaAutoAlertTriggerOption } from './QwaAutoAlerts';
+import QwaWhatsappTemplates, { QwaTemplate, TemplateTokenGroup } from './QwaWhatsappTemplates';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -88,10 +101,19 @@ interface SendQwaWhatsappProps {
     }>;
     qwaStatus: QwaStatus;
     queueWorkerStatus: QueueWorkerStatus;
+    qwaTemplates: QwaTemplate[];
+    templateTokens: TemplateTokenGroup[];
+    qwaTemplateLanguages?: Array<{ code: string; name: string }>;
+    autoAlertsEnabled: boolean;
+    qwaAutoAlertTriggerOptions: QwaAutoAlertTriggerOption[];
+    qwaAutoAlertRules: QwaAutoAlertRulePayload[];
 }
+
+export type { QwaTemplate, TemplateTokenGroup };
 
 type AudienceType = 'staff' | 'students' | 'class_section';
 type MessageType = 'text' | 'photo' | 'audio' | 'document';
+type PageView = 'send' | 'templates' | 'automatic';
 
 const roleLabels: Record<string, string> = {
     admin: 'Admins',
@@ -116,6 +138,8 @@ const messageTypeAccepts: Record<MessageType, string> = {
     document: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv',
 };
 
+const NO_TEMPLATE_VALUE = '__none__';
+
 export default function SendQwaWhatsapp({
     user,
     staffRecords,
@@ -123,6 +147,12 @@ export default function SendQwaWhatsapp({
     qwaHistory,
     qwaStatus: initialQwaStatus,
     queueWorkerStatus: initialQueueWorkerStatus,
+    qwaTemplates = [],
+    templateTokens = [],
+    qwaTemplateLanguages = [],
+    autoAlertsEnabled = false,
+    qwaAutoAlertTriggerOptions = [],
+    qwaAutoAlertRules = [],
 }: SendQwaWhatsappProps) {
     const { t } = useLanguage();
     const page = usePage<{
@@ -131,6 +161,7 @@ export default function SendQwaWhatsapp({
     }>();
     const flash = page.props.flash ?? {};
     const validationErrors = page.props.errors ?? {};
+    const [view, setView] = useState<PageView>('send');
     const [showComposeDialog, setShowComposeDialog] = useState(false);
     const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
     const [viewingHistory, setViewingHistory] = useState<SendQwaWhatsappProps['qwaHistory'][number] | null>(null);
@@ -151,6 +182,9 @@ export default function SendQwaWhatsapp({
         messageType: 'text' as MessageType,
         mediaFile: null as File | null,
         mediaCaption: '',
+        templateId: '',
+        templateStaticVars: {} as Record<string, string>,
+        templateLanguage: 'auto',
     });
 
     useEffect(() => {
@@ -171,7 +205,20 @@ export default function SendQwaWhatsapp({
         if (validationErrors.qwa_delivery) {
             toast.error(validationErrors.qwa_delivery);
         }
-    }, [validationErrors.qwa_delivery, validationErrors.qwa_recipients]);
+
+        if (validationErrors.qwa_template) {
+            toast.error(validationErrors.qwa_template);
+        }
+
+        if (validationErrors.qwa_templates) {
+            toast.error(validationErrors.qwa_templates);
+        }
+    }, [
+        validationErrors.qwa_delivery,
+        validationErrors.qwa_recipients,
+        validationErrors.qwa_template,
+        validationErrors.qwa_templates,
+    ]);
 
     const fetchQwaStatus = async (silent = false) => {
         if (!silent) {
@@ -318,8 +365,107 @@ export default function SendQwaWhatsapp({
             messageType: 'text',
             mediaFile: null,
             mediaCaption: '',
+            templateId: '',
+            templateStaticVars: {},
+            templateLanguage: 'auto',
         });
         setFileInputKey((current) => current + 1);
+    };
+
+    const selectedQwaTemplate = useMemo(
+        () => qwaTemplates.find((template) => template.id === composeForm.templateId) ?? null,
+        [composeForm.templateId, qwaTemplates],
+    );
+
+    const selectQwaTemplate = (templateId: string) => {
+        const resetsToNone = templateId === NO_TEMPLATE_VALUE;
+        const template = resetsToNone ? null : (qwaTemplates.find((item) => item.id === templateId) ?? null);
+
+        let subject = composeForm.subject;
+        let content = composeForm.content;
+
+        if (template) {
+            subject = template.name;
+            content = [template.header, template.body, template.footer].filter(Boolean).join('\n');
+        }
+
+        setComposeForm((current) => ({
+            ...current,
+            templateId: resetsToNone ? '' : templateId,
+            subject,
+            content,
+            messageType: 'text',
+            mediaFile: null,
+            templateStaticVars: template
+                ? Object.fromEntries(template.placeholders.map((placeholder) => [placeholder, '']))
+                : {},
+        }));
+    };
+
+    const setStaticVar = (placeholder: string, value: string) => {
+        setComposeForm((current) => ({
+            ...current,
+            templateStaticVars: {
+                ...current.templateStaticVars,
+                [placeholder]: value,
+            },
+        }));
+    };
+
+    const findVariant = (template: QwaTemplate | null, language: string): QwaTemplate | null => {
+        if (!template) {
+            return null;
+        }
+
+        if (template.variantKey && language !== 'auto') {
+            const variant = qwaTemplates.find(
+                (item) =>
+                    item.variantKey === template.variantKey &&
+                    item.language === language &&
+                    item.id !== template.id,
+            );
+
+            if (variant) {
+                return variant;
+            }
+        }
+
+        return template;
+    };
+
+    const selectedQwaVariant = useMemo(() => {
+        if (!selectedQwaTemplate) {
+            return null;
+        }
+
+        return (
+            qwaTemplates.find(
+                (item) =>
+                    item.variantKey === selectedQwaTemplate.variantKey &&
+                    item.language === composeForm.templateLanguage,
+            ) ?? selectedQwaTemplate
+        );
+    }, [selectedQwaTemplate, composeForm.templateLanguage, qwaTemplates]);
+
+    const selectTemplateLanguage = (language: string) => {
+        const variant = findVariant(selectedQwaTemplate, language);
+
+        setComposeForm((current) => ({
+            ...current,
+            templateLanguage: language,
+            subject: variant ? variant.name : current.subject,
+            content: variant
+                ? [variant.header, variant.body, variant.footer].filter(Boolean).join('\n')
+                : current.content,
+            templateStaticVars: variant
+                ? Object.fromEntries(
+                      variant.placeholders.map((placeholder) => [
+                          placeholder,
+                          current.templateStaticVars[placeholder] ?? '',
+                      ]),
+                  )
+                : current.templateStaticVars,
+        }));
     };
 
     const handleComposeMessage = (event: FormEvent<HTMLFormElement>) => {
@@ -351,6 +497,9 @@ export default function SendQwaWhatsapp({
                 messageType: composeForm.messageType,
                 mediaFile: composeForm.mediaFile ?? undefined,
                 mediaCaption: composeForm.mediaCaption,
+                templateId: composeForm.templateId || undefined,
+                templateVars: composeForm.templateId ? composeForm.templateStaticVars : undefined,
+                templateLanguage: composeForm.templateId ? composeForm.templateLanguage : undefined,
             },
             {
                 preserveScroll: true,
@@ -456,6 +605,41 @@ export default function SendQwaWhatsapp({
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+                            <button
+                                type="button"
+                                onClick={() => setView('send')}
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                    view === 'send'
+                                        ? 'bg-white text-slate-900 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-800'
+                                }`}
+                            >
+                                {t('Send Message')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setView('templates')}
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                    view === 'templates'
+                                        ? 'bg-white text-slate-900 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-800'
+                                }`}
+                            >
+                                {t('WhatsApp Templates')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setView('automatic')}
+                                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                    view === 'automatic'
+                                        ? 'bg-white text-slate-900 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-800'
+                                }`}
+                            >
+                                {t('Automatic Alerts')}
+                            </button>
+                        </div>
                         <Button
                             type="button"
                             variant="outline"
@@ -470,6 +654,7 @@ export default function SendQwaWhatsapp({
                             )}
                             {t('Refresh Status')}
                         </Button>
+                        {view === 'send' ? (
                         <Dialog open={showComposeDialog} onOpenChange={setShowComposeDialog}>
                             <DialogTrigger asChild>
                                 <Button className="gap-2">
@@ -685,11 +870,118 @@ export default function SendQwaWhatsapp({
                                         )}
                                     </div>
 
+                                    <div className="space-y-2">
+                                        <Label>{t('Use a synced QWA Template (optional)')}</Label>
+                                        <Select value={composeForm.templateId} onValueChange={selectQwaTemplate}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={t('No template — write your own message')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={NO_TEMPLATE_VALUE}>{t('No template')}</SelectItem>
+                                                {qwaTemplates.map((template) => (
+                                                    <SelectItem key={template.id} value={template.id}>
+                                                        {template.name}
+                                                        {template.canSendNatively
+                                                            ? ` (${t('Native')})`
+                                                            : ` (${t('Text')})`}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {qwaTemplates.length === 0 ? (
+                                            <p className="text-xs text-slate-500">
+                                                {t('No templates synced yet. Open the WhatsApp Templates tab and click Sync from QWA.')}
+                                            </p>
+                                        ) : null}
+                                        {composeForm.templateId && !selectedQwaTemplate ? (
+                                            <p className="text-sm text-red-600">
+                                                {t('The selected template is no longer available.')}
+                                            </p>
+                                        ) : null}
+
+                                        {selectedQwaTemplate ? (
+                                            <div className="space-y-2">
+                                                <Label>{t('Language')}</Label>
+                                                <Select
+                                                    value={composeForm.templateLanguage}
+                                                    onValueChange={selectTemplateLanguage}
+                                                >
+                                                    <SelectTrigger className="bg-white">
+                                                        <SelectValue placeholder={t('Language')} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="auto">
+                                                            {t('Auto (per recipient)')}
+                                                        </SelectItem>
+                                                        {qwaTemplateLanguages.map((option) => (
+                                                            <SelectItem key={option.code} value={option.code}>
+                                                                {option.code.toUpperCase()} — {option.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <p className="text-xs text-slate-500">
+                                                    {t(
+                                                        'Auto sends each recipient the regional variant matching their preferred language; a manual choice forces that language for everyone.',
+                                                    )}
+                                                </p>
+                                            </div>
+                                        ) : null}
+                                    </div>
+
+                                    {selectedQwaVariant && selectedQwaVariant.placeholders.length > 0 ? (
+                                        <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+                                            <p className="text-sm font-medium text-slate-900">
+                                                {t('Template variable values')}
+                                            </p>
+                                            {selectedQwaVariant.placeholders.map((placeholder) => {
+                                                const mapped = selectedQwaVariant.mapping[placeholder] ?? '';
+
+                                                return mapped ? (
+                                                    <div
+                                                        key={placeholder}
+                                                        className="flex items-center gap-2 text-sm text-slate-600"
+                                                    >
+                                                        <Badge variant="secondary" className="font-mono">
+                                                            {'{{'}
+                                                            {placeholder}
+                                                            {'}}'}
+                                                        </Badge>
+                                                        <span>
+                                                            {t('maps to')} {'{{'}
+                                                            {mapped}
+                                                            {'}}'} — {t('auto-filled per recipient')}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        key={placeholder}
+                                                        className="grid items-center gap-2 md:grid-cols-[200px,1fr]"
+                                                    >
+                                                        <Badge variant="secondary" className="justify-self-start font-mono">
+                                                            {'{{'}
+                                                            {placeholder}
+                                                            {'}}'}
+                                                        </Badge>
+                                                        <Input
+                                                            value={composeForm.templateStaticVars[placeholder] ?? ''}
+                                                            onChange={(event) =>
+                                                                setStaticVar(placeholder, event.target.value)
+                                                            }
+                                                            placeholder={t('Enter a static value for this variable')}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : null}
+
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label>{t('Message Type')}</Label>
                                             <Select
                                                 value={composeForm.messageType}
+                                                disabled={Boolean(selectedQwaTemplate)}
                                                 onValueChange={(value: MessageType) =>
                                                     setComposeForm((current) => ({
                                                         ...current,
@@ -812,10 +1104,28 @@ export default function SendQwaWhatsapp({
                                 </form>
                             </DialogContent>
                         </Dialog>
+                        ) : null}
                     </div>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-4">
+                {view === 'templates' ? (
+                    <QwaWhatsappTemplates
+                        qwaTemplates={qwaTemplates}
+                        templateTokens={templateTokens}
+                        qwaTemplateLanguages={qwaTemplateLanguages}
+                        qwaStatus={qwaStatus}
+                    />
+                ) : view === 'automatic' ? (
+                    <QwaAutoAlerts
+                        autoAlertsEnabled={autoAlertsEnabled}
+                        qwaAutoAlertTriggerOptions={qwaAutoAlertTriggerOptions}
+                        qwaAutoAlertRules={qwaAutoAlertRules}
+                        qwaTemplateLanguages={qwaTemplateLanguages}
+                        qwaTemplates={qwaTemplates}
+                    />
+                ) : (
+                    <>
+                        <div className="grid gap-4 lg:grid-cols-4">
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base">{t('Connection Status')}</CardTitle>
@@ -1300,6 +1610,8 @@ export default function SendQwaWhatsapp({
                         ) : null}
                     </DialogContent>
                 </Dialog>
+                    </>
+                )}
             </div>
         </DashboardLayout>
     );

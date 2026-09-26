@@ -38,6 +38,42 @@ class QwaService
         ]);
     }
 
+    public function listTemplates(string $baseUrl, string $apiKey, string $sessionId): array
+    {
+        return $this->request('get', $baseUrl, $apiKey, '/api/sessions/' . rawurlencode($sessionId) . '/templates');
+    }
+
+    /**
+     * Push a locally authored (custom) template to QWA so it is stored on the
+     * gateway and available through the send-template endpoint.
+     */
+    public function createTemplate(string $baseUrl, string $apiKey, string $sessionId, array $payload): array
+    {
+        return $this->request('post', $baseUrl, $apiKey, '/api/sessions/' . rawurlencode($sessionId) . '/templates', $payload);
+    }
+
+    /**
+     * Push the latest local content of an already-created template to QWA.
+     */
+    public function updateTemplate(string $baseUrl, string $apiKey, string $sessionId, string $templateId, array $payload): array
+    {
+        return $this->request('put', $baseUrl, $apiKey, '/api/sessions/' . rawurlencode($sessionId) . '/templates/' . rawurlencode($templateId), $payload);
+    }
+
+    public function sendTemplate(string $baseUrl, string $apiKey, string $sessionId, string $chatId, string $templateId, array $vars): array
+    {
+        $payload = [
+            'chatId' => $chatId,
+            'templateId' => $templateId,
+        ];
+
+        if ($vars !== []) {
+            $payload['vars'] = $vars;
+        }
+
+        return $this->request('post', $baseUrl, $apiKey, '/api/sessions/' . rawurlencode($sessionId) . '/messages/send-template', $payload);
+    }
+
     public function sendMedia(string $mediaType, string $baseUrl, string $apiKey, string $sessionId, array $payload): array
     {
         $endpoint = in_array($mediaType, ['image', 'audio', 'document', 'video', 'sticker'], true)
@@ -55,9 +91,11 @@ class QwaService
                 ->timeout(self::TIMEOUT_SECONDS)
                 ->withHeaders(['X-API-Key' => $apiKey]);
 
-            $response = $method === 'get'
-                ? $pending->get($this->normalizeBaseUrl($baseUrl) . $path)
-                : $pending->post($this->normalizeBaseUrl($baseUrl) . $path, $data);
+            $response = match ($method) {
+                'get' => $pending->get($this->normalizeBaseUrl($baseUrl) . $path),
+                'put' => $pending->put($this->normalizeBaseUrl($baseUrl) . $path, $data),
+                default => $pending->post($this->normalizeBaseUrl($baseUrl) . $path, $data),
+            };
         } catch (ConnectionException $exception) {
             return $this->result(false, 503, 'Unable to reach the QWA server.', null, $exception->getMessage());
         }

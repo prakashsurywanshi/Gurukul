@@ -205,6 +205,73 @@ class StudentBehaviorTest extends TestCase
         return [$student, $class, $year];
     }
 
+    public function test_student_preferred_language_is_stored_and_validated(): void
+    {
+        $organization = $this->createOrganization();
+        app(StaffPermissionService::class)->ensureRolesExist($organization);
+        $admin = $this->createUser($organization, 'admin');
+        [$student, $class] = $this->seedStudent($organization);
+
+        $this->actingAs($admin)
+            ->post('/students', [
+                'first_name' => 'Ananya',
+                'middle_name' => 'Shrikant',
+                'last_name' => 'Kulkarni',
+                'first_name_mr' => 'अनन्या',
+                'middle_name_mr' => 'श्रीकांत',
+                'last_name_mr' => 'कुलकर्णी',
+                'date_of_birth' => '2013-08-12',
+                'gender' => 'female',
+                'class' => $class->name,
+                'section' => $class->section,
+                'admission_date' => '2026-06-01',
+                'preferred_language' => 'hi',
+            ])
+            ->assertRedirect();
+
+        $stored = Student::query()->where('organization_id', $organization->id)
+            ->where('first_name', 'Ananya')
+            ->firstOrFail();
+
+        $this->assertSame('hi', $stored->preferred_language);
+
+        $this->actingAs($admin)
+            ->patch("/students/{$student->id}", [
+                'first_name' => 'Aarav',
+                'middle_name' => 'Kumar',
+                'last_name' => 'Mehta',
+                'first_name_mr' => 'आरव',
+                'middle_name_mr' => 'कुमार',
+                'last_name_mr' => 'मेहता',
+                'date_of_birth' => $student->date_of_birth,
+                'gender' => $student->gender,
+                'class' => $class->name,
+                'section' => $class->section,
+                'admission_date' => $student->admission_date,
+                'preferred_language' => 'mr',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('mr', $student->fresh()->preferred_language);
+
+        $this->actingAs($admin)
+            ->post('/students', [
+                'first_name' => 'Rejected',
+                'middle_name' => 'Bad',
+                'last_name' => 'Err',
+                'first_name_mr' => 'रिजेक्टेड',
+                'middle_name_mr' => 'बॅड',
+                'last_name_mr' => 'एरर',
+                'date_of_birth' => '2013-08-12',
+                'gender' => 'female',
+                'class' => $class->name,
+                'section' => $class->section,
+                'admission_date' => '2026-06-01',
+                'preferred_language' => 'fr',
+            ])
+            ->assertSessionHasErrors('preferred_language');
+    }
+
     private function createRecord(Organization $organization, User $creator, Student $student, string $type): Incident
     {
         return Incident::query()->create([

@@ -35,6 +35,8 @@ interface SubjectRow {
     teacherName?: string | null;
 }
 
+const NO_TEACHER_VALUE = '__no_teacher__';
+
 export default function AssignSubjects({
     user,
     classes,
@@ -267,7 +269,8 @@ export default function AssignSubjects({
                                                                         onValueChange={(value) =>
                                                                             setTeacherIds((current) => ({
                                                                                 ...current,
-                                                                                [row.subjectId]: value as number | '',
+                                                                                [row.subjectId]:
+                                                                                    value === NO_TEACHER_VALUE ? '' : (value as number | ''),
                                                                             }))
                                                                         }
                                                                     >
@@ -277,7 +280,7 @@ export default function AssignSubjects({
                                                                             />
                                                                         </SelectTrigger>
                                                                         <SelectContent>
-                                                                            <SelectItem value="">
+                                                                            <SelectItem value={NO_TEACHER_VALUE}>
                                                                                 {t('No teacher')}
                                                                             </SelectItem>
                                                                             {teachers.map((teacher) => (

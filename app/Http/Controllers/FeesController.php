@@ -18,6 +18,7 @@ use App\Models\StudentFee;
 use App\Models\User;
 use App\Services\AccountTransactionService;
 use App\Services\FeeAuditService;
+use App\Services\QwaAutoAlertService;
 use App\Services\StudentAcademicHistoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -1060,6 +1061,16 @@ class FeesController extends Controller
                 'created_by' => $user->id,
             ]);
         }
+
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'fee_payment_received',
+            [
+                'payment' => $feePayment,
+                'student' => $studentFee->student()->with('schoolClass')->first(),
+                'student_fee' => $studentFee,
+            ]
+        );
 
         return redirect()->route('fees')->with('success', 'Payment collected successfully.');
     }

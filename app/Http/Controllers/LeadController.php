@@ -8,6 +8,7 @@ use App\Models\LeadSource;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\QwaAutoAlertService;
 use App\Services\SystemNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -193,6 +194,17 @@ class LeadController extends Controller
                 'action_label' => 'View Lead',
                 'action_url' => '/leads',
                 'event' => 'lead_created',
+            ]
+        );
+
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'lead',
+            [
+                'subject' => sprintf('New lead%s', $lead->interested_class ? ' for '.$lead->interested_class : ''),
+                'message' => (string) $lead->notes,
+                'name' => $lead->student_name,
+                'event_key' => 'lead:'.$lead->id,
             ]
         );
 

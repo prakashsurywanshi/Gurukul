@@ -1094,6 +1094,7 @@ class SettingsController extends Controller
             'qwa.sessionId' => ['nullable', 'string', 'max:100'],
             'qwa.webhookUrl' => ['nullable', 'string', 'max:255'],
             'qwa.webhookSecret' => ['nullable', 'string', 'max:1000'],
+            'qwa.auto_alerts_enabled' => ['nullable', 'boolean'],
         ]);
 
         $qwa = $validated['qwa'] ?? [];
@@ -1746,6 +1747,7 @@ class SettingsController extends Controller
                 'sessionId' => '',
                 'webhookUrl' => '',
                 'webhookSecret' => '',
+                'auto_alerts_enabled' => false,
             ],
         ];
     }

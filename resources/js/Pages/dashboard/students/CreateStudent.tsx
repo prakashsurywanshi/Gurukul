@@ -43,6 +43,7 @@ export default function CreateStudent({ user, classRecords, admissionCustomField
         date_of_birth: '',
         gender: '',
         blood_group: '',
+        preferred_language: 'en',
         class: '',
         section: '',
         roll_number: '',
@@ -393,6 +394,25 @@ export default function CreateStudent({ user, classRecords, admissionCustomField
                                                     <SelectItem value="O-">{t('O-')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Preferred Language')}</Label>
+                                            <Select
+                                                value={formData.preferred_language}
+                                                onValueChange={(v) => handleInputChange('preferred_language', v)}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t('Select language')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="en">{t('English')}</SelectItem>
+                                                    <SelectItem value="mr">{t('Marathi')}</SelectItem>
+                                                    <SelectItem value="hi">{t('Hindi')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-xs text-slate-500">
+                                                {t('Used when regional WhatsApp templates are sent in Auto language.')}
+                                            </p>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>{t('Admission Date *')}</Label>

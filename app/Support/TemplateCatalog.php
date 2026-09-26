@@ -178,6 +178,7 @@ class TemplateCatalog
                     ['tag' => 'admission_date', 'label' => 'Admission Date', 'kind' => 'text', 'token' => '{{admission_date}}', 'availability' => 'always'],
                     ['tag' => 'date_of_joining', 'label' => 'Date of Joining', 'kind' => 'text', 'token' => '{{date_of_joining}}', 'availability' => 'always'],
                     ['tag' => 'academic_session', 'label' => 'Academic Session', 'kind' => 'text', 'token' => '{{academic_session}}', 'availability' => 'always'],
+                    ['tag' => 'academic_year', 'label' => 'Academic Year', 'kind' => 'text', 'token' => '{{academic_year}}', 'availability' => 'always'],
                     ['tag' => 'class_teacher_name', 'label' => 'Class Teacher Name', 'kind' => 'text', 'token' => '{{class_teacher_name}}', 'availability' => 'always'],
                     ['tag' => 'class_teacher_designation', 'label' => 'Class Teacher Desig.', 'kind' => 'text', 'token' => '{{class_teacher_designation}}', 'availability' => 'always'],
                 ],
@@ -230,6 +231,41 @@ class TemplateCatalog
                 ],
             ],
             [
+                'group' => 'Alerts & Notifications',
+                'items' => [
+                    ['tag' => 'alert_subject', 'label' => 'Alert Subject', 'kind' => 'text', 'token' => '{{alert_subject}}', 'availability' => 'always'],
+                    ['tag' => 'alert_message', 'label' => 'Alert Message', 'kind' => 'text', 'token' => '{{alert_message}}', 'availability' => 'always'],
+                    ['tag' => 'attendance_status', 'label' => 'Attendance Status', 'kind' => 'text', 'token' => '{{attendance_status}}', 'availability' => 'always'],
+                    ['tag' => 'attendance_date', 'label' => 'Attendance Date', 'kind' => 'text', 'token' => '{{attendance_date}}', 'availability' => 'always'],
+                    ['tag' => 'attendance_remarks', 'label' => 'Attendance Remarks', 'kind' => 'text', 'token' => '{{attendance_remarks}}', 'availability' => 'always'],
+                ],
+            ],
+            [
+                'group' => 'Meetings & Events',
+                'items' => [
+                    ['tag' => 'meeting_date', 'label' => 'Meeting Date', 'kind' => 'text', 'token' => '{{meeting_date}}', 'availability' => 'always'],
+                    ['tag' => 'meeting_time', 'label' => 'Meeting Time', 'kind' => 'text', 'token' => '{{meeting_time}}', 'availability' => 'always'],
+                    ['tag' => 'venue', 'label' => 'Venue', 'kind' => 'text', 'token' => '{{venue}}', 'availability' => 'always'],
+                    ['tag' => 'holiday_date', 'label' => 'Holiday Date', 'kind' => 'text', 'token' => '{{holiday_date}}', 'availability' => 'always'],
+                    ['tag' => 'holiday_reason', 'label' => 'Holiday Reason', 'kind' => 'text', 'token' => '{{holiday_reason}}', 'availability' => 'always'],
+                    ['tag' => 'resume_date', 'label' => 'Resume Date', 'kind' => 'text', 'token' => '{{resume_date}}', 'availability' => 'always'],
+                ],
+            ],
+            [
+                'group' => 'Transport',
+                'items' => [
+                    ['tag' => 'stop_name', 'label' => 'Bus Stop', 'kind' => 'text', 'token' => '{{stop_name}}', 'availability' => 'always'],
+                    ['tag' => 'arrival_time', 'label' => 'Arrival Time', 'kind' => 'text', 'token' => '{{arrival_time}}', 'availability' => 'always'],
+                ],
+            ],
+            [
+                'group' => 'Homework & Activities',
+                'items' => [
+                    ['tag' => 'homework_details', 'label' => 'Homework Details', 'kind' => 'text', 'token' => '{{homework_details}}', 'availability' => 'always'],
+                    ['tag' => 'submission_date', 'label' => 'Submission Date', 'kind' => 'text', 'token' => '{{submission_date}}', 'availability' => 'always'],
+                ],
+            ],
+            [
                 'group' => 'Exam & Hall Ticket',
                 'items' => [
                     ['tag' => 'exam_name', 'label' => 'Exam Name', 'kind' => 'text', 'token' => '{{exam_name}}', 'availability' => 'exam'],
@@ -253,6 +289,8 @@ class TemplateCatalog
                 'items' => [
                     ['tag' => 'result_status', 'label' => 'Result (Pass/Fail)', 'kind' => 'text', 'token' => '{{result_status}}', 'availability' => 'result'],
                     ['tag' => 'rank', 'label' => 'Rank', 'kind' => 'text', 'token' => '{{rank}}', 'availability' => 'result'],
+                    ['tag' => 'marks_obtained', 'label' => 'Marks Obtained', 'kind' => 'text', 'token' => '{{marks_obtained}}', 'availability' => 'result'],
+                    ['tag' => 'total_marks', 'label' => 'Total Marks', 'kind' => 'text', 'token' => '{{total_marks}}', 'availability' => 'result'],
                     ['tag' => 'attendance_percentage', 'label' => 'Attendance %', 'kind' => 'text', 'token' => '{{attendance_percentage}}', 'availability' => 'result'],
                     ['tag' => 'present_days', 'label' => 'Present Days', 'kind' => 'text', 'token' => '{{present_days}}', 'availability' => 'result'],
                     ['tag' => 'total_days', 'label' => 'Total Days', 'kind' => 'text', 'token' => '{{total_days}}', 'availability' => 'result'],
@@ -275,6 +313,7 @@ class TemplateCatalog
                     ['tag' => 'payment_date', 'label' => 'Payment Date', 'kind' => 'text', 'token' => '{{payment_date}}', 'availability' => 'fee'],
                     ['tag' => 'payment_date_short', 'label' => 'Payment Date (Short)', 'kind' => 'text', 'token' => '{{payment_date_short}}', 'availability' => 'fee'],
                     ['tag' => 'payment_datetime', 'label' => 'Payment Date & Time', 'kind' => 'text', 'token' => '{{payment_datetime}}', 'availability' => 'fee'],
+                    ['tag' => 'due_date', 'label' => 'Fee Due Date', 'kind' => 'text', 'token' => '{{due_date}}', 'availability' => 'fee'],
                     ['tag' => 'total_paid', 'label' => 'Total Paid', 'kind' => 'text', 'token' => '{{total_paid}}', 'availability' => 'fee'],
                     ['tag' => 'student_overall_balance_due', 'label' => 'Balance Due', 'kind' => 'text', 'token' => '{{student_overall_balance_due}}', 'availability' => 'fee'],
                     ['tag' => 'total_in_words', 'label' => 'Total In Words', 'kind' => 'text', 'token' => '{{total_in_words}}', 'availability' => 'fee'],
@@ -321,6 +360,8 @@ class TemplateCatalog
             '{{current_date}}' => 'current_date',
             '{{issue_date}}' => 'issue_date',
             '{{issued_by}}' => 'issued_by',
+            '{{alert_subject}}' => 'alert_subject',
+            '{{alert_message}}' => 'alert_message',
             '{{achievement}}' => 'achievement',
             '{{exam_name}}' => 'exam_name',
             '{{exam_session}}' => 'exam_session',
@@ -399,6 +440,53 @@ class TemplateCatalog
             '{{signatory_name}}' => 'signatory_name',
             '{{qr_code}}' => 'qr_code',
             '{{admit_card_qr}}' => 'admit_card_qr',
+            // QWA automatic-alert templates (parent meeting, holidays, transport,
+            // exam results, homework, attendance, fees and admission confirmations)
+            // reference named variables beyond the printable vocabulary.
+            '{{academic_year}}' => 'academic_year',
+            '{{meeting_date}}' => 'meeting_date',
+            '{{meeting_time}}' => 'meeting_time',
+            '{{venue}}' => 'venue',
+            '{{holiday_date}}' => 'holiday_date',
+            '{{holiday_reason}}' => 'holiday_reason',
+            '{{resume_date}}' => 'resume_date',
+            '{{stop_name}}' => 'stop_name',
+            '{{arrival_time}}' => 'arrival_time',
+            '{{marks_obtained}}' => 'marks_obtained',
+            '{{total_marks}}' => 'total_marks',
+            '{{homework_details}}' => 'homework_details',
+            '{{submission_date}}' => 'submission_date',
+            '{{attendance_status}}' => 'attendance_status',
+            '{{attendance_date}}' => 'attendance_date',
+            '{{attendance_remarks}}' => 'attendance_remarks',
+            '{{due_date}}' => 'due_date',
         ];
+    }
+
+    /**
+     * Grouped, text-only placeholder palette exposed to writers of WhatsApp
+     * message templates so QWA placeholders can be mapped onto the app's
+     * variable vocabulary.
+     *
+     * @return array<int, array{group: string, items: array<int, array{token: string, tag: string, label: string}>}>
+     */
+    public static function templateTokensPayload(): array
+    {
+        return collect(static::placeholderGroups())
+            ->map(fn (array $group) => [
+                'group' => $group['group'],
+                'items' => collect($group['items'] ?? [])
+                    ->filter(fn (array $item) => ($item['kind'] ?? 'text') === 'text')
+                    ->map(fn (array $item) => [
+                        'token' => (string) ($item['token'] ?? ''),
+                        'tag' => (string) ($item['tag'] ?? ''),
+                        'label' => (string) ($item['label'] ?? ''),
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->filter(fn (array $group) => $group['items'] !== [])
+            ->values()
+            ->all();
     }
 }

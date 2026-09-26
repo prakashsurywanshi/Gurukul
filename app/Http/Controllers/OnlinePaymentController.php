@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\AccountTransactionService;
 use App\Services\FeeAuditService;
 use App\Services\OnlinePaymentService;
+use App\Services\QwaAutoAlertService;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -167,6 +168,16 @@ class OnlinePaymentController extends Controller
             return $this->serializeReceipt($pendingPayment->refresh());
         });
 
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'fee_payment_received',
+            [
+                'payment' => $pendingPayment->refresh(),
+                'student' => $student,
+                'student_fee' => $studentFee,
+            ]
+        );
+
         return response()->json(['success' => true, 'receipt' => $receipt]);
     }
 
@@ -278,6 +289,16 @@ class OnlinePaymentController extends Controller
                 'created_by' => $user->id,
             ]);
         }
+
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'fee_payment_received',
+            [
+                'payment' => $feePayment->refresh(),
+                'student' => $studentFee->student()->with('schoolClass')->first(),
+                'student_fee' => $studentFee,
+            ]
+        );
 
         return redirect()->route('fees')->with('success', 'Online payment confirmed successfully.');
     }

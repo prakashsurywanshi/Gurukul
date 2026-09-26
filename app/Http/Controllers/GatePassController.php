@@ -6,6 +6,7 @@ use App\Models\GatePass;
 use App\Models\Organization;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\QwaAutoAlertService;
 use App\Support\RolePermissionCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -157,7 +158,7 @@ class GatePassController extends Controller
             $validated['staff_user_id'] ?? null
         );
 
-        GatePass::query()->create([
+        $gatePass = GatePass::query()->create([
             'organization_id' => $organization->id,
             'person_type' => $validated['person_type'],
             'student_id' => $validated['student_id'] ?? null,
@@ -170,6 +171,24 @@ class GatePassController extends Controller
             'status' => 'open',
             'created_by_user_id' => $user->id,
         ]);
+
+        if ($validated['person_type'] === 'student' && $gatePass->student_id) {
+            $student = Student::query()->with('schoolClass')->find($gatePass->student_id);
+
+            if ($student) {
+                app(QwaAutoAlertService::class)->dispatch(
+                    $organization,
+                    'gate_pass_issued',
+                    [
+                        'student' => $student,
+                        'gate_pass' => $gatePass,
+                        'pass_type' => $gatePass->pass_type,
+                        'reason' => $gatePass->reason,
+                        'expected_return_at' => $gatePass->expected_return_at?->format('j M Y, h:i A') ?? '',
+                    ]
+                );
+            }
+        }
 
         return back()->with('success', 'Gate pass issued successfully.');
     }

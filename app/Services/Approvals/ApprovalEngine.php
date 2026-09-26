@@ -8,6 +8,7 @@ use App\Models\ApprovalRequest;
 use App\Models\ApprovalRequestStep;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\QwaAutoAlertService;
 use App\Services\SystemNotificationService;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ class ApprovalEngine
     public function __construct(
         private readonly ApprovalModuleRegistry $registry,
         private readonly SystemNotificationService $notifications,
+        private readonly QwaAutoAlertService $autoAlerts,
     ) {
     }
 
@@ -116,6 +118,7 @@ class ApprovalEngine
         }
 
         $this->notifyStepActors($request, $organization);
+        $this->dispatchApprovalAlert($request, 'pending');
 
         return $request;
     }
@@ -239,7 +242,9 @@ class ApprovalEngine
             $handler->onRejected($organization, $request, $actor, $note);
         }
 
-        $this->notifyRequester($request, $organization, 'Request rejected', $request->summary);
+        $this->notifyRequester($request->fresh(), $organization, 'Request rejected', $request->summary);
+
+        $this->dispatchApprovalAlert($request->fresh(), 'rejected');
 
         return $request->fresh();
     }
@@ -304,6 +309,8 @@ class ApprovalEngine
         }
 
         $this->notifyRequester($request->fresh(), $organization, 'Request approved', $request->summary);
+
+        $this->dispatchApprovalAlert($request->fresh(), 'approved');
 
         return $request->fresh();
     }
@@ -372,6 +379,19 @@ class ApprovalEngine
             ->where('role', $step->actor_value)
             ->where('status', 'active')
             ->get();
+    }
+
+    private function dispatchApprovalAlert(ApprovalRequest $request, string $stage): void
+    {
+        $organization = $request->organization()->firstOrFail();
+        $requester = $request->requester;
+
+        $this->autoAlerts->dispatch($organization, 'approval_request', [
+            'subject' => sprintf('Approval request %s: %s', $stage, $request->module),
+            'message' => (string) $request->summary,
+            'name' => $requester?->name ?? 'Staff member',
+            'event_key' => 'approval_request:'.$request->id.':'.$stage,
+        ]);
     }
 
     private function notificationType(string $module): string

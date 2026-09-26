@@ -38,6 +38,9 @@ class SendQwaWhatsappMessageJob implements ShouldQueue
         private readonly ?string $mediaMimeType = null,
         private readonly ?string $mediaFilename = null,
         private readonly ?string $mediaCaption = null,
+        private readonly ?string $templateQwaId = null,
+        private readonly ?string $templateMode = null,
+        private readonly array $templateVars = [],
     ) {}
 
     public function handle(QwaService $qwaService): void
@@ -73,15 +76,24 @@ class SendQwaWhatsappMessageJob implements ShouldQueue
         $chatId = $this->phone.'@c.us';
 
         try {
-            $result = $this->messageType === 'text'
-                ? $qwaService->sendTextMessage(
+            $result = $this->templateMode === 'native' && filled($this->templateQwaId)
+                ? $qwaService->sendTemplate(
                     $settings['baseUrl'],
                     $settings['apiKey'],
                     $settings['sessionId'],
                     $chatId,
-                    $this->messageText
+                    $this->templateQwaId,
+                    $this->templateVars,
                 )
-                : $this->sendMedia($qwaService, $settings, $chatId);
+                : ($this->messageType === 'text'
+                    ? $qwaService->sendTextMessage(
+                        $settings['baseUrl'],
+                        $settings['apiKey'],
+                        $settings['sessionId'],
+                        $chatId,
+                        $this->messageText
+                    )
+                    : $this->sendMedia($qwaService, $settings, $chatId));
         } catch (Throwable $exception) {
             $result = [
                 'success' => false,

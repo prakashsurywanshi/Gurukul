@@ -40,6 +40,7 @@ const emptyForm = {
     date_of_birth: '',
     gender: '',
     blood_group: '',
+    preferred_language: 'en',
     class: '',
     section: '',
     roll_number: '',
@@ -116,6 +117,7 @@ export default function EditStudent({
                 date_of_birth: student.date_of_birth || '',
                 gender: student.gender || '',
                 blood_group: student.blood_group || '',
+                preferred_language: student.preferred_language || 'en',
                 class: student.class || '',
                 section: student.section || '',
                 roll_number: student.roll_number || '',
@@ -466,7 +468,7 @@ export default function EditStudent({
                                         <SelectTrigger>
                                             <SelectValue placeholder={t('Select blood group')} />
                                         </SelectTrigger>
-                                        <SelectContent>
+<SelectContent>
                                             <SelectItem value="A+">{t('A+')}</SelectItem>
                                             <SelectItem value="A-">{t('A-')}</SelectItem>
                                             <SelectItem value="B+">{t('B+')}</SelectItem>
@@ -477,6 +479,25 @@ export default function EditStudent({
                                             <SelectItem value="O-">{t('O-')}</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('Preferred Language')}</Label>
+                                    <Select
+                                        value={formData.preferred_language}
+                                        onValueChange={(value) => updateField('preferred_language', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={t('Select language')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="en">{t('English')}</SelectItem>
+                                            <SelectItem value="mr">{t('Marathi')}</SelectItem>
+                                            <SelectItem value="hi">{t('Hindi')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-slate-500">
+                                        {t('Used when regional WhatsApp templates are sent in Auto language.')}
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>

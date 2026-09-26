@@ -137,6 +137,7 @@ class TemplateRenderService
             'currency_code' => $currency,
             'currency_symbol' => $currencySymbol,
             'academic_session' => $session,
+            'academic_year' => $session,
             'current_date' => now()->format('j F Y'),
             'issue_date' => now()->format('j F Y'),
             'issued_by' => '',

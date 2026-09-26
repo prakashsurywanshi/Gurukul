@@ -55,6 +55,7 @@ const defaultFormData = {
         sessionId: '',
         webhookUrl: '',
         webhookSecret: '',
+        auto_alerts_enabled: false,
     },
 };
 
@@ -790,6 +791,22 @@ export default function CommunicationSettings({ user, communicationSettings }: C
                                         checked={formData.qwa.enabled}
                                         disabled={!isEditing}
                                         onCheckedChange={(checked) => updateSection('qwa', 'enabled', checked)}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+                                    <div>
+                                        <p className="font-medium text-slate-900">{t('Automatic WhatsApp alerts')}</p>
+                                        <p className="text-sm text-slate-500">
+                                            {t(
+                                                'Send WhatsApp alerts automatically when operations happen (fee payments, complaints) and on daily schedules.',
+                                            )}
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={Boolean(formData.qwa.auto_alerts_enabled)}
+                                        disabled={!isEditing}
+                                        onCheckedChange={(checked) => updateSection('qwa', 'auto_alerts_enabled', checked)}
                                     />
                                 </div>
 

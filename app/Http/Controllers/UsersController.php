@@ -15,6 +15,7 @@ use App\Models\StaffLoan;
 use App\Models\StaffPayrollEntry;
 use App\Models\User;
 use App\Services\LeaveBalanceService;
+use App\Services\QwaAutoAlertService;
 use App\Services\StaffPermissionService;
 use App\Services\SystemNotificationService;
 use App\Services\PdfService;
@@ -277,6 +278,17 @@ class UsersController extends Controller
 
         $this->notifyAdminsOfLeaveRequest($leaveRequest);
 
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'leave_request',
+            [
+                'subject' => sprintf('Leave request: %s', ucfirst((string) $leaveRequest->leave_type)),
+                'message' => (string) $leaveRequest->reason,
+                'name' => $leaveRequest->user?->name ?? 'Staff member',
+                'event_key' => 'leave_request:'.$leaveRequest->id.':'.$leaveRequest->status,
+            ]
+        );
+
         return redirect()->route('staff.leave-management')->with('success', 'Leave request created successfully.');
     }
 
@@ -397,6 +409,19 @@ class UsersController extends Controller
                     'action_label' => 'View Leave',
                     'action_url' => '/staff/leave-management',
                     'event' => 'leave_request_status',
+                ]
+            );
+        }
+
+        if ($validated['status'] === 'approved') {
+            app(QwaAutoAlertService::class)->dispatch(
+                $organization,
+                'leave_request',
+                [
+                    'subject' => sprintf('Leave approved: %s', ucfirst((string) $leaveRequest->leave_type)),
+                    'message' => (string) ($validated['admin_remarks'] ?? $leaveRequest->reason ?? ''),
+                    'name' => $leaveRequest->user?->name ?? 'Staff member',
+                    'event_key' => 'leave_request:'.$leaveRequest->id.':approved',
                 ]
             );
         }
@@ -989,11 +1014,19 @@ class UsersController extends Controller
             'net_pay' => $net,
             'net_pay_words' => Number::spell((int) round($net)),
             'generated_at' => now()->format('d M Y, h:i A'),
+            'earnings' => [
+                ['description' => 'Basic Pay', 'amount' => (float) $entry->base_pay],
+                ['description' => 'Allowances', 'amount' => (float) $entry->allowance],
+            ],
+            'deductions' => [
+                ['description' => 'Deductions', 'amount' => (float) $entry->deduction],
+            ],
             'staff' => [
                 'name' => $staff?->name ?? 'Unknown Staff',
                 'email' => $staff?->email ?? '-',
                 'role' => $staff ? ucwords(str_replace('_', ' ', $staff->role)) : '-',
                 'designation' => $staff?->designation?->name,
+                'staff_id' => $staff?->employee_id ?? (string) ($staff?->id ?? '-'),
             ],
             'organization' => [
                 'name' => $organization->name,

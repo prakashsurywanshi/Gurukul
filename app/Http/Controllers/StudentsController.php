@@ -22,6 +22,7 @@ use App\Models\StudentFee;
 use App\Models\StudentImport;
 use App\Models\User;
 use App\Services\CustomFieldValueService;
+use App\Services\QwaAutoAlertService;
 use App\Services\SmtpSettingsService;
 use App\Services\StudentAcademicHistoryService;
 use Illuminate\Database\QueryException;
@@ -103,6 +104,14 @@ class StudentsController extends Controller
         }
 
         $successMessage = 'Student added successfully.';
+
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'admission_confirmed',
+            [
+                'student' => $student->fresh('schoolClass'),
+            ]
+        );
 
         if ($credentialsEmailWarning) {
             $successMessage .= ' '.$credentialsEmailWarning;
@@ -898,6 +907,7 @@ class StudentsController extends Controller
             'notes' => ['nullable', 'string'],
             'notes_mr' => ['nullable', 'string'],
             'status' => ['nullable', Rule::in(['active', 'inactive', 'graduated', 'transferred', 'expelled'])],
+            'preferred_language' => ['nullable', Rule::in(['en', 'mr', 'hi'])],
         ], [
             'email.unique' => 'This email is already registered.',
         ])->validate();
@@ -1112,6 +1122,7 @@ class StudentsController extends Controller
             'notes' => $validated['notes'] ?? null,
             'notes_mr' => $validated['notes_mr'] ?? null,
             'status' => $validated['status'] ?? ($student?->status ?? 'active'),
+            'preferred_language' => $validated['preferred_language'] ?? ($student?->preferred_language ?? 'en'),
         ];
 
         return array_intersect_key($attributes, array_flip($this->getStudentTableColumns()));

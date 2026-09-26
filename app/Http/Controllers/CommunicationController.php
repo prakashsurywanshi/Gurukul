@@ -11,6 +11,8 @@ use App\Models\EmailLog;
 use App\Models\Message;
 use App\Models\MessageRecipient;
 use App\Models\Organization;
+use App\Models\QwaAutoAlertRule;
+use App\Models\QwaWhatsappTemplate;
 use App\Models\SchoolClass;
 use App\Models\SmsLog;
 use App\Models\Student;
@@ -18,11 +20,18 @@ use App\Models\SuperAdminSetting;
 use App\Models\User;
 use App\Models\VoiceCallLog;
 use App\Services\FirebaseCloudMessagingService;
+use App\Services\QwaAutoAlertService;
+use App\Services\QwaRegionalTemplateService;
 use App\Services\QwaService;
 use App\Services\SmartfloService;
 use App\Services\SmsService;
 use App\Services\StaffPermissionService;
 use App\Services\WhatsappBridgeService;
+use App\Support\ContactPhoneResolver;
+use App\Support\LanguageCatalog;
+use App\Support\QwaAutoAlertTriggers;
+use App\Support\QwaTemplateIntents;
+use App\Support\TemplateCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,6 +59,8 @@ class CommunicationController extends Controller
         private readonly FirebaseCloudMessagingService $firebaseCloudMessagingService,
         private readonly WhatsappBridgeService $whatsappBridgeService,
         private readonly QwaService $qwaService,
+        private readonly QwaAutoAlertService $qwaAutoAlertService,
+        private readonly QwaRegionalTemplateService $qwaRegionalTemplateService,
         private readonly SmsService $smsService,
     ) {}
 
@@ -951,7 +962,623 @@ class CommunicationController extends Controller
             'qwaHistory' => $this->qwaHistoryPayload($organization, $user),
             'qwaStatus' => $this->qwaDeliveryStatusPayload($organization),
             'queueWorkerStatus' => $this->queueWorkerStatusPayload(),
+            'qwaTemplates' => $this->qwaTemplatesPayload($organization),
+            'templateTokens' => TemplateCatalog::templateTokensPayload(),
+            'qwaTemplateLanguages' => collect(LanguageCatalog::languages())
+                ->map(fn (string $name, string $code) => ['code' => $code, 'name' => $name])
+                ->values()
+                ->all(),
+            'autoAlertsEnabled' => $this->qwaAutoAlertService->isGloballyEnabled($organization),
+            'qwaAutoAlertTriggerOptions' => $this->qwaAutoAlertService->supportedTriggers(),
+            'qwaAutoAlertRules' => $this->qwaAutoAlertsPayload($organization),
         ]);
+    }
+
+    public function qwaWhatsappTemplatesSync(): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $settings = $this->qwaSettings($organization);
+
+        if (! filled($settings['baseUrl'] ?? null) || ! filled($settings['apiKey'] ?? null) || ! filled($settings['sessionId'] ?? null)) {
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_templates' => 'QWA is not configured. Set the Base URL, API key and Session ID in Communication Settings first.',
+                ]);
+        }
+
+        $list = $this->qwaService->listTemplates($settings['baseUrl'], $settings['apiKey'], $settings['sessionId']);
+
+        if (! ($list['success'] ?? false)) {
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_templates' => 'Could not fetch templates from QWA: '.($list['message'] ?? 'Unknown error.'),
+                ]);
+        }
+
+        $sessionId = $settings['sessionId'];
+        $remote = collect($list['body'] ?? [])
+            ->filter(fn ($item) => is_array($item) && filled($item['id'] ?? null))
+            ->values();
+
+        $synced = 0;
+        $created = 0;
+        $updated = 0;
+
+        foreach ($remote as $item) {
+            $placeholders = QwaWhatsappTemplate::parseTemplatePlaceholders(
+                (string) ($item['header'] ?? ''),
+                (string) ($item['body'] ?? ''),
+                (string) ($item['footer'] ?? '')
+            );
+
+            $existing = QwaWhatsappTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->where('session_id', $sessionId)
+                ->where('qwa_template_id', $item['id'])
+                ->first();
+
+            $name = (string) ($item['name'] ?? '');
+
+            $data = [
+                'name' => $name,
+                'language' => LanguageCatalog::ENGLISH,
+                'variant_key' => QwaTemplateIntents::keyForName($name),
+                'body' => (string) ($item['body'] ?? ''),
+                'header' => $item['header'] ?? null,
+                'footer' => $item['footer'] ?? null,
+                'media' => $item['media'] ?? null,
+                'last_synced_at' => now(),
+            ];
+
+            if ($existing) {
+                $existingMapping = is_array($existing->mapping) ? $existing->mapping : [];
+                $existingMapping = collect($existingMapping)
+                    ->only($placeholders)
+                    ->all();
+
+                $mergedMapping = array_replace(
+                    QwaWhatsappTemplate::defaultMapping($placeholders),
+                    $existingMapping
+                );
+
+                $existing->update([...$data, 'placeholders' => $placeholders, 'mapping' => $mergedMapping]);
+                $updated++;
+            } else {
+                QwaWhatsappTemplate::query()->create([
+                    'organization_id' => $organization->id,
+                    'session_id' => $sessionId,
+                    'qwa_template_id' => $item['id'],
+                    'placeholders' => $placeholders,
+                    'mapping' => QwaWhatsappTemplate::defaultMapping($placeholders),
+                    'action_toggles' => [],
+                    ...$data,
+                ]);
+                $created++;
+            }
+
+            $synced++;
+        }
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('%d QWA template(s) synced: %d added and %d updated.', $synced, $created, $updated));
+    }
+
+    public function qwaWhatsappTemplatesSyncToQwa(): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $settings = $this->qwaSettings($organization);
+
+        if (! filled($settings['baseUrl'] ?? null) || ! filled($settings['apiKey'] ?? null) || ! filled($settings['sessionId'] ?? null)) {
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_templates' => 'QWA is not configured. Set the Base URL, API key and Session ID in Communication Settings first.',
+                ]);
+        }
+
+        $sessionId = $settings['sessionId'];
+
+        $customTemplates = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->where('is_custom', true)
+            ->orderBy('id')
+            ->get();
+
+        $added = 0;
+        $updated = 0;
+        $failed = 0;
+        $failedNames = [];
+
+        foreach ($customTemplates as $template) {
+            $payload = [
+                'name' => (string) $template->name,
+                'body' => (string) ($template->body ?? ''),
+            ];
+
+            foreach (['header', 'footer'] as $section) {
+                if (filled($template->{$section})) {
+                    $payload[$section] = (string) $template->{$section};
+                }
+            }
+
+            if (filled($template->qwa_template_id)) {
+                $result = $this->qwaService->updateTemplate(
+                    $settings['baseUrl'],
+                    $settings['apiKey'],
+                    $sessionId,
+                    (string) $template->qwa_template_id,
+                    $payload
+                );
+            } else {
+                $result = $this->qwaService->createTemplate(
+                    $settings['baseUrl'],
+                    $settings['apiKey'],
+                    $sessionId,
+                    $payload
+                );
+            }
+
+            if (! ($result['success'] ?? false)) {
+                $failed++;
+                $failedNames[] = (string) $template->name;
+
+                continue;
+            }
+
+            $remoteId = (string) (($result['body'] ?? [])['id'] ?? '');
+            $wasCreating = ! filled($template->qwa_template_id);
+
+            $template->update([
+                'qwa_template_id' => ! $wasCreating
+                    ? (string) $template->qwa_template_id
+                    : (filled($remoteId) ? $remoteId : null),
+                'last_synced_at' => now(),
+            ]);
+
+            $wasCreating ? $added++ : $updated++;
+        }
+
+        if ($customTemplates->isEmpty()) {
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->with('success', 'No custom templates to push to QWA. Create a custom template first.');
+        }
+
+        if ($failed > 0) {
+            return redirect()
+                ->route('communication.send-qwa-whatsapp')
+                ->withErrors([
+                    'qwa_templates' => sprintf(
+                        '%d of %d custom template(s) pushed to QWA (%d added, %d updated); %d failed: %s.',
+                        $added + $updated,
+                        $customTemplates->count(),
+                        $added,
+                        $updated,
+                        $failed,
+                        implode(', ', $failedNames)
+                    ),
+                ]);
+        }
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('%d custom template(s) pushed to QWA: %d added and %d updated.', $added + $updated, $added, $updated));
+    }
+
+    public function qwaWhatsappTemplatesUpdate(Request $request, int $templateId): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $model = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->findOrFail($templateId);
+
+        $validated = $request->validate([
+            'mapping' => ['required', 'array'],
+            'mapping.*' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        $model->update([
+            'mapping' => collect($validated['mapping'])
+                ->filter(fn ($value, $placeholder) => filled($value) && in_array($placeholder, $model->placeholders ?? [], true))
+                ->map(fn ($value) => (string) $value)
+                ->all(),
+        ]);
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Variable mapping for QWA template "%s" updated.', $model->name));
+    }
+
+    public function qwaWhatsappTemplatesAddVariant(Request $request, int $templateId): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'language' => ['required', Rule::in([LanguageCatalog::MARATHI, LanguageCatalog::HINDI])],
+        ]);
+
+        $template = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->findOrFail($templateId);
+
+        $intentKey = $this->qwaRegionalTemplateService->intentKeyFor($template);
+
+        if ($intentKey === null) {
+            return back()->withErrors([
+                'qwa_template' => 'This template is not part of a known language group. Create a regional template manually with the "New Custom Template" dialog instead.',
+            ]);
+        }
+
+        $variant = $this->qwaRegionalTemplateService->ensureRegionalVariant(
+            $organization->id,
+            $intentKey,
+            $validated['language'],
+        );
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Regional "%s" variant of "%s" added.', LanguageCatalog::name((string) $variant->language), $template->name));
+    }
+
+    public function qwaAutoAlertsStoreTemplate(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:4096'],
+            'header' => ['nullable', 'string', 'max:255'],
+            'footer' => ['nullable', 'string', 'max:255'],
+            'language' => ['nullable', Rule::in(LanguageCatalog::languageCodes())],
+            'variantKey' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $language = LanguageCatalog::isValidCode($validated['language'] ?? null)
+            ? $validated['language']
+            : LanguageCatalog::ENGLISH;
+
+        $variantKey = filled($validated['variantKey'] ?? null) ? trim((string) $validated['variantKey']) : null;
+
+        if ($variantKey !== null) {
+            $conflict = QwaWhatsappTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->where('variant_key', $variantKey)
+                ->where('language', $language)
+                ->exists();
+
+            if ($conflict) {
+                return back()->withErrors([
+                    'qwa_template' => sprintf('A "%s" template already exists for this language group.', LanguageCatalog::name($language)),
+                ]);
+            }
+        }
+
+        $placeholders = QwaWhatsappTemplate::parseTemplatePlaceholders(
+            $validated['header'] ?? '',
+            $validated['body'],
+            $validated['footer'] ?? ''
+        );
+
+        $mapping = QwaWhatsappTemplate::defaultMapping($placeholders);
+
+        if ($variantKey !== null) {
+            $base = QwaWhatsappTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->where('variant_key', $variantKey)
+                ->first();
+
+            if (is_array($base?->mapping)) {
+                $inherited = collect($base->mapping)
+                    ->only($placeholders)
+                    ->all();
+
+                $mapping = array_replace($mapping, $inherited);
+            }
+        }
+
+        $template = QwaWhatsappTemplate::query()->create([
+            'organization_id' => $organization->id,
+            'session_id' => 'custom',
+            'qwa_template_id' => null,
+            'is_custom' => true,
+            'language' => $language,
+            'variant_key' => $variantKey,
+            'name' => $validated['name'],
+            'body' => $validated['body'],
+            'header' => $validated['header'] ?? null,
+            'footer' => $validated['footer'] ?? null,
+            'media' => null,
+            'placeholders' => $placeholders,
+            'mapping' => $mapping,
+            'action_toggles' => [],
+            'last_synced_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Custom QWA template "%s" created.', $template->name));
+    }
+
+    public function qwaAutoAlertsDeleteTemplate(Request $request, int $templateId): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $template = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->where('is_custom', true)
+            ->findOrFail($templateId);
+
+        $inUseCount = QwaAutoAlertRule::query()
+            ->where('organization_id', $organization->id)
+            ->where('qwa_template_id', $template->id)
+            ->count();
+
+        if ($inUseCount > 0) {
+            return back()->withErrors([
+                'qwa_template' => sprintf('Template "%s" is used by %d automatic alert rule(s). Remove the rule(s) first.', $template->name, $inUseCount),
+            ]);
+        }
+
+        $name = $template->name;
+        $template->delete();
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Custom QWA template "%s" deleted.', $name));
+    }
+
+    public function qwaAutoAlertsRulesStore(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'qwaTemplateId' => ['required', 'integer'],
+            'triggerEvent' => ['required', 'string', Rule::in(QwaAutoAlertTriggers::supportedKeys())],
+            'enabled' => ['required', 'boolean'],
+            'recipientType' => ['required', Rule::in([QwaAutoAlertTriggers::RECIPIENT_PARENTS, QwaAutoAlertTriggers::RECIPIENT_STUDENTS, QwaAutoAlertTriggers::RECIPIENT_ROLES])],
+            'recipientRoles' => ['nullable', 'array'],
+            'recipientRoles.*' => ['string'],
+            'scheduleTime' => ['nullable', 'date_format:H:i'],
+            'language' => ['nullable', Rule::in(['auto', ...LanguageCatalog::languageCodes()])],
+        ]);
+
+        $template = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->findOrFail((int) $validated['qwaTemplateId']);
+
+        $exists = QwaAutoAlertRule::query()
+            ->where('organization_id', $organization->id)
+            ->where('trigger_event', $validated['triggerEvent'])
+            ->where('qwa_template_id', $template->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->withErrors([
+                'qwa_auto_alert' => 'A rule already exists for this trigger and template. Edit the existing rule instead.',
+            ]);
+        }
+
+        QwaAutoAlertRule::query()->create([
+            'organization_id' => $organization->id,
+            'qwa_template_id' => $template->id,
+            'trigger_event' => $validated['triggerEvent'],
+            'enabled' => (bool) $validated['enabled'],
+            'recipient_type' => $validated['recipientType'],
+            'recipient_roles' => array_values(array_filter($validated['recipientRoles'] ?? [])),
+            'schedule_time' => ($validated['scheduleTime'] ?? null) ?: null,
+            'language' => $validated['language'] ?? 'en',
+        ]);
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Automatic alert rule (%s) created.', QwaAutoAlertTriggers::label($validated['triggerEvent'])));
+    }
+
+    public function qwaAutoAlertsRulesUpdate(Request $request, int $ruleId): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $rule = QwaAutoAlertRule::query()
+            ->where('organization_id', $organization->id)
+            ->findOrFail($ruleId);
+
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'recipientType' => ['required', Rule::in([QwaAutoAlertTriggers::RECIPIENT_PARENTS, QwaAutoAlertTriggers::RECIPIENT_STUDENTS, QwaAutoAlertTriggers::RECIPIENT_ROLES])],
+            'recipientRoles' => ['nullable', 'array'],
+            'recipientRoles.*' => ['string'],
+            'scheduleTime' => ['nullable', 'date_format:H:i'],
+            'language' => ['nullable', Rule::in(['auto', ...LanguageCatalog::languageCodes()])],
+        ]);
+
+        $rule->update([
+            'enabled' => (bool) $validated['enabled'],
+            'recipient_type' => $validated['recipientType'],
+            'recipient_roles' => array_values(array_filter($validated['recipientRoles'] ?? [])),
+            'schedule_time' => ($validated['scheduleTime'] ?? null) ?: null,
+            'language' => $validated['language'] ?? 'en',
+        ]);
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Automatic alert rule (%s) updated.', QwaAutoAlertTriggers::label($rule->trigger_event)));
+    }
+
+    public function qwaAutoAlertsRulesDestroy(Request $request, int $ruleId): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        QwaAutoAlertRule::query()
+            ->where('organization_id', $organization->id)
+            ->findOrFail($ruleId)
+            ->delete();
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', 'Automatic alert rule deleted.');
+    }
+
+    public function qwaAutoAlertsSettingsUpdate(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $this->qwaAutoAlertService->setGloballyEnabled($organization, (bool) $validated['enabled']);
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', $validated['enabled']
+                ? 'Automatic WhatsApp alerts enabled.'
+                : 'Automatic WhatsApp alerts disabled.');
+    }
+
+    public function qwaAutoAlertsTestSend(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        abort_unless($organization, 403);
+
+        $validated = $request->validate([
+            'qwaTemplateId' => ['required', 'integer'],
+            'phone' => ['required', 'string', 'max:50'],
+            'triggerEvent' => ['nullable', 'string', Rule::in(QwaAutoAlertTriggers::supportedKeys())],
+        ]);
+
+        $template = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->findOrFail((int) $validated['qwaTemplateId']);
+
+        $deliveryStatus = $this->qwaDeliveryStatusPayload($organization);
+
+        if (! ($deliveryStatus['configured'] ?? false)) {
+            return back()->withErrors(['qwa_delivery' => 'QWA is not configured. Set it up in Communication Settings first.']);
+        }
+
+        if (! ($deliveryStatus['connected'] ?? false)) {
+            return back()->withErrors(['qwa_delivery' => 'QWA is not connected. Start the QWA session before sending.']);
+        }
+
+        $phone = ContactPhoneResolver::normalize($validated['phone']);
+
+        if (! $phone) {
+            return back()->withErrors(['phone' => 'Enter a valid 10-digit phone number.']);
+        }
+
+        $sessionId = $deliveryStatus['sessionId'];
+        $mode = $template->canSendNatively() ? 'native' : 'fallback';
+        $context = [
+            'name' => 'Test Recipient',
+            'phone' => $phone,
+            'class' => '',
+            'section' => '',
+            'school_name' => (string) $organization->name,
+        ];
+        $vars = $template->resolveVars($context, []);
+        $rendered = $mode === 'fallback' ? $template->renderFullText($vars) : null;
+
+        $message = Message::query()->create([
+            'organization_id' => $organization->id,
+            'sender_id' => $user->id,
+            'subject' => sprintf('%s (QWA test)', $template->name),
+            'message' => $rendered ?? $template->name,
+            'attachments' => [
+                'channel' => 'qwa_whatsapp',
+                'qwa_whatsapp' => [
+                    'recipient_summary' => '1 test recipient',
+                    'recipient_count' => 1,
+                    'recipient_numbers' => [$phone],
+                    'status' => 'queued',
+                    'session_id' => $sessionId,
+                    'message_type' => 'text',
+                    'template_id' => (string) $template->id,
+                    'template_qwa_id' => $template->qwa_template_id,
+                    'template_name' => $template->name,
+                    'template_mode' => $mode,
+                    'is_automatic' => false,
+                    'is_test_send' => true,
+                    'queued_at' => now()->toDateTimeString(),
+                    'successful_count' => 0,
+                    'failed_count' => 0,
+                    'pending_count' => 1,
+                    'delay_min_seconds' => 0,
+                    'delay_max_seconds' => 0,
+                    'responses' => [],
+                    'recipients' => [[
+                        'name' => 'Test Recipient',
+                        'phone' => $phone,
+                        'status' => 'pending',
+                        'scheduled_at' => now()->toDateTimeString(),
+                        'sent_at' => null,
+                        'failed_reason' => null,
+                        'template_vars' => $vars,
+                        'rendered_text' => $rendered,
+                    ]],
+                ],
+            ],
+            'priority' => 'normal',
+            'is_announcement' => false,
+        ]);
+
+        SendQwaWhatsappMessageJob::dispatch(
+            $message->id,
+            $organization->id,
+            0,
+            'Test Recipient',
+            $phone,
+            $rendered ?? $template->name,
+            'text',
+            null,
+            null,
+            null,
+            $validated['triggerEvent'] ?? null,
+            $template->qwa_template_id,
+            $mode,
+            $vars,
+        )->onQueue('whatsapp');
+
+        return redirect()
+            ->route('communication.send-qwa-whatsapp')
+            ->with('success', sprintf('Test message dispatched to %s using template "%s".', $phone, $template->name));
     }
 
     public function storeQwaWhatsapp(Request $request): RedirectResponse
@@ -972,9 +1599,32 @@ class CommunicationController extends Controller
             'messageType' => ['required', Rule::in(['text', 'photo', 'audio', 'document'])],
             'mediaFile' => ['nullable', 'file', 'max:15360'],
             'mediaCaption' => ['nullable', 'string', 'max:1024'],
+            'templateId' => ['nullable', 'integer'],
+            'templateVars' => ['nullable', 'array'],
+            'templateVars.*' => ['nullable', 'string', 'max:1000'],
+            'templateLanguage' => ['nullable', Rule::in(['auto', ...LanguageCatalog::languageCodes()])],
         ]);
 
-        $messageType = $validated['messageType'] ?? 'text';
+        $qwaTemplate = null;
+        $templateMode = null;
+        $templateLanguage = $validated['templateLanguage'] ?? 'auto';
+        $regionalLanguage = $this->organizationRegionalLanguage($organization);
+
+        if (filled($validated['templateId'] ?? null)) {
+            $qwaTemplate = QwaWhatsappTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->find((int) $validated['templateId']);
+
+            if (! $qwaTemplate) {
+                return back()->withErrors([
+                    'qwa_template' => 'The selected QWA template no longer exists. Sync templates and try again.',
+                ]);
+            }
+
+            $templateMode = $qwaTemplate->canSendNatively() ? 'native' : 'fallback';
+        }
+
+        $messageType = $templateMode !== null ? 'text' : ($validated['messageType'] ?? 'text');
         $mediaCaption = trim((string) ($validated['mediaCaption'] ?? ''));
 
         $mediaPath = null;
@@ -1037,16 +1687,45 @@ class CommunicationController extends Controller
         $delayMin = max(1, (int) config('services.whatsapp_bridge.send_delay_min_seconds', 3));
         $delayMax = max($delayMin, (int) config('services.whatsapp_bridge.send_delay_max_seconds', 6));
         $delayCursor = 0;
+        $templateVars = is_array($validated['templateVars'] ?? null) ? $validated['templateVars'] : [];
+        $schoolName = (string) $organization->name;
         $scheduledRecipients = $recipientContacts
             ->values()
-            ->map(function (array $recipient, int $index) use (&$delayCursor, $delayMin, $delayMax) {
+            ->map(function (array $recipient, int $index) use (&$delayCursor, $delayMin, $delayMax, $qwaTemplate, $templateVars, $schoolName, $templateLanguage, $regionalLanguage) {
                 $delayCursor += $index === 0 ? 0 : random_int($delayMin, $delayMax);
+
+                $context = [
+                    'name' => (string) ($recipient['name'] ?? ''),
+                    'phone' => (string) ($recipient['phone'] ?? ''),
+                    'class' => (string) ($recipient['class'] ?? ''),
+                    'section' => (string) ($recipient['section'] ?? ''),
+                    'school_name' => $schoolName,
+                ];
+
+                [$recipientTemplate, $recipientLanguage] = $this->resolveQwaTemplateLanguage(
+                    $qwaTemplate,
+                    $templateLanguage,
+                    (string) ($recipient['language'] ?? ''),
+                    $regionalLanguage,
+                );
+
+                $recipientMode = $recipientTemplate?->canSendNatively() ? 'native' : 'fallback';
+                $vars = $recipientTemplate ? $recipientTemplate->resolveVars($context, $templateVars) : [];
 
                 return [
                     'name' => $recipient['name'],
                     'phone' => $recipient['phone'],
                     'delay_seconds' => $delayCursor,
                     'scheduled_at' => now()->addSeconds($delayCursor),
+                    'template_id' => $recipientTemplate ? (string) $recipientTemplate->id : null,
+                    'template_qwa_id' => $recipientTemplate?->qwa_template_id,
+                    'template_name' => $recipientTemplate?->name,
+                    'template_mode' => $recipientTemplate ? $recipientMode : null,
+                    'template_language' => $recipientLanguage,
+                    'template_vars' => $vars,
+                    'rendered_text' => $recipientTemplate && $recipientMode === 'fallback'
+                        ? $this->renderQwaTemplateText($recipientTemplate, $vars)
+                        : null,
                 ];
             });
 
@@ -1068,6 +1747,11 @@ class CommunicationController extends Controller
                     'media_mime' => $mediaMime,
                     'media_filename' => $mediaFilename,
                     'media_caption' => $mediaCaption ?: null,
+                    'template_id' => $qwaTemplate ? (string) $qwaTemplate->id : null,
+                    'template_qwa_id' => $qwaTemplate?->qwa_template_id,
+                    'template_name' => $qwaTemplate?->name,
+                    'template_mode' => $templateMode,
+                    'template_language' => $templateLanguage,
                     'queued_at' => now()->toDateTimeString(),
                     'successful_count' => 0,
                     'failed_count' => 0,
@@ -1083,6 +1767,12 @@ class CommunicationController extends Controller
                             'scheduled_at' => $recipient['scheduled_at']->toDateTimeString(),
                             'sent_at' => null,
                             'failed_reason' => null,
+                            'template_id' => $recipient['template_id'],
+                            'template_name' => $recipient['template_name'],
+                            'template_language' => $recipient['template_language'],
+                            'template_mode' => $recipient['template_mode'],
+                            'template_vars' => $recipient['template_vars'],
+                            'rendered_text' => $recipient['rendered_text'],
                         ])
                         ->all(),
                 ],
@@ -1091,21 +1781,30 @@ class CommunicationController extends Controller
             'is_announcement' => false,
         ]);
 
-        $mediaCaptionForJob = $mediaCaption !== '' ? $mediaCaption : (trim((string) ($validated['content'] ?? '')) ?: $validated['subject']);
+        $mediaCaptionForJob = $templateMode === 'native'
+            ? null
+            : ($mediaCaption !== '' ? $mediaCaption : (trim((string) ($validated['content'] ?? '')) ?: $validated['subject']));
 
         foreach ($scheduledRecipients as $index => $recipient) {
+            $messageText = $recipient['rendered_text'] !== null
+                ? $recipient['rendered_text']
+                : (trim($validated['subject'])."\n\n".trim((string) ($validated['content'] ?? '')));
+
             SendQwaWhatsappMessageJob::dispatch(
                 $message->id,
                 $organization->id,
                 $index,
                 $recipient['name'],
                 $recipient['phone'],
-                trim($validated['subject'])."\n\n".trim((string) ($validated['content'] ?? '')),
+                $messageText,
                 $messageType,
                 $mediaPath,
                 $mediaMime,
                 $mediaFilename,
                 $mediaCaptionForJob,
+                $recipient['template_qwa_id'],
+                $recipient['template_mode'],
+                $recipient['template_vars'],
             )->onQueue('whatsapp')->delay($recipient['scheduled_at']);
         }
 
@@ -1365,6 +2064,8 @@ class CommunicationController extends Controller
             ->map(fn (array $recipient) => [
                 'name' => $recipient['name'] ?? $recipient['phone'],
                 'phone' => $recipient['phone'],
+                'template_vars' => $recipient['template_vars'] ?? [],
+                'rendered_text' => $recipient['rendered_text'] ?? null,
             ])
             ->values()
             ->all();
@@ -1372,7 +2073,7 @@ class CommunicationController extends Controller
         if (empty($recipients)) {
             $recipients = collect($meta['recipient_numbers'] ?? [])
                 ->filter()
-                ->map(fn (string $phone) => ['name' => $phone, 'phone' => $phone])
+                ->map(fn (string $phone) => ['name' => $phone, 'phone' => $phone, 'template_vars' => [], 'rendered_text' => null])
                 ->values()
                 ->all();
         }
@@ -1417,8 +2118,13 @@ class CommunicationController extends Controller
                     'phone' => $recipient['phone'],
                     'delay_seconds' => $delayCursor,
                     'scheduled_at' => now()->addSeconds($delayCursor),
+                    'template_vars' => $recipient['template_vars'] ?? [],
+                    'rendered_text' => $recipient['rendered_text'] ?? null,
                 ];
             });
+
+        $templateMode = $meta['template_mode'] ?? null;
+        $templateQwaId = $meta['template_qwa_id'] ?? null;
 
         $now = now()->toDateTimeString();
         $attachments = $message->attachments;
@@ -1442,6 +2148,8 @@ class CommunicationController extends Controller
                     'scheduled_at' => $recipient['scheduled_at']->toDateTimeString(),
                     'sent_at' => null,
                     'failed_reason' => null,
+                    'template_vars' => $recipient['template_vars'],
+                    'rendered_text' => $recipient['rendered_text'],
                 ])
                 ->all(),
         ]);
@@ -1449,23 +2157,32 @@ class CommunicationController extends Controller
         $message->forceFill(['attachments' => $attachments])->save();
 
         $messageText = trim((string) $message->subject)."\n\n".trim((string) $message->message);
-        $mediaCaptionForJob = filled($meta['media_caption'] ?? null)
-            ? $meta['media_caption']
-            : (trim((string) $message->message) ?: $message->subject);
+        $mediaCaptionForJob = $templateMode === 'native'
+            ? null
+            : (filled($meta['media_caption'] ?? null)
+                ? $meta['media_caption']
+                : (trim((string) $message->message) ?: $message->subject));
 
         foreach ($scheduledRecipients as $index => $recipient) {
+            $perRecipientText = $templateMode === 'fallback' && filled($recipient['rendered_text'] ?? null)
+                ? $recipient['rendered_text']
+                : $messageText;
+
             SendQwaWhatsappMessageJob::dispatch(
                 $message->id,
                 $organization->id,
                 $index,
                 $recipient['name'],
                 $recipient['phone'],
-                $messageText,
+                $perRecipientText,
                 $messageType,
                 $meta['media_path'] ?? null,
                 $meta['media_mime'] ?? null,
                 $meta['media_filename'] ?? null,
                 $mediaCaptionForJob,
+                $templateQwaId,
+                $templateMode,
+                $recipient['template_vars'] ?? [],
             )->onQueue('whatsapp')->delay($recipient['scheduled_at']);
         }
 
@@ -2056,6 +2773,125 @@ class CommunicationController extends Controller
         return $qwa;
     }
 
+    private function qwaTemplatesPayload(Organization $organization): array
+    {
+        if (! Schema::hasTable('qwa_whatsapp_templates')) {
+            return [];
+        }
+
+        $templates = QwaWhatsappTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->latest()
+            ->get();
+
+        $variantsByKey = $templates
+            ->filter(fn (QwaWhatsappTemplate $template) => filled($template->variant_key))
+            ->groupBy('variant_key');
+
+        return $templates
+            ->map(function (QwaWhatsappTemplate $template) use ($variantsByKey) {
+                $variants = $variantsByKey[$template->variant_key] ?? collect();
+
+                return [
+                    'id' => (string) $template->id,
+                    'qwaTemplateId' => $template->qwa_template_id,
+                    'sessionId' => $template->session_id,
+                    'name' => $template->name,
+                    'body' => $template->body,
+                    'header' => $template->header,
+                    'footer' => $template->footer,
+                    'media' => $template->media,
+                    'placeholders' => $template->placeholders ?? [],
+                    'mapping' => $template->mapping ?? [],
+                    'canSendNatively' => $template->canSendNatively(),
+                    'isCustom' => (bool) $template->is_custom,
+                    'language' => (string) $template->language,
+                    'variantKey' => $template->variant_key,
+                    'lastSyncedAt' => optional($template->last_synced_at)->format('d M Y, h:i A'),
+                    'variants' => $variants
+                        ->map(fn (QwaWhatsappTemplate $variant) => [
+                            'id' => (string) $variant->id,
+                            'language' => (string) $variant->language,
+                            'name' => $variant->name,
+                        ])
+                        ->values()
+                        ->all(),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function renderQwaTemplateText(QwaWhatsappTemplate $template, array $vars): string
+    {
+        return $template->renderFullText($vars);
+    }
+
+    /**
+     * Resolve the effective template + language for one recipient of a
+     * campaign. `auto` uses the recipient's preferred language (falling back
+     * to the school's regional language), any other mode forces that language
+     * for every recipient. A missing variant falls back to the base template.
+     *
+     * @return array{0: QwaWhatsappTemplate|null, 1: string}
+     */
+    private function resolveQwaTemplateLanguage(?QwaWhatsappTemplate $template, string $mode, string $recipientLanguage, string $regionalLanguage): array
+    {
+        if (! $template) {
+            return [null, LanguageCatalog::ENGLISH];
+        }
+
+        if ($mode === 'auto') {
+            $language = LanguageCatalog::isValidCode($recipientLanguage)
+                ? $recipientLanguage
+                : $regionalLanguage;
+
+            return [$template->variantFor($language) ?? $template, $language];
+        }
+
+        return [$template->variantFor($mode) ?? $template, $mode];
+    }
+
+    /**
+     * The school's configured regional language (defaults to Marathi).
+     */
+    private function organizationRegionalLanguage(Organization $organization): string
+    {
+        return LanguageCatalog::normalize($organization->settings['language_settings'] ?? null)['regional_language'];
+    }
+
+    private function qwaAutoAlertsPayload(Organization $organization): array
+    {
+        if (! Schema::hasTable('qwa_auto_alert_rules')) {
+            return [];
+        }
+
+        return QwaAutoAlertRule::query()
+            ->where('organization_id', $organization->id)
+            ->with('template:id,organization_id,name,qwa_template_id,is_custom')
+            ->latest()
+            ->get()
+            ->map(fn (QwaAutoAlertRule $rule) => [
+                'id' => (string) $rule->id,
+                'triggerEvent' => $rule->trigger_event,
+                'triggerLabel' => QwaAutoAlertTriggers::label($rule->trigger_event),
+                'delivery' => QwaAutoAlertTriggers::delivery($rule->trigger_event),
+                'enabled' => (bool) $rule->enabled,
+                'recipientType' => $rule->recipient_type,
+                'recipientRoles' => $rule->recipient_roles ?? [],
+                'scheduleTime' => $rule->schedule_time,
+                'language' => (string) $rule->language,
+                'lastFiredAt' => optional($rule->last_fired_at)->format('d M Y, h:i A'),
+                'template' => $rule->template ? [
+                    'id' => (string) $rule->template->id,
+                    'name' => $rule->template->name,
+                    'isCustom' => (bool) $rule->template->is_custom,
+                ] : null,
+            ])
+            ->values()
+            ->all();
+    }
+
     private function noticeBoardPayload(Organization $organization, User $user): array
     {
         if (! Schema::hasTable('messages') || ! Schema::hasTable('message_recipients')) {
@@ -2453,6 +3289,8 @@ class CommunicationController extends Controller
             ->map(fn (User $user) => [
                 'phone' => $this->normalizePhoneNumber($user->phone),
                 'name' => $user->name,
+                'role' => (string) ($user->role ?? ''),
+                'language' => '',
             ])
             ->filter(fn (array $recipient) => filled($recipient['phone']))
             ->unique('phone')
@@ -2472,6 +3310,9 @@ class CommunicationController extends Controller
             ->map(fn (Student $student) => [
                 'phone' => $this->resolveStudentVoicePhone($student),
                 'name' => trim($student->first_name.' '.$student->last_name),
+                'class' => (string) ($student->schoolClass?->name ?? ''),
+                'section' => (string) ($student->schoolClass?->section ?? ''),
+                'language' => (string) $student->preferred_language,
             ])
             ->filter(fn (array $recipient) => filled($recipient['phone']))
             ->unique('phone')
@@ -2500,6 +3341,9 @@ class CommunicationController extends Controller
             ->map(fn (Student $student) => [
                 'phone' => $this->resolveStudentVoicePhone($student),
                 'name' => trim($student->first_name.' '.$student->last_name),
+                'class' => (string) ($student->schoolClass?->name ?? ''),
+                'section' => (string) ($student->schoolClass?->section ?? ''),
+                'language' => (string) $student->preferred_language,
             ])
             ->filter(fn (array $recipient) => filled($recipient['phone']))
             ->unique('phone')

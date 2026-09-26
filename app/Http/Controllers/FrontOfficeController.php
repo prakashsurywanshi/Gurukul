@@ -16,6 +16,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\QwaAutoAlertService;
 use App\Services\SystemNotificationService;
 
 class FrontOfficeController extends Controller
@@ -85,6 +86,17 @@ class FrontOfficeController extends Controller
                     'action_label' => 'View Enquiry',
                     'action_url' => '/admission-enquiry',
                     'event' => 'admission_enquiry_created',
+                ]
+            );
+
+            app(QwaAutoAlertService::class)->dispatch(
+                $organization,
+                'admission_enquiry',
+                [
+                    'subject' => sprintf('New admission enquiry for %s', $enquiry->class_interested ?? 'admission'),
+                    'message' => (string) $enquiry->notes,
+                    'name' => (string) $enquiry->full_name,
+                    'event_key' => 'admission_enquiry:'.$enquiry->id,
                 ]
             );
         }
@@ -540,6 +552,17 @@ class FrontOfficeController extends Controller
                 $complaint->category
             );
 
+            app(QwaAutoAlertService::class)->dispatch(
+                $organization,
+                'complaint',
+                [
+                    'subject' => sprintf('Complaint: %s', $complaint->category),
+                    'message' => (string) $complaint->note,
+                    'name' => (string) $complaint->complainant_name,
+                    'event_key' => 'complaint:'.$complaint->id,
+                ]
+            );
+
             return redirect()
                 ->route($request->input('return_to') === 'student-hostel' ? 'student.hostel' : 'complains')
                 ->with('success', 'Complaint submitted successfully.');
@@ -558,6 +581,17 @@ class FrontOfficeController extends Controller
                 $organization,
                 $complaint->complainant_name ?: ($validated['complainant_name'] ?? 'A staff member'),
                 $complaint->category
+            );
+
+            app(QwaAutoAlertService::class)->dispatch(
+                $organization,
+                'complaint',
+                [
+                    'subject' => sprintf('Complaint: %s', $complaint->category),
+                    'message' => (string) $complaint->note,
+                    'name' => (string) ($complaint->complainant_name ?: ($validated['complainant_name'] ?? '')),
+                    'event_key' => 'complaint:'.$complaint->id,
+                ]
             );
         }
 

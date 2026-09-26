@@ -57,6 +57,8 @@ const STATUS_BADGE: Record<string, string> = {
     failed: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
 };
 
+const ALL_EXAMS_VALUE = '__all__';
+
 export default function MarksheetUploads(pageProps: MarksheetUploadsProps) {
     const { t } = useLanguage();
     const { props } = usePage();
@@ -189,10 +191,11 @@ export default function MarksheetUploads(pageProps: MarksheetUploadsProps) {
                             <Select
                                 value={examFilter}
                                 onValueChange={(value) => {
-                                    setExamFilter(value);
+                                    const next = value === ALL_EXAMS_VALUE ? '' : value;
+                                    setExamFilter(next);
                                     router.get(
                                         '/marksheet/upload-list',
-                                        { search, status, exam_id: value },
+                                        { search, status, exam_id: next },
                                         { preserveState: true, replace: true },
                                     );
                                 }}
@@ -201,7 +204,7 @@ export default function MarksheetUploads(pageProps: MarksheetUploadsProps) {
                                     <SelectValue placeholder={t('All exams')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">{t('All exams')}</SelectItem>
+                                    <SelectItem value={ALL_EXAMS_VALUE}>{t('All exams')}</SelectItem>
                                     {exams.map((exam) => (
                                         <SelectItem key={exam.id} value={String(exam.id)}>
                                             {exam.name}

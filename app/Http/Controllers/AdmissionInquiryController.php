@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Models\SuperAdminSetting;
 use App\Models\User;
 use App\Services\CustomFieldValueService;
+use App\Services\QwaAutoAlertService;
 use App\Services\SmtpSettingsService;
 use App\Services\StudentAcademicHistoryService;
 use App\Notifications\VerifyAdmissionInquiryCodeNotification;
@@ -160,6 +161,14 @@ $admissionInquiry->update([
             if ($admissionInquiry->custom_data) {
                 $this->syncInquiryCustomDataToStudent($student, $organization, $admissionInquiry->custom_data);
             }
+
+        app(QwaAutoAlertService::class)->dispatch(
+            $organization,
+            'admission_confirmed',
+            [
+                'student' => $student->fresh('schoolClass'),
+            ]
+        );
 
         return redirect()
             ->route('online-admission')
