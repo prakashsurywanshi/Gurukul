@@ -44,6 +44,7 @@ const CHANNEL_ICONS: Record<string, any> = {
     email: Send,
     sms: MessageSquare,
     whatsapp: MessageSquare,
+    qwa_whatsapp: MessageSquare,
     push: Megaphone,
 };
 
@@ -53,7 +54,9 @@ const GROUP_LABELS: Record<string, string> = {
     due_fees: 'Parents with Due Fees',
     no_dues: 'Parents with No Dues',
     class_parents: 'Parents of Specific Class(es)',
+    class_students: 'Students of Specific Class(es)',
     specific_students: 'Specific Student(s)',
+    specific_staff: 'Specific Staff',
 };
 
 const STATUS_BADGES: Record<string, string> = {

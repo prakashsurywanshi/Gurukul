@@ -7214,6 +7214,13 @@ const en = {
     "Mother's Phone": "Mother's Phone",
     'Used when regional WhatsApp templates are sent in Auto language.': 'Used when regional WhatsApp templates are sent in Auto language.',
     "You don't have permission to access user management.": "You don't have permission to access user management.",
+    'Select Staff Member(s)': 'Select Staff Member(s)',
+    'No matching staff found': 'No matching staff found',
+    'staff members': 'staff members',
+    'QWA WhatsApp': 'QWA WhatsApp',
+    'qwa_whatsapp': 'QWA WhatsApp',
+    'Specific Staff': 'Specific Staff',
+    'Students of Specific Class(es)': 'Students of Specific Class(es)',
 };
 
 export default en;

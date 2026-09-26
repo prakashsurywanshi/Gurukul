@@ -7231,6 +7231,13 @@ const hi = {
     'Used when regional WhatsApp templates are sent in Auto language.': 'ऑटो भाषा में क्षेत्रीय WhatsApp टेम्पलेट भेजते समय उपयोग होता है।',
     "We'll email a reset link to the address you provide.": 'हम आपके द्वारा दिए गए पते पर रीसेट लिंक ईमेल करेंगे।',
     "You don't have permission to access user management.": 'आपके पास उपयोगकर्ता प्रबंधन तक पहुंचने की अनुमति नहीं है।',
+    'Select Staff Member(s)': 'स्टाफ सदस्यों का चयन करें',
+    'No matching staff found': 'कोई मिलता-जुलता कर्मचारी सदस्य नहीं मिला',
+    'staff members': 'स्टाफ सदस्य',
+    'QWA WhatsApp': 'QWA व्हाट्सएप',
+    'qwa_whatsapp': 'QWA व्हाट्सएप',
+    'Specific Staff': 'विशिष्ट स्टाफ',
+    'Students of Specific Class(es)': 'विशिष्ट कक्षा के छात्र',
 };
 
 export default hi;

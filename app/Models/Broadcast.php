@@ -20,6 +20,7 @@ class Broadcast extends Model
         'recipient_group',
         'class_ids',
         'student_ids',
+        'staff_ids',
         'recipient_count',
         'sent_count',
         'delivered_count',
@@ -33,6 +34,7 @@ class Broadcast extends Model
         'channels' => 'array',
         'class_ids' => 'array',
         'student_ids' => 'array',
+        'staff_ids' => 'array',
         'sent_at' => 'datetime',
     ];
 

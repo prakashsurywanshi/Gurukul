@@ -20,6 +20,7 @@ interface BroadcastComposeProps {
     user: any;
     classOptions?: Option[];
     studentOptions?: Option[];
+    staffOptions?: Option[];
     placeholders?: string[];
     channels?: string[];
 }
@@ -28,6 +29,7 @@ const CHANNEL_LABELS: Record<string, string> = {
     email: 'Email',
     sms: 'SMS',
     whatsapp: 'WhatsApp',
+    qwa_whatsapp: 'QWA WhatsApp',
     push: 'Push Notification',
 };
 
@@ -37,7 +39,9 @@ const GROUPS: { value: string; label: string }[] = [
     { value: 'due_fees', label: 'Parents with Due Fees' },
     { value: 'no_dues', label: 'Parents with No Dues' },
     { value: 'class_parents', label: 'Parents of Specific Class(es)' },
+    { value: 'class_students', label: 'Students of Specific Class(es)' },
     { value: 'specific_students', label: 'Specific Student(s) / Parent(s)' },
+    { value: 'specific_staff', label: 'Specific Staff' },
 ];
 
 export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
@@ -50,13 +54,16 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
     const [recipientGroup, setRecipientGroup] = useState(broadcastProps.recipient_group ?? 'all_parents');
     const [selectedClasses, setSelectedClasses] = useState<string[]>(broadcastProps.class_ids ?? []);
     const [selectedStudents, setSelectedStudents] = useState<string[]>(broadcastProps.student_ids ?? []);
+    const [selectedStaff, setSelectedStaff] = useState<string[]>(broadcastProps.staff_ids ?? []);
     const [studentQuery, setStudentQuery] = useState('');
+    const [staffQuery, setStaffQuery] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
     const placeholders = pageProps.placeholders ?? [];
     const classOptions = pageProps.classOptions ?? [];
     const studentOptions = pageProps.studentOptions ?? [];
+    const staffOptions = pageProps.staffOptions ?? [];
 
     const acceptPlaceholder = (placeholder: string) => {
         const token = `[${placeholder}]`;
@@ -82,11 +89,23 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
         );
     };
 
+    const toggleStaff = (staffId: string) => {
+        setSelectedStaff((current) =>
+            current.includes(staffId) ? current.filter((s) => s !== staffId) : [...current, staffId],
+        );
+    };
+
     const visibleStudents = useMemo(() => {
         const query = studentQuery.trim().toLowerCase();
         if (!query) return studentOptions;
         return studentOptions.filter((option) => option.label.toLowerCase().includes(query));
     }, [studentQuery, studentOptions]);
+
+    const visibleStaff = useMemo(() => {
+        const query = staffQuery.trim().toLowerCase();
+        if (!query) return staffOptions;
+        return staffOptions.filter((option) => option.label.toLowerCase().includes(query));
+    }, [staffQuery, staffOptions]);
 
     const recipientLabel = GROUPS.find((group) => group.value === recipientGroup)?.label ?? recipientGroup;
 
@@ -100,8 +119,10 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
                 message,
                 channels,
                 recipient_group: recipientGroup,
-                class_ids: recipientGroup === 'class_parents' ? selectedClasses : undefined,
+                class_ids:
+                    recipientGroup === 'class_parents' || recipientGroup === 'class_students' ? selectedClasses : undefined,
                 student_ids: recipientGroup === 'specific_students' ? selectedStudents : undefined,
+                staff_ids: recipientGroup === 'specific_staff' ? selectedStaff : undefined,
             },
             {
                 onFinish: () => setIsSaving(false),
@@ -128,8 +149,10 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
                 </div>
 
                 <PageError message={errors.recipient_group} />
+                <PageError message={errors.qwa_delivery} />
                 <PageError message={errors.class_ids} />
                 <PageError message={errors.student_ids} />
+                <PageError message={errors.staff_ids} />
                 <PageError message={errors.subject} />
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -230,7 +253,7 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
                                 </Select>
                             </div>
 
-                            {recipientGroup === 'class_parents' && (
+                            {(recipientGroup === 'class_parents' || recipientGroup === 'class_students') && (
                                 <div className="space-y-2">
                                     <Label>{t('Select Class(es)')}</Label>
                                     <div className="grid max-h-64 grid-cols-1 gap-1.5 overflow-y-auto rounded-lg border border-slate-200 p-3 sm:grid-cols-2 dark:border-slate-700">
@@ -246,6 +269,37 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
                                                 {option.label}
                                             </label>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {recipientGroup === 'specific_staff' && (
+                                <div className="space-y-2">
+                                    <Label>{t('Select Staff Member(s)')}</Label>
+                                    <Input
+                                        value={staffQuery}
+                                        onChange={(e) => setStaffQuery(e.target.value)}
+                                        placeholder={t('Search staff...')}
+                                        className="mb-2"
+                                    />
+                                    <div className="grid max-h-72 grid-cols-1 gap-1.5 overflow-y-auto rounded-lg border border-slate-200 p-3 sm:grid-cols-2 dark:border-slate-700">
+                                        {visibleStaff.map((option) => (
+                                            <label
+                                                key={option.value}
+                                                className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
+                                            >
+                                                <Checkbox
+                                                    checked={selectedStaff.includes(option.value)}
+                                                    onCheckedChange={() => toggleStaff(option.value)}
+                                                />
+                                                <span className="truncate">{option.label}</span>
+                                            </label>
+                                        ))}
+                                        {visibleStaff.length === 0 && (
+                                            <p className="col-span-full text-xs text-gray-500">
+                                                {t('No matching staff found')}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -306,12 +360,15 @@ export default function BroadcastCompose(pageProps: BroadcastComposeProps) {
                     <p className="flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-3 text-sm text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300">
                         <ChevronDown className="h-4 w-4" />
                         {t(recipientLabel)}
-                        {recipientGroup === 'class_parents' &&
+                        {(recipientGroup === 'class_parents' || recipientGroup === 'class_students') &&
                             selectedClasses.length > 0 &&
                             ` · ${selectedClasses.length} ${t('classes')}`}
                         {recipientGroup === 'specific_students' &&
                             selectedStudents.length > 0 &&
                             ` · ${selectedStudents.length} ${t('students')}`}
+                        {recipientGroup === 'specific_staff' &&
+                            selectedStaff.length > 0 &&
+                            ` · ${selectedStaff.length} ${t('staff members')}`}
                     </p>
                 )}
             </div>
