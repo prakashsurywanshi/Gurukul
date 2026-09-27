@@ -172,13 +172,13 @@ export default function PortalRecords({
         setTemplateForm({
             name: '',
             description: '',
-            sheets: [
-                {
-                    name: 'Sheet 1',
-                    entity: 'student',
-                    columns: [{ label: '', source: '', static: '', required: true, type: 'auto', lookup: '' }],
-                },
-            ],
+sheets: [
+                    {
+                        name: 'Sheet 1',
+                        entity: 'student',
+                        columns: [{ label: '', source: '', static: '', required: false, type: 'auto', lookup: '' }],
+                    },
+                ],
         });
         setTemplateOpen(true);
     };
@@ -269,7 +269,7 @@ export default function PortalRecords({
                     {
                         name: `Sheet ${current.sheets.length + 1}`,
                         entity: 'student',
-                        columns: [{ label: '', source: '', static: '', required: true, type: 'auto', lookup: '' }],
+                        columns: [{ label: '', source: '', static: '', required: false, type: 'auto', lookup: '' }],
                     },
                 ],
             };
@@ -288,9 +288,11 @@ export default function PortalRecords({
         setSaving(true);
 
         try {
-            const url = editingIndex !== null ? `/portal-records/templates/${editingIndex}` : '/portal-records/templates';
-            const method = editingIndex !== null ? 'patch' : 'post';
-            await (axios as any)[method](url, templateForm, { headers: csrfHeaders });
+            if (editingIndex !== null) {
+                await axios.patch(`/portal-records/templates/${editingIndex}`, templateForm, { headers: csrfHeaders });
+            } else {
+                await axios.post('/portal-records/templates', templateForm, { headers: csrfHeaders });
+            }
             window.location.reload();
         } catch {
             setSaving(false);
@@ -298,6 +300,8 @@ export default function PortalRecords({
     };
 
     const deleteTemplate = async (index: string) => {
+        if (!window.confirm('Delete this custom template?')) return;
+
         try {
             await axios.delete(`/portal-records/templates/${index}`, { headers: csrfHeaders });
             window.location.reload();
@@ -397,7 +401,7 @@ export default function PortalRecords({
     };
 
     const renderPreset = (preset: Preset) => (
-        <Card>
+        <Card key={preset.key}>
             <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -434,7 +438,7 @@ export default function PortalRecords({
     );
 
     const renderTemplate = (template: CustomTemplate, index: string) => (
-        <Card>
+        <Card key={template.id ?? index}>
             <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -542,7 +546,6 @@ export default function PortalRecords({
                                                         ...column,
                                                         source: '',
                                                         static: '',
-                                                        label: column.source ? column.label : '',
                                                     })),
                                                 })
                                             }
@@ -699,6 +702,15 @@ export default function PortalRecords({
                     </Button>
 
                     <DialogFooter>
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setTemplateOpen(false)}
+                            disabled={saving}
+                        >
+                            {t('Cancel')}
+                        </Button>
                         <Button
                             type="button"
                             size="sm"
