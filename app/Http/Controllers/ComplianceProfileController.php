@@ -19,6 +19,8 @@ class ComplianceProfileController extends Controller
         'grades_offered',
         'medium_of_instruction',
         'shift_timings',
+        'district',
+        'block',
     ];
 
     private const FIELD_SETTINGS = [
@@ -40,6 +42,8 @@ class ComplianceProfileController extends Controller
         'grades_offered' => '',
         'medium_of_instruction' => 'English',
         'shift_timings' => '',
+        'district' => '',
+        'block' => '',
     ];
 
     public function index(Request $request)
@@ -72,6 +76,8 @@ class ComplianceProfileController extends Controller
             'profile.grades_offered' => ['nullable', 'string', 'max:120'],
             'profile.medium_of_instruction' => ['nullable', 'string', 'max:60'],
             'profile.shift_timings' => ['nullable', 'string', 'max:60'],
+            'profile.district' => ['nullable', 'string', 'max:120'],
+            'profile.block' => ['nullable', 'string', 'max:120'],
             'fields.enable_udise_display' => ['nullable', 'boolean'],
             'fields.enable_affiliation_details' => ['nullable', 'boolean'],
             'fields.enable_board_details' => ['nullable', 'boolean'],

@@ -19,6 +19,8 @@ const PROFILE_FIELDS = [
     'grades_offered',
     'medium_of_instruction',
     'shift_timings',
+    'district',
+    'block',
 ] as const;
 
 const FIELD_SETTINGS = [
@@ -187,6 +189,8 @@ function labelFor(key: string): string {
         grades_offered: 'Grades Offered',
         medium_of_instruction: 'Medium of Instruction',
         shift_timings: 'Shift Timings',
+        district: 'District',
+        block: 'Block',
         enable_udise_display: 'Show UDISE code',
         enable_affiliation_details: 'Show affiliation details',
         enable_board_details: 'Show board details',

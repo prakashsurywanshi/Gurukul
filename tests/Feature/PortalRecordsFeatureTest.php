@@ -241,6 +241,9 @@ class PortalRecordsFeatureTest extends TestCase
         $this->assertStringContainsString('NCT-2026-0001', $staff);
         $this->assertStringContainsString('UDISE Code', $school);
         $this->assertStringContainsString('27211234567', $school);
+        $this->assertStringContainsString('District,Block', $school);
+        $this->assertStringContainsString('Pune', $school);
+        $this->assertStringContainsString('Pune City', $school);
 
         $zip->close();
         @unlink($path);

@@ -34,6 +34,7 @@ class PortalPresets
                         ['label' => 'Affiliation Number', 'source' => 'school.affiliation_no'],
                         ['label' => 'Grades Offered', 'source' => 'school.grades_offered'],
                         ['label' => 'District', 'source' => 'school.district'],
+                        ['label' => 'Block', 'source' => 'school.block'],
                         ['label' => 'Address', 'source' => 'school.address'],
                         ['label' => 'State', 'source' => 'school.state'],
                         ['label' => 'Pincode', 'source' => 'school.pincode', 'type' => 'text'],
