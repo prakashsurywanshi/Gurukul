@@ -310,9 +310,26 @@ sheets: [
         }
     };
 
+    const viewRecordsHref = (sheet: SheetReadiness): string | null => {
+        const attentionName = sheet.attentionNames[0] ?? '';
+        const query = attentionName ? `?q=${encodeURIComponent(attentionName)}` : '';
+
+        switch (sheet.entity) {
+            case 'student':
+                return `/students${query}`;
+            case 'staff':
+                return `/staff${query}`;
+            case 'school':
+                return `/compliance/profile`;
+            default:
+                return null;
+        }
+    };
+
     const renderSheetRow = (sheet: SheetReadiness, baseUrl: string) => {
         const Icon = ENTITY_ICONS[sheet.entity] ?? FileSpreadsheet;
         const readyPct = sheet.entityCount > 0 ? Math.round((sheet.readyCount / sheet.entityCount) * 100) : 100;
+        const viewHref = viewRecordsHref(sheet);
 
         return (
             <div key={sheet.name} className="rounded-lg border">
@@ -323,6 +340,14 @@ sheets: [
                         <Badge variant="secondary">{t(ENTITY_LABELS[sheet.entity])}</Badge>
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5">
+                        {viewHref && sheet.rowsNeedingAttention > 0 && (
+                            <a href={viewHref}>
+                                <Button type="button" size="sm" variant="outline">
+                                    <Pencil className="mr-1 h-3.5 w-3.5" />
+                                    {t('View records')}
+                                </Button>
+                            </a>
+                        )}
                         <a href={exportUrl(baseUrl, 'filled', 'csv', sheet.name)}>
                             <Button type="button" size="sm" variant="outline">
                                 <FileText className="mr-1 h-3.5 w-3.5" />

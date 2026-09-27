@@ -115,6 +115,7 @@ interface UserManagementProps {
     roleOptions: RoleOption[];
     designations?: OptionItem[];
     departments?: OptionItem[];
+    initialSearch?: string;
 }
 
 const DEFAULT_FORM = {
@@ -217,12 +218,13 @@ export default function UserManagement({
     roleOptions,
     designations = [],
     departments = [],
+    initialSearch = '',
 }: UserManagementProps) {
     const { t } = useLanguage();
     const flash = (usePage().props as any).flash ?? {};
     const pageErrors = ((usePage().props as any).errors ?? {}) as Record<string, string | string[]>;
     const [users, setUsers] = useState<ManagedUser[]>(userRecords ?? []);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showCreateModal, setShowCreateModal] = useState(false);

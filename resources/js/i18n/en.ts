@@ -7238,6 +7238,7 @@ const en = {
     'Download from Firebase Project Settings > Service accounts > Generate new private key. The backend uses it to authorize FCM v1 API requests.': 'Download from Firebase Project Settings, under Service accounts, using Generate new private key. The backend uses it to authorize FCM v1 API requests.',
     'Check that the Project ID and service account JSON can authorize push notifications.': 'Check that the Project ID and service account JSON can authorize push notifications.',
     'UDISE & SARAL Portal Records': 'UDISE & SARAL Portal Records',
+    'View records': 'View records',
     'UDISE & SARAL': 'UDISE & SARAL',
     'Aadhaar Number': 'Aadhaar Number',
     'Register No.': 'Register No.',

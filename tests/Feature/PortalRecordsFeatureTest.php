@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\StudentAcademicHistory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 use ZipArchive;
 
@@ -448,6 +449,26 @@ class PortalRecordsFeatureTest extends TestCase
         $this->assertNotNull($profile);
         $this->assertSame('223344556677', $profile->aadhar_number);
         $this->assertSame(['Maths', 'Science'], $profile->subjects_taught);
+    }
+
+    public function test_listing_pages_seed_search_from_query(): void
+    {
+        $this->actingAs($this->admin);
+
+        $this->get('/students?q='.urlencode('Aarav Mehta'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard/StudentManagement')
+                ->where('initialSearch', 'Aarav Mehta'));
+
+        $this->get('/staff?q='.urlencode('Sunita Deshmukh'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard/UserManagement')
+                ->where('initialSearch', 'Sunita Deshmukh'));
+
+        $this->get('/students')
+            ->assertInertia(fn (Assert $page) => $page->where('initialSearch', ''));
     }
 
     private function validStudentPayload(): array

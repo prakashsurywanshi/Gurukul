@@ -7255,6 +7255,7 @@ const hi = {
     'Download from Firebase Project Settings > Service accounts > Generate new private key. The backend uses it to authorize FCM v1 API requests.': 'Firebase प्रोजेक्ट सेटिंग्स के सेवा खाते अनुभाग से नई निजी कुंजी बनाकर डाउनलोड करें। बैकएंड FCM v1 API अनुरोधों को अधिकृत करने के लिए इसका उपयोग करता है।',
     'Check that the Project ID and service account JSON can authorize push notifications.': 'जांचें कि प्रोजेक्ट ID और सेवा खाता JSON पुश सूचनाओं को अधिकृत कर सकते हैं।',
     'UDISE & SARAL Portal Records': 'UDISE और SARAL पोर्टल रिकॉर्ड',
+    'View records': 'रिकॉर्ड देखें',
     'UDISE & SARAL': 'UDISE और SARAL',
     'Aadhaar Number': 'आधार नंबर',
     'Register No.': 'पंजीकरण संख्या',

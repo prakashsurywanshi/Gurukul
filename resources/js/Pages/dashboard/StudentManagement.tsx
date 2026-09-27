@@ -52,6 +52,7 @@ interface StudentManagementProps {
     }[];
     studentRecords: any[];
     studentImports?: StudentImportRecord[];
+    initialSearch?: string;
 }
 
 export default function StudentManagement({
@@ -59,12 +60,13 @@ export default function StudentManagement({
     classRecords,
     studentRecords,
     studentImports = [],
+    initialSearch = '',
 }: StudentManagementProps) {
     const { t } = useLanguage();
     const flash = (usePage().props as any).flash ?? {};
     const [students, setStudents] = useState<any[]>(studentRecords ?? []);
     const [loading, setLoading] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [classFilter, setClassFilter] = useState('all');
     const [sectionFilter, setSectionFilter] = useState('all');
     const [showImportSection, setShowImportSection] = useState(false);
@@ -198,6 +200,11 @@ export default function StudentManagement({
                 String(student.first_name).toLowerCase().includes(searchLower) ||
                 String(student.middle_name).toLowerCase().includes(searchLower) ||
                 String(student.last_name).toLowerCase().includes(searchLower) ||
+                [student.first_name, student.middle_name, student.last_name]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(searchLower) ||
                 String(student.email).toLowerCase().includes(searchLower) ||
                 String(student.roll_number).toLowerCase().includes(searchLower) ||
                 String(student.admission_no || '')

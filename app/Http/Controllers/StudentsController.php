@@ -49,7 +49,7 @@ class StudentsController extends Controller
         private readonly SmtpSettingsService $smtpSettingsService
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
@@ -62,6 +62,7 @@ class StudentsController extends Controller
             'classRecords' => $classRecords,
             'studentRecords' => $studentRecords,
             'studentImports' => $studentImports,
+            'initialSearch' => (string) $request->string('q')->toString(),
         ]);
     }
 

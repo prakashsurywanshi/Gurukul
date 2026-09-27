@@ -42,7 +42,7 @@ class UsersController extends Controller
     ) {
     }
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
@@ -54,6 +54,7 @@ class UsersController extends Controller
             'roleOptions' => $roleRecords,
             'designations' => $organization ? Designation::where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name']) : [],
             'departments' => $organization ? Department::where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name']) : [],
+            'initialSearch' => (string) $request->string('q')->toString(),
         ]);
     }
 
