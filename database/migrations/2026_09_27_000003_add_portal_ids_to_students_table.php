@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('students', function (Blueprint $table) {
-            $table->string('register_no')->nullable()->after('roll_number');
-            $table->string('udise_student_id')->nullable()->after('register_no');
-            $table->string('saral_student_id')->nullable()->after('udise_student_id');
+            $table->text('register_no')->nullable()->after('roll_number');
+            $table->text('udise_student_id')->nullable()->after('register_no');
+            $table->text('saral_student_id')->nullable()->after('udise_student_id');
         });
     }
 
