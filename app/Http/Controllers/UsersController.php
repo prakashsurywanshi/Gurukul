@@ -637,7 +637,7 @@ class UsersController extends Controller
 
         $validated = $this->validatePayload($request);
 
-        User::query()->create([
+        $staff = User::query()->create([
             'organization_id' => $organization->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -649,6 +649,8 @@ class UsersController extends Controller
             'designation_id' => $validated['designation_id'] ?? null,
             'department_id' => $validated['department_id'] ?? null,
         ]);
+
+        $this->syncStaffProfile($staff, $validated['profile'] ?? []);
 
         return redirect()->route('users')->with('success', 'Staff member created successfully.');
     }
@@ -676,6 +678,10 @@ class UsersController extends Controller
             'designation_id' => $validated['designation_id'] ?? null,
             'department_id' => $validated['department_id'] ?? null,
         ]);
+
+        if (isset($validated['profile'])) {
+            $this->syncStaffProfile($managedUser, $validated['profile']);
+        }
 
         return redirect()->route('users')->with('success', 'Staff member updated successfully.');
     }
@@ -782,6 +788,28 @@ class UsersController extends Controller
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'designation_id' => ['nullable', 'integer', Rule::exists('designations', 'id')->where(fn ($q) => $q->where('organization_id', $this->resolveOrganizationForUser(Auth::user())?->id))],
             'department_id' => ['nullable', 'integer', Rule::exists('departments', 'id')->where(fn ($q) => $q->where('organization_id', $this->resolveOrganizationForUser(Auth::user())?->id))],
+            'profile.aadhar_number' => ['nullable', 'string', 'max:20'],
+            'profile.pan' => ['nullable', 'string', 'max:20'],
+            'profile.national_teacher_id' => ['nullable', 'string', 'max:50'],
+            'profile.employee_code' => ['nullable', 'string', 'max:50'],
+            'profile.appointment_date' => ['nullable', 'date'],
+            'profile.appointment_type' => ['nullable', 'string', 'max:100'],
+            'profile.recruitment_type' => ['nullable', 'string', 'max:100'],
+            'profile.post' => ['nullable', 'string', 'max:200'],
+            'profile.pay_scale' => ['nullable', 'string', 'max:100'],
+            'profile.basic_pay' => ['nullable', 'numeric'],
+            'profile.government_service_join_date' => ['nullable', 'date'],
+            'profile.qualification' => ['nullable', 'string', 'max:300'],
+            'profile.teaching_qualification' => ['nullable', 'string', 'max:300'],
+            'profile.tet_status' => ['nullable', 'string', 'max:100'],
+            'profile.mother_tongue' => ['nullable', 'string', 'max:100'],
+            'profile.religion' => ['nullable', 'string', 'max:100'],
+            'profile.category' => ['nullable', 'string', 'max:100'],
+            'profile.subjects_taught' => ['nullable', 'array'],
+            'profile.subjects_taught.*' => ['nullable', 'string', 'max:100'],
+            'profile.experience_years' => ['nullable', 'numeric', 'min:0'],
+            'profile.training_received' => ['nullable', 'boolean'],
+            'profile.teacher_type' => ['nullable', 'string', 'max:100'],
         ];
 
         if (!$managedUser) {
@@ -789,6 +817,36 @@ class UsersController extends Controller
         }
 
         return $request->validate($rules);
+    }
+
+    private function syncStaffProfile(User $staff, array $profile): void
+    {
+        $subjects = $profile['subjects_taught'] ?? null;
+
+        $staff->profile()->updateOrCreate([], [
+            'organization_id' => $staff->organization_id,
+            'aadhar_number' => $profile['aadhar_number'] ?? null,
+            'pan' => $profile['pan'] ?? null,
+            'national_teacher_id' => $profile['national_teacher_id'] ?? null,
+            'employee_code' => $profile['employee_code'] ?? null,
+            'appointment_date' => $profile['appointment_date'] ?? null,
+            'appointment_type' => $profile['appointment_type'] ?? null,
+            'recruitment_type' => $profile['recruitment_type'] ?? null,
+            'post' => $profile['post'] ?? null,
+            'pay_scale' => $profile['pay_scale'] ?? null,
+            'basic_pay' => $profile['basic_pay'] ?? null,
+            'government_service_join_date' => $profile['government_service_join_date'] ?? null,
+            'qualification' => $profile['qualification'] ?? null,
+            'teaching_qualification' => $profile['teaching_qualification'] ?? null,
+            'tet_status' => $profile['tet_status'] ?? null,
+            'mother_tongue' => $profile['mother_tongue'] ?? null,
+            'religion' => $profile['religion'] ?? null,
+            'category' => $profile['category'] ?? null,
+            'subjects_taught' => is_array($subjects) ? array_values($subjects) : ($subjects !== null ? [$subjects] : null),
+            'experience_years' => $profile['experience_years'] ?? null,
+            'training_received' => $this->normalizeTrainingReceived($profile['training_received'] ?? null),
+            'teacher_type' => $profile['teacher_type'] ?? null,
+        ]);
     }
 
     private function validateLeaveRequestPayload(Request $request, Organization $organization): array
@@ -821,7 +879,7 @@ class UsersController extends Controller
         $roleSlugs = collect($roleRecords)->pluck('slug')->all();
 
         return User::query()
-            ->with(['designation', 'department'])
+            ->with(['designation', 'department', 'profile'])
             ->where('organization_id', $organization->id)
             ->whereIn('role', $roleSlugs)
             ->orderBy('name')
@@ -832,6 +890,8 @@ class UsersController extends Controller
 
     private function serializeUser(User $managedUser): array
     {
+        $profile = $managedUser->profile;
+
         return [
             'id' => $managedUser->id,
             'name' => $managedUser->name,
@@ -844,7 +904,43 @@ class UsersController extends Controller
             'department_id' => $managedUser->department_id,
             'designation_name' => $managedUser->relationLoaded('designation') ? $managedUser->designation?->name : null,
             'department_name' => $managedUser->relationLoaded('department') ? $managedUser->department?->name : null,
+            'profile' => [
+                'aadhar_number' => $profile?->aadhar_number,
+                'pan' => $profile?->pan,
+                'national_teacher_id' => $profile?->national_teacher_id,
+                'employee_code' => $profile?->employee_code,
+                'appointment_date' => $profile?->appointment_date?->format('Y-m-d'),
+                'appointment_type' => $profile?->appointment_type,
+                'recruitment_type' => $profile?->recruitment_type,
+                'post' => $profile?->post,
+                'pay_scale' => $profile?->pay_scale,
+                'basic_pay' => $profile?->basic_pay,
+                'government_service_join_date' => $profile?->government_service_join_date?->format('Y-m-d'),
+                'qualification' => $profile?->qualification,
+                'teaching_qualification' => $profile?->teaching_qualification,
+                'tet_status' => $profile?->tet_status,
+                'mother_tongue' => $profile?->mother_tongue,
+                'religion' => $profile?->religion,
+                'category' => $profile?->category,
+                'subjects_taught' => is_array($profile?->subjects_taught) ? $profile->subjects_taught : [],
+                'experience_years' => $profile?->experience_years,
+                'training_received' => $profile?->training_received,
+                'teacher_type' => $profile?->teacher_type,
+            ],
         ];
+    }
+
+    private function normalizeTrainingReceived(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return $value !== 0;
+        }
+
+        return in_array(strtolower(trim((string) $value)), ['1', 'true', 'yes', 'y', 'on'], true);
     }
 
     private function serializeStaffProfile(User $managedUser): array

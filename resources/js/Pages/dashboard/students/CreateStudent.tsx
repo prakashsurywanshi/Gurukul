@@ -47,6 +47,10 @@ export default function CreateStudent({ user, classRecords, admissionCustomField
         class: '',
         section: '',
         roll_number: '',
+        aadhar_number: '',
+        register_no: '',
+        udise_student_id: '',
+        saral_student_id: '',
         admission_date: new Date().toISOString().split('T')[0],
         father_name: '',
         father_phone: '',
@@ -492,6 +496,34 @@ export default function CreateStudent({ user, classRecords, admissionCustomField
                                             <Input
                                                 value={formData.roll_number}
                                                 onChange={(e) => handleInputChange('roll_number', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Aadhaar Number')}</Label>
+                                            <Input
+                                                value={formData.aadhar_number}
+                                                onChange={(e) => handleInputChange('aadhar_number', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Register No.')}</Label>
+                                            <Input
+                                                value={formData.register_no}
+                                                onChange={(e) => handleInputChange('register_no', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('UDISE Student ID')}</Label>
+                                            <Input
+                                                value={formData.udise_student_id}
+                                                onChange={(e) => handleInputChange('udise_student_id', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('SARAL Student ID')}</Label>
+                                            <Input
+                                                value={formData.saral_student_id}
+                                                onChange={(e) => handleInputChange('saral_student_id', e.target.value)}
                                             />
                                         </div>
                                         <div className="space-y-2">

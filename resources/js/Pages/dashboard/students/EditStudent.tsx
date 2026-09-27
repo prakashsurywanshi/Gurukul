@@ -44,6 +44,10 @@ const emptyForm = {
     class: '',
     section: '',
     roll_number: '',
+    aadhar_number: '',
+    register_no: '',
+    udise_student_id: '',
+    saral_student_id: '',
     admission_date: '',
     father_name: '',
     father_name_mr: '',
@@ -121,6 +125,10 @@ export default function EditStudent({
                 class: student.class || '',
                 section: student.section || '',
                 roll_number: student.roll_number || '',
+                aadhar_number: student.aadhar_number || '',
+                register_no: student.register_no || '',
+                udise_student_id: student.udise_student_id || '',
+                saral_student_id: student.saral_student_id || '',
                 admission_date: student.admission_date || '',
                 father_name: student.father_name || '',
                 father_name_mr: student.father_name_mr || '',
@@ -557,6 +565,34 @@ export default function EditStudent({
                                     <Input
                                         value={formData.roll_number}
                                         onChange={(e) => updateField('roll_number', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('Aadhaar Number')}</Label>
+                                    <Input
+                                        value={formData.aadhar_number}
+                                        onChange={(e) => updateField('aadhar_number', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('Register No.')}</Label>
+                                    <Input
+                                        value={formData.register_no}
+                                        onChange={(e) => updateField('register_no', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('UDISE Student ID')}</Label>
+                                    <Input
+                                        value={formData.udise_student_id}
+                                        onChange={(e) => updateField('udise_student_id', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('SARAL Student ID')}</Label>
+                                    <Input
+                                        value={formData.saral_student_id}
+                                        onChange={(e) => updateField('saral_student_id', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">

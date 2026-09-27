@@ -1924,6 +1924,7 @@ export const sidebarConfig: {
         tabs: [
             'discipline',
             'behavior-records',
+            'portal-records',
             'compliance',
             'compliance-packs',
             'compliance-calendar',
@@ -1949,6 +1950,14 @@ export const sidebarConfig: {
                 href: '/student-behavior',
                 roles: ['super_admin', 'admin', 'teacher'],
                 feature: 'Discipline',
+            },
+            {
+                id: 'portal-records',
+                label: 'UDISE & SARAL',
+                icon: FileSpreadsheet,
+                href: '/portal-records',
+                roles: ['admin', 'super_admin'],
+                feature: 'Reports & Analytics',
             },
             {
                 id: 'compliance',

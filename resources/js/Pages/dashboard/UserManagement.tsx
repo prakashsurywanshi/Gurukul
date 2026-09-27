@@ -60,6 +60,45 @@ interface OptionItem {
     name: string;
 }
 
+interface StaffProfileForm {
+    aadhar_number: string;
+    pan: string;
+    national_teacher_id: string;
+    employee_code: string;
+    appointment_date: string;
+    appointment_type: string;
+    recruitment_type: string;
+    post: string;
+    pay_scale: string;
+    basic_pay: string;
+    government_service_join_date: string;
+    qualification: string;
+    teaching_qualification: string;
+    tet_status: string;
+    mother_tongue: string;
+    religion: string;
+    category: string;
+    subjects_taught: string[];
+    experience_years: string;
+    training_received: string;
+    teacher_type: string;
+}
+
+interface ManagedUser {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    phone?: string | null;
+    address?: string | null;
+    status: UserStatus;
+    designation_id?: number | null;
+    department_id?: number | null;
+    designation_name?: string | null;
+    department_name?: string | null;
+    profile?: Partial<StaffProfileForm> | null;
+}
+
 interface RoleOption {
     id: number;
     name: string;
@@ -88,7 +127,89 @@ const DEFAULT_FORM = {
     status: 'active' as UserStatus,
     designation_id: '',
     department_id: '',
+    profile: {},
 };
+
+const PROFILE_FIELDS: { key: keyof StaffProfileForm; label: string; subtotal?: 'date' | 'subjects' }[] = [
+    { key: 'aadhar_number', label: 'Aadhaar Number' },
+    { key: 'pan', label: 'PAN' },
+    { key: 'national_teacher_id', label: 'National Teacher ID' },
+    { key: 'employee_code', label: 'Employee Code' },
+    { key: 'appointment_date', label: 'Appointment Date', subtotal: 'date' },
+    { key: 'appointment_type', label: 'Appointment Type' },
+    { key: 'recruitment_type', label: 'Recruitment Type' },
+    { key: 'post', label: 'Post' },
+    { key: 'pay_scale', label: 'Pay Scale' },
+    { key: 'basic_pay', label: 'Basic Pay' },
+    { key: 'government_service_join_date', label: 'Govt. Service Join Date', subtotal: 'date' },
+    { key: 'qualification', label: 'Qualification' },
+    { key: 'teaching_qualification', label: 'Teaching Qualification' },
+    { key: 'tet_status', label: 'TET Status' },
+    { key: 'mother_tongue', label: 'Mother Tongue' },
+    { key: 'religion', label: 'Religion' },
+    { key: 'category', label: 'Category' },
+    { key: 'subjects_taught', label: 'Subjects Taught', subtotal: 'subjects' },
+    { key: 'experience_years', label: 'Experience (Years)' },
+    { key: 'training_received', label: 'Training Received' },
+    { key: 'teacher_type', label: 'Teacher Type' },
+];
+
+function StaffPortalSection({
+    value,
+    onChange,
+}: {
+    value: Partial<StaffProfileForm>;
+    onChange: (patch: Partial<StaffProfileForm>) => void;
+}) {
+    const { t } = useLanguage();
+
+    const setField = (key: keyof StaffProfileForm, fieldValue: string | string[]) => {
+        onChange({ [key]: fieldValue } as Partial<StaffProfileForm>);
+    };
+
+    return (
+        <details className="rounded-lg border p-3">
+            <summary className="cursor-pointer text-sm font-medium">
+                {t('UDISE / SARAL Staff Profile')}
+            </summary>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+                {PROFILE_FIELDS.map((field) => {
+                    if (field.subtotal === 'subjects') {
+                        return (
+                            <div key={field.key} className="col-span-2 space-y-2">
+                                <Label>{t(field.label)}</Label>
+                                <Input
+                                    value={Array.isArray(value.subjects_taught) ? value.subjects_taught.join(', ') : ''}
+                                    onChange={(event) =>
+                                        setField(
+                                            field.key,
+                                            event.target.value
+                                                .split(',')
+                                                .map((item) => item.trim())
+                                                .filter(Boolean),
+                                        )
+                                    }
+                                    placeholder={t('e.g. Mathematics, Science')}
+                                />
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div key={field.key} className="space-y-2">
+                            <Label>{t(field.label)}</Label>
+                            <Input
+                                type={field.subtotal === 'date' ? 'date' : 'text'}
+                                value={String(value[field.key] ?? '')}
+                                onChange={(event) => setField(field.key, event.target.value)}
+                            />
+                        </div>
+                    );
+                })}
+            </div>
+        </details>
+    );
+}
 
 export default function UserManagement({
     user,
@@ -320,6 +441,7 @@ export default function UserManagement({
             status: managedUser.status || 'active',
             designation_id: managedUser.designation_id?.toString() || '',
             department_id: managedUser.department_id?.toString() || '',
+            profile: managedUser.profile ?? {},
         });
         setShowEditModal(true);
     };
@@ -911,6 +1033,16 @@ export default function UserManagement({
                                     }
                                 />
                             </div>
+
+                            <StaffPortalSection
+                                value={formData.profile}
+                                onChange={(patch) =>
+                                    setFormData({
+                                        ...formData,
+                                        profile: { ...formData.profile, ...patch },
+                                    })
+                                }
+                            />
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={closeCreateModal}>
@@ -1255,6 +1387,16 @@ export default function UserManagement({
                                     </div>
                                 </div>
                             </div>
+
+                            <StaffPortalSection
+                                value={formData.profile}
+                                onChange={(patch) =>
+                                    setFormData({
+                                        ...formData,
+                                        profile: { ...formData.profile, ...patch },
+                                    })
+                                }
+                            />
 
                             <Alert>
                                 <AlertDescription>

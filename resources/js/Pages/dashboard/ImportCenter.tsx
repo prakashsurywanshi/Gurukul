@@ -53,9 +53,39 @@ const ICONS: Record<string, typeof Users> = {
     BadgePercent,
 };
 
-const STAFF_HEADERS = ['name', 'email', 'phone', 'role', 'status', 'employee_id', 'designation', 'department'];
+const STAFF_HEADERS = [
+    'name',
+    'email',
+    'phone',
+    'role',
+    'status',
+    'employee_id',
+    'designation',
+    'department',
+    'aadhar_number',
+    'pan',
+    'national_teacher_id',
+    'employee_code',
+    'appointment_date',
+    'appointment_type',
+    'recruitment_type',
+    'post',
+    'pay_scale',
+    'basic_pay',
+    'government_service_join_date',
+    'qualification',
+    'teaching_qualification',
+    'tet_status',
+    'mother_tongue',
+    'religion',
+    'category',
+    'subjects_taught',
+    'experience_years',
+    'training_received',
+    'teacher_type',
+];
 
-const STAFF_SAMPLE = `${STAFF_HEADERS.join(',')}\nRajesh Kumar,rajesh@gurukul.test,,teacher,active,T-101,Science Teacher,Science\nPriya Sharma,priya@gurukul.test,9876543211,accountant,active,A-201,Accounts Officer,Accounts`;
+const STAFF_SAMPLE = `${STAFF_HEADERS.join(',')}\nRajesh Kumar,rajesh@gurukul.test,,teacher,active,T-101,Science Teacher,Science,123412341234,ABCDE1234F,NCT12345,E-101,01/06/2015,Regular,Direct,Science Teacher,Level Pay 7,59000,2015-05-20,M.Sc B.Ed,CTET Passed,Marathi,Hindu,General,Mathematics;Science,10NCF,Head Teacher`;
 
 export default function ImportCenter({
     user,

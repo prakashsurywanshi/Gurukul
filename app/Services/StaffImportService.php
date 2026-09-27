@@ -28,7 +28,7 @@ class StaffImportService
 
                 try {
                     DB::transaction(function () use ($validatedUser, $organization) {
-                        User::query()->create([
+                        $staff = User::query()->create([
                             'organization_id' => $organization->id,
                             'name' => $validatedUser['name'],
                             'email' => $validatedUser['email'],
@@ -45,6 +45,8 @@ class StaffImportService
                             'joining_date' => $validatedUser['joining_date'] ?? null,
                             'blood_group' => $validatedUser['blood_group'] ?? null,
                         ]);
+
+                        $this->createStaffProfile($staff, $validatedUser);
                     });
                     $createdCount++;
                 } catch (QueryException $exception) {
@@ -89,7 +91,83 @@ class StaffImportService
             'gender' => ['nullable', Rule::in(['male', 'female', 'other'])],
             'joining_date' => ['nullable', 'date'],
             'blood_group' => ['nullable', 'string', 'max:20'],
+            'aadhar_number' => ['nullable', 'string', 'max:20'],
+            'pan' => ['nullable', 'string', 'max:20'],
+            'national_teacher_id' => ['nullable', 'string', 'max:50'],
+            'employee_code' => ['nullable', 'string', 'max:50'],
+            'appointment_date' => ['nullable', 'date'],
+            'appointment_type' => ['nullable', 'string', 'max:100'],
+            'recruitment_type' => ['nullable', 'string', 'max:100'],
+            'post' => ['nullable', 'string', 'max:200'],
+            'pay_scale' => ['nullable', 'string', 'max:100'],
+            'basic_pay' => ['nullable', 'numeric'],
+            'government_service_join_date' => ['nullable', 'date'],
+            'qualification' => ['nullable', 'string', 'max:300'],
+            'teaching_qualification' => ['nullable', 'string', 'max:300'],
+            'tet_status' => ['nullable', 'string', 'max:100'],
+            'mother_tongue' => ['nullable', 'string', 'max:100'],
+            'religion' => ['nullable', 'string', 'max:100'],
+            'category' => ['nullable', 'string', 'max:100'],
+            'subjects_taught' => ['nullable', 'array'],
+            'subjects_taught.*' => ['nullable', 'string', 'max:100'],
+            'experience_years' => ['nullable', 'numeric', 'min:0'],
+            'training_received' => ['nullable', 'boolean'],
+            'teacher_type' => ['nullable', 'string', 'max:100'],
         ])->validate();
+    }
+
+    private function createStaffProfile(User $staff, array $validated): void
+    {
+        $hasProfileFields = collect([
+            'aadhar_number', 'pan', 'national_teacher_id', 'employee_code', 'appointment_date', 'appointment_type',
+            'recruitment_type', 'post', 'pay_scale', 'basic_pay', 'government_service_join_date', 'qualification',
+            'teaching_qualification', 'tet_status', 'mother_tongue', 'religion', 'category', 'subjects_taught',
+            'experience_years', 'training_received', 'teacher_type',
+        ])->contains(fn (string $key) => !empty($validated[$key] ?? null));
+
+        if (! $hasProfileFields) {
+            return;
+        }
+
+        $subjects = $validated['subjects_taught'] ?? null;
+
+        $staff->profile()->create([
+            'organization_id' => $staff->organization_id,
+            'aadhar_number' => $validated['aadhar_number'] ?? null,
+            'pan' => $validated['pan'] ?? null,
+            'national_teacher_id' => $validated['national_teacher_id'] ?? null,
+            'employee_code' => $validated['employee_code'] ?? null,
+            'appointment_date' => $validated['appointment_date'] ?? null,
+            'appointment_type' => $validated['appointment_type'] ?? null,
+            'recruitment_type' => $validated['recruitment_type'] ?? null,
+            'post' => $validated['post'] ?? null,
+            'pay_scale' => $validated['pay_scale'] ?? null,
+            'basic_pay' => $validated['basic_pay'] ?? null,
+            'government_service_join_date' => $validated['government_service_join_date'] ?? null,
+            'qualification' => $validated['qualification'] ?? null,
+            'teaching_qualification' => $validated['teaching_qualification'] ?? null,
+            'tet_status' => $validated['tet_status'] ?? null,
+            'mother_tongue' => $validated['mother_tongue'] ?? null,
+            'religion' => $validated['religion'] ?? null,
+            'category' => $validated['category'] ?? null,
+            'subjects_taught' => is_array($subjects) ? array_values($subjects) : null,
+            'experience_years' => $validated['experience_years'] ?? null,
+            'training_received' => $this->normalizeTrainingReceived($validated['training_received'] ?? null),
+            'teacher_type' => $validated['teacher_type'] ?? null,
+        ]);
+    }
+
+    private function normalizeTrainingReceived(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return $value !== 0;
+        }
+
+        return in_array(strtolower(trim((string) $value)), ['1', 'true', 'yes', 'y', 'on'], true);
     }
 
     private function resolveDesignationId(Organization $organization, ?string $name): ?int
