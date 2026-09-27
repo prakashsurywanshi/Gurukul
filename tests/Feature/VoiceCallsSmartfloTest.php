@@ -47,6 +47,14 @@ class VoiceCallsSmartfloTest extends TestCase
             'qwa' => [
                 'enabled' => false,
             ],
+            'push' => [
+                'enabled' => false,
+                'provider' => 'Firebase FCM',
+                'projectId' => '',
+                'senderId' => '',
+                'apiKey' => '',
+                'serviceAccountJson' => '',
+            ],
             'voice' => [
                 'enabled' => true,
                 'provider' => 'Smartflo',

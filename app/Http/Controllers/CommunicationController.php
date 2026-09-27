@@ -129,7 +129,7 @@ class CommunicationController extends Controller
         $sendNotification = (bool) ($validated['sendNotification'] ?? true);
         $recipientIds = $recipientUsers->pluck('id')->values()->all();
 
-        $notificationResult = $this->dispatchPushNotificationForMessage($message, $recipientIds, $sendNotification, $recipientSummary);
+        $notificationResult = $this->dispatchPushNotificationForMessage($organization, $message, $recipientIds, $sendNotification, $recipientSummary);
 
         $successMessage = sprintf('Message sent to %s.', $recipientSummary);
         if ($notificationResult['attempted'] && $notificationResult['successCount'] > 0) {
@@ -3951,7 +3951,7 @@ class CommunicationController extends Controller
         };
     }
 
-    private function dispatchPushNotificationForMessage(Message $message, array $recipientIds, bool $sendNotification, string $recipientSummary): array
+    private function dispatchPushNotificationForMessage(Organization $organization, Message $message, array $recipientIds, bool $sendNotification, string $recipientSummary): array
     {
         if (! $sendNotification) {
             return ['attempted' => false, 'configured' => true, 'attemptedCount' => 0, 'successCount' => 0, 'failureCount' => 0];
@@ -3969,6 +3969,7 @@ class CommunicationController extends Controller
                     'priority' => (string) ($message->priority ?? 'normal'),
                     'is_announcement' => $message->is_announcement ? '1' : '0',
                 ],
+                $organization,
             );
 
             $attachments = $message->attachments ?? [];
@@ -4038,6 +4039,7 @@ class CommunicationController extends Controller
                 'Voice Call: '.$validated['subject'],
                 Str::limit($validated['content'] ?? 'You have a new voice call notification.', 160),
                 $data,
+                $organization,
             );
         } catch (Throwable $e) {
             report($e);

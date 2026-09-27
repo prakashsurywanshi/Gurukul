@@ -7238,6 +7238,22 @@ const hi = {
     'qwa_whatsapp': 'QWA व्हाट्सएप',
     'Specific Staff': 'विशिष्ट स्टाफ',
     'Students of Specific Class(es)': 'विशिष्ट कक्षा के छात्र',
+    'Push Notification Settings': 'पुश सूचना सेटिंग्स',
+    'Configure Firebase Cloud Messaging (FCM) to deliver push notifications to parent and staff mobile apps.': 'पालकों और स्टाफ के मोबाइल ऐप पर पुश सूचनाएं पहुंचाने के लिए Firebase Cloud Messaging (FCM) कॉन्फ़िगर करें।',
+    'Enable Push Notifications': 'पुश सूचनाएं सक्षम करें',
+    'Send mobile push notifications for messages, alerts, and transport updates.': 'संदेशों, अलर्ट और परिवहन अपडेट के लिए मोबाइल पुश सूचनाएं भेजें।',
+    'Firebase Project ID': 'Firebase प्रोजेक्ट ID',
+    'e.g. gurukul-school-app': 'जैसे gurukul-school-app',
+    'Available in Firebase console Project Settings; used in the FCM v1 API endpoint.': 'Firebase कंसोल प्रोजेक्ट सेटिंग्स में उपलब्ध; FCM v1 API एंडपॉइंट में उपयोग होता है।',
+    'e.g. 123456789012': 'जैसे 123456789012',
+    'FCM Sender ID / Project number shown in Cloud Messaging settings.': 'Cloud Messaging सेटिंग्स में दिखाया गया FCM सेंडर ID / प्रोजेक्ट नंबर।',
+    'Web API Key': 'वेब API कुंजी',
+    'Enter Firebase Web API key': 'Firebase वेब API कुंजी दर्ज करें',
+    'Firebase Web API key for client-side web push configuration (optional for server sends).': 'क्लाइंट-साइड वेब पुश कॉन्फ़िगरेशन के लिए Firebase वेब API कुंजी (सर्वर भेजने के लिए वैकल्पिक)।',
+    'Service Account JSON': 'सेवा खाता JSON',
+    'Paste the Firebase service account key (JSON)...': 'Firebase सेवा खाता कुंजी (JSON) पेस्ट करें...',
+    'Download from Firebase Project Settings > Service accounts > Generate new private key. The backend uses it to authorize FCM v1 API requests.': 'Firebase प्रोजेक्ट सेटिंग्स के सेवा खाते अनुभाग से नई निजी कुंजी बनाकर डाउनलोड करें। बैकएंड FCM v1 API अनुरोधों को अधिकृत करने के लिए इसका उपयोग करता है।',
+    'Check that the Project ID and service account JSON can authorize push notifications.': 'जांचें कि प्रोजेक्ट ID और सेवा खाता JSON पुश सूचनाओं को अधिकृत कर सकते हैं।',
 };
 
 export default hi;

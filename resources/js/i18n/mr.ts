@@ -7228,6 +7228,22 @@ const mr = {
     'qwa_whatsapp': 'क्यूडब्ल्यूए व्हॉट्सअॅप',
     'Specific Staff': 'विशिष्ट कर्मचारी',
     'Students of Specific Class(es)': 'विशिष्ट वर्गातील विद्यार्थी',
+    'Push Notification Settings': 'पुश सूचना सेटिंग्ज',
+    'Configure Firebase Cloud Messaging (FCM) to deliver push notifications to parent and staff mobile apps.': 'पालक आणि कर्मचारी मोबाइल अॅपवर पुश सूचना पोहोचवण्यासाठी Firebase Cloud Messaging (FCM) कॉन्फिगर करा.',
+    'Enable Push Notifications': 'पुश सूचना सक्षम करा',
+    'Send mobile push notifications for messages, alerts, and transport updates.': 'संदेश, अलर्ट आणि वाहतूक अपडेटसाठी मोबाइल पुश सूचना पाठवा.',
+    'Firebase Project ID': 'Firebase प्रोजेक्ट ID',
+    'e.g. gurukul-school-app': 'उदा. gurukul-school-app',
+    'Available in Firebase console Project Settings; used in the FCM v1 API endpoint.': 'Firebase कन्सोल प्रोजेक्ट सेटिंग्जमध्ये उपलब्ध; FCM v1 API एंडपॉइंटमध्ये वापरला जातो.',
+    'e.g. 123456789012': 'उदा. 123456789012',
+    'FCM Sender ID / Project number shown in Cloud Messaging settings.': 'Cloud Messaging सेटिंग्जमध्ये दर्शविलेला FCM सेंडर ID / प्रोजेक्ट क्रमांक.',
+    'Web API Key': 'वेब API की',
+    'Enter Firebase Web API key': 'Firebase वेब API की प्रविष्ट करा',
+    'Firebase Web API key for client-side web push configuration (optional for server sends).': 'क्लायंट-साइड वेब पुश कॉन्फिगरेशनसाठी Firebase वेब API की (सर्व्हर पाठवणीसाठी पर्यायी).',
+    'Service Account JSON': 'सेवा खाते JSON',
+    'Paste the Firebase service account key (JSON)...': 'Firebase सेवा खाते की (JSON) पेस्ट करा...',
+    'Download from Firebase Project Settings > Service accounts > Generate new private key. The backend uses it to authorize FCM v1 API requests.': 'Firebase प्रोजेक्ट सेटिंग्जमधील सेवा खाती विभागातून नवीन खाजगी की तयार करून डाउनलोड करा. बॅकएंड FCM v1 API विनंत्या अधिकृत करण्यासाठी त्याचा वापर करते.',
+    'Check that the Project ID and service account JSON can authorize push notifications.': 'प्रोजेक्ट ID आणि सेवा खाते JSON पुश सूचना अधिकृत करू शकतात हे तपासा.',
 };
 
 export default mr;

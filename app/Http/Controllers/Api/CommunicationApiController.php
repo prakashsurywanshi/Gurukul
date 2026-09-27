@@ -1242,7 +1242,7 @@ class CommunicationApiController extends Controller
         if (! $sendNotification) {
             return [
                 'attempted' => false,
-                'configured' => $this->firebaseCloudMessagingService->isConfigured(),
+                'configured' => $this->firebaseCloudMessagingService->isConfigured($message->organization),
                 'attemptedCount' => 0,
                 'successCount' => 0,
                 'failureCount' => 0,
@@ -1260,6 +1260,7 @@ class CommunicationApiController extends Controller
                 'priority' => (string) ($message->priority ?? 'normal'),
                 'is_announcement' => $message->is_announcement ? '1' : '0',
             ],
+            $message->organization,
         );
 
         $attachments = $message->attachments ?? [];

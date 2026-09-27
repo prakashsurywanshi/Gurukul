@@ -1,7 +1,7 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { FormEvent, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Bot, Loader2, Mail, MessageCircle, MessageSquare, Pencil, PhoneCall, RefreshCw, Save } from 'lucide-react';
+import { BellRing, Bot, Loader2, Mail, MessageCircle, MessageSquare, Pencil, PhoneCall, RefreshCw, Save } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import DashboardLayout from '../DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -14,6 +14,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 interface CommunicationSettingsProps {
     user: any;
     communicationSettings?: typeof defaultFormData | null;
+}
+
+function mergeSettingsWithDefaults(saved?: typeof defaultFormData | null): typeof defaultFormData {
+    const merged: typeof defaultFormData = {
+        ...defaultFormData,
+    };
+
+    if (!saved) {
+        return merged;
+    }
+
+    for (const section of Object.keys(defaultFormData) as Array<keyof typeof defaultFormData>) {
+        const savedSection = (saved as any)?.[section];
+        const defaults = defaultFormData[section];
+
+        if (!savedSection || typeof savedSection !== 'object') {
+            continue;
+        }
+
+        (merged as any)[section] = { ...defaults };
+
+        for (const [field, value] of Object.entries(savedSection)) {
+            (merged as any)[section][field] = value ?? (defaults as any)[field];
+        }
+    }
+
+    return merged;
 }
 
 const defaultFormData = {
@@ -48,6 +75,14 @@ const defaultFormData = {
         ringTimeout: 30,
         callTimeout: 60,
     },
+    push: {
+        enabled: false,
+        provider: 'Firebase FCM',
+        projectId: '',
+        senderId: '',
+        apiKey: '',
+        serviceAccountJson: '',
+    },
     qwa: {
         enabled: false,
         baseUrl: 'https://qwa.qodeigence.com',
@@ -65,16 +100,10 @@ export default function CommunicationSettings({ user, communicationSettings }: C
     const [isEditing, setIsEditing] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [formData, setFormData] = useState({
-        ...defaultFormData,
-        ...(communicationSettings ?? {}),
-    });
+    const [formData, setFormData] = useState(() => mergeSettingsWithDefaults(communicationSettings));
 
     useEffect(() => {
-        setFormData({
-            ...defaultFormData,
-            ...(communicationSettings ?? {}),
-        });
+        setFormData(mergeSettingsWithDefaults(communicationSettings));
     }, [communicationSettings]);
 
     useEffect(() => {
@@ -88,7 +117,7 @@ export default function CommunicationSettings({ user, communicationSettings }: C
     }, [flash.error, flash.success]);
 
     const updateSection = (
-        section: 'sms' | 'email' | 'whatsapp' | 'voice' | 'qwa',
+        section: 'sms' | 'email' | 'whatsapp' | 'voice' | 'qwa' | 'push',
         field: string,
         value: string | boolean | number,
     ) => {
@@ -186,6 +215,54 @@ export default function CommunicationSettings({ user, communicationSettings }: C
             });
         } finally {
             setValidating(false);
+        }
+    };
+
+    const [validatingFcm, setValidatingFcm] = useState(false);
+    const [fcmValidationResult, setFcmValidationResult] = useState<{
+        valid: boolean;
+        message: string;
+    } | null>(null);
+
+    const handleValidateFcm = async () => {
+        if (!formData.push.projectId.trim() || !formData.push.serviceAccountJson.trim()) {
+            setFcmValidationResult({
+                valid: false,
+                message: 'Provide both the Firebase Project ID and the service account JSON to validate.',
+            });
+            return;
+        }
+
+        setValidatingFcm(true);
+        setFcmValidationResult(null);
+
+        try {
+            const csrfToken = decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
+            const response = await axios.post(
+                '/settings/communication/fcm/validate',
+                {
+                    projectId: formData.push.projectId,
+                    apiKey: formData.push.apiKey,
+                    serviceAccountJson: formData.push.serviceAccountJson,
+                },
+                { headers: { 'X-XSRF-TOKEN': csrfToken } },
+            );
+
+            setFcmValidationResult(response.data);
+        } catch (error) {
+            const status = (error as any)?.response?.status;
+            const data = (error as any)?.response?.data;
+
+            if (status === 422 && data?.message) {
+                setFcmValidationResult({ valid: false, message: data.message });
+            } else {
+                setFcmValidationResult({
+                    valid: false,
+                    message: 'Unable to reach Google. Check the Project ID and service account JSON and try again.',
+                });
+            }
+        } finally {
+            setValidatingFcm(false);
         }
     };
 
@@ -761,6 +838,143 @@ export default function CommunicationSettings({ user, communicationSettings }: C
                                         onChange={(event) => updateSection('voice', 'apiKey', event.target.value)}
                                         placeholder={t('Enter Smartflo API key')}
                                     />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-slate-200 shadow-sm">
+                            <CardHeader>
+                                <div className="flex items-center gap-3">
+                                    <BellRing className="h-5 w-5 text-emerald-600" />
+                                    <div>
+                                        <CardTitle>{t('Push Notification Settings')}</CardTitle>
+                                        <CardDescription>
+                                            {t(
+                                                'Configure Firebase Cloud Messaging (FCM) to deliver push notifications to parent and staff mobile apps.',
+                                            )}
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+                                    <div>
+                                        <p className="font-medium text-slate-900">{t('Enable Push Notifications')}</p>
+                                        <p className="text-sm text-slate-500">
+                                            {t('Send mobile push notifications for messages, alerts, and transport updates.')}
+                                        </p>
+                                    </div>
+                                    <Switch
+                                        checked={formData.push.enabled}
+                                        disabled={!isEditing}
+                                        onCheckedChange={(checked) => updateSection('push', 'enabled', checked)}
+                                    />
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label>{t('Provider')}</Label>
+                                        <Input
+                                            value={formData.push.provider}
+                                            disabled={!isEditing}
+                                            onChange={(event) => updateSection('push', 'provider', event.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>{t('Firebase Project ID')}</Label>
+                                        <Input
+                                            value={formData.push.projectId}
+                                            disabled={!isEditing}
+                                            onChange={(event) => updateSection('push', 'projectId', event.target.value)}
+                                            placeholder={t('e.g. gurukul-school-app')}
+                                        />
+                                        <p className="text-xs text-slate-500">
+                                            {t('Available in Firebase console Project Settings; used in the FCM v1 API endpoint.')}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>{t('Sender ID')}</Label>
+                                        <Input
+                                            value={formData.push.senderId}
+                                            disabled={!isEditing}
+                                            onChange={(event) => updateSection('push', 'senderId', event.target.value)}
+                                            placeholder={t('e.g. 123456789012')}
+                                        />
+                                        <p className="text-xs text-slate-500">
+                                            {t('FCM Sender ID / Project number shown in Cloud Messaging settings.')}
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>{t('Web API Key')}</Label>
+                                        <Input
+                                            type="password"
+                                            value={formData.push.apiKey}
+                                            disabled={!isEditing}
+                                            onChange={(event) => updateSection('push', 'apiKey', event.target.value)}
+                                            placeholder={t('Enter Firebase Web API key')}
+                                        />
+                                        <p className="text-xs text-slate-500">
+                                            {t('Firebase Web API key for client-side web push configuration (optional for server sends).')}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>{t('Service Account JSON')}</Label>
+                                    <textarea
+                                        value={formData.push.serviceAccountJson}
+                                        disabled={!isEditing}
+                                        onChange={(event) =>
+                                            updateSection('push', 'serviceAccountJson', event.target.value)
+                                        }
+                                        rows={6}
+                                        placeholder={t('Paste the Firebase service account key (JSON)...')}
+                                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
+                                    />
+                                    <p className="text-xs text-slate-500">
+                                        {t(
+                                            'Download from Firebase Project Settings > Service accounts > Generate new private key. The backend uses it to authorize FCM v1 API requests.',
+                                        )}
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="font-medium text-slate-900">{t('Validate Configuration')}</p>
+                                            <p className="text-sm text-slate-500">
+                                                {t(
+                                                    'Check that the Project ID and service account JSON can authorize push notifications.',
+                                                )}
+                                            </p>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="shrink-0"
+                                            disabled={!isEditing || validatingFcm}
+                                            onClick={handleValidateFcm}
+                                        >
+                                            {validatingFcm ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <BellRing className="h-4 w-4" />
+                                            )}
+                                            {validatingFcm ? t('Validating...') : t('Validate')}
+                                        </Button>
+                                    </div>
+
+                                    {fcmValidationResult ? (
+                                        <div
+                                            className={`rounded-lg border p-3 text-sm ${
+                                                fcmValidationResult.valid
+                                                    ? 'border-green-200 bg-green-50 text-green-800'
+                                                    : 'border-red-200 bg-red-50 text-red-800'
+                                            }`}
+                                        >
+                                            {fcmValidationResult.message}
+                                        </div>
+                                    ) : null}
                                 </div>
                             </CardContent>
                         </Card>

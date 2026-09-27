@@ -1208,6 +1208,7 @@ class TransportManagementController extends Controller
                 'direction' => (string) ($trip->direction ?? 'pickup'),
                 'recipient' => 'parent',
             ],
+            $organization,
         );
 
         return [
@@ -1274,6 +1275,8 @@ class TransportManagementController extends Controller
             return ['successCount' => 0, 'failureCount' => 0, 'attemptedCount' => 0];
         }
 
+        $organization = Organization::query()->find($trip->route?->organization_id ?? '') ?? null;
+
         return $this->firebaseCloudMessagingService->sendToUsers(
             $studentUserIds,
             $title,
@@ -1286,6 +1289,7 @@ class TransportManagementController extends Controller
                 'stage' => $stage,
                 'direction' => (string) ($trip->direction ?? 'pickup'),
             ],
+            $organization,
         );
     }
 

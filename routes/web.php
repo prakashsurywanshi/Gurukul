@@ -900,6 +900,7 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::post('/settings/communication/qwa/validate', [SettingsController::class, 'validateQwaConnection'])->middleware('staff.permission:Communication Setting,view')->name('settings.communication.qwa.validate');
     Route::post('/settings/communication/qwa/status', [SettingsController::class, 'qwaSessionStatus'])->middleware('staff.permission:Communication Setting,view')->name('settings.communication.qwa.status');
     Route::post('/settings/communication/qwa/start', [SettingsController::class, 'qwaStartSession'])->middleware('staff.permission:Communication Setting,edit')->name('settings.communication.qwa.start');
+    Route::post('/settings/communication/fcm/validate', [SettingsController::class, 'validateFcmConfiguration'])->middleware('staff.permission:Communication Setting,view')->name('settings.communication.fcm.validate');
     Route::get('/settings/roles-permissions', [SettingsController::class, 'rolesPermissions'])->middleware('staff.permission:Roles & Permissions,view')->name('settings.roles-permissions');
     Route::post('/settings/roles', [SettingsController::class, 'storeRole'])->middleware('staff.permission:Roles & Permissions,add')->name('settings.roles.store');
     Route::patch('/settings/roles/{role}', [SettingsController::class, 'updateRole'])->middleware('staff.permission:Roles & Permissions,edit')->name('settings.roles.update');

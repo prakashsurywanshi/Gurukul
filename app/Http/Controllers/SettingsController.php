@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\WebsitePage;
 use App\Models\WebsiteSetting;
 use App\Services\DevanagariTransliterationService;
+use App\Services\FirebaseCloudMessagingService;
 use App\Services\KnowledgeBaseService;
 use App\Services\LanguageService;
 use App\Services\ActiveOrgResolver;
@@ -38,7 +39,8 @@ class SettingsController extends Controller
         private readonly QwaService $qwaService,
         private readonly LanguageService $languageService,
         private readonly TranslationService $translationService,
-        private readonly SmsService $smsService
+        private readonly SmsService $smsService,
+        private readonly FirebaseCloudMessagingService $firebaseCloudMessagingService
     )
     {
     }
@@ -1048,6 +1050,8 @@ class SettingsController extends Controller
         $communicationSettings['qwa']['apiKey'] = $this->decryptSecret($communicationSettings['qwa']['apiKey'] ?? '');
         $communicationSettings['qwa']['webhookSecret'] = $this->decryptSecret($communicationSettings['qwa']['webhookSecret'] ?? '');
         $communicationSettings['sms']['apiKey'] = $this->decryptSecret($communicationSettings['sms']['apiKey'] ?? '');
+        $communicationSettings['push']['apiKey'] = $this->decryptSecret($communicationSettings['push']['apiKey'] ?? '');
+        $communicationSettings['push']['serviceAccountJson'] = $this->decryptSecret($communicationSettings['push']['serviceAccountJson'] ?? '');
 
         return inertia('dashboard/CommunicationSettings', [
             'user' => $user,
@@ -1095,6 +1099,12 @@ class SettingsController extends Controller
             'qwa.webhookUrl' => ['nullable', 'string', 'max:255'],
             'qwa.webhookSecret' => ['nullable', 'string', 'max:1000'],
             'qwa.auto_alerts_enabled' => ['nullable', 'boolean'],
+            'push.enabled' => ['required', 'boolean'],
+            'push.provider' => ['required', 'string', 'max:255'],
+            'push.projectId' => ['nullable', 'string', 'max:255'],
+            'push.senderId' => ['nullable', 'string', 'max:100'],
+            'push.apiKey' => ['nullable', 'string', 'max:1000'],
+            'push.serviceAccountJson' => ['nullable', 'string', 'max:20000'],
         ]);
 
         $qwa = $validated['qwa'] ?? [];
@@ -1122,6 +1132,18 @@ class SettingsController extends Controller
         }
 
         $validated['sms'] = $sms;
+
+        $push = $validated['push'] ?? [];
+
+        foreach (['apiKey', 'serviceAccountJson'] as $secretField) {
+            if (filled($push[$secretField] ?? '')) {
+                $push[$secretField] = Crypt::encryptString($push[$secretField]);
+            } else {
+                $push[$secretField] = '';
+            }
+        }
+
+        $validated['push'] = $push;
 
         $organization->update([
             'settings' => [
@@ -1321,6 +1343,29 @@ class SettingsController extends Controller
             'reference' => $result['reference'] ?? null,
             'message' => $result['message'],
         ], $result['success'] ? 200 : 422);
+    }
+
+    public function validateFcmConfiguration(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'projectId' => ['required', 'string', 'max:255'],
+            'apiKey' => ['nullable', 'string', 'max:1000'],
+            'serviceAccountJson' => ['required', 'string', 'max:20000'],
+        ]);
+
+        $projectId = trim($validated['projectId']);
+        $serviceAccountJson = trim((string) $validated['serviceAccountJson']);
+
+        if (blank($projectId) || blank($serviceAccountJson)) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Provide both the Project ID and the service account JSON to validate.',
+            ], 422);
+        }
+
+        $result = $this->firebaseCloudMessagingService->validateCredentials($projectId, $serviceAccountJson);
+
+        return response()->json($result, $result['valid'] ? 200 : 422);
     }
 
     public function validateQwaConnection(Request $request): JsonResponse
@@ -1748,6 +1793,14 @@ class SettingsController extends Controller
                 'webhookUrl' => '',
                 'webhookSecret' => '',
                 'auto_alerts_enabled' => false,
+            ],
+            'push' => [
+                'enabled' => false,
+                'provider' => 'Firebase FCM',
+                'projectId' => '',
+                'senderId' => '',
+                'apiKey' => '',
+                'serviceAccountJson' => '',
             ],
         ];
     }

@@ -7221,6 +7221,22 @@ const en = {
     'qwa_whatsapp': 'QWA WhatsApp',
     'Specific Staff': 'Specific Staff',
     'Students of Specific Class(es)': 'Students of Specific Class(es)',
+    'Push Notification Settings': 'Push Notification Settings',
+    'Configure Firebase Cloud Messaging (FCM) to deliver push notifications to parent and staff mobile apps.': 'Configure Firebase Cloud Messaging (FCM) to deliver push notifications to parent and staff mobile apps.',
+    'Enable Push Notifications': 'Enable Push Notifications',
+    'Send mobile push notifications for messages, alerts, and transport updates.': 'Send mobile push notifications for messages, alerts, and transport updates.',
+    'Firebase Project ID': 'Firebase Project ID',
+    'e.g. gurukul-school-app': 'e.g. gurukul-school-app',
+    'Available in Firebase console Project Settings; used in the FCM v1 API endpoint.': 'Available in Firebase console Project Settings; used in the FCM v1 API endpoint.',
+    'e.g. 123456789012': 'e.g. 123456789012',
+    'FCM Sender ID / Project number shown in Cloud Messaging settings.': 'FCM Sender ID / Project number shown in Cloud Messaging settings.',
+    'Web API Key': 'Web API Key',
+    'Enter Firebase Web API key': 'Enter Firebase Web API key',
+    'Firebase Web API key for client-side web push configuration (optional for server sends).': 'Firebase Web API key for client-side web push configuration (optional for server sends).',
+    'Service Account JSON': 'Service Account JSON',
+    'Paste the Firebase service account key (JSON)...': 'Paste the Firebase service account key (JSON)...',
+    'Download from Firebase Project Settings > Service accounts > Generate new private key. The backend uses it to authorize FCM v1 API requests.': 'Download from Firebase Project Settings, under Service accounts, using Generate new private key. The backend uses it to authorize FCM v1 API requests.',
+    'Check that the Project ID and service account JSON can authorize push notifications.': 'Check that the Project ID and service account JSON can authorize push notifications.',
 };
 
 export default en;

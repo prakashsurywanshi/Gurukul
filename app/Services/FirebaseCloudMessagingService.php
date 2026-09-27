@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Organization;
 use App\Models\UserDeviceToken;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -9,17 +10,19 @@ use Throwable;
 
 class FirebaseCloudMessagingService
 {
-    private ?array $credentials = null;
+    /** @var array<string, ?array> */
+    private array $credentials = [];
 
-    private ?array $accessToken = null;
+    /** @var array<string, array{token: string, expires_at: int}> */
+    private array $accessTokens = [];
 
-    public function isConfigured(): bool
+    public function isConfigured(?Organization $organization = null): bool
     {
-        return filled(config('services.firebase.project_id'))
-            && $this->loadCredentials() !== null;
+        return filled($this->projectId($organization))
+            && $this->loadCredentials($organization) !== null;
     }
 
-    public function sendToUsers(iterable $userIds, string $title, string $body, array $data = []): array
+    public function sendToUsers(iterable $userIds, string $title, string $body, array $data = [], ?Organization $organization = null): array
     {
         $userIds = collect($userIds)
             ->filter()
@@ -39,10 +42,10 @@ class FirebaseCloudMessagingService
             ->values()
             ->all();
 
-        return $this->sendToTokens($tokens, $title, $body, $data);
+        return $this->sendToTokens($tokens, $title, $body, $data, $organization);
     }
 
-    public function sendToTokens(array $tokens, string $title, string $body, array $data = []): array
+    public function sendToTokens(array $tokens, string $title, string $body, array $data = [], ?Organization $organization = null): array
     {
         $tokens = collect($tokens)
             ->filter(fn ($token) => is_string($token) && $token !== '')
@@ -53,7 +56,7 @@ class FirebaseCloudMessagingService
             return $this->emptyResult();
         }
 
-        if (! $this->isConfigured()) {
+        if (! $this->isConfigured($organization)) {
             return array_merge($this->emptyResult(), [
                 'configured' => false,
                 'errors' => ['Firebase is not configured.'],
@@ -62,10 +65,10 @@ class FirebaseCloudMessagingService
 
         $endpoint = sprintf(
             'https://fcm.googleapis.com/v1/projects/%s/messages:send',
-            config('services.firebase.project_id')
+            $this->projectId($organization)
         );
 
-        $accessToken = $this->getAccessToken();
+        $accessToken = $this->getAccessToken($organization);
         $result = $this->emptyResult();
         $result['attemptedCount'] = $tokens->count();
 
@@ -127,18 +130,77 @@ class FirebaseCloudMessagingService
         return $result;
     }
 
-    private function getAccessToken(): string
+    public function validateCredentials(string $projectId, string $serviceAccountJson): array
     {
-        if ($this->accessToken && ($this->accessToken['expires_at'] ?? 0) > (time() + 60)) {
-            return $this->accessToken['token'];
+        if (blank($projectId) || blank($serviceAccountJson)) {
+            return [
+                'valid' => false,
+                'message' => 'Provide both the Firebase Project ID and the service account JSON.',
+            ];
         }
 
-        $credentials = $this->loadCredentials();
+        $credentials = $this->normalizeCredentialsFromJson($serviceAccountJson);
+
+        if (! $credentials) {
+            return [
+                'valid' => false,
+                'message' => 'Service account JSON is invalid. Export a fresh key from Firebase Project Settings > Service accounts.',
+            ];
+        }
+
+        try {
+            $this->requestAccessToken($credentials);
+
+            return [
+                'valid' => true,
+                'message' => 'Firebase FCM credentials are valid. The service account can authorize push notifications for project '.$projectId.'.',
+            ];
+        } catch (Throwable $exception) {
+            return [
+                'valid' => false,
+                'message' => 'Unable to authorize with the service account: '.$exception->getMessage(),
+            ];
+        }
+    }
+
+    private function projectId(?Organization $organization = null): string
+    {
+        if ($organization) {
+            $saved = (string) ($organization->settings['communication_settings']['push']['projectId'] ?? '');
+
+            if (filled($saved)) {
+                return $saved;
+            }
+        }
+
+        return (string) (config('services.firebase.project_id') ?? '');
+    }
+
+    private function getAccessToken(?Organization $organization = null): string
+    {
+        $cacheKey = $this->cacheKey($organization);
+
+        if (isset($this->accessTokens[$cacheKey])
+            && ($this->accessTokens[$cacheKey]['expires_at'] ?? 0) > (time() + 60)) {
+            return $this->accessTokens[$cacheKey]['token'];
+        }
+
+        $credentials = $this->loadCredentials($organization);
 
         if (! $credentials) {
             throw new RuntimeException('Firebase credentials are missing.');
         }
 
+        $this->accessTokens[$cacheKey] = [
+            'token' => $this->requestAccessToken($credentials),
+            'expires_at' => time() + 3600,
+        ];
+
+        return $this->accessTokens[$cacheKey]['token'];
+    }
+
+    private function requestAccessToken(array $credentials): string
+    {
         $issuedAt = time();
         $jwt = $this->createJwt($credentials, $issuedAt);
 
@@ -153,12 +215,7 @@ class FirebaseCloudMessagingService
 
         $payload = $response->json();
 
-        $this->accessToken = [
-            'token' => $payload['access_token'] ?? throw new RuntimeException('Firebase access token was not returned.'),
-            'expires_at' => $issuedAt + (int) ($payload['expires_in'] ?? 3600),
-        ];
-
-        return $this->accessToken['token'];
+        return $payload['access_token'] ?? throw new RuntimeException('Firebase access token was not returned.');
     }
 
     private function createJwt(array $credentials, int $issuedAt): string
@@ -195,36 +252,72 @@ class FirebaseCloudMessagingService
         return $unsignedToken . '.' . $this->base64UrlEncode($signature);
     }
 
-    private function loadCredentials(): ?array
+    private function loadCredentials(?Organization $organization = null): ?array
     {
-        if ($this->credentials !== null) {
-            return $this->credentials;
+        $cacheKey = $this->cacheKey($organization);
+
+        if (array_key_exists($cacheKey, $this->credentials)) {
+            return $this->credentials[$cacheKey];
         }
 
-        $json = config('services.firebase.credentials_json');
-        $path = config('services.firebase.credentials');
+        if ($organization) {
+            $json = (string) ($organization->settings['communication_settings']['push']['serviceAccountJson'] ?? '');
+
+            if (filled($json)) {
+                $json = $this->decryptSecret($json);
+                $credentials = $this->normalizeCredentialsFromJson($json);
+
+                return $this->credentials[$cacheKey] = $credentials;
+            }
+        }
+
+        $envJson = $this->envCredentialsJson();
 
         try {
-            if (filled($json)) {
-                $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-                return $this->credentials = $this->normalizeCredentials($decoded);
+            if (filled($envJson)) {
+                $decoded = json_decode($envJson, true, 512, JSON_THROW_ON_ERROR);
+
+                return $this->credentials[$cacheKey] = $this->normalizeCredentials($decoded);
             }
+
+            $path = config('services.firebase.credentials');
 
             if (filled($path)) {
                 $resolvedPath = str_starts_with($path, DIRECTORY_SEPARATOR) ? $path : base_path($path);
 
                 if (! is_file($resolvedPath)) {
-                    return $this->credentials = null;
+                    return $this->credentials[$cacheKey] = null;
                 }
 
                 $decoded = json_decode((string) file_get_contents($resolvedPath), true, 512, JSON_THROW_ON_ERROR);
-                return $this->credentials = $this->normalizeCredentials($decoded);
+
+                return $this->credentials[$cacheKey] = $this->normalizeCredentials($decoded);
             }
         } catch (Throwable) {
-            return $this->credentials = null;
+            return $this->credentials[$cacheKey] = null;
         }
 
-        return $this->credentials = null;
+        return $this->credentials[$cacheKey] = null;
+    }
+
+    private function normalizeCredentialsFromJson(string $json): ?array
+    {
+        try {
+            $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+            return is_array($decoded) ? $this->normalizeCredentials($decoded) : null;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function decryptSecret(string $value): string
+    {
+        try {
+            return \Illuminate\Support\Facades\Crypt::decryptString($value);
+        } catch (Throwable) {
+            return $value;
+        }
     }
 
     private function normalizeCredentials(array $credentials): ?array
@@ -236,6 +329,11 @@ class FirebaseCloudMessagingService
         $credentials['private_key'] = str_replace('\n', "\n", $credentials['private_key']);
 
         return $credentials;
+    }
+
+    private function cacheKey(?Organization $organization = null): string
+    {
+        return $organization ? 'org-'.$organization->id : 'global';
     }
 
     private function normalizeDataPayload(array $data): array

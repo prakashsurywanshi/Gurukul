@@ -108,7 +108,8 @@ class FirebaseMessagingIntegrationTest extends TestCase
                 [$studentUser->id],
                 'Exam Reminder',
                 Mockery::type('string'),
-                Mockery::on(fn (array $payload) => ($payload['type'] ?? null) === 'message')
+                Mockery::on(fn (array $payload) => ($payload['type'] ?? null) === 'message'),
+                Mockery::on(fn ($org) => $org instanceof Organization && $org->getKey() === $organization->getKey())
             )
             ->andReturn([
                 'configured' => true,
