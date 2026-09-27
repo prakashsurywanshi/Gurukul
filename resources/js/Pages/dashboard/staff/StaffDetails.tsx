@@ -234,6 +234,10 @@ export default function StaffDetails({ user, staffId, staff, hub }: StaffHubPage
                                             value={staff.emergency_contact}
                                         />
                                         <InfoRow icon={BadgeCheck} label={t('Address')} value={staff.address} />
+                                        <InfoRow icon={IdCard} label={t('National Teacher ID')} value={staff.national_teacher_id} />
+                                        <InfoRow icon={IdCard} label={t('Employee Code')} value={staff.employee_code} />
+                                        <InfoRow icon={IdCard} label={t('PAN')} value={staff.pan} />
+                                        <InfoRow icon={IdCard} label={t('Aadhaar Number')} value={staff.aadhar_number} />
                                     </CardContent>
                                 </Card>
 

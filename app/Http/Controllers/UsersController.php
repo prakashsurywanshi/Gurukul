@@ -71,7 +71,7 @@ class UsersController extends Controller
             404,
         );
 
-        $managedUser->load(['designation', 'department']);
+        $managedUser->load(['designation', 'department', 'profile']);
 
         return Inertia::render('dashboard/staff/StaffDetails', [
             'user' => $user,
@@ -968,6 +968,10 @@ class UsersController extends Controller
             'department_id' => $managedUser->department_id,
             'designation_name' => optional($managedUser->designation)->name,
             'department_name' => optional($managedUser->department)->name,
+            'aadhar_number' => $managedUser->profile?->aadhar_number,
+            'pan' => $managedUser->profile?->pan,
+            'national_teacher_id' => $managedUser->profile?->national_teacher_id,
+            'employee_code' => $managedUser->profile?->employee_code,
         ];
     }
 

@@ -14,6 +14,7 @@ import {
     ExternalLink,
     GraduationCap,
     HeartPulse,
+    IdCard,
     LayoutDashboard,
     Mail,
     MapPin,
@@ -580,6 +581,21 @@ export default function StudentDetails({
                                                     </p>
                                                 </div>
                                             </div>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <IdCard className="h-5 w-5 text-blue-600" />
+                                                {t('Portal IDs')}
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <InfoRow icon={IdCard} label={t('Register (GR) Number')} value={student.register_no} />
+                                            <InfoRow icon={IdCard} label={t('UDISE Student ID (EID)')} value={student.udise_student_id} />
+                                            <InfoRow icon={IdCard} label={t('SARAL Student ID')} value={student.saral_student_id} />
+                                            <InfoRow icon={IdCard} label={t('Aadhaar Number')} value={student.aadhar_number} />
                                         </CardContent>
                                     </Card>
 
