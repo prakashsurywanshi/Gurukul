@@ -591,17 +591,18 @@ export default function PortalRecords({
                                                 <div className="space-y-1">
                                                     <Label className="text-xs">{t('Field')}</Label>
                                                     <Select
-                                                        value={column.source}
+                                                        value={column.source === '' ? '__static__' : column.source}
                                                         onValueChange={(source) => {
-                                                            const label = source ? (fieldLabels[source] ?? column.label) : column.label;
-                                                            updateColumn(sheetIndex, columnIndex, { source, static: '', label });
+                                                            const safe = source === '__static__' ? '' : source;
+                                                            const label = safe ? (fieldLabels[safe] ?? column.label) : column.label;
+                                                            updateColumn(sheetIndex, columnIndex, { source: safe, static: '', label });
                                                         }}
                                                     >
                                                         <SelectTrigger>
                                                             <SelectValue placeholder={t('Static')} />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="">{t('Static value')}</SelectItem>
+                                                            <SelectItem value="__static__">{t('Static value')}</SelectItem>
                                                             {fieldsForEntity(sheet.entity).map((key) => (
                                                                 <SelectItem key={key} value={key}>
                                                                     {fieldLabels[key]}
@@ -655,16 +656,16 @@ export default function PortalRecords({
                                                 <div className="space-y-1 sm:col-span-2">
                                                     <Label className="text-xs">{t('Lookup')}</Label>
                                                     <Select
-                                                        value={column.lookup}
+                                                        value={column.lookup === '' ? '__none__' : column.lookup}
                                                         onValueChange={(lookup) =>
-                                                            updateColumn(sheetIndex, columnIndex, { lookup })
+                                                            updateColumn(sheetIndex, columnIndex, { lookup: lookup === '__none__' ? '' : lookup })
                                                         }
                                                     >
                                                         <SelectTrigger className="h-8">
                                                             <SelectValue placeholder={t('None')} />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="">{t('No lookup')}</SelectItem>
+                                                            <SelectItem value="__none__">{t('No lookup')}</SelectItem>
                                                             {lookups.map((lookup) => (
                                                                 <SelectItem key={lookup} value={lookup}>
                                                                     {lookup}
