@@ -77,7 +77,7 @@ export default function StudentManagement({
     const [importStatusMessage, setImportStatusMessage] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const importSampleHeaders =
-        'first_name,last_name,email,phone,date_of_birth,gender,blood_group,class,section,roll_number,admission_date,father_name,father_phone,father_occupation,mother_name,mother_phone,mother_occupation,address,city,state,pincode,category,religion,caste,previous_school';
+        'first_name,last_name,email,phone,date_of_birth,gender,blood_group,class,section,roll_number,register_no,udise_student_id,saral_student_id,aadhar_number,admission_date,father_name,father_phone,father_occupation,mother_name,mother_phone,mother_occupation,address,city,state,pincode,category,religion,caste,previous_school';
     const importHeaderList = importSampleHeaders.split(',');
     const requiredImportHeaders = [
         'first_name',
@@ -148,6 +148,10 @@ export default function StudentManagement({
             sampleClassRecord?.name || '10',
             sampleClassRecord?.section || 'A',
             '101',
+            'GR-2026-001',
+            'UD-2026-001',
+            'SAR-2026-001',
+            '012345678901',
             '01-04-2026',
             'Michael Doe',
             '9876543211',

@@ -171,4 +171,79 @@ class StudentImportTest extends TestCase
             'email' => 'missing.name@example.com',
         ]);
     }
+
+    public function test_student_import_persists_portal_fields_when_provided(): void
+    {
+        $organization = Organization::query()->create([
+            'name' => 'Portal Import School',
+            'slug' => 'portal-import-school',
+            'email' => 'portal-import@example.com',
+        ]);
+
+        $academicYear = AcademicYear::query()->create([
+            'organization_id' => $organization->id,
+            'name' => '2026-2027',
+            'start_date' => '2026-04-01',
+            'end_date' => '2027-03-31',
+            'is_current' => true,
+            'status' => 'active',
+        ]);
+
+        SchoolClass::query()->create([
+            'organization_id' => $organization->id,
+            'academic_year_id' => $academicYear->id,
+            'name' => '10',
+            'section' => 'A',
+            'status' => 'active',
+        ]);
+
+        $result = app(StudentImportService::class)->import([
+            [
+                'first_name' => 'Avni',
+                'last_name' => 'Kulkarni',
+                'email' => 'avni.kulkarni@example.com',
+                'date_of_birth' => '2010-02-10',
+                'gender' => 'female',
+                'class' => '10',
+                'section' => 'A',
+                'roll_number' => '5',
+                'register_no' => 'GR-2026-005',
+                'udise_student_id' => 'UD-2026-005',
+                'saral_student_id' => 'SAR-2026-005',
+                'aadhar_number' => '223344556677',
+                'admission_date' => '2026-04-01',
+            ],
+            [
+                'first_name' => 'Rahul',
+                'last_name' => 'Sharma',
+                'email' => 'rahul.sharma@example.com',
+                'date_of_birth' => '2010-03-10',
+                'gender' => 'male',
+                'class' => '10',
+                'section' => 'A',
+                'admission_date' => '2026-04-01',
+            ],
+        ], $organization);
+
+        $this->assertSame(2, $result['created_count']);
+        $this->assertSame(0, $result['error_count']);
+
+        $this->assertDatabaseHas('students', [
+            'organization_id' => $organization->id,
+            'email' => 'avni.kulkarni@example.com',
+            'register_no' => 'GR-2026-005',
+            'udise_student_id' => 'UD-2026-005',
+            'saral_student_id' => 'SAR-2026-005',
+            'aadhar_number' => '223344556677',
+        ]);
+
+        $this->assertDatabaseHas('students', [
+            'organization_id' => $organization->id,
+            'email' => 'rahul.sharma@example.com',
+            'register_no' => null,
+            'udise_student_id' => null,
+            'saral_student_id' => null,
+            'aadhar_number' => null,
+        ]);
+    }
 }
