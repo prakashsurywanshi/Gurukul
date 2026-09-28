@@ -132,6 +132,7 @@ class RolePermissionCatalog
             'accountant' => 'Accountant',
             'librarian' => 'Librarian',
             'driver' => 'Driver',
+            'transport_manager' => 'Transport Manager',
         ];
     }
 
@@ -655,6 +656,15 @@ class RolePermissionCatalog
                 'Profile' => self::featurePermissions(true, false, true),
                 'Edit Profile' => self::featurePermissions(true, false, true),
                 'My Leaves' => self::featurePermissions(true, true, true, true),
+            ],
+            'Transport Manager' => [
+                'Dashboard Home' => self::featurePermissions(true),
+                'Transport Management' => self::featurePermissions(true, true, true, true),
+                'Transport Fee Collection' => self::featurePermissions(true, true, true),
+                'Transport Device Settings' => self::featurePermissions(true, false, true),
+                'Profile' => self::featurePermissions(true, false, true),
+                'Edit Profile' => self::featurePermissions(true, false, true),
+                'My Leaves' => self::featurePermissions(true, true, true),
             ],
             'Driver' => [
                 'Dashboard Home' => self::featurePermissions(true),

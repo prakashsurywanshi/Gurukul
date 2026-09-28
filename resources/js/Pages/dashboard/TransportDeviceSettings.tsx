@@ -2,6 +2,7 @@ import { useLanguage } from '../../i18n/LanguageProvider';
 import { useState } from 'react';
 import { BusFront, CheckCircle2, Copy, KeyRound, Loader2, RefreshCcw } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
+import { canPerform, type PermissionAction, type StaffPermissionMap } from '../../lib/permissions';
 import DashboardLayout from '../DashboardLayout';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -17,8 +18,10 @@ interface TransportDeviceSettingsProps {
 
 export default function TransportDeviceSettings(pageProps: TransportDeviceSettingsProps) {
     const { t } = useLanguage();
-    const { props } = usePage();
+    const { props } = usePage<{ staffPermissions?: StaffPermissionMap }>();
     const user = pageProps.user;
+    const can = (action: PermissionAction) =>
+        canPerform(user?.role, 'Transport Device Settings', action, props.staffPermissions);
     const hasKey = pageProps.hasKey;
     const keyHint = pageProps.keyHint ?? '';
     const endpoint = pageProps.endpoint;
@@ -134,7 +137,7 @@ export default function TransportDeviceSettings(pageProps: TransportDeviceSettin
                                                 {copied ? t('Copied') : t('Copy')}
                                             </Button>
                                         )}
-                                        {!revealedKey && (
+                                        {!revealedKey && can('view') && (
                                             <Button size="sm" variant="outline" className="h-7" onClick={reveal}>
                                                 {t('Show Key')}
                                             </Button>
@@ -146,14 +149,16 @@ export default function TransportDeviceSettings(pageProps: TransportDeviceSettin
                                     {t('No key yet. Regenerate to create one, then configure your devices with it.')}
                                 </p>
                             )}
-                            <Button size="sm" onClick={regenerate} disabled={regenerating}>
-                                {regenerating ? (
-                                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                    <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
-                                )}
-                                {t('Regenerate Key')}
-                            </Button>
+                            {can('edit') && (
+                                <Button size="sm" onClick={regenerate} disabled={regenerating}>
+                                    {regenerating ? (
+                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                        <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
+                                    )}
+                                    {t('Regenerate Key')}
+                                </Button>
+                            )}
                         </CardContent>
                     </Card>
 

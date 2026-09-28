@@ -41,7 +41,17 @@ class ComplianceProfileTest extends TestCase
             ->get('/compliance/profile')
             ->assertInertia(fn ($page) => $page
                 ->component('dashboard/ComplianceProfile')
-                ->has('profile', 8)
+                ->has('profile')
+                ->has('profile.udise_code')
+                ->has('profile.affiliation_no')
+                ->has('profile.board')
+                ->has('profile.affiliated_year')
+                ->has('profile.school_category')
+                ->has('profile.grades_offered')
+                ->has('profile.medium_of_instruction')
+                ->has('profile.shift_timings')
+                ->has('profile.district')
+                ->has('profile.block')
                 ->has('fields'));
     }
 
@@ -106,7 +116,17 @@ class ComplianceProfileTest extends TestCase
         $this->actingAs($this->admin)
             ->get('/compliance/profile')
             ->assertInertia(fn ($page) => $page
-                ->has('profile', 8)
+                ->has('profile')
+                ->has('profile.udise_code')
+                ->has('profile.affiliation_no')
+                ->has('profile.board')
+                ->has('profile.affiliated_year')
+                ->has('profile.school_category')
+                ->has('profile.grades_offered')
+                ->has('profile.medium_of_instruction')
+                ->has('profile.shift_timings')
+                ->has('profile.district')
+                ->has('profile.block')
                 ->where('profile.udise_code', 'SAVE-1')
                 ->where('profile.board', 'ICSE')
                 ->where('fields.enable_recognitions', true));

@@ -82,7 +82,7 @@ class StaffImportService
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string'],
-            'role' => ['required', Rule::in(['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'driver'])],
+            'role' => ['required', Rule::in(['super_admin', 'admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'driver', 'transport_manager'])],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
             'employee_id' => ['nullable', 'string', 'max:50'],
             'designation' => ['nullable', 'string', 'max:255'],

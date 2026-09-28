@@ -21,6 +21,7 @@ class DemoLoginController extends Controller
         'receptionist' => 'receptionist',
         'librarian' => 'librarian',
         'driver' => 'driver',
+        'transport-manager' => 'transport_manager',
         'parent' => 'student',
         'student' => 'student',
     ];

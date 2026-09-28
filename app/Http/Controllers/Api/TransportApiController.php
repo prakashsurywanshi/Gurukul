@@ -12,6 +12,9 @@ use App\Models\TransportAssignment;
 use App\Models\TransportRoute;
 use App\Models\TransportVehicle;
 use App\Models\User;
+use App\Services\TransportAssignmentService;
+use App\Services\TransportFeeService;
+use App\Services\TransportPolicyResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,6 +24,12 @@ use Illuminate\Validation\Rule;
 
 class TransportApiController extends Controller
 {
+    public function __construct(
+        private readonly TransportFeeService $fees,
+        private readonly TransportPolicyResolver $policies,
+    ) {
+    }
+
     public function getOverview(Request $request): JsonResponse
     {
         $organization = $this->requireOrganization();
@@ -393,9 +402,12 @@ class TransportApiController extends Controller
         ]);
     }
 
-    public function storeAssignment(Request $request): JsonResponse
+    public function storeAssignment(Request $request, TransportAssignmentService $assignments): JsonResponse
     {
         $organization = $this->requireOrganization();
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+
+        $this->assertCanManageRosterInput($request, 'add');
 
         $validated = $request->validate([
             'student_id' => ['required', 'integer'],
@@ -409,53 +421,32 @@ class TransportApiController extends Controller
             'status' => ['required', Rule::in(['active', 'pending', 'paused', 'inactive'])],
         ]);
 
-        $exists = TransportAssignment::where('student_id', $validated['student_id'])->exists();
-        if ($exists) {
-            return response()->json(['success' => false, 'message' => 'Student already has a transport assignment'], 400);
-        }
-
-        Student::where('organization_id', $organization->id)->findOrFail($validated['student_id']);
-        TransportRoute::where('organization_id', $organization->id)->findOrFail($validated['route_id']);
-        TransportVehicle::where('organization_id', $organization->id)->findOrFail($validated['vehicle_id']);
-
-        $assignment = TransportAssignment::create([
-            'student_id' => $validated['student_id'],
-            'route_id' => $validated['route_id'],
-            'vehicle_id' => $validated['vehicle_id'],
-            'pickup_point' => $validated['pickup_point'],
-            'drop_point' => $validated['drop_point'] ?? $validated['pickup_point'],
-            'pickup_time' => $validated['pickup_time'] ?? null,
-            'drop_time' => $validated['drop_time'] ?? null,
-            'monthly_fee' => $validated['monthly_fee'] ?? 0,
+        $assignment = $assignments->create($request->user(), $organization, $academicYearId, [
+            'studentId' => $validated['student_id'],
+            'routeId' => $validated['route_id'],
+            'vehicleId' => $validated['vehicle_id'],
+            'pickupStop' => $validated['pickup_point'],
+            'dropStop' => $validated['drop_point'] ?? null,
+            'pickupTime' => $validated['pickup_time'] ?? null,
+            'dropTime' => $validated['drop_time'] ?? null,
+            'monthlyFee' => $validated['monthly_fee'] ?? 0,
             'status' => $validated['status'],
         ]);
 
-        $student = Student::find($validated['student_id']);
-        if ($student) {
-            $student->update([
-                'transport_required' => true,
-                'transport_pickup_point' => $validated['pickup_point'],
-                'transport_vehicle' => TransportVehicle::find($validated['vehicle_id'])?->vehicle_number ?? null,
-                'transport_route' => TransportRoute::find($validated['route_id'])?->route_name ?? null,
-                'transport_route_details' => trim(
-                    (TransportRoute::find($validated['route_id'])?->route_name ?? '')
-                    . ($validated['pickup_point'] ? ' / ' . $validated['pickup_point'] : '')
-                ),
-            ]);
-        }
-
         return response()->json([
             'success' => true,
-            'message' => 'Transport assignment created',
+            'message' => $assignment->isPending() ? 'Transport assignment submitted and waiting for manager approval' : 'Transport assignment created',
             'data' => $this->serializeAssignment($assignment),
         ], 201);
     }
 
-    public function updateAssignment(Request $request, TransportAssignment $assignment): JsonResponse
+    public function updateAssignment(Request $request, TransportAssignment $assignment, TransportAssignmentService $assignments): JsonResponse
     {
         $organization = $this->requireOrganization();
         abort_unless($assignment->route && $assignment->route->organization_id === $organization->id, 403);
-        $previousStudent = $assignment->student;
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+
+        $this->assertCanManageRosterInput($request, 'update', $assignment->vehicle);
 
         $validated = $request->validate([
             'student_id' => ['required', 'integer'],
@@ -469,81 +460,57 @@ class TransportApiController extends Controller
             'status' => ['required', Rule::in(['active', 'pending', 'paused', 'inactive'])],
         ]);
 
-        TransportRoute::where('organization_id', $organization->id)->findOrFail($validated['route_id']);
-        TransportVehicle::where('organization_id', $organization->id)->findOrFail($validated['vehicle_id']);
-
-        $assignment->update([
-            'student_id' => $validated['student_id'],
-            'route_id' => $validated['route_id'],
-            'vehicle_id' => $validated['vehicle_id'],
-            'pickup_point' => $validated['pickup_point'],
-            'drop_point' => $validated['drop_point'] ?? $validated['pickup_point'],
-            'pickup_time' => $validated['pickup_time'] ?? null,
-            'drop_time' => $validated['drop_time'] ?? null,
-            'monthly_fee' => $validated['monthly_fee'] ?? 0,
+        $updated = $assignments->update($request->user(), $organization, $academicYearId, $assignment, [
+            'studentId' => $validated['student_id'],
+            'routeId' => $validated['route_id'],
+            'vehicleId' => $validated['vehicle_id'],
+            'pickupStop' => $validated['pickup_point'],
+            'dropStop' => $validated['drop_point'] ?? null,
+            'pickupTime' => $validated['pickup_time'] ?? null,
+            'dropTime' => $validated['drop_time'] ?? null,
+            'monthlyFee' => $validated['monthly_fee'] ?? 0,
             'status' => $validated['status'],
         ]);
-
-        $student = Student::find($validated['student_id']);
-        $route = TransportRoute::find($validated['route_id']);
-        $vehicle = TransportVehicle::find($validated['vehicle_id']);
-
-        if ($previousStudent && $previousStudent->id !== $validated['student_id']) {
-            $previousStudent->update([
-                'transport_required' => false,
-                'transport_pickup_point' => null,
-                'transport_vehicle' => null,
-                'transport_route' => null,
-                'transport_route_details' => null,
-            ]);
-        }
-
-        if ($student) {
-            $student->update([
-                'transport_required' => true,
-                'transport_pickup_point' => $validated['pickup_point'],
-                'transport_vehicle' => $vehicle?->vehicle_number,
-                'transport_route' => $route?->route_name,
-                'transport_route_details' => trim(
-                    ($route?->route_name ?? '')
-                    . ($validated['pickup_point'] ? ' / ' . $validated['pickup_point'] : '')
-                ),
-            ]);
-        }
 
         return response()->json([
             'success' => true,
             'message' => 'Transport assignment updated',
-            'data' => $this->serializeAssignment($assignment),
+            'data' => $this->serializeAssignment($updated),
         ]);
     }
 
-    public function destroyAssignment(TransportAssignment $assignment): JsonResponse
+    public function destroyAssignment(Request $request, TransportAssignment $assignment, TransportAssignmentService $assignments): JsonResponse
     {
         $organization = $this->requireOrganization();
         abort_unless($assignment->route && $assignment->route->organization_id === $organization->id, 403);
 
-        $student = $assignment->student;
-
-        DB::transaction(function () use ($assignment, $student) {
-            $this->clearTransportDuesForRemovedAssignment($assignment);
-            $assignment->delete();
-
-            if ($student) {
-                $student->update([
-                    'transport_required' => false,
-                    'transport_pickup_point' => null,
-                    'transport_vehicle' => null,
-                    'transport_route' => null,
-                    'transport_route_details' => null,
-                ]);
-            }
-        });
+        $assignments->delete($request->user(), $assignment);
 
         return response()->json([
             'success' => true,
             'message' => 'Transport assignment removed',
         ]);
+    }
+
+    public function approveAssignment(Request $request, TransportAssignment $assignment, TransportAssignmentService $assignments): JsonResponse
+    {
+        $organization = $this->requireOrganization();
+        abort_unless($assignment->route && $assignment->route->organization_id === $organization->id, 403);
+
+        $assignments->approve($request->user(), $assignment);
+
+        return response()->json(['success' => true, 'message' => 'Transport assignment approved', 'data' => $this->serializeAssignment($assignment->fresh())]);
+    }
+
+    public function rejectAssignment(Request $request, TransportAssignment $assignment, TransportAssignmentService $assignments): JsonResponse
+    {
+        $organization = $this->requireOrganization();
+        abort_unless($assignment->route && $assignment->route->organization_id === $organization->id, 403);
+
+        $reason = $request->input('reason');
+        $assignments->reject($request->user(), $assignment, is_string($reason) ? $reason : null);
+
+        return response()->json(['success' => true, 'message' => 'Transport assignment rejected', 'data' => $this->serializeAssignment($assignment->fresh())]);
     }
 
     public function indexTrips(Request $request): JsonResponse
@@ -720,7 +687,7 @@ class TransportApiController extends Controller
         $organization = $this->requireOrganization();
         $transport = app(\App\Http\Controllers\TransportManagementController::class);
 
-        $transport->syncOrganizationTransportFees($organization);
+        $this->fees->syncOrganization($organization);
 
         $classFilter = (string) $request->input('class', '');
         $sectionFilter = (string) $request->input('section', '');
@@ -815,7 +782,7 @@ class TransportApiController extends Controller
             $feeRecord->update([
                 'paid_amount' => $paidAmount,
                 'balance' => $balance,
-                'status' => $transport->determineFeeStatus($balance, $feeRecord->due_date, $paidAmount),
+                'status' => $this->fees->determineFeeStatus($balance, $feeRecord->due_date, $paidAmount),
             ]);
 
             return $payment;
@@ -871,7 +838,7 @@ class TransportApiController extends Controller
             $studentFee->update([
                 'paid_amount' => $updatedPaidAmount,
                 'balance' => $updatedBalance,
-                'status' => $transport->determineFeeStatus($updatedBalance, $studentFee->due_date, $updatedPaidAmount),
+                'status' => $this->fees->determineFeeStatus($updatedBalance, $studentFee->due_date, $updatedPaidAmount),
             ]);
 
             $feePayment->update([
@@ -984,29 +951,31 @@ class TransportApiController extends Controller
         ];
     }
 
-    private function clearTransportDuesForRemovedAssignment(TransportAssignment $assignment): void
+    /**
+     * Roster authority is decided before field validation so an unauthorised
+     * driver gets a 403 instead of a 422 that confirms the roster shape.
+     */
+    private function assertCanManageRosterInput(Request $request, string $action, ?TransportVehicle $fallback = null): void
     {
-        StudentFee::query()
-            ->where('transport_assignment_id', $assignment->id)
-            ->withCount([
-                'payments as active_payments_count' => fn ($query) => $query->whereIn('status', ['success', 'pending']),
-            ])
-            ->get()
-            ->each(function (StudentFee $fee) {
-                $paidAmount = (float) $fee->paid_amount;
+        $organization = $this->requireOrganization();
+        $vehicleId = $request->input('vehicle_id') ?? $request->input('vehicleId') ?? $fallback?->id;
 
-                if ($paidAmount <= 0 && (int) $fee->active_payments_count === 0) {
-                    $fee->delete();
-                    return;
-                }
+        $vehicle = $vehicleId
+            ? TransportVehicle::query()->where('organization_id', $organization->id)->find($vehicleId)
+            : $fallback;
 
-                $fee->update([
-                    'net_amount' => $paidAmount,
-                    'balance' => 0,
-                    'status' => $paidAmount > 0 ? 'paid' : 'waived',
-                    'notes' => trim(($fee->notes ? $fee->notes . "\n" : '') . 'Transport assignment removed; remaining transport due cleared.'),
-                ]);
-            });
+        $decision = app(TransportPolicyResolver::class)->canManageRoster($request->user(), $vehicle, $action);
+
+        abort_unless($decision['allowed'], 403, $decision['message']);
+    }
+
+    private function requireActiveAcademicYearId(Organization $organization): int
+    {
+        $academicYearId = $organization->selectedAcademicYear()?->id;
+
+        abort_unless($academicYearId, 422, 'Create and activate an academic session before managing transport data.');
+
+        return (int) $academicYearId;
     }
 
     private function requireOrganization(): Organization

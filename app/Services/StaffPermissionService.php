@@ -169,7 +169,7 @@ class StaffPermissionService
         $organization = $this->resolveOrganizationForUser($user);
 
         if (!$organization) {
-            return !$this->isManagedStaffRole($user->role);
+            return false;
         }
 
         $role = $this->resolveRoleForUser($organization, $user);
@@ -188,10 +188,11 @@ class StaffPermissionService
         }
 
         $allowed = match ($action) {
+            'view' => (bool) $permission->can_view,
             'add' => (bool) $permission->can_add,
             'edit' => (bool) $permission->can_edit,
             'delete' => (bool) $permission->can_delete,
-            default => (bool) $permission->can_view,
+            default => false,
         };
 
         if ($allowed) {
@@ -334,11 +335,6 @@ class StaffPermissionService
         return $user->managedOrganizations()->whereKey($organization->id)->exists();
     }
 
-    public function isManagedStaffRole(?string $role): bool
-    {
-        return in_array($role, RolePermissionCatalog::staffRoleSlugs(), true);
-    }
-
     public function ensureRolesExist(Organization $organization): void
     {
         $defaults = RolePermissionCatalog::defaults();
@@ -377,6 +373,60 @@ class StaffPermissionService
                 );
             }
         }
+    }
+
+    /**
+     * Make a built-in role's permission rows match the catalog exactly.
+     *
+     * Features that the catalog no longer grants are revoked, so a role can
+     * actually be narrowed. This intentionally overwrites local customization
+     * for the synced role, which is why it only runs from an explicit artisan
+     * command.
+     */
+    public function syncSystemRoleDefaults(Organization $organization, ?string $roleSlug = null): int
+    {
+        $defaults = RolePermissionCatalog::defaults();
+        $featureMap = RolePermissionCatalog::featureMap();
+        $synced = 0;
+
+        foreach (RolePermissionCatalog::staffRoles() as $slug => $roleName) {
+            if ($roleSlug && $slug !== $roleSlug) {
+                continue;
+            }
+
+            $role = Role::query()
+                ->where('organization_id', $organization->id)
+                ->where('slug', $slug)
+                ->first();
+
+            if (! $role) {
+                continue;
+            }
+
+            $permissions = $defaults[$roleName] ?? [];
+
+            foreach ($featureMap as $feature => $meta) {
+                $actions = $permissions[$feature] ?? [];
+
+                RolePermission::query()->updateOrCreate(
+                    [
+                        'role_id' => $role->id,
+                        'feature' => $feature,
+                    ],
+                    [
+                        'module' => $meta['module'],
+                        'can_view' => (bool) ($actions['view'] ?? false),
+                        'can_add' => (bool) ($actions['add'] ?? false),
+                        'can_edit' => (bool) ($actions['edit'] ?? false),
+                        'can_delete' => (bool) ($actions['delete'] ?? false),
+                    ]
+                );
+
+                $synced++;
+            }
+        }
+
+        return $synced;
     }
 
     public function createRole(Organization $organization, string $name): Role

@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { ChevronDown, ChevronRight, GraduationCap, Search, X } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import { sidebarConfig, type OrgType, type SidebarMenuItem } from './sidebarMenu';
+import { canAccessSidebarItem } from '../lib/permissions';
 
 interface SidebarChildItem {
     id: string;
@@ -207,43 +208,16 @@ export default function Sidebar({ user, activeTab, onNavigate }: SidebarProps) {
     const [sidebarSearch, setSidebarSearch] = useState('');
     const sidebarSearchRef = useRef<HTMLInputElement>(null);
 
-    const hasPermission = (feature: string) => {
-        if (['super_admin', 'branch_admin'].includes(user.role)) {
-            return true;
-        }
-
-        if (!['admin', 'teacher', 'receptionist', 'accountant', 'librarian'].includes(user.role)) {
-            return true;
-        }
-
-        return Boolean(staffPermissions?.[feature]?.view);
-    };
-
-    const canAccessItem = (roles: string[], feature: string, module?: string, orgTypes?: OrgType[]) => {
-        if (orgTypes && orgTypes.length > 0 && !orgTypes.includes(orgType as OrgType)) {
-            return false;
-        }
-
-        if (user.role === 'super_admin') {
-            return roles.includes('super_admin');
-        }
-
-        if (module && modules?.[module] === false) {
-            return false;
-        }
-
-        if (['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(user.role)) {
-            const isPortalOnlyItem = roles.every((role) => ['student', 'parent'].includes(role));
-
-            if (isPortalOnlyItem) {
-                return false;
-            }
-
-            return hasPermission(feature);
-        }
-
-        return roles.includes(user.role);
-    };
+    const canAccessItem = (roles: string[], feature: string, module?: string, orgTypes?: OrgType[]) =>
+        canAccessSidebarItem(user.role, {
+            roles,
+            feature,
+            module,
+            moduleFlags: modules,
+            orgType,
+            orgTypes,
+            staffPermissions,
+        });
 
     const visibleGroups: SidebarGroupEntry[] = sidebarConfig
         .map((group) => ({

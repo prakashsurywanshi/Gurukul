@@ -1,5 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
 import { router, usePage } from '@inertiajs/react';
+import { canPerform, type PermissionAction, type StaffPermissionMap } from '../../lib/permissions';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, BusFront, Download, IndianRupee, RefreshCw, Search, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
@@ -96,8 +97,13 @@ export default function TransportFeeCollection({
     transportFeeRecords,
 }: TransportFeeCollectionProps) {
     const { t } = useLanguage();
-    const page = usePage<{ flash?: { success?: string; error?: string } }>();
+    const page = usePage<{
+        flash?: { success?: string; error?: string };
+        staffPermissions?: StaffPermissionMap;
+    }>();
     const flash = page.props.flash ?? {};
+    const can = (action: PermissionAction) =>
+        canPerform(user?.role, 'Transport Fee Collection', action, page.props.staffPermissions);
     const [classFilter, setClassFilter] = useState('all');
     const [sectionFilter, setSectionFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -467,14 +473,16 @@ export default function TransportFeeCollection({
                                 <Download className="h-4 w-4" />
                                 {t('Export')}
                             </Button>
-                            <Button
-                                type="button"
-                                className="gap-2 bg-blue-600 text-white hover:bg-blue-700"
-                                onClick={openCollectDialog}
-                            >
-                                <Wallet className="h-4 w-4" />
-                                {t('Collect Selected')}
-                            </Button>
+                            {can('add') && (
+                                <Button
+                                    type="button"
+                                    className="gap-2 bg-blue-600 text-white hover:bg-blue-700"
+                                    onClick={openCollectDialog}
+                                >
+                                    <Wallet className="h-4 w-4" />
+                                    {t('Collect Selected')}
+                                </Button>
+                            )}
                         </div>
                     </div>
 
@@ -921,7 +929,12 @@ export default function TransportFeeCollection({
                                                 </TableCell>
                                                 <TableCell>{payment.collectedBy || '-'}</TableCell>
                                                 <TableCell className="text-right">
-                                                    {payment.status !== 'refunded' ? (
+                                                    {payment.status === 'refunded' && (
+                                                        <span className="text-xs text-slate-500">
+                                                            {payment.revertReason || t('Reverted')}
+                                                        </span>
+                                                    )}
+                                                    {payment.status !== 'refunded' && can('edit') && (
                                                         <Button
                                                             type="button"
                                                             variant="outline"
@@ -930,10 +943,6 @@ export default function TransportFeeCollection({
                                                         >
                                                             {t('Revert')}
                                                         </Button>
-                                                    ) : (
-                                                        <span className="text-xs text-slate-500">
-                                                            {payment.revertReason || t('Reverted')}
-                                                        </span>
                                                     )}
                                                 </TableCell>
                                             </TableRow>

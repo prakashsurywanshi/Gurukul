@@ -23,6 +23,7 @@ use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\ComplianceProfileController;
 use App\Http\Controllers\PortalRecordsController;
 use App\Http\Controllers\TransportDriversController;
+use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\NotificationSettingsController;
 use App\Http\Controllers\OrganizationGatewayController;
 use App\Http\Controllers\LiveClassSettingsController;
@@ -151,6 +152,7 @@ use App\Http\Controllers\BillingCenterController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\LectureController;
 use App\Http\Controllers\TransportDeviceSettingsController;
+use App\Http\Controllers\DriverBusStudentsController;
 use App\Http\Controllers\TransportManagementController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UsersController;
@@ -170,7 +172,7 @@ Route::get('/pages/{slug}', [WebsitePageController::class, 'show'])->name('websi
 Route::get('/login', [LoginController::class, 'viewLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/demo-login/{role}', DemoLoginController::class)
-    ->whereIn('role', ['schooladmin', 'superadmin', 'admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'driver', 'parent', 'student'])
+    ->whereIn('role', ['schooladmin', 'superadmin', 'admin', 'teacher', 'accountant', 'receptionist', 'librarian', 'driver', 'transport-manager', 'parent', 'student'])
     ->name('demo-login');
 Route::get('/sso/status', [SsoController::class, 'status'])->name('sso.status');
 Route::get('/{orgSlug}/privacy-policy', function (string $orgSlug) {
@@ -237,7 +239,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/survey/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'survey')->middleware('staff.permission:Feedback Management,view')->name('domain.dashboard.survey');
     Route::get('/library/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'library')->middleware('staff.permission:Library Management,view')->name('domain.dashboard.library');
     Route::get('/inventory/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'inventory')->middleware('staff.permission:Inventory Management,view')->name('domain.dashboard.inventory');
-    Route::get('/transport/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'transport')->middleware('staff.permission:Transport Management,view')->name('domain.dashboard.transport');
+    Route::get('/transport/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'transport')->middleware(['module.enabled:transport', 'staff.permission:Transport Management,view'])->name('domain.dashboard.transport');
     Route::get('/hostel/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'hostel')->middleware('staff.permission:Hostel Management,view')->name('domain.dashboard.hostel');
     Route::get('/assets/dashboard', [DomainDashboardController::class, 'index'])->defaults('domain', 'assets')->middleware('staff.permission:Asset Management,view')->name('domain.dashboard.assets');
     Route::post('/superadmin/organizations', [DashboardController::class, 'storeOrganization'])->name('superadmin.organizations.store');
@@ -314,7 +316,7 @@ Route::middleware(['auth', 'organization.subscription', 'audit.trail'])->group(f
     Route::get('/library/categories', [BookCategoriesController::class, 'index'])->middleware('staff.permission:Library Management,view')->name('library.categories');
     Route::get('/id-cards/designs', [CardDesignController::class, 'index'])->middleware('staff.permission:Student ID Card Management,view')->name('card-designs');
     Route::patch('/id-cards/designs', [CardDesignController::class, 'update'])->middleware('staff.permission:Student ID Card Management,edit')->name('card-designs.update');
-    Route::get('/transport/drivers', [TransportDriversController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('transport-drivers');
+    Route::get('/transport/drivers', [TransportDriversController::class, 'index'])->middleware(['module.enabled:transport', 'staff.permission:Transport Management,view'])->name('transport-drivers');
     Route::get('/settings/notification', [NotificationSettingsController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('notification-settings');
     Route::patch('/settings/notification', [NotificationSettingsController::class, 'update'])->middleware('staff.permission:General Setting,edit')->name('notification-settings.update');
     Route::get('/settings/notification-rules', [NotificationRuleController::class, 'index'])->middleware('staff.permission:General Setting,view')->name('notification-rules');
@@ -608,31 +610,47 @@ Route::get('/gate-passes', [GatePassController::class, 'index'])->middleware('st
     Route::get('/hostel/allocations', [HostelManagementController::class, 'studentAllocation'])->middleware('staff.permission:Hostel Management,view')->name('hostel.allocations');
     Route::post('/hostel/allocations', [HostelManagementController::class, 'allocateStudent'])->middleware('staff.permission:Hostel Management,add')->name('hostel.allocations.store');
     Route::post('/hostel/allocations/{hostelAllocation}/release', [HostelManagementController::class, 'releaseAllocation'])->middleware('staff.permission:Hostel Management,edit')->name('hostel.allocations.release');
-    Route::get('/transport-management', [TransportManagementController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('transport-management');
-    Route::get('/transport-fee-collection', [TransportManagementController::class, 'feeCollection'])->middleware('staff.permission:Transport Fee Collection,view')->name('transport-fee-collection');
-    Route::post('/transport-management/routes', [TransportManagementController::class, 'storeRoute'])->middleware('staff.permission:Transport Management,add')->name('transport-management.routes.store');
-    Route::put('/transport-management/routes/{id}', [TransportManagementController::class, 'updateRoute'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.routes.update');
-    Route::delete('/transport-management/routes/{id}', [TransportManagementController::class, 'deleteRoute'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.routes.destroy');
+    Route::group(['middleware' => 'module.enabled:transport'], function () {
+        Route::get('/transport-management', [TransportManagementController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('transport-management');
+        Route::get('/transport-fee-collection', [TransportManagementController::class, 'feeCollection'])->middleware('staff.permission:Transport Fee Collection,view')->name('transport-fee-collection');
+        Route::post('/transport-management/routes', [TransportManagementController::class, 'storeRoute'])->middleware('staff.permission:Transport Management,add')->name('transport-management.routes.store');
+        Route::put('/transport-management/routes/{id}', [TransportManagementController::class, 'updateRoute'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.routes.update');
+        Route::delete('/transport-management/routes/{id}', [TransportManagementController::class, 'deleteRoute'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.routes.destroy');
 
-    Route::post('/transport-management/vehicles', [TransportManagementController::class, 'storeVehicle'])->middleware('staff.permission:Transport Management,add')->name('transport-management.vehicles.store');
-    Route::put('/transport-management/vehicles/{id}', [TransportManagementController::class, 'updateVehicle'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.vehicles.update');
-    Route::delete('/transport-management/vehicles/{id}', [TransportManagementController::class, 'deleteVehicle'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.vehicles.destroy');
+        Route::post('/transport-management/vehicles', [TransportManagementController::class, 'storeVehicle'])->middleware('staff.permission:Transport Management,add')->name('transport-management.vehicles.store');
+        Route::put('/transport-management/vehicles/{id}', [TransportManagementController::class, 'updateVehicle'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.vehicles.update');
+        Route::delete('/transport-management/vehicles/{id}', [TransportManagementController::class, 'deleteVehicle'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.vehicles.destroy');
+        Route::put('/transport-management/vehicles/{id}/policy', [TransportManagementController::class, 'updateVehiclePolicy'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.vehicles.policy');
 
-    Route::post('/transport-management/assignments', [TransportManagementController::class, 'storeAssignment'])->middleware('staff.permission:Transport Management,add')->name('transport-management.assignments.store');
-    Route::put('/transport-management/assignments/{id}', [TransportManagementController::class, 'updateAssignment'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.assignments.update');
-    Route::delete('/transport-management/assignments/{id}', [TransportManagementController::class, 'deleteAssignment'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.assignments.destroy');
-    Route::post('/transport-management/fee-payments/bulk', [TransportManagementController::class, 'collectBulkFeePayment'])->middleware('staff.permission:Transport Fee Collection,add')->name('transport-management.fee-payments.bulk-store');
-    Route::post('/transport-management/fee-payments/{feePayment}/revert', [TransportManagementController::class, 'revertFeePayment'])->middleware('staff.permission:Transport Fee Collection,edit')->name('transport-management.fee-payments.revert');
+        Route::post('/transport-management/drivers', [DriverProfileController::class, 'store'])->middleware('staff.permission:Transport Management,add')->name('transport-management.drivers.store');
+        Route::put('/transport-management/drivers/{id}', [DriverProfileController::class, 'update'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.drivers.update');
+        Route::delete('/transport-management/drivers/{id}', [DriverProfileController::class, 'destroy'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.drivers.destroy');
 
-    Route::post('/transport-management/trips', [TransportManagementController::class, 'storeTrip'])->middleware('staff.permission:Transport Management,add')->name('transport-management.trips.store');
-    Route::put('/transport-management/trips/{id}', [TransportManagementController::class, 'updateTrip'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.update');
-    Route::delete('/transport-management/trips/{id}', [TransportManagementController::class, 'deleteTrip'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.trips.destroy');
-    Route::post('/transport-management/journeys/start', [TransportManagementController::class, 'startJourney'])->middleware('staff.permission:Transport Management,add')->name('transport-management.journeys.start');
-    Route::patch('/transport-management/journeys/{dailyTrip}/stop', [TransportManagementController::class, 'updateReachedStop'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.journeys.stop');
-    Route::patch('/transport-management/journeys/{dailyTrip}/end', [TransportManagementController::class, 'endJourney'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.journeys.end');
-    Route::get('/transport-management/live', [TransportManagementController::class, 'liveTracking'])->middleware('staff.permission:Transport Management,view')->name('transport-management.live');
-    Route::post('/transport-management/trips/{dailyTrip}/simulate-gps', [TransportManagementController::class, 'simulateGpsStop'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.simulate-gps');
-    Route::delete('/transport-management/trips/{dailyTrip}/gps', [TransportManagementController::class, 'resetTripGps'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.gps.destroy');
+        Route::post('/transport-management/assignments', [TransportManagementController::class, 'storeAssignment'])->middleware('staff.permission:Transport Management,add')->name('transport-management.assignments.store');
+        Route::put('/transport-management/assignments/{id}', [TransportManagementController::class, 'updateAssignment'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.assignments.update');
+        Route::delete('/transport-management/assignments/{id}', [TransportManagementController::class, 'deleteAssignment'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.assignments.destroy');
+        Route::post('/transport-management/assignments/{id}/approve', [TransportManagementController::class, 'approveAssignment'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.assignments.approve');
+        Route::post('/transport-management/assignments/{id}/reject', [TransportManagementController::class, 'rejectAssignment'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.assignments.reject');
+
+        Route::get('/driver/bus-students', [DriverBusStudentsController::class, 'index'])->middleware('staff.permission:Transport Management,view')->name('driver.bus-students');
+        Route::put('/driver/bus-students/{vehicle}/policy', [DriverBusStudentsController::class, 'updatePolicy'])->middleware('staff.permission:Transport Management,edit')->name('driver.bus-students.policy');
+        Route::post('/driver/bus-students/assignments', [DriverBusStudentsController::class, 'storeAssignment'])->middleware('staff.permission:Transport Management,add')->name('driver.bus-students.assignments.store');
+        // Authorised by the per-vehicle roster policy inside the controller, so a
+        // driver never needs the module-wide delete permission to revoke a student.
+        Route::delete('/driver/bus-students/assignments/{id}', [DriverBusStudentsController::class, 'destroyAssignment'])->name('driver.bus-students.assignments.destroy');
+        Route::post('/transport-management/fee-payments/bulk', [TransportManagementController::class, 'collectBulkFeePayment'])->middleware('staff.permission:Transport Fee Collection,add')->name('transport-management.fee-payments.bulk-store');
+        Route::post('/transport-management/fee-payments/{feePayment}/revert', [TransportManagementController::class, 'revertFeePayment'])->middleware('staff.permission:Transport Fee Collection,edit')->name('transport-management.fee-payments.revert');
+
+        Route::post('/transport-management/trips', [TransportManagementController::class, 'storeTrip'])->middleware('staff.permission:Transport Management,add')->name('transport-management.trips.store');
+        Route::put('/transport-management/trips/{id}', [TransportManagementController::class, 'updateTrip'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.update');
+        Route::delete('/transport-management/trips/{id}', [TransportManagementController::class, 'deleteTrip'])->middleware('staff.permission:Transport Management,delete')->name('transport-management.trips.destroy');
+        Route::post('/transport-management/journeys/start', [TransportManagementController::class, 'startJourney'])->middleware('staff.permission:Transport Management,add')->name('transport-management.journeys.start');
+        Route::patch('/transport-management/journeys/{dailyTrip}/stop', [TransportManagementController::class, 'updateReachedStop'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.journeys.stop');
+        Route::patch('/transport-management/journeys/{dailyTrip}/end', [TransportManagementController::class, 'endJourney'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.journeys.end');
+        Route::get('/transport-management/live', [TransportManagementController::class, 'liveTracking'])->middleware('staff.permission:Transport Management,view')->name('transport-management.live');
+        Route::post('/transport-management/trips/{dailyTrip}/simulate-gps', [TransportManagementController::class, 'simulateGpsStop'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.simulate-gps');
+        Route::delete('/transport-management/trips/{dailyTrip}/gps', [TransportManagementController::class, 'resetTripGps'])->middleware('staff.permission:Transport Management,edit')->name('transport-management.trips.gps.destroy');
+    });
     Route::get('/attendance', [AttendanceController::class, 'index'])->middleware('staff.permission:Attendance Management,view')->name('attendance');
     Route::post('/attendance', [AttendanceController::class, 'store'])->middleware('staff.permission:Attendance Management,add')->name('attendance.store');
     Route::get('/exams', [ExamController::class, 'index'])->middleware('staff.permission:Exam Management,view')->name('exams');
@@ -893,9 +911,11 @@ Route::get('/certificates', [CertificateController::class, 'index'])->middleware
     Route::get('/settings/biometric', [BiometricSettingsController::class, 'index'])->middleware('staff.permission:Biometric Settings,view')->name('settings.biometric');
     Route::post('/settings/biometric/regenerate', [BiometricSettingsController::class, 'regenerate'])->middleware('staff.permission:Biometric Settings,edit')->name('settings.biometric.regenerate');
     Route::get('/settings/biometric/reveal', [BiometricSettingsController::class, 'reveal'])->middleware('staff.permission:Biometric Settings,view')->name('settings.biometric.reveal');
-    Route::get('/transport/device-settings', [TransportDeviceSettingsController::class, 'index'])->middleware('staff.permission:Transport Device Settings,view')->name('transport.device-settings');
-    Route::post('/transport/device-settings/regenerate', [TransportDeviceSettingsController::class, 'regenerate'])->middleware('staff.permission:Transport Device Settings,edit')->name('transport.device-settings.regenerate');
-    Route::get('/transport/device-settings/reveal', [TransportDeviceSettingsController::class, 'reveal'])->middleware('staff.permission:Transport Device Settings,view')->name('transport.device-settings.reveal');
+    Route::group(['middleware' => 'module.enabled:transport'], function () {
+        Route::get('/transport/device-settings', [TransportDeviceSettingsController::class, 'index'])->middleware('staff.permission:Transport Device Settings,view')->name('transport.device-settings');
+        Route::post('/transport/device-settings/regenerate', [TransportDeviceSettingsController::class, 'regenerate'])->middleware('staff.permission:Transport Device Settings,edit')->name('transport.device-settings.regenerate');
+        Route::get('/transport/device-settings/reveal', [TransportDeviceSettingsController::class, 'reveal'])->middleware('staff.permission:Transport Device Settings,view')->name('transport.device-settings.reveal');
+    });
     Route::get('/biometric-devices', [BiometricDeviceController::class, 'index'])->middleware('staff.permission:Biometric Settings,view')->name('biometric-devices');
     Route::post('/biometric-devices', [BiometricDeviceController::class, 'store'])->middleware('staff.permission:Biometric Settings,edit')->name('biometric-devices.store');
     Route::put('/biometric-devices/{device}', [BiometricDeviceController::class, 'update'])->middleware('staff.permission:Biometric Settings,edit')->name('biometric-devices.update');

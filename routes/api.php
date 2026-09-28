@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AttendanceApiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateApiController;
 use App\Http\Controllers\Api\CommunicationApiController;
+use App\Http\Controllers\Api\DriverApiController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\Api\ExamApiController;
 use App\Http\Controllers\Api\FeedbackApiController;
@@ -258,7 +259,7 @@ Route::middleware(['auth:sanctum', 'staff.permission:Hostel Management,view'])->
     });
 });
 
-Route::middleware(['auth:sanctum', 'staff.permission:Transport Management,view'])->prefix('transport')->group(function () {
+Route::middleware(['auth:sanctum', 'module.enabled:transport', 'staff.permission:Transport Management,view'])->prefix('transport')->group(function () {
     Route::get('/overview', [TransportApiController::class, 'getOverview']);
 
     Route::prefix('routes')->group(function () {
@@ -280,6 +281,8 @@ Route::middleware(['auth:sanctum', 'staff.permission:Transport Management,view']
         Route::post('/', [TransportApiController::class, 'storeAssignment'])->middleware('staff.permission:Transport Management,add');
         Route::put('/{assignment}', [TransportApiController::class, 'updateAssignment'])->middleware('staff.permission:Transport Management,edit');
         Route::delete('/{assignment}', [TransportApiController::class, 'destroyAssignment'])->middleware('staff.permission:Transport Management,delete');
+        Route::post('/{assignment}/approve', [TransportApiController::class, 'approveAssignment'])->middleware('staff.permission:Transport Management,edit');
+        Route::post('/{assignment}/reject', [TransportApiController::class, 'rejectAssignment'])->middleware('staff.permission:Transport Management,edit');
     });
 
     Route::prefix('trips')->group(function () {
@@ -499,6 +502,25 @@ Route::prefix('transport/gps')->group(function () {
 Route::prefix('cctv')->group(function () {
     Route::get('/status', [\App\Http\Controllers\Api\CctvIngestionApiController::class, 'status']);
     Route::post('/face-scan', [\App\Http\Controllers\Api\CctvIngestionApiController::class, 'faceScan']);
+});
+
+Route::middleware(['auth:sanctum', 'driver.role'])->prefix('driver')->group(function () {
+    Route::get('/me', [DriverApiController::class, 'me']);
+    Route::get('/trips', [DriverApiController::class, 'trips']);
+    Route::post('/trips', [DriverApiController::class, 'startTrip']);
+    Route::get('/trips/{trip}', [DriverApiController::class, 'trip']);
+    Route::post('/trips/{trip}/reached-stop', [DriverApiController::class, 'reachedStop']);
+    Route::post('/trips/{trip}/end', [DriverApiController::class, 'endTrip']);
+    Route::post('/trips/{trip}/boarding', [DriverApiController::class, 'markBoarding']);
+    Route::post('/trips/{trip}/gps', [DriverApiController::class, 'updateGps']);
+
+    // Bus policy and roster self-service, gated per vehicle by the bus policy.
+    Route::get('/vehicles', [DriverApiController::class, 'myVehicles']);
+    Route::put('/vehicles/{vehicle}/policy', [DriverApiController::class, 'updateVehiclePolicy']);
+    Route::get('/assignments', [DriverApiController::class, 'assignments']);
+    Route::get('/assignments/available-students', [DriverApiController::class, 'availableStudents']);
+    Route::post('/assignments', [DriverApiController::class, 'storeAssignment'])->middleware('throttle:60,1');
+    Route::delete('/assignments/{assignment}', [DriverApiController::class, 'destroyAssignment']);
 });
 
 Route::middleware('auth:sanctum')->prefix('parent')->group(function () {

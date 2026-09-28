@@ -91,6 +91,11 @@ class User extends Authenticatable
         return $this->hasOne(StaffProfile::class);
     }
 
+    public function driverProfile(): HasOne
+    {
+        return $this->hasOne(DriverProfile::class);
+    }
+
     public function managedOrganizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'branch_admin_organizations', 'user_id', 'organization_id')

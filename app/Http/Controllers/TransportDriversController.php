@@ -6,17 +6,18 @@ use App\Models\Organization;
 use App\Models\TransportRoute;
 use App\Models\TransportVehicle;
 use App\Models\User;
+use App\Services\StaffPermissionService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TransportDriversController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, StaffPermissionService $permissions)
     {
         $user = $request->user();
         $organization = $this->resolveOrganizationForUser($user);
         abort_unless($organization, 403);
-        abort_unless(in_array($user->role, ['admin', 'super_admin'], true), 403);
+        abort_unless($permissions->allows($user, 'Transport Management', 'view'), 403);
 
         $vehicles = $organization
             ? TransportVehicle::query()

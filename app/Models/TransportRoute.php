@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TransportRoute extends Model
@@ -11,7 +12,7 @@ class TransportRoute extends Model
 
     protected $fillable = [
         'organization_id', 'academic_year_id', 'route_name', 'area', 'vehicle_number', 'route_number',
-        'description', 'driver_name', 'driver_phone', 'morning_pickup', 'afternoon_drop',
+        'description', 'driver_name', 'driver_phone', 'driver_user_id', 'morning_pickup', 'afternoon_drop',
         'fare', 'monthly_fee', 'stops', 'status',
     ];
 
@@ -20,6 +21,11 @@ class TransportRoute extends Model
         'fare' => 'float',
         'monthly_fee' => 'float',
     ];
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_user_id');
+    }
 
     public function vehicles(): HasMany
     {

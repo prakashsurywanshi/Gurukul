@@ -1,5 +1,6 @@
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { canPerform, type StaffPermissionMap } from '../../lib/permissions';
 import { toast } from 'sonner';
 import { Gauge, LocateFixed, MapPin, Navigation, PlayCircle, RotateCcw, Truck } from 'lucide-react';
 import DashboardLayout from '../DashboardLayout';
@@ -46,6 +47,8 @@ type TransportLiveTrackingProps = {
 
 export default function TransportLiveTracking({ user, trips, summary }: TransportLiveTrackingProps) {
     const { t } = useLanguage();
+    const { staffPermissions } = usePage<{ staffPermissions?: StaffPermissionMap }>().props;
+    const canEditTrips = canPerform(user?.role, 'Transport Management', 'edit', staffPermissions);
 
     const simulateGps = (tripId: string) => {
         router.post(
@@ -198,21 +201,23 @@ export default function TransportLiveTracking({ user, trips, summary }: Transpor
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => resetGps(trip.id)}
-                                                disabled={trip.positionCount === 0}
-                                            >
-                                                <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                                                {t('Reset GPS')}
-                                            </Button>
-                                            <Button size="sm" onClick={() => simulateGps(trip.id)}>
-                                                <PlayCircle className="mr-1 h-3.5 w-3.5" />
-                                                {t('Simulate Next Stop')}
-                                            </Button>
-                                        </div>
+                                        {canEditTrips && (
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => resetGps(trip.id)}
+                                                    disabled={trip.positionCount === 0}
+                                                >
+                                                    <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                                                    {t('Reset GPS')}
+                                                </Button>
+                                                <Button size="sm" onClick={() => simulateGps(trip.id)}>
+                                                    <PlayCircle className="mr-1 h-3.5 w-3.5" />
+                                                    {t('Simulate Next Stop')}
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>

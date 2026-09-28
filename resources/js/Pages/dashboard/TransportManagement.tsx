@@ -31,8 +31,9 @@ import { Textarea } from '../ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Check, ChevronsUpDown } from 'lucide-react';
 
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { cn } from '../ui/utils';
+import { canPerform, type StaffPermissionMap } from '../../lib/permissions';
 
 interface TransportManagementProps {
     user: any;
@@ -41,6 +42,7 @@ interface TransportManagementProps {
     assignments?: TransportAssignment[];
     trips?: DailyTrip[];
     students?: TransportStudent[];
+    drivers?: TransportDriver[];
 }
 
 type TransportStudent = {
@@ -61,6 +63,7 @@ type TransportRoute = {
     vehicleNumber: string;
     driverName: string;
     driverPhone: string;
+    driverUserId?: string;
     morningPickup: string;
     afternoonDrop: string;
     monthlyFee: number;
@@ -75,9 +78,21 @@ type TransportVehicle = {
     capacity: number;
     assignedDriver: string;
     driverPhone: string;
+    driverId?: string;
     gpsDeviceId: string;
     insuranceExpiry: string;
     status: 'active' | 'maintenance' | 'inactive';
+};
+
+type TransportDriver = {
+    id: string;
+    name: string;
+    email?: string;
+    phone: string;
+    status?: string;
+    licenseNumber?: string;
+    licenseExpiry?: string;
+    verificationStatus?: 'pending' | 'verified' | 'rejected';
 };
 
 type TransportAssignment = {
@@ -123,6 +138,7 @@ type DailyTrip = {
     supervisor: string;
     tripStatus: 'scheduled' | 'running' | 'completed' | 'delayed' | 'cancelled';
     note: string;
+    boarding?: Record<'pickup' | 'drop', { present: number; absent: number; marked: number }>;
 };
 
 const STORAGE_KEY = 'transport-management-data';
@@ -212,6 +228,20 @@ const normalizeTrip = (trip: Partial<DailyTrip> & { startPoint?: string }): Dail
     supervisor: trip.supervisor || '',
     tripStatus: trip.tripStatus || 'scheduled',
     note: trip.note || '',
+    boarding: trip.boarding
+        ? {
+              pickup: {
+                  present: Number(trip.boarding.pickup?.present || 0),
+                  absent: Number(trip.boarding.pickup?.absent || 0),
+                  marked: Number(trip.boarding.pickup?.marked || 0),
+              },
+              drop: {
+                  present: Number(trip.boarding.drop?.present || 0),
+                  absent: Number(trip.boarding.drop?.absent || 0),
+                  marked: Number(trip.boarding.drop?.marked || 0),
+              },
+          }
+        : undefined,
 });
 
 const normalizeRoute = (route: Partial<TransportRoute>): TransportRoute => ({
@@ -221,6 +251,7 @@ const normalizeRoute = (route: Partial<TransportRoute>): TransportRoute => ({
     vehicleNumber: route.vehicleNumber || '',
     driverName: route.driverName || '',
     driverPhone: route.driverPhone || '',
+    driverUserId: route.driverUserId ? String(route.driverUserId) : '',
     morningPickup: route.morningPickup || '',
     afternoonDrop: route.afternoonDrop || '',
     monthlyFee: Number(route.monthlyFee || 0),
@@ -235,6 +266,7 @@ const normalizeVehicle = (vehicle: Partial<TransportVehicle>): TransportVehicle 
     capacity: Number(vehicle.capacity || 0),
     assignedDriver: vehicle.assignedDriver || '',
     driverPhone: vehicle.driverPhone || '',
+    driverId: vehicle.driverId ? String(vehicle.driverId) : '',
     gpsDeviceId: vehicle.gpsDeviceId || '',
     insuranceExpiry: vehicle.insuranceExpiry || '',
     status: vehicle.status === 'maintenance' || vehicle.status === 'inactive' ? vehicle.status : 'active',
@@ -291,6 +323,7 @@ const createEmptyRouteForm = () => ({
     vehicleNumber: '',
     driverName: '',
     driverPhone: '',
+    driverUserId: '',
     morningPickup: '',
     afternoonDrop: '',
     monthlyFee: '',
@@ -304,6 +337,7 @@ const createEmptyVehicleForm = () => ({
     capacity: '',
     assignedDriver: '',
     driverPhone: '',
+    driverId: '',
     gpsDeviceId: '',
     insuranceExpiry: '',
     status: 'active' as TransportVehicle['status'],
@@ -326,6 +360,7 @@ const createEmptyAssignmentForm = () => ({
 const createEmptyTripForm = () => ({
     routeId: '',
     vehicleId: '',
+    driverUserId: '',
     shift: 'morning' as DailyTrip['shift'],
     direction: 'pickup' as NonNullable<DailyTrip['direction']>,
     pickupPoints: '',
@@ -346,8 +381,14 @@ export default function TransportManagement({
     assignments: propAssignments,
     trips: propTrips,
     students: propStudents,
+    drivers: propDrivers,
 }: TransportManagementProps) {
     const { t } = useLanguage();
+    const { staffPermissions } = usePage<{ staffPermissions?: StaffPermissionMap }>().props;
+    const can = (action: 'view' | 'add' | 'edit' | 'delete') =>
+        canPerform(user?.role, 'Transport Management', action, staffPermissions);
+    const canCollectFees = (action: 'view' | 'add' | 'edit' | 'delete') =>
+        canPerform(user?.role, 'Transport Fee Collection', action, staffPermissions);
     const activeStudents = useMemo(
         () =>
             (propStudents || [])
@@ -362,6 +403,9 @@ export default function TransportManagement({
         (propAssignments || []).map(normalizeAssignment),
     );
     const [trips, setTrips] = useState<DailyTrip[]>(() => (propTrips || []).map(normalizeTrip));
+    const [drivers, setDrivers] = useState<TransportDriver[]>(() =>
+        (propDrivers || []).map((driver) => ({ ...driver, id: String(driver.id) })),
+    );
     const [searchQuery, setSearchQuery] = useState('');
 
     // Update state when inertia props change
@@ -370,17 +414,35 @@ export default function TransportManagement({
         if (propVehicles) setVehicles(propVehicles.map(normalizeVehicle));
         if (propAssignments) setAssignments(propAssignments.map(normalizeAssignment));
         if (propTrips) setTrips(propTrips.map(normalizeTrip));
-    }, [propRoutes, propVehicles, propAssignments, propTrips]);
+        if (propDrivers) setDrivers(propDrivers.map((driver) => ({ ...driver, id: String(driver.id) })));
+    }, [propRoutes, propVehicles, propAssignments, propTrips, propDrivers]);
 
     const [routeForm, setRouteForm] = useState(createEmptyRouteForm);
     const [vehicleForm, setVehicleForm] = useState(createEmptyVehicleForm);
     const [assignmentForm, setAssignmentForm] = useState(createEmptyAssignmentForm);
     const [tripForm, setTripForm] = useState(createEmptyTripForm);
+    const [driverForm, setDriverForm] = useState(() => ({
+        name: '',
+        email: '',
+        phone: '',
+        licenseNumber: '',
+        licenseExpiry: '',
+        licenseCategories: '',
+        joiningDate: '',
+        employmentType: '',
+        emergencyContact: '',
+        bloodGroup: '',
+        policyNumber: '',
+        policyExpiry: '',
+        status: 'active' as 'active' | 'inactive' | 'suspended',
+        verificationStatus: 'pending' as 'pending' | 'verified' | 'rejected',
+    }));
     const [showStartJourneyModal, setShowStartJourneyModal] = useState(false);
     const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
     const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null);
     const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
     const [editingTripId, setEditingTripId] = useState<string | null>(null);
+    const [editingDriverId, setEditingDriverId] = useState<string | null>(null);
     const [expandedRouteId, setExpandedRouteId] = useState<string | null>(null);
     const [stopSelections, setStopSelections] = useState<Record<string, string>>({});
     const [journeyDateFilter, setJourneyDateFilter] = useState(() => new Date().toISOString().slice(0, 10));
@@ -692,6 +754,7 @@ export default function TransportManagement({
             vehicleNumber: routeForm.vehicleNumber,
             driverName: routeForm.driverName,
             driverPhone: routeForm.driverPhone,
+            driverUserId: routeForm.driverUserId || null,
             morningPickup: routeForm.morningPickup,
             afternoonDrop: routeForm.afternoonDrop,
             monthlyFee: Number(routeForm.monthlyFee || 0),
@@ -751,6 +814,7 @@ export default function TransportManagement({
             capacity: Number(vehicleForm.capacity),
             assignedDriver: vehicleForm.assignedDriver,
             driverPhone: vehicleForm.driverPhone,
+            driverId: vehicleForm.driverId || undefined,
             gpsDeviceId: vehicleForm.gpsDeviceId,
             insuranceExpiry: vehicleForm.insuranceExpiry,
             status: vehicleForm.status,
@@ -855,6 +919,7 @@ export default function TransportManagement({
         const tripPayload = {
             routeId: tripForm.routeId,
             vehicleId: tripForm.vehicleId,
+            driverUserId: tripForm.driverUserId || null,
             shift: tripForm.shift,
             direction: tripForm.direction,
             pickupPoints: tripForm.pickupPoints,
@@ -897,6 +962,7 @@ export default function TransportManagement({
             {
                 routeId: tripForm.routeId,
                 vehicleId: tripForm.vehicleId,
+                driverUserId: tripForm.driverUserId || null,
                 shift: tripForm.shift,
                 direction: tripForm.direction,
                 destinationPoint: tripForm.destinationPoint,
@@ -955,6 +1021,7 @@ export default function TransportManagement({
             vehicleNumber: route.vehicleNumber,
             driverName: route.driverName,
             driverPhone: route.driverPhone,
+            driverUserId: route.driverUserId || '',
             morningPickup: route.morningPickup,
             afternoonDrop: route.afternoonDrop,
             monthlyFee: String(route.monthlyFee),
@@ -971,6 +1038,7 @@ export default function TransportManagement({
             capacity: String(vehicle.capacity),
             assignedDriver: vehicle.assignedDriver,
             driverPhone: vehicle.driverPhone,
+            driverId: vehicle.driverId || '',
             gpsDeviceId: vehicle.gpsDeviceId,
             insuranceExpiry: vehicle.insuranceExpiry,
             status: vehicle.status,
@@ -1002,6 +1070,7 @@ export default function TransportManagement({
         setTripForm({
             routeId: trip.routeId,
             vehicleId: trip.vehicleId,
+            driverUserId: trip.driverId || '',
             shift: trip.shift,
             direction: trip.direction || 'pickup',
             pickupPoints: (trip.pickupPoints || []).join(', '),
@@ -1090,6 +1159,143 @@ export default function TransportManagement({
 
         router.delete(`/transport-management/trips/${tripId}`, {
             onSuccess: () => toast.success('Trip removed'),
+        });
+    };
+
+    const handleCreateDriver = () => {
+        if (!driverForm.name || !driverForm.email) {
+            toast.error('Driver name and email are required');
+            return;
+        }
+
+        const driverPayload = {
+            name: driverForm.name,
+            email: driverForm.email,
+            phone: driverForm.phone,
+            licenseNumber: driverForm.licenseNumber,
+            licenseExpiry: driverForm.licenseExpiry || null,
+            licenseCategories: driverForm.licenseCategories,
+            joiningDate: driverForm.joiningDate || null,
+            employmentType: driverForm.employmentType,
+            emergencyContact: driverForm.emergencyContact,
+            bloodGroup: driverForm.bloodGroup,
+            policyNumber: driverForm.policyNumber,
+            policyExpiry: driverForm.policyExpiry || null,
+            status: driverForm.status,
+            verificationStatus: driverForm.verificationStatus,
+        };
+
+        if (editingDriverId) {
+            router.put(`/transport-management/drivers/${editingDriverId}`, driverPayload as any, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEditingDriverId(null);
+                    setDriverForm({
+                        name: '',
+                        email: '',
+                        phone: '',
+                        licenseNumber: '',
+                        licenseExpiry: '',
+                        licenseCategories: '',
+                        joiningDate: '',
+                        employmentType: '',
+                        emergencyContact: '',
+                        bloodGroup: '',
+                        policyNumber: '',
+                        policyExpiry: '',
+                        status: 'active',
+                        verificationStatus: 'pending',
+                    });
+                    toast.success('Driver updated');
+                },
+                onError: (errors) => {
+                    toast.error(getFirstErrorMessage(errors) || 'Unable to update driver. Please try again.');
+                },
+            });
+        } else {
+            router.post('/transport-management/drivers', driverPayload as any, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setDriverForm({
+                        name: '',
+                        email: '',
+                        phone: '',
+                        licenseNumber: '',
+                        licenseExpiry: '',
+                        licenseCategories: '',
+                        joiningDate: '',
+                        employmentType: '',
+                        emergencyContact: '',
+                        bloodGroup: '',
+                        policyNumber: '',
+                        policyExpiry: '',
+                        status: 'active',
+                        verificationStatus: 'pending',
+                    });
+                    toast.success('Driver added to transport registry');
+                },
+                onError: (errors) => {
+                    toast.error(getFirstErrorMessage(errors) || 'Unable to add driver. Please try again.');
+                },
+            });
+        }
+    };
+
+    const startEditDriver = (driver: TransportDriver) => {
+        setEditingDriverId(driver.id);
+        setDriverForm({
+            name: driver.name,
+            email: driver.email || '',
+            phone: driver.phone || '',
+            licenseNumber: driver.licenseNumber || '',
+            licenseExpiry: driver.licenseExpiry || '',
+            licenseCategories: '',
+            joiningDate: '',
+            employmentType: '',
+            emergencyContact: '',
+            bloodGroup: '',
+            policyNumber: '',
+            policyExpiry: '',
+            status: (driver.status === 'suspended'
+                ? 'suspended'
+                : driver.status === 'inactive'
+                  ? 'inactive'
+                  : 'active') as 'active' | 'inactive' | 'suspended',
+            verificationStatus:
+                driver.verificationStatus === 'verified' || driver.verificationStatus === 'rejected'
+                    ? driver.verificationStatus
+                    : 'pending',
+        });
+    };
+
+    const cancelDriverEdit = () => {
+        setEditingDriverId(null);
+        setDriverForm({
+            name: '',
+            email: '',
+            phone: '',
+            licenseNumber: '',
+            licenseExpiry: '',
+            licenseCategories: '',
+            joiningDate: '',
+            employmentType: '',
+            emergencyContact: '',
+            bloodGroup: '',
+            policyNumber: '',
+            policyExpiry: '',
+            status: 'active',
+            verificationStatus: 'pending',
+        });
+    };
+
+    const deleteDriver = (driverId: string) => {
+        if (!confirmDelete('driver')) {
+            return;
+        }
+
+        router.delete(`/transport-management/drivers/${driverId}`, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Driver deactivated'),
         });
     };
 
@@ -1467,6 +1673,7 @@ export default function TransportManagement({
                                                     <TableHead>{t('Driver')}</TableHead>
                                                     <TableHead>{t('Trip Time')}</TableHead>
                                                     <TableHead>{t('Stops')}</TableHead>
+                                                    <TableHead>{t('Boarding')}</TableHead>
                                                     <TableHead>{t('Status')}</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -1506,6 +1713,23 @@ export default function TransportManagement({
                                                                 {trip.stopUpdates?.length ?? 0} /{' '}
                                                                 {(trip.pickupPoints?.length ?? 0) + 1}
                                                             </TableCell>
+                                                            <TableCell className="text-sm">
+                                                                {trip.boarding ? (
+                                                                    <span className="text-xs text-slate-500">
+                                                                        <span className="block">
+                                                                            {t('Pickup')}:{' '}
+                                                                            {trip.boarding.pickup.present}/
+                                                                            {trip.boarding.pickup.marked}
+                                                                        </span>
+                                                                        <span className="block">
+                                                                            {t('Drop')}: {trip.boarding.drop.present}/
+                                                                            {trip.boarding.drop.marked}
+                                                                        </span>
+                                                                    </span>
+                                                                ) : (
+                                                                    '—'
+                                                                )}
+                                                            </TableCell>
                                                             <TableCell>
                                                                 <Badge
                                                                     className={tripStatusTone[trip.tripStatus] ?? ''}
@@ -1526,185 +1750,402 @@ export default function TransportManagement({
                         </TabsContent>
 
                         <TabsContent value="drivers" className="space-y-6">
-                            {(() => {
-                                const driverMap = new Map<
-                                    string,
-                                    { name: string; phone: string; vehicles: string[]; routes: string[] }
-                                >();
-                                routes.forEach((route) => {
-                                    if (!route.driverName) return;
-                                    const key = `${route.driverName}|${route.driverPhone}`;
-                                    const entry = driverMap.get(key) ?? {
-                                        name: route.driverName,
-                                        phone: route.driverPhone,
-                                        vehicles: [],
-                                        routes: [],
-                                    };
-                                    entry.routes.push(route.name);
-                                    driverMap.set(key, entry);
-                                });
-                                vehicles.forEach((vehicle) => {
-                                    if (!vehicle.assignedDriver) return;
-                                    const key = `${vehicle.assignedDriver}|${vehicle.driverPhone}`;
-                                    const entry = driverMap.get(key) ?? {
-                                        name: vehicle.assignedDriver,
-                                        phone: vehicle.driverPhone,
-                                        vehicles: [],
-                                        routes: [],
-                                    };
-                                    if (!entry.vehicles.includes(vehicle.vehicleNumber))
-                                        entry.vehicles.push(vehicle.vehicleNumber);
-                                    driverMap.set(key, entry);
-                                });
-                                const drivers = Array.from(driverMap.values());
-                                return (
-                                    <>
-                                        <div className="grid gap-3 sm:grid-cols-3">
-                                            <Card>
-                                                <CardContent className="p-4">
-                                                    <p className="text-sm text-slate-500">{t('Active Drivers')}</p>
-                                                    <p className="mt-1 text-2xl font-bold">{drivers.length}</p>
-                                                </CardContent>
-                                            </Card>
-                                            <Card>
-                                                <CardContent className="p-4">
-                                                    <p className="text-sm text-slate-500">{t('Covers Routes')}</p>
-                                                    <p className="mt-1 text-2xl font-bold">
-                                                        {routes.filter((r) => r.driverName).length}
-                                                    </p>
-                                                </CardContent>
-                                            </Card>
-                                            <Card>
-                                                <CardContent className="p-4">
-                                                    <p className="text-sm text-slate-500">{t('Assignee Vehicles')}</p>
-                                                    <p className="mt-1 text-2xl font-bold">
-                                                        {vehicles.filter((v) => v.assignedDriver).length}
-                                                    </p>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                        {drivers.length === 0 ? (
-                                            <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-slate-400 dark:bg-slate-800">
-                                                {t(
-                                                    'No drivers assigned yet. Add a driver to a route or vehicle first.',
-                                                )}
-                                            </p>
-                                        ) : (
-                                            <Card>
-                                                <CardContent className="p-0">
-                                                    <Table>
-                                                        <TableHeader>
-                                                            <TableRow>
-                                                                <TableHead>{t('Driver')}</TableHead>
-                                                                <TableHead>{t('Contact')}</TableHead>
-                                                                <TableHead>{t('Assigned Routes')}</TableHead>
-                                                                <TableHead>{t('Vehicles')}</TableHead>
+                            <div
+                                className={cn(
+                                    'grid gap-6',
+                                    (can('add') || can('edit')) && 'xl:grid-cols-[380px_minmax(0,1fr)]',
+                                )}
+                            >
+                                {can('add') || can('edit') ? (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>
+                                                {editingDriverId ? t('Edit Driver') : t('Add Driver')}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {editingDriverId
+                                                    ? t('Update driver profile, license, and employment details.')
+                                                    : t('Register a driver user with license and compliance details.')}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label>{t('Driver Name')}</Label>
+                                                <Input
+                                                    value={driverForm.name}
+                                                    onChange={(event) =>
+                                                        setDriverForm((current) => ({
+                                                            ...current,
+                                                            name: event.target.value,
+                                                        }))
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>{t('Email')}</Label>
+                                                <Input
+                                                    type="email"
+                                                    value={driverForm.email}
+                                                    onChange={(event) =>
+                                                        setDriverForm((current) => ({
+                                                            ...current,
+                                                            email: event.target.value,
+                                                        }))
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>{t('Phone')}</Label>
+                                                <Input
+                                                    value={driverForm.phone}
+                                                    onChange={(event) =>
+                                                        setDriverForm((current) => ({
+                                                            ...current,
+                                                            phone: event.target.value,
+                                                        }))
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>{t('License Number')}</Label>
+                                                    <Input
+                                                        value={driverForm.licenseNumber}
+                                                        onChange={(event) =>
+                                                            setDriverForm((current) => ({
+                                                                ...current,
+                                                                licenseNumber: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('License Expiry')}</Label>
+                                                    <Input
+                                                        type="date"
+                                                        value={driverForm.licenseExpiry}
+                                                        onChange={(event) =>
+                                                            setDriverForm((current) => ({
+                                                                ...current,
+                                                                licenseExpiry: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>{t('License Categories')}</Label>
+                                                    <Input
+                                                        value={driverForm.licenseCategories}
+                                                        onChange={(event) =>
+                                                            setDriverForm((current) => ({
+                                                                ...current,
+                                                                licenseCategories: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('Employment Type')}</Label>
+                                                    <Select
+                                                        value={driverForm.employmentType}
+                                                        onValueChange={(value) =>
+                                                            setDriverForm((current) => ({
+                                                                ...current,
+                                                                employmentType: value,
+                                                            }))
+                                                        }
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={t('Select type')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="full_time">{t('Full Time')}</SelectItem>
+                                                            <SelectItem value="contract">{t('Contract')}</SelectItem>
+                                                            <SelectItem value="temp">{t('Temporary')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>{t('Status')}</Label>
+                                                    <Select
+                                                        value={driverForm.status}
+                                                        onValueChange={(value: 'active' | 'inactive' | 'suspended') =>
+                                                            setDriverForm((current) => ({ ...current, status: value }))
+                                                        }
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={t('Select status')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="active">{t('Active')}</SelectItem>
+                                                            <SelectItem value="inactive">{t('Inactive')}</SelectItem>
+                                                            <SelectItem value="suspended">{t('Suspended')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('Verification')}</Label>
+                                                    <Select
+                                                        value={driverForm.verificationStatus}
+                                                        onValueChange={(value: 'pending' | 'verified' | 'rejected') =>
+                                                            setDriverForm((current) => ({
+                                                                ...current,
+                                                                verificationStatus: value,
+                                                            }))
+                                                        }
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={t('Select status')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="pending">{t('Pending')}</SelectItem>
+                                                            <SelectItem value="verified">{t('Verified')}</SelectItem>
+                                                            <SelectItem value="rejected">{t('Rejected')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                            <Button className="w-full gap-2" onClick={handleCreateDriver}>
+                                                <Plus className="h-4 w-4" />
+                                                {editingDriverId ? t('Update Driver') : t('Add Driver')}
+                                            </Button>
+                                            {editingDriverId && (
+                                                <Button variant="outline" className="w-full" onClick={cancelDriverEdit}>
+                                                    {t('Cancel Edit')}
+                                                </Button>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ) : null}
+                                <div className="space-y-6">
+                                    <div className="grid gap-3 sm:grid-cols-3">
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-sm text-slate-500">{t('Active Drivers')}</p>
+                                                <p className="mt-1 text-2xl font-bold">
+                                                    {drivers.filter((driver) => driver.status === 'active').length}
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-sm text-slate-500">{t('Verified')}</p>
+                                                <p className="mt-1 text-2xl font-bold">
+                                                    {
+                                                        drivers.filter(
+                                                            (driver) => driver.verificationStatus === 'verified',
+                                                        ).length
+                                                    }
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                        <Card>
+                                            <CardContent className="p-4">
+                                                <p className="text-sm text-slate-500">{t('License Expires')}</p>
+                                                <p className="mt-1 text-2xl font-bold">
+                                                    {
+                                                        drivers.filter(
+                                                            (driver) =>
+                                                                driver.licenseExpiry &&
+                                                                driver.licenseExpiry <=
+                                                                    new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
+                                                                        .toISOString()
+                                                                        .slice(0, 10),
+                                                        ).length
+                                                    }
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                    {drivers.length === 0 ? (
+                                        <p className="rounded-xl bg-slate-50 py-10 text-center text-sm text-slate-400 dark:bg-slate-800">
+                                            {t('No drivers registered yet. Add a driver to the registry.')}
+                                        </p>
+                                    ) : (
+                                        <Card>
+                                            <CardContent className="p-0">
+                                                <Table>
+                                                    <TableHeader>
+                                                        <TableRow>
+                                                            <TableHead>{t('Driver')}</TableHead>
+                                                            <TableHead>{t('Contact')}</TableHead>
+                                                            <TableHead>{t('License')}</TableHead>
+                                                            <TableHead>{t('Expires')}</TableHead>
+                                                            <TableHead>{t('Status')}</TableHead>
+                                                            <TableHead className="text-right">{t('Actions')}</TableHead>
+                                                        </TableRow>
+                                                    </TableHeader>
+                                                    <TableBody>
+                                                        {drivers.map((driver) => (
+                                                            <TableRow key={driver.id}>
+                                                                <TableCell className="text-sm font-medium">
+                                                                    {driver.name}
+                                                                </TableCell>
+                                                                <TableCell className="text-sm">
+                                                                    {driver.phone || '—'}
+                                                                </TableCell>
+                                                                <TableCell className="text-sm">
+                                                                    {driver.licenseNumber || '—'}
+                                                                </TableCell>
+                                                                <TableCell className="text-sm">
+                                                                    {driver.licenseExpiry || '—'}
+                                                                </TableCell>
+                                                                <TableCell className="text-sm">
+                                                                    <span
+                                                                        className={cn(
+                                                                            'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                                                            driver.status === 'active'
+                                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                                : 'bg-rose-100 text-rose-700',
+                                                                        )}
+                                                                    >
+                                                                        {t(
+                                                                            driver.status === 'active'
+                                                                                ? 'Active'
+                                                                                : driver.status === 'suspended'
+                                                                                  ? 'Suspended'
+                                                                                  : 'Inactive',
+                                                                        )}
+                                                                    </span>
+                                                                </TableCell>
+                                                                <TableCell className="text-right">
+                                                                    <div className="flex justify-end gap-1">
+                                                                        {can('edit') && (
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                onClick={() => startEditDriver(driver)}
+                                                                            >
+                                                                                {t('Edit')}
+                                                                            </Button>
+                                                                        )}
+                                                                        {can('delete') && (
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                className="text-rose-600 hover:text-rose-700"
+                                                                                onClick={() => deleteDriver(driver.id)}
+                                                                            >
+                                                                                {t('Delete')}
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                </TableCell>
                                                             </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {drivers.map((driver) => (
-                                                                <TableRow key={driver.name}>
-                                                                    <TableCell className="text-sm font-medium">
-                                                                        {driver.name}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-sm">
-                                                                        {driver.phone || '—'}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-sm">
-                                                                        {driver.routes.join(', ') || '—'}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-sm">
-                                                                        {driver.vehicles.join(', ') || '—'}
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                </CardContent>
-                                            </Card>
-                                        )}
-                                    </>
-                                );
-                            })()}
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+                                </div>
+                            </div>
                         </TabsContent>
 
                         <TabsContent value="vehicles" className="space-y-6">
-                            <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>{editingVehicleId ? t('Edit Vehicle') : t('Add Vehicle')}</CardTitle>
-                                        <CardDescription>
-                                            {editingVehicleId
-                                                ? t('Update fleet details, driver information, and compliance.')
-                                                : t('Track fleet capacity, drivers, GPS devices, and compliance.')}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>{t('Vehicle Number')}</Label>
-                                                <Input
-                                                    value={vehicleForm.vehicleNumber}
-                                                    onChange={(event) =>
-                                                        setVehicleForm((current) => ({
-                                                            ...current,
-                                                            vehicleNumber: event.target.value,
-                                                        }))
-                                                    }
-                                                />
+                            <div
+                                className={cn(
+                                    'grid gap-6',
+                                    (can('add') || can('edit')) && 'xl:grid-cols-[380px_minmax(0,1fr)]',
+                                )}
+                            >
+                                {can('add') || can('edit') ? (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>
+                                                {editingVehicleId ? t('Edit Vehicle') : t('Add Vehicle')}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {editingVehicleId
+                                                    ? t('Update fleet details, driver information, and compliance.')
+                                                    : t('Track fleet capacity, drivers, GPS devices, and compliance.')}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>{t('Vehicle Number')}</Label>
+                                                    <Input
+                                                        value={vehicleForm.vehicleNumber}
+                                                        onChange={(event) =>
+                                                            setVehicleForm((current) => ({
+                                                                ...current,
+                                                                vehicleNumber: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('Vehicle Type')}</Label>
+                                                    <Input
+                                                        value={vehicleForm.vehicleType}
+                                                        onChange={(event) =>
+                                                            setVehicleForm((current) => ({
+                                                                ...current,
+                                                                vehicleType: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label>{t('Vehicle Type')}</Label>
-                                                <Input
-                                                    value={vehicleForm.vehicleType}
-                                                    onChange={(event) =>
-                                                        setVehicleForm((current) => ({
-                                                            ...current,
-                                                            vehicleType: event.target.value,
-                                                        }))
-                                                    }
-                                                />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>{t('Capacity')}</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={vehicleForm.capacity}
+                                                        onChange={(event) =>
+                                                            setVehicleForm((current) => ({
+                                                                ...current,
+                                                                capacity: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('GPS Device ID')}</Label>
+                                                    <Input
+                                                        value={vehicleForm.gpsDeviceId}
+                                                        onChange={(event) =>
+                                                            setVehicleForm((current) => ({
+                                                                ...current,
+                                                                gpsDeviceId: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>{t('Capacity')}</Label>
-                                                <Input
-                                                    type="number"
-                                                    value={vehicleForm.capacity}
-                                                    onChange={(event) =>
-                                                        setVehicleForm((current) => ({
-                                                            ...current,
-                                                            capacity: event.target.value,
-                                                        }))
-                                                    }
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>{t('GPS Device ID')}</Label>
-                                                <Input
-                                                    value={vehicleForm.gpsDeviceId}
-                                                    onChange={(event) =>
-                                                        setVehicleForm((current) => ({
-                                                            ...current,
-                                                            gpsDeviceId: event.target.value,
-                                                        }))
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label>{t('Assigned Driver')}</Label>
-                                                <Input
-                                                    value={vehicleForm.assignedDriver}
-                                                    onChange={(event) =>
+                                                <Select
+                                                    value={vehicleForm.driverId || 'none'}
+                                                    onValueChange={(value) => {
+                                                        const driver = drivers.find((d) => d.id === value);
                                                         setVehicleForm((current) => ({
                                                             ...current,
-                                                            assignedDriver: event.target.value,
-                                                        }))
-                                                    }
-                                                />
+                                                            driverId: value === 'none' ? '' : value,
+                                                            assignedDriver: value === 'none' ? '' : driver?.name || '',
+                                                            driverPhone: value === 'none' ? '' : driver?.phone || '',
+                                                        }));
+                                                    }}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={t('Select driver')} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">{t('No Driver')}</SelectItem>
+                                                        {drivers.map((driver) => (
+                                                            <SelectItem key={driver.id} value={driver.id}>
+                                                                {driver.name}
+                                                                {driver.phone ? ` (${driver.phone})` : ''}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>{t('Driver Phone')}</Label>
@@ -1718,54 +2159,60 @@ export default function TransportManagement({
                                                     }
                                                 />
                                             </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>{t('Insurance Expiry')}</Label>
-                                                <Input
-                                                    type="date"
-                                                    value={vehicleForm.insuranceExpiry}
-                                                    onChange={(event) =>
-                                                        setVehicleForm((current) => ({
-                                                            ...current,
-                                                            insuranceExpiry: event.target.value,
-                                                        }))
-                                                    }
-                                                />
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>{t('Insurance Expiry')}</Label>
+                                                    <Input
+                                                        type="date"
+                                                        value={vehicleForm.insuranceExpiry}
+                                                        onChange={(event) =>
+                                                            setVehicleForm((current) => ({
+                                                                ...current,
+                                                                insuranceExpiry: event.target.value,
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('Status')}</Label>
+                                                    <Select
+                                                        value={vehicleForm.status}
+                                                        onValueChange={(value: TransportVehicle['status']) =>
+                                                            setVehicleForm((current) => ({
+                                                                ...current,
+                                                                status: value,
+                                                            }))
+                                                        }
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={t('Select status')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="active">{t('Active')}</SelectItem>
+                                                            <SelectItem value="maintenance">
+                                                                {t('Maintenance')}
+                                                            </SelectItem>
+                                                            <SelectItem value="inactive">{t('Inactive')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label>{t('Status')}</Label>
-                                                <Select
-                                                    value={vehicleForm.status}
-                                                    onValueChange={(value: TransportVehicle['status']) =>
-                                                        setVehicleForm((current) => ({
-                                                            ...current,
-                                                            status: value,
-                                                        }))
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={t('Select status')} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="active">{t('Active')}</SelectItem>
-                                                        <SelectItem value="maintenance">{t('Maintenance')}</SelectItem>
-                                                        <SelectItem value="inactive">{t('Inactive')}</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <Button className="w-full gap-2" onClick={handleCreateVehicle}>
-                                            <Plus className="h-4 w-4" />
-                                            {editingVehicleId ? t('Update Vehicle') : t('Add Vehicle')}
-                                        </Button>
-                                        {editingVehicleId && (
-                                            <Button variant="outline" className="w-full" onClick={cancelVehicleEdit}>
-                                                {t('Cancel Edit')}
+                                            <Button className="w-full gap-2" onClick={handleCreateVehicle}>
+                                                <Plus className="h-4 w-4" />
+                                                {editingVehicleId ? t('Update Vehicle') : t('Add Vehicle')}
                                             </Button>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                                            {editingVehicleId && (
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full"
+                                                    onClick={cancelVehicleEdit}
+                                                >
+                                                    {t('Cancel Edit')}
+                                                </Button>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ) : null}
 
                                 <Card>
                                     <CardHeader>
@@ -1819,22 +2266,26 @@ export default function TransportManagement({
                                                             </TableCell>
                                                             <TableCell>
                                                                 <div className="flex justify-end gap-1">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        onClick={() => startEditVehicle(vehicle)}
-                                                                        title={t('Edit vehicle')}
-                                                                    >
-                                                                        <Edit className="h-4 w-4 text-slate-600" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        onClick={() => deleteVehicle(vehicle.id)}
-                                                                        title={t('Delete vehicle')}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4 text-red-600" />
-                                                                    </Button>
+                                                                    {can('edit') && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => startEditVehicle(vehicle)}
+                                                                            title={t('Edit vehicle')}
+                                                                        >
+                                                                            <Edit className="h-4 w-4 text-slate-600" />
+                                                                        </Button>
+                                                                    )}
+                                                                    {can('delete') && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => deleteVehicle(vehicle.id)}
+                                                                            title={t('Delete vehicle')}
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4 text-red-600" />
+                                                                        </Button>
+                                                                    )}
                                                                 </div>
                                                             </TableCell>
                                                         </TableRow>
@@ -1848,395 +2299,422 @@ export default function TransportManagement({
                         </TabsContent>
 
                         <TabsContent value="assignments" className="space-y-6">
-                            <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>
-                                            {editingAssignmentId ? t('Edit Assignment') : t('Assign Student')}
-                                        </CardTitle>
-                                        <CardDescription>
-                                            {editingAssignmentId
-                                                ? t('Update route, stops, timings, and transport fee.')
-                                                : t('Allocate route, pickup stop, timings, and transport fee.')}
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <form className="space-y-4" onSubmit={handleCreateAssignment}>
-                                            <div className="grid grid-cols-2 gap-4">
+                            <div
+                                className={cn(
+                                    'grid gap-6',
+                                    (can('add') || can('edit')) && 'xl:grid-cols-[380px_minmax(0,1fr)]',
+                                )}
+                            >
+                                {can('add') || can('edit') ? (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>
+                                                {editingAssignmentId ? t('Edit Assignment') : t('Assign Student')}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {editingAssignmentId
+                                                    ? t('Update route, stops, timings, and transport fee.')
+                                                    : t('Allocate route, pickup stop, timings, and transport fee.')}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form className="space-y-4" onSubmit={handleCreateAssignment}>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Class')}</Label>
+                                                        <Select
+                                                            value={assignmentForm.className}
+                                                            onValueChange={(value) => {
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    className: value,
+                                                                    section: '',
+                                                                    studentId: '',
+                                                                }));
+                                                                setStudentComboboxOpen(false);
+                                                            }}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={t('Select class')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {allClasses.map((className) => (
+                                                                    <SelectItem key={className} value={className}>
+                                                                        {className}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        {availableClasses.length === 0 && (
+                                                            <p className="text-xs text-slate-500">
+                                                                {t(
+                                                                    'No active students with class data are available for transport assignment.',
+                                                                )}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Section')}</Label>
+                                                        <Select
+                                                            value={assignmentForm.section}
+                                                            onValueChange={(value) => {
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    section: value,
+                                                                    studentId: '',
+                                                                }));
+                                                                setStudentComboboxOpen(false);
+                                                            }}
+                                                            disabled={!assignmentForm.className}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue
+                                                                    placeholder={
+                                                                        assignmentFormSections.length > 0
+                                                                            ? t('Select section')
+                                                                            : t('No section required')
+                                                                    }
+                                                                />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {assignmentFormSections.map((section) => (
+                                                                    <SelectItem key={section} value={section}>
+                                                                        {t('Section')}
+                                                                        {section}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        {assignmentForm.className &&
+                                                            assignmentFormSections.length === 0 && (
+                                                                <p className="text-xs text-slate-500">
+                                                                    {t(
+                                                                        'Students in this class do not have section values, so section is optional.',
+                                                                    )}
+                                                                </p>
+                                                            )}
+                                                    </div>
+                                                </div>
                                                 <div className="space-y-2">
-                                                    <Label>{t('Class')}</Label>
+                                                    <Label>{t('Student')}</Label>
+                                                    <Popover
+                                                        open={studentComboboxOpen}
+                                                        onOpenChange={setStudentComboboxOpen}
+                                                    >
+                                                        <PopoverTrigger asChild>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                role="combobox"
+                                                                aria-expanded={studentComboboxOpen}
+                                                                className="w-full justify-between font-normal"
+                                                                disabled={
+                                                                    !assignmentForm.className ||
+                                                                    (assignmentFormSections.length > 0 &&
+                                                                        !assignmentForm.section)
+                                                                }
+                                                            >
+                                                                <span className="truncate">
+                                                                    {assignmentForm.studentId
+                                                                        ? selectedAssignmentStudentLabel ||
+                                                                          selectedAssignmentSnapshotLabel ||
+                                                                          t('Select student')
+                                                                        : t('Search and select student')}
+                                                                </span>
+                                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent
+                                                            className="w-[var(--radix-popover-trigger-width)] p-0"
+                                                            align="start"
+                                                        >
+                                                            <Command>
+                                                                <CommandInput placeholder={t('Search student')} />
+                                                                <CommandList>
+                                                                    <CommandEmpty>
+                                                                        {t('No student found.')}
+                                                                    </CommandEmpty>
+                                                                    <CommandGroup>
+                                                                        {filteredStudentsForAssignment.map(
+                                                                            (student) => {
+                                                                                const studentLabel =
+                                                                                    `${student.first_name} ${student.last_name} (${student.admission_no || '-'}) - ${student.class || '-'} ${student.section || ''}`.trim();
+
+                                                                                return (
+                                                                                    <CommandItem
+                                                                                        key={student.id}
+                                                                                        value={`${studentLabel} ${student.admission_no || ''} ${student.class || ''} ${student.section || ''}`}
+                                                                                        onSelect={() => {
+                                                                                            setAssignmentForm(
+                                                                                                (current) => ({
+                                                                                                    ...current,
+                                                                                                    studentId:
+                                                                                                        student.id,
+                                                                                                }),
+                                                                                            );
+                                                                                            setStudentComboboxOpen(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
+                                                                                    >
+                                                                                        <Check
+                                                                                            className={cn(
+                                                                                                'h-4 w-4',
+                                                                                                assignmentForm.studentId ===
+                                                                                                    student.id
+                                                                                                    ? 'opacity-100'
+                                                                                                    : 'opacity-0',
+                                                                                            )}
+                                                                                        />
+
+                                                                                        {studentLabel}
+                                                                                    </CommandItem>
+                                                                                );
+                                                                            },
+                                                                        )}
+                                                                    </CommandGroup>
+                                                                </CommandList>
+                                                            </Command>
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                    {assignmentForm.className &&
+                                                        filteredStudentsForAssignment.length === 0 && (
+                                                            <p className="text-xs text-slate-500">
+                                                                {t(
+                                                                    'No unassigned students match this class and section.',
+                                                                )}
+                                                            </p>
+                                                        )}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('Route')}</Label>
                                                     <Select
-                                                        value={assignmentForm.className}
+                                                        value={assignmentForm.routeId}
                                                         onValueChange={(value) => {
+                                                            const route =
+                                                                routes.find((item) => item.id === value) || null;
+                                                            const linkedVehicle = route
+                                                                ? vehicles.find(
+                                                                      (vehicle) =>
+                                                                          vehicle.vehicleNumber === route.vehicleNumber,
+                                                                  ) || null
+                                                                : null;
+                                                            const shouldAutoFillFee = !assignmentFeeManuallyEdited;
+
                                                             setAssignmentForm((current) => ({
                                                                 ...current,
-                                                                className: value,
-                                                                section: '',
-                                                                studentId: '',
+                                                                routeId: value,
+                                                                vehicleId: linkedVehicle?.id || current.vehicleId,
+                                                                pickupStop: '',
+                                                                dropStop: '',
+                                                                monthlyFee:
+                                                                    shouldAutoFillFee && route
+                                                                        ? String(route.monthlyFee ?? '')
+                                                                        : current.monthlyFee,
                                                             }));
-                                                            setStudentComboboxOpen(false);
                                                         }}
                                                     >
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder={t('Select class')} />
+                                                            <SelectValue placeholder={t('Select route')} />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {allClasses.map((className) => (
-                                                                <SelectItem key={className} value={className}>
-                                                                    {className}
+                                                            {assignmentRouteOptions.map((route) => (
+                                                                <SelectItem key={route.id} value={route.id}>
+                                                                    {route.name}
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>
                                                     </Select>
-                                                    {availableClasses.length === 0 && (
+                                                    {assignmentRouteOptions.length === 0 && (
+                                                        <p className="text-xs text-slate-500">
+                                                            {t('Create an active route first to assign students.')}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('Vehicle')}</Label>
+                                                    <Select
+                                                        value={assignmentForm.vehicleId}
+                                                        onValueChange={(value) =>
+                                                            setAssignmentForm((current) => ({
+                                                                ...current,
+                                                                vehicleId: value,
+                                                            }))
+                                                        }
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={t('Select vehicle')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {assignmentVehicleOptions.map((vehicle) => (
+                                                                <SelectItem key={vehicle.id} value={vehicle.id}>
+                                                                    {vehicle.vehicleNumber}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {selectedRouteVehicle && !assignmentForm.vehicleId && (
+                                                        <p className="text-xs text-slate-500">
+                                                            {t('This route is linked to vehicle')}
+                                                            {selectedRouteVehicle.vehicleNumber}.
+                                                        </p>
+                                                    )}
+                                                    {assignmentVehicleOptions.length === 0 && (
                                                         <p className="text-xs text-slate-500">
                                                             {t(
-                                                                'No active students with class data are available for transport assignment.',
+                                                                'Create an active vehicle first to complete the assignment.',
                                                             )}
                                                         </p>
                                                     )}
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <Label>{t('Section')}</Label>
-                                                    <Select
-                                                        value={assignmentForm.section}
-                                                        onValueChange={(value) => {
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                section: value,
-                                                                studentId: '',
-                                                            }));
-                                                            setStudentComboboxOpen(false);
-                                                        }}
-                                                        disabled={!assignmentForm.className}
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue
-                                                                placeholder={
-                                                                    assignmentFormSections.length > 0
-                                                                        ? t('Select section')
-                                                                        : t('No section required')
-                                                                }
-                                                            />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {assignmentFormSections.map((section) => (
-                                                                <SelectItem key={section} value={section}>
-                                                                    {t('Section')}
-                                                                    {section}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {assignmentForm.className &&
-                                                        assignmentFormSections.length === 0 && (
-                                                            <p className="text-xs text-slate-500">
-                                                                {t(
-                                                                    'Students in this class do not have section values, so section is optional.',
-                                                                )}
-                                                            </p>
-                                                        )}
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>{t('Student')}</Label>
-                                                <Popover
-                                                    open={studentComboboxOpen}
-                                                    onOpenChange={setStudentComboboxOpen}
-                                                >
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            role="combobox"
-                                                            aria-expanded={studentComboboxOpen}
-                                                            className="w-full justify-between font-normal"
-                                                            disabled={
-                                                                !assignmentForm.className ||
-                                                                (assignmentFormSections.length > 0 &&
-                                                                    !assignmentForm.section)
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Pickup Stop')}</Label>
+                                                        <Select
+                                                            value={assignmentForm.pickupStop}
+                                                            onValueChange={(value) =>
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    pickupStop: value,
+                                                                }))
                                                             }
                                                         >
-                                                            <span className="truncate">
-                                                                {assignmentForm.studentId
-                                                                    ? selectedAssignmentStudentLabel ||
-                                                                      selectedAssignmentSnapshotLabel ||
-                                                                      t('Select student')
-                                                                    : t('Search and select student')}
-                                                            </span>
-                                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent
-                                                        className="w-[var(--radix-popover-trigger-width)] p-0"
-                                                        align="start"
-                                                    >
-                                                        <Command>
-                                                            <CommandInput placeholder={t('Search student')} />
-                                                            <CommandList>
-                                                                <CommandEmpty>{t('No student found.')}</CommandEmpty>
-                                                                <CommandGroup>
-                                                                    {filteredStudentsForAssignment.map((student) => {
-                                                                        const studentLabel =
-                                                                            `${student.first_name} ${student.last_name} (${student.admission_no || '-'}) - ${student.class || '-'} ${student.section || ''}`.trim();
-
-                                                                        return (
-                                                                            <CommandItem
-                                                                                key={student.id}
-                                                                                value={`${studentLabel} ${student.admission_no || ''} ${student.class || ''} ${student.section || ''}`}
-                                                                                onSelect={() => {
-                                                                                    setAssignmentForm((current) => ({
-                                                                                        ...current,
-                                                                                        studentId: student.id,
-                                                                                    }));
-                                                                                    setStudentComboboxOpen(false);
-                                                                                }}
-                                                                            >
-                                                                                <Check
-                                                                                    className={cn(
-                                                                                        'h-4 w-4',
-                                                                                        assignmentForm.studentId ===
-                                                                                            student.id
-                                                                                            ? 'opacity-100'
-                                                                                            : 'opacity-0',
-                                                                                    )}
-                                                                                />
-
-                                                                                {studentLabel}
-                                                                            </CommandItem>
-                                                                        );
-                                                                    })}
-                                                                </CommandGroup>
-                                                            </CommandList>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
-                                                {assignmentForm.className &&
-                                                    filteredStudentsForAssignment.length === 0 && (
-                                                        <p className="text-xs text-slate-500">
-                                                            {t('No unassigned students match this class and section.')}
-                                                        </p>
-                                                    )}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>{t('Route')}</Label>
-                                                <Select
-                                                    value={assignmentForm.routeId}
-                                                    onValueChange={(value) => {
-                                                        const route = routes.find((item) => item.id === value) || null;
-                                                        const linkedVehicle = route
-                                                            ? vehicles.find(
-                                                                  (vehicle) =>
-                                                                      vehicle.vehicleNumber === route.vehicleNumber,
-                                                              ) || null
-                                                            : null;
-                                                        const shouldAutoFillFee = !assignmentFeeManuallyEdited;
-
-                                                        setAssignmentForm((current) => ({
-                                                            ...current,
-                                                            routeId: value,
-                                                            vehicleId: linkedVehicle?.id || current.vehicleId,
-                                                            pickupStop: '',
-                                                            dropStop: '',
-                                                            monthlyFee:
-                                                                shouldAutoFillFee && route
-                                                                    ? String(route.monthlyFee ?? '')
-                                                                    : current.monthlyFee,
-                                                        }));
-                                                    }}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={t('Select route')} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {assignmentRouteOptions.map((route) => (
-                                                            <SelectItem key={route.id} value={route.id}>
-                                                                {route.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {assignmentRouteOptions.length === 0 && (
-                                                    <p className="text-xs text-slate-500">
-                                                        {t('Create an active route first to assign students.')}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>{t('Vehicle')}</Label>
-                                                <Select
-                                                    value={assignmentForm.vehicleId}
-                                                    onValueChange={(value) =>
-                                                        setAssignmentForm((current) => ({
-                                                            ...current,
-                                                            vehicleId: value,
-                                                        }))
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={t('Select vehicle')} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {assignmentVehicleOptions.map((vehicle) => (
-                                                            <SelectItem key={vehicle.id} value={vehicle.id}>
-                                                                {vehicle.vehicleNumber}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                {selectedRouteVehicle && !assignmentForm.vehicleId && (
-                                                    <p className="text-xs text-slate-500">
-                                                        {t('This route is linked to vehicle')}
-                                                        {selectedRouteVehicle.vehicleNumber}.
-                                                    </p>
-                                                )}
-                                                {assignmentVehicleOptions.length === 0 && (
-                                                    <p className="text-xs text-slate-500">
-                                                        {t(
-                                                            'Create an active vehicle first to complete the assignment.',
-                                                        )}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label>{t('Pickup Stop')}</Label>
-                                                    <Select
-                                                        value={assignmentForm.pickupStop}
-                                                        onValueChange={(value) =>
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                pickupStop: value,
-                                                            }))
-                                                        }
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder={t('Select stop')} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {(selectedRouteForAssignment?.stops || []).map((stop) => (
-                                                                <SelectItem key={stop} value={stop}>
-                                                                    {stop}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {assignmentForm.routeId &&
-                                                        (selectedRouteForAssignment?.stops || []).length === 0 && (
-                                                            <p className="text-xs text-slate-500">
-                                                                {t(
-                                                                    'Add stops to the selected route before assigning pickup points.',
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={t('Select stop')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {(selectedRouteForAssignment?.stops || []).map(
+                                                                    (stop) => (
+                                                                        <SelectItem key={stop} value={stop}>
+                                                                            {stop}
+                                                                        </SelectItem>
+                                                                    ),
                                                                 )}
-                                                            </p>
-                                                        )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        {assignmentForm.routeId &&
+                                                            (selectedRouteForAssignment?.stops || []).length === 0 && (
+                                                                <p className="text-xs text-slate-500">
+                                                                    {t(
+                                                                        'Add stops to the selected route before assigning pickup points.',
+                                                                    )}
+                                                                </p>
+                                                            )}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Drop Stop')}</Label>
+                                                        <Select
+                                                            value={assignmentForm.dropStop}
+                                                            onValueChange={(value) =>
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    dropStop: value,
+                                                                }))
+                                                            }
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={t('Select stop')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {(selectedRouteForAssignment?.stops || []).map(
+                                                                    (stop) => (
+                                                                        <SelectItem key={stop} value={stop}>
+                                                                            {stop}
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <Label>{t('Drop Stop')}</Label>
-                                                    <Select
-                                                        value={assignmentForm.dropStop}
-                                                        onValueChange={(value) =>
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                dropStop: value,
-                                                            }))
-                                                        }
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder={t('Select stop')} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {(selectedRouteForAssignment?.stops || []).map((stop) => (
-                                                                <SelectItem key={stop} value={stop}>
-                                                                    {stop}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Pickup Time')}</Label>
+                                                        <Input
+                                                            type="time"
+                                                            value={assignmentForm.pickupTime}
+                                                            onChange={(event) =>
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    pickupTime: event.target.value,
+                                                                }))
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Drop Time')}</Label>
+                                                        <Input
+                                                            type="time"
+                                                            value={assignmentForm.dropTime}
+                                                            onChange={(event) =>
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    dropTime: event.target.value,
+                                                                }))
+                                                            }
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Monthly Fee')}</Label>
+                                                        <Input
+                                                            type="number"
+                                                            value={assignmentForm.monthlyFee}
+                                                            onChange={(event) => {
+                                                                setAssignmentFeeManuallyEdited(true);
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    monthlyFee: event.target.value,
+                                                                }));
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>{t('Status')}</Label>
+                                                        <Select
+                                                            value={assignmentForm.status}
+                                                            onValueChange={(value: TransportAssignment['status']) =>
+                                                                setAssignmentForm((current) => ({
+                                                                    ...current,
+                                                                    status: value,
+                                                                }))
+                                                            }
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={t('Select status')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="active">{t('Active')}</SelectItem>
+                                                                <SelectItem value="pending">{t('Pending')}</SelectItem>
+                                                                <SelectItem value="paused">{t('Paused')}</SelectItem>
+                                                                <SelectItem value="inactive">
+                                                                    {t('Inactive')}
                                                                 </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label>{t('Pickup Time')}</Label>
-                                                    <Input
-                                                        type="time"
-                                                        value={assignmentForm.pickupTime}
-                                                        onChange={(event) =>
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                pickupTime: event.target.value,
-                                                            }))
-                                                        }
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>{t('Drop Time')}</Label>
-                                                    <Input
-                                                        type="time"
-                                                        value={assignmentForm.dropTime}
-                                                        onChange={(event) =>
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                dropTime: event.target.value,
-                                                            }))
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label>{t('Monthly Fee')}</Label>
-                                                    <Input
-                                                        type="number"
-                                                        value={assignmentForm.monthlyFee}
-                                                        onChange={(event) => {
-                                                            setAssignmentFeeManuallyEdited(true);
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                monthlyFee: event.target.value,
-                                                            }));
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label>{t('Status')}</Label>
-                                                    <Select
-                                                        value={assignmentForm.status}
-                                                        onValueChange={(value: TransportAssignment['status']) =>
-                                                            setAssignmentForm((current) => ({
-                                                                ...current,
-                                                                status: value,
-                                                            }))
-                                                        }
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder={t('Select status')} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="active">{t('Active')}</SelectItem>
-                                                            <SelectItem value="pending">{t('Pending')}</SelectItem>
-                                                            <SelectItem value="paused">{t('Paused')}</SelectItem>
-                                                            <SelectItem value="inactive">{t('Inactive')}</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            </div>
-                                            <Button type="submit" className="w-full gap-2">
-                                                <Plus className="h-4 w-4" />
-                                                {editingAssignmentId ? t('Update Assignment') : t('Save Assignment')}
-                                            </Button>
-                                            {editingAssignmentId && (
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    className="w-full"
-                                                    onClick={cancelAssignmentEdit}
-                                                >
-                                                    {t('Cancel Edit')}
+                                                <Button type="submit" className="w-full gap-2">
+                                                    <Plus className="h-4 w-4" />
+                                                    {editingAssignmentId
+                                                        ? t('Update Assignment')
+                                                        : t('Save Assignment')}
                                                 </Button>
-                                            )}
-                                        </form>
-                                    </CardContent>
-                                </Card>
+                                                {editingAssignmentId && (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="w-full"
+                                                        onClick={cancelAssignmentEdit}
+                                                    >
+                                                        {t('Cancel Edit')}
+                                                    </Button>
+                                                )}
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                ) : null}
 
                                 <Card>
                                     <CardHeader>
@@ -2415,28 +2893,32 @@ export default function TransportManagement({
                                                                 </TableCell>
                                                                 <TableCell>
                                                                     <div className="flex justify-end gap-1">
-                                                                        <Button
-                                                                            type="button"
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            onClick={() =>
-                                                                                startEditAssignment(assignment)
-                                                                            }
-                                                                            title={t('Edit assignment')}
-                                                                        >
-                                                                            <Edit className="h-4 w-4 text-slate-600" />
-                                                                        </Button>
-                                                                        <Button
-                                                                            type="button"
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            onClick={() =>
-                                                                                deleteAssignment(assignment.id)
-                                                                            }
-                                                                            title={t('Delete assignment')}
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                                                        </Button>
+                                                                        {can('edit') && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                onClick={() =>
+                                                                                    startEditAssignment(assignment)
+                                                                                }
+                                                                                title={t('Edit assignment')}
+                                                                            >
+                                                                                <Edit className="h-4 w-4 text-slate-600" />
+                                                                            </Button>
+                                                                        )}
+                                                                        {can('delete') && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                variant="ghost"
+                                                                                size="icon"
+                                                                                onClick={() =>
+                                                                                    deleteAssignment(assignment.id)
+                                                                                }
+                                                                                title={t('Delete assignment')}
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4 text-red-600" />
+                                                                            </Button>
+                                                                        )}
                                                                     </div>
                                                                 </TableCell>
                                                             </TableRow>
@@ -2471,14 +2953,16 @@ export default function TransportManagement({
                                                     onChange={(event) => setJourneyDateFilter(event.target.value)}
                                                 />
                                             </div>
-                                            <Button
-                                                type="button"
-                                                className="gap-2 shrink-0"
-                                                onClick={() => setShowStartJourneyModal(true)}
-                                            >
-                                                <BusFront className="h-4 w-4" />
-                                                {t('Create Journey')}
-                                            </Button>
+                                            {can('add') && (
+                                                <Button
+                                                    type="button"
+                                                    className="gap-2 shrink-0"
+                                                    onClick={() => setShowStartJourneyModal(true)}
+                                                >
+                                                    <BusFront className="h-4 w-4" />
+                                                    {t('Create Journey')}
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -2673,33 +3157,39 @@ export default function TransportManagement({
                                                             </TableCell>
                                                             <TableCell>
                                                                 <div className="flex justify-end gap-2">
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() => updateReachedStop(trip)}
-                                                                        disabled={trip.tripStatus !== 'running'}
-                                                                    >
-                                                                        {t('Reached Stop')}
-                                                                    </Button>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() => endJourney(trip.id)}
-                                                                        disabled={trip.tripStatus !== 'running'}
-                                                                    >
-                                                                        {t('End')}
-                                                                    </Button>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        onClick={() => deleteTrip(trip.id)}
-                                                                        title={t('Delete journey')}
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4 text-red-600" />
-                                                                    </Button>
+                                                                    {can('edit') && (
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => updateReachedStop(trip)}
+                                                                            disabled={trip.tripStatus !== 'running'}
+                                                                        >
+                                                                            {t('Reached Stop')}
+                                                                        </Button>
+                                                                    )}
+                                                                    {can('edit') && (
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            onClick={() => endJourney(trip.id)}
+                                                                            disabled={trip.tripStatus !== 'running'}
+                                                                        >
+                                                                            {t('End')}
+                                                                        </Button>
+                                                                    )}
+                                                                    {can('delete') && (
+                                                                        <Button
+                                                                            type="button"
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => deleteTrip(trip.id)}
+                                                                            title={t('Delete journey')}
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4 text-red-600" />
+                                                                        </Button>
+                                                                    )}
                                                                 </div>
                                                             </TableCell>
                                                         </TableRow>
@@ -2776,6 +3266,33 @@ export default function TransportManagement({
                                                     {tripVehicleOptions.map((vehicle) => (
                                                         <SelectItem key={vehicle.id} value={vehicle.id}>
                                                             {vehicle.vehicleNumber}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('Driver')}</Label>
+                                            <Select
+                                                value={tripForm.driverUserId || 'auto'}
+                                                onValueChange={(value) =>
+                                                    setTripForm((current) => ({
+                                                        ...current,
+                                                        driverUserId: value === 'auto' ? '' : value,
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t('Select driver')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="auto">
+                                                        {t('Auto (Use vehicle driver)')}
+                                                    </SelectItem>
+                                                    {drivers.map((driver) => (
+                                                        <SelectItem key={driver.id} value={driver.id}>
+                                                            {driver.name}
+                                                            {driver.phone ? ` (${driver.phone})` : ''}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>

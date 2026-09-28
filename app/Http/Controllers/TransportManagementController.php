@@ -13,10 +13,16 @@ use App\Models\Organization;
 use App\Models\Student;
 use App\Models\StudentFee;
 use App\Models\TransportAssignment;
+use App\Models\TransportBoardingRecord;
 use App\Models\TransportRoute;
 use App\Models\TransportVehicle;
 use App\Models\User;
 use App\Services\FirebaseCloudMessagingService;
+use App\Services\TransportAssignmentService;
+use App\Services\TransportFeeService;
+use App\Models\TransportVehiclePolicy;
+use App\Services\TransportPolicyResolver;
+use App\Support\TransportPolicyPresets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -30,6 +36,7 @@ class TransportManagementController extends Controller
 
     public function __construct(
         private readonly FirebaseCloudMessagingService $firebaseCloudMessagingService,
+        private readonly TransportPolicyResolver $policies,
     ) {}
 
     public function index()
@@ -51,6 +58,7 @@ class TransportManagementController extends Controller
                 'vehicleNumber' => $route->vehicle_number ?? '',
                 'driverName' => $route->driver_name ?? '',
                 'driverPhone' => $route->driver_phone ?? '',
+                'driverUserId' => $route->driver_user_id ? (string) $route->driver_user_id : '',
                 'morningPickup' => $route->morning_pickup ? Carbon::parse($route->morning_pickup)->format('H:i') : '',
                 'afternoonDrop' => $route->afternoon_drop ? Carbon::parse($route->afternoon_drop)->format('H:i') : '',
                 'monthlyFee' => (float) ($route->monthly_fee ?? $route->fare ?? 0),
@@ -61,23 +69,45 @@ class TransportManagementController extends Controller
         $vehicles = TransportVehicle::query()
             ->when($organization, fn ($query) => $query->where('organization_id', $organization->id))
             ->when($academicYearId, fn ($query) => $query->where('academic_year_id', $academicYearId), fn ($query) => $query->whereRaw('1 = 0'))
+            ->with(['policy', 'route'])
             ->when($user?->role === 'driver', fn ($query) => $this->scopeVehicleToDriver($query, $user))
             ->orderBy('vehicle_number')
             ->get()
-            ->map(fn (TransportVehicle $vehicle) => [
-                'id' => (string) $vehicle->id,
-                'vehicleNumber' => $vehicle->vehicle_number,
-                'vehicleType' => $vehicle->vehicle_type ?? $vehicle->vehicle_model ?? '',
-                'capacity' => (int) $vehicle->capacity,
-                'assignedDriver' => $vehicle->assigned_driver ?? $vehicle->driver_name ?? '',
-                'driverPhone' => $vehicle->driver_phone ?? '',
-                'gpsDeviceId' => $vehicle->gps_device_id ?? '',
-                'insuranceExpiry' => $vehicle->insurance_expiry ? Carbon::parse($vehicle->insurance_expiry)->format('Y-m-d') : '',
-                'status' => $vehicle->status,
-            ]);
+            ->map(function (TransportVehicle $vehicle) {
+                $policy = $vehicle->effectivePolicy();
+                $policyDriver = $vehicle->resolveDriverUser();
+
+                return [
+                    'id' => (string) $vehicle->id,
+                    'vehicleNumber' => $vehicle->vehicle_number,
+                    'vehicleType' => $vehicle->vehicle_type ?? $vehicle->vehicle_model ?? '',
+                    'capacity' => (int) $vehicle->capacity,
+                    'assignedDriver' => $vehicle->assigned_driver ?? $vehicle->driver_name ?? '',
+                    'driverPhone' => $vehicle->driver_phone ?? '',
+                    'driverId' => $policyDriver?->id ? (string) $policyDriver->id : ($vehicle->driver_id ? (string) $vehicle->driver_id : ''),
+                    'gpsDeviceId' => $vehicle->gps_device_id ?? '',
+                    'insuranceExpiry' => $vehicle->insurance_expiry ? Carbon::parse($vehicle->insurance_expiry)->format('Y-m-d') : '',
+                    'status' => $vehicle->status,
+                    'policy' => [
+                        'busType' => $policy['bus_type'],
+                        'rosterControl' => $policy['roster_control'],
+                        'boardingControl' => $policy['boarding_control'],
+                        'requiresRosterApproval' => $policy['requires_roster_approval'],
+                        'requiresFeeApproval' => $policy['requires_fee_approval'],
+                        'feeLedger' => $policy['fee_ledger'],
+                        'vendorName' => $policy['vendor_name'] ?? '',
+                        'vendorContractNo' => $policy['vendor_contract_no'] ?? '',
+                        'vendorValidFrom' => $policy['vendor_valid_from'] ?? '',
+                        'vendorValidTill' => $policy['vendor_valid_till'] ?? '',
+                        'vendorContact' => $policy['vendor_contact'] ?? '',
+                        'notes' => $policy['notes'] ?? '',
+                        'inherited' => $policy['inherited'],
+                    ],
+                ];
+            });
 
         $assignments = TransportAssignment::query()
-            ->with(['student.schoolClass', 'route', 'vehicle'])
+            ->with(['student.schoolClass', 'route', 'vehicle.policy', 'createdBy', 'reviewedBy'])
             ->when(
                 $organization,
                 fn ($query) => $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('organization_id', $organization->id))
@@ -99,6 +129,14 @@ class TransportManagementController extends Controller
                 'dropTime' => $this->formatTransportTime($assignment->drop_time),
                 'monthlyFee' => (float) ($assignment->monthly_fee ?? 0),
                 'status' => $assignment->status,
+                'createdBy' => $assignment->createdBy?->name ?? '',
+                'createdById' => $assignment->created_by_user_id ? (string) $assignment->created_by_user_id : '',
+                'reviewedBy' => $assignment->reviewedBy?->name ?? '',
+                'reviewedAt' => $assignment->reviewed_at?->format('Y-m-d H:i') ?? '',
+                'decisionNote' => $assignment->decision_note ?? '',
+                'feeLedger' => $assignment->vehicle?->effectivePolicy()['fee_ledger'] ?? 'school',
+                'rosterControl' => $assignment->vehicle?->effectivePolicy()['roster_control'] ?? 'manager_only',
+                'canManage' => $user ? (bool) $this->policies->canManageRoster($user, $assignment->vehicle, 'edit')['allowed'] : false,
             ]);
 
         $trips = DailyTrip::query()
@@ -130,6 +168,21 @@ class TransportManagementController extends Controller
                 'note' => $trip->note ?? '',
             ]);
 
+        $boardingSummary = TransportBoardingRecord::query()
+            ->whereIn('daily_trip_id', $trips->pluck('id'))
+            ->selectRaw('daily_trip_id, direction, status, count(*) as total')
+            ->groupBy('daily_trip_id', 'direction', 'status')
+            ->get()
+            ->groupBy('daily_trip_id');
+
+        $trips = $trips->map(function (array $row) use ($boardingSummary) {
+            $directions = $boardingSummary->get($row['id'], collect());
+
+            $row['boarding'] = ['pickup' => $this->boardingCounts($directions, 'pickup'), 'drop' => $this->boardingCounts($directions, 'drop')];
+
+            return $row;
+        });
+
         $students = Student::query()
             ->with('schoolClass')
             ->when($organization, fn ($query) => $query->forCurrentSession($organization->id), fn ($query) => $query->whereRaw('1 = 0'))
@@ -147,6 +200,25 @@ class TransportManagementController extends Controller
                 'transport_required' => (bool) $student->transport_required,
             ]);
 
+        $drivers = $organization
+            ? User::query()
+                ->with('driverProfile')
+                ->where('organization_id', $organization->id)
+                ->where('role', 'driver')
+                ->orderBy('name')
+                ->get()
+                ->map(fn (User $driver) => [
+                    'id' => (string) $driver->id,
+                    'name' => $driver->name,
+                    'email' => $driver->email,
+                    'phone' => $driver->phone ?? '',
+                    'status' => $driver->status,
+                    'licenseNumber' => $driver->driverProfile?->license_number ?? '',
+                    'licenseExpiry' => $driver->driverProfile?->license_expiry_date?->format('Y-m-d') ?? '',
+                    'verificationStatus' => $driver->driverProfile?->verification_status ?? 'pending',
+                ])
+            : collect();
+
         return inertia('dashboard/TransportManagement', [
             'user' => $user,
             'routes' => $routes,
@@ -154,6 +226,7 @@ class TransportManagementController extends Controller
             'assignments' => $assignments,
             'trips' => $trips,
             'students' => $students,
+            'drivers' => $drivers,
         ]);
     }
 
@@ -166,7 +239,7 @@ class TransportManagementController extends Controller
             : null;
 
         if ($organization && $selectedAcademicYear) {
-            $this->syncOrganizationTransportFees($organization, $selectedAcademicYear->id);
+            app(TransportFeeService::class)->syncOrganization($organization, $selectedAcademicYear->id);
         }
 
         return inertia('dashboard/TransportFeeCollection', [
@@ -298,7 +371,7 @@ class TransportManagementController extends Controller
                 $studentFee->update([
                     'paid_amount' => $updatedPaidAmount,
                     'balance' => $updatedBalance,
-                    'status' => $this->determineFeeStatus($updatedBalance, $studentFee->due_date, $updatedPaidAmount),
+                    'status' => app(TransportFeeService::class)->determineFeeStatus($updatedBalance, $studentFee->due_date, $updatedPaidAmount),
                 ]);
 
                 $payment->update([
@@ -320,12 +393,15 @@ class TransportManagementController extends Controller
 
     public function storeRoute(Request $request)
     {
+        $this->assertDriverCannotMutateFleet();
+
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'area' => 'nullable|string|max:255',
             'vehicleNumber' => 'nullable|string|max:50',
             'driverName' => 'nullable|string|max:255',
             'driverPhone' => 'nullable|string|max:30',
+            'driverUserId' => 'nullable|integer',
             'morningPickup' => 'nullable|date_format:H:i',
             'afternoonDrop' => 'nullable|date_format:H:i',
             'monthlyFee' => 'nullable|numeric|min:0',
@@ -336,6 +412,9 @@ class TransportManagementController extends Controller
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
         $stopsArray = array_filter(array_map('trim', explode(',', $data['stops'] ?? '')));
+        $driver = ! empty($data['driverUserId'])
+            ? $this->resolveDriverUser((int) $data['driverUserId'], $organization)
+            : null;
 
         TransportRoute::query()->create([
             'route_name' => $data['name'],
@@ -344,8 +423,9 @@ class TransportManagementController extends Controller
             'academic_year_id' => $academicYearId,
             'area' => $data['area'] ?? null,
             'vehicle_number' => $data['vehicleNumber'] ?? null,
-            'driver_name' => $data['driverName'] ?? null,
-            'driver_phone' => $data['driverPhone'] ?? null,
+            'driver_name' => $driver?->name ?? $data['driverName'] ?? null,
+            'driver_phone' => $driver?->phone ?? $data['driverPhone'] ?? null,
+            'driver_user_id' => $driver?->id,
             'morning_pickup' => $data['morningPickup'] ?? null,
             'afternoon_drop' => $data['afternoonDrop'] ?? null,
             'monthly_fee' => $data['monthlyFee'] ?? 0,
@@ -359,6 +439,8 @@ class TransportManagementController extends Controller
 
     public function updateRoute(Request $request, $id)
     {
+        $this->assertDriverCannotMutateFleet();
+
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
         $route = TransportRoute::query()
@@ -372,6 +454,7 @@ class TransportManagementController extends Controller
             'vehicleNumber' => 'nullable|string|max:50',
             'driverName' => 'nullable|string|max:255',
             'driverPhone' => 'nullable|string|max:30',
+            'driverUserId' => 'nullable|integer',
             'morningPickup' => 'nullable|date_format:H:i',
             'afternoonDrop' => 'nullable|date_format:H:i',
             'monthlyFee' => 'nullable|numeric|min:0',
@@ -380,13 +463,17 @@ class TransportManagementController extends Controller
         ]);
 
         $stopsArray = array_filter(array_map('trim', explode(',', $data['stops'] ?? '')));
+        $driver = ! empty($data['driverUserId'])
+            ? $this->resolveDriverUser((int) $data['driverUserId'], $organization)
+            : null;
 
         $route->update([
             'route_name' => $data['name'],
             'area' => $data['area'] ?? null,
             'vehicle_number' => $data['vehicleNumber'] ?? null,
-            'driver_name' => $data['driverName'] ?? null,
-            'driver_phone' => $data['driverPhone'] ?? null,
+            'driver_name' => $driver?->name ?? $data['driverName'] ?? null,
+            'driver_phone' => $driver?->phone ?? $data['driverPhone'] ?? null,
+            'driver_user_id' => $driver?->id,
             'morning_pickup' => $data['morningPickup'] ?? null,
             'afternoon_drop' => $data['afternoonDrop'] ?? null,
             'monthly_fee' => $data['monthlyFee'] ?? 0,
@@ -400,6 +487,8 @@ class TransportManagementController extends Controller
 
     public function deleteRoute($id)
     {
+        $this->assertDriverCannotMutateFleet();
+
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
         TransportRoute::query()
@@ -415,12 +504,15 @@ class TransportManagementController extends Controller
 
     public function storeVehicle(Request $request)
     {
+        $this->assertDriverCannotMutateFleet();
+
         $data = $request->validate([
             'vehicleNumber' => 'required|string|max:50',
             'vehicleType' => 'nullable|string|max:100',
             'capacity' => 'nullable|integer|min:1',
             'assignedDriver' => 'nullable|string|max:255',
             'driverPhone' => 'nullable|string|max:30',
+            'driverId' => 'nullable|integer',
             'gpsDeviceId' => 'nullable|string|max:100',
             'insuranceExpiry' => 'nullable|date',
             'status' => 'required|in:active,maintenance,inactive',
@@ -428,6 +520,9 @@ class TransportManagementController extends Controller
 
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
+        $driver = ! empty($data['driverId'])
+            ? $this->resolveDriverUser((int) $data['driverId'], $organization)
+            : null;
 
         TransportVehicle::query()->create([
             'organization_id' => $organization->id,
@@ -436,9 +531,10 @@ class TransportManagementController extends Controller
             'vehicle_type' => $data['vehicleType'] ?? null,
             'vehicle_model' => $data['vehicleType'] ?? null,
             'capacity' => $data['capacity'] ?? 40,
-            'assigned_driver' => $data['assignedDriver'] ?? null,
-            'driver_name' => $data['assignedDriver'] ?? null,
-            'driver_phone' => $data['driverPhone'] ?? null,
+            'assigned_driver' => $driver?->name ?? $data['assignedDriver'] ?? null,
+            'driver_name' => $driver?->name ?? $data['assignedDriver'] ?? null,
+            'driver_phone' => $driver?->phone ?? $data['driverPhone'] ?? null,
+            'driver_id' => $driver?->id,
             'gps_device_id' => $data['gpsDeviceId'] ?? null,
             'insurance_expiry' => $data['insuranceExpiry'] ?? null,
             'status' => $data['status'],
@@ -449,6 +545,8 @@ class TransportManagementController extends Controller
 
     public function updateVehicle(Request $request, $id)
     {
+        $this->assertDriverCannotMutateFleet();
+
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
         $vehicle = TransportVehicle::query()
@@ -462,19 +560,25 @@ class TransportManagementController extends Controller
             'capacity' => 'nullable|integer|min:1',
             'assignedDriver' => 'nullable|string|max:255',
             'driverPhone' => 'nullable|string|max:30',
+            'driverId' => 'nullable|integer',
             'gpsDeviceId' => 'nullable|string|max:100',
             'insuranceExpiry' => 'nullable|date',
             'status' => 'required|in:active,maintenance,inactive',
         ]);
+
+        $driver = ! empty($data['driverId'])
+            ? $this->resolveDriverUser((int) $data['driverId'], $organization)
+            : null;
 
         $vehicle->update([
             'vehicle_number' => $data['vehicleNumber'],
             'vehicle_type' => $data['vehicleType'] ?? null,
             'vehicle_model' => $data['vehicleType'] ?? null,
             'capacity' => $data['capacity'] ?? 40,
-            'assigned_driver' => $data['assignedDriver'] ?? null,
-            'driver_name' => $data['assignedDriver'] ?? null,
-            'driver_phone' => $data['driverPhone'] ?? null,
+            'assigned_driver' => $driver?->name ?? $data['assignedDriver'] ?? null,
+            'driver_name' => $driver?->name ?? $data['assignedDriver'] ?? null,
+            'driver_phone' => $driver?->phone ?? $data['driverPhone'] ?? null,
+            'driver_id' => $driver?->id,
             'gps_device_id' => $data['gpsDeviceId'] ?? null,
             'insurance_expiry' => $data['insuranceExpiry'] ?? null,
             'status' => $data['status'],
@@ -485,6 +589,8 @@ class TransportManagementController extends Controller
 
     public function deleteVehicle($id)
     {
+        $this->assertDriverCannotMutateFleet();
+
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
         TransportVehicle::query()
@@ -498,78 +604,78 @@ class TransportManagementController extends Controller
 
     // Assignments
 
-    public function storeAssignment(Request $request)
+    public function updateVehiclePolicy(Request $request, $id)
     {
         $organization = $this->requireOrganization();
-        $academicYearId = $this->requireActiveAcademicYearId($organization);
-
-        $data = $request->validate([
-            'studentId' => 'required|exists:students,id',
-            'routeId' => 'required|exists:transport_routes,id',
-            'vehicleId' => 'required|exists:transport_vehicles,id',
-            'pickupStop' => 'required|string|max:255',
-            'dropStop' => 'nullable|string|max:255',
-            'pickupTime' => 'nullable|date_format:H:i',
-            'dropTime' => 'nullable|date_format:H:i',
-            'monthlyFee' => 'nullable|numeric|min:0',
-            'status' => 'required|in:active,pending,paused,inactive',
-        ]);
-
-        $student = Student::query()
-            ->forCurrentSession($organization->id)
-            ->findOrFail($data['studentId']);
-
-        $route = TransportRoute::query()
-            ->where('organization_id', $organization->id)
-            ->where('academic_year_id', $academicYearId)
-            ->findOrFail($data['routeId']);
+        $this->requireActiveAcademicYearId($organization);
 
         $vehicle = TransportVehicle::query()
             ->where('organization_id', $organization->id)
-            ->where('academic_year_id', $academicYearId)
-            ->findOrFail($data['vehicleId']);
+            ->with('policy')
+            ->findOrFail($id);
 
-        $this->authorizeDriverJourneySelection($route, $vehicle);
+        $data = $request->validate($this->vehiclePolicyRules($request));
 
-        $exists = TransportAssignment::query()
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $academicYearId)
-            ->exists();
-        if ($exists) {
-            return back()->withErrors(['studentId' => 'Student already has a transport assignment.']);
+        $policy = TransportVehiclePolicy::query()->updateOrCreate(
+            ['vehicle_id' => $vehicle->id],
+            [
+                'organization_id' => $organization->id,
+                'academic_year_id' => $this->getActiveAcademicYearId($organization),
+                'bus_type' => $data['busType'],
+                'roster_control' => $data['rosterControl'],
+                'boarding_control' => $data['boardingControl'],
+                'requires_roster_approval' => (bool) ($data['requiresRosterApproval'] ?? false),
+                'requires_fee_approval' => (bool) ($data['requiresFeeApproval'] ?? false),
+                'fee_ledger' => $data['feeLedger'],
+                'vendor_name' => $data['vendorName'] ?? null,
+                'vendor_contract_no' => $data['vendorContractNo'] ?? null,
+                'vendor_valid_from' => $data['vendorValidFrom'] ?? null,
+                'vendor_valid_till' => $data['vendorValidTill'] ?? null,
+                'vendor_contact' => $data['vendorContact'] ?? null,
+                'notes' => $data['notes'] ?? null,
+            ],
+        );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'policy' => TransportPolicyPresets::resolve($policy->overrides(), $organization),
+            ]);
         }
 
-        DB::transaction(function () use ($data, $student, $route, $vehicle, $organization, $academicYearId) {
-            $assignment = TransportAssignment::query()->create([
-                'academic_year_id' => $academicYearId,
-                'student_id' => $student->id,
-                'route_id' => $route->id,
-                'vehicle_id' => $vehicle->id,
-                'pickup_point' => $data['pickupStop'],
-                'drop_point' => $data['dropStop'] ?? $data['pickupStop'],
-                'pickup_time' => $data['pickupTime'] ?? null,
-                'drop_time' => $data['dropTime'] ?? null,
-                'monthly_fee' => $data['monthlyFee'] ?? 0,
-                'status' => $data['status'],
-            ]);
-
-            $this->syncStudentTransportDetails($student, $assignment);
-            $this->syncTransportFeeForAssignment($assignment->fresh(['student.schoolClass', 'route', 'vehicle']), $this->getActiveAcademicYearId($organization));
-        });
-
-        return redirect()->route('transport-management')->with('success', 'Transport assignment created.');
+        return back()->with('success', 'Bus policy updated.');
     }
 
-    public function updateAssignment(Request $request, $id)
+    /**
+     * Vendor paperwork is only meaningful for a private vendor bus, so it is
+     * required exactly when that bus type is chosen.
+     */
+    private function vehiclePolicyRules(Request $request): array
+    {
+        $isVendor = $request->input('busType') === 'private_vendor';
+
+        return [
+            'busType' => ['required', Rule::in(TransportPolicyPresets::BUS_TYPES)],
+            'rosterControl' => ['required', Rule::in(TransportPolicyPresets::ROSTER_CONTROLS)],
+            'boardingControl' => ['required', Rule::in(TransportPolicyPresets::BOARDING_CONTROLS)],
+            'requiresRosterApproval' => ['nullable', 'boolean'],
+            'requiresFeeApproval' => ['nullable', 'boolean'],
+            'feeLedger' => ['required', Rule::in(TransportPolicyPresets::FEE_LEDGERS)],
+            'vendorName' => [$isVendor ? 'required' : 'nullable', 'string', 'max:255'],
+            'vendorContractNo' => ['nullable', 'string', 'max:255'],
+            'vendorValidFrom' => ['nullable', 'date'],
+            'vendorValidTill' => ['nullable', 'date', 'after_or_equal:vendorValidFrom'],
+            'vendorContact' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    public function storeAssignment(Request $request, TransportAssignmentService $assignments)
     {
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
-        $assignment = TransportAssignment::query()
-            ->with(['student', 'route', 'vehicle'])
-            ->where('academic_year_id', $academicYearId)
-            ->whereHas('student', fn ($query) => $query->where('organization_id', $organization->id))
-            ->findOrFail($id);
-        $previousStudent = $assignment->student;
+
+        $this->assertCanManageRosterInput($request, 'add');
 
         $data = $request->validate([
             'studentId' => 'required|exists:students,id',
@@ -583,82 +689,149 @@ class TransportManagementController extends Controller
             'status' => 'required|in:active,pending,paused,inactive',
         ]);
 
-        $student = Student::query()
-            ->forCurrentSession($organization->id)
-            ->findOrFail($data['studentId']);
+        $assignment = $assignments->create($request->user(), $organization, $academicYearId, $data);
 
-        $route = TransportRoute::query()
-            ->where('organization_id', $organization->id)
-            ->where('academic_year_id', $academicYearId)
-            ->findOrFail($data['routeId']);
+        $message = $assignment->isPending()
+            ? 'Transport assignment submitted and waiting for manager approval.'
+            : 'Transport assignment created.';
 
-        $vehicle = TransportVehicle::query()
-            ->where('organization_id', $organization->id)
-            ->where('academic_year_id', $academicYearId)
-            ->findOrFail($data['vehicleId']);
-
-        $duplicateAssignmentExists = TransportAssignment::query()
-            ->where('student_id', $student->id)
-            ->where('academic_year_id', $academicYearId)
-            ->where('id', '!=', $assignment->id)
-            ->exists();
-
-        if ($duplicateAssignmentExists) {
-            return back()->withErrors(['studentId' => 'Student already has a transport assignment.']);
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'assignment' => $this->serializeAssignmentForApi($assignment)], 201);
         }
 
-        DB::transaction(function () use ($assignment, $data, $student, $route, $vehicle, $organization, $previousStudent, $academicYearId) {
-            $assignment->update([
-                'academic_year_id' => $academicYearId,
-                'student_id' => $student->id,
-                'route_id' => $route->id,
-                'vehicle_id' => $vehicle->id,
-                'pickup_point' => $data['pickupStop'],
-                'drop_point' => $data['dropStop'] ?? $data['pickupStop'],
-                'pickup_time' => $data['pickupTime'] ?? null,
-                'drop_time' => $data['dropTime'] ?? null,
-                'monthly_fee' => $data['monthlyFee'] ?? 0,
-                'status' => $data['status'],
-            ]);
+        return redirect()->route('transport-management')->with('success', $message);
+    }
 
-            $updatedAssignment = $assignment->fresh(['student.schoolClass', 'route', 'vehicle']);
+    public function updateAssignment(Request $request, $id, TransportAssignmentService $assignments)
+    {
+        $organization = $this->requireOrganization();
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+        $assignment = $this->findAssignment($organization, $academicYearId, $id);
 
-            if ($previousStudent && $previousStudent->id !== $student->id) {
-                StudentFee::query()
-                    ->where('transport_assignment_id', $assignment->id)
-                    ->update(['student_id' => $student->id]);
+        $this->assertCanManageRosterInput($request, 'update', $assignment->vehicle);
 
-                $this->syncStudentTransportDetails($previousStudent, null);
-            }
+        $data = $request->validate([
+            'studentId' => 'required|exists:students,id',
+            'routeId' => 'required|exists:transport_routes,id',
+            'vehicleId' => 'required|exists:transport_vehicles,id',
+            'pickupStop' => 'required|string|max:255',
+            'dropStop' => 'nullable|string|max:255',
+            'pickupTime' => 'nullable|date_format:H:i',
+            'dropTime' => 'nullable|date_format:H:i',
+            'monthlyFee' => 'nullable|numeric|min:0',
+            'status' => 'required|in:active,pending,paused,inactive',
+        ]);
 
-            $this->syncStudentTransportDetails($student, $updatedAssignment);
-            $this->syncTransportFeeForAssignment($updatedAssignment, $this->getActiveAcademicYearId($organization));
-        });
+        $updated = $assignments->update($request->user(), $organization, $academicYearId, $assignment, $data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'assignment' => $this->serializeAssignmentForApi($updated)]);
+        }
 
         return redirect()->route('transport-management')->with('success', 'Transport assignment updated.');
     }
 
-    public function deleteAssignment($id)
+    public function deleteAssignment(Request $request, $id, TransportAssignmentService $assignments)
     {
         $organization = $this->requireOrganization();
         $academicYearId = $this->requireActiveAcademicYearId($organization);
-        $assignment = TransportAssignment::query()
-            ->with('student')
+        $assignment = $this->findAssignment($organization, $academicYearId, $id);
+
+        $assignments->delete($request->user(), $assignment);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->route('transport-management')->with('success', 'Transport assignment removed.');
+    }
+
+    public function approveAssignment(Request $request, $id, TransportAssignmentService $assignments)
+    {
+        $organization = $this->requireOrganization();
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+        $assignment = $this->findAssignment($organization, $academicYearId, $id);
+
+        $assignments->approve($request->user(), $assignment);
+
+        return redirect()->route('transport-management')->with('success', 'Transport assignment approved and the student is on the bus.');
+    }
+
+    public function rejectAssignment(Request $request, $id, TransportAssignmentService $assignments)
+    {
+        $organization = $this->requireOrganization();
+        $academicYearId = $this->requireActiveAcademicYearId($organization);
+        $assignment = $this->findAssignment($organization, $academicYearId, $id);
+
+        $data = $request->validate([
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $assignments->reject($request->user(), $assignment, $data['reason'] ?? null);
+
+        return redirect()->route('transport-management')->with('success', 'Transport assignment rejected.');
+    }
+
+    /**
+     * Drivers never create or edit routes and vehicles through the fleet
+     * screens. Per-bus policy edits go through the dedicated policy endpoint.
+     */
+    private function assertDriverCannotMutateFleet(): void
+    {
+        if (auth()->user()?->role === 'driver') {
+            abort(403, 'Drivers cannot manage the transport fleet.');
+        }
+    }
+
+    /**
+     * The roster policy is checked before field validation so an unauthorised
+     * actor gets a 403 instead of a validation redirect that leaks nothing.
+     */
+    private function assertCanManageRosterInput(Request $request, string $action, ?TransportVehicle $fallback = null): void
+    {
+        $organization = $this->requireOrganization();
+        $vehicleId = $request->input('vehicleId') ?? $request->input('vehicle_id') ?? $fallback?->id;
+
+        $vehicle = $vehicleId
+            ? TransportVehicle::query()->where('organization_id', $organization->id)->find($vehicleId)
+            : $fallback;
+
+        $decision = app(TransportPolicyResolver::class)->canManageRoster(auth()->user(), $vehicle, $action);
+
+        abort_unless($decision['allowed'], 403, $decision['message']);
+    }
+
+    private function findAssignment(Organization $organization, int $academicYearId, mixed $id): TransportAssignment
+    {
+        return TransportAssignment::query()
+            ->with(['student', 'route', 'vehicle.policy'])
             ->where('academic_year_id', $academicYearId)
             ->whereHas('student', fn ($query) => $query->where('organization_id', $organization->id))
             ->findOrFail($id);
+    }
 
-        DB::transaction(function () use ($assignment) {
-            $student = $assignment->student;
-            $this->clearTransportDuesForRemovedAssignment($assignment);
-            $assignment->delete();
-
-            if ($student) {
-                $this->syncStudentTransportDetails($student, null);
-            }
-        });
-
-        return redirect()->route('transport-management')->with('success', 'Transport assignment removed.');
+    private function serializeAssignmentForApi(TransportAssignment $assignment): array
+    {
+        return [
+            'id' => (string) $assignment->id,
+            'student_id' => (string) $assignment->student_id,
+            'student_name' => trim(($assignment->student?->first_name ?? '') . ' ' . ($assignment->student?->last_name ?? '')),
+            'admission_no' => $assignment->student?->admission_no ?? '',
+            'class' => $assignment->student?->schoolClass?->name ?? '',
+            'section' => $assignment->student?->schoolClass?->section ?? '',
+            'route_id' => (string) $assignment->route_id,
+            'route_name' => $assignment->route?->route_name ?? '',
+            'vehicle_id' => $assignment->vehicle_id ? (string) $assignment->vehicle_id : null,
+            'vehicle_number' => $assignment->vehicle?->vehicle_number ?? '',
+            'pickup_point' => $assignment->pickup_point,
+            'drop_point' => $assignment->drop_point,
+            'pickup_time' => $this->formatTransportTime($assignment->pickup_time),
+            'drop_time' => $this->formatTransportTime($assignment->drop_time),
+            'monthly_fee' => (float) ($assignment->monthly_fee ?? 0),
+            'status' => $assignment->status,
+            'created_by' => $assignment->createdBy?->name ?? null,
+            'decision_note' => $assignment->decision_note,
+        ];
     }
 
     // Trips
@@ -671,6 +844,7 @@ class TransportManagementController extends Controller
         $data = $request->validate([
             'routeId' => 'nullable|exists:transport_routes,id',
             'vehicleId' => 'nullable|exists:transport_vehicles,id',
+            'driverUserId' => 'nullable|integer',
             'shift' => 'required|in:morning,afternoon,evening',
             'direction' => 'nullable|in:pickup,drop',
             'pickupPoints' => 'nullable|string',
@@ -698,11 +872,21 @@ class TransportManagementController extends Controller
                 ->findOrFail($data['vehicleId']);
         }
 
+        $this->assertDriverTripScope(
+            ! empty($data['routeId']) ? (int) $data['routeId'] : null,
+            ! empty($data['vehicleId']) ? (int) $data['vehicleId'] : null
+        );
+
         DailyTrip::query()->create([
             'academic_year_id' => $academicYearId,
             'route_id' => $data['routeId'] ?? null,
             'vehicle_id' => $data['vehicleId'] ?? null,
-            'driver_user_id' => Auth::id(),
+            'driver_user_id' => $this->resolveTripDriverUserId(
+                $organization,
+                $data['driverUserId'] ?? null,
+                ! empty($data['routeId']) ? (int) $data['routeId'] : null,
+                ! empty($data['vehicleId']) ? (int) $data['vehicleId'] : null
+            ),
             'shift' => $data['shift'],
             'journey_date' => now()->toDateString(),
             'direction' => $data['direction'] ?? ($data['shift'] === 'afternoon' ? 'drop' : 'pickup'),
@@ -728,9 +912,12 @@ class TransportManagementController extends Controller
             ->where('academic_year_id', $academicYearId)
             ->findOrFail($id);
 
+        $this->authorizeDailyTripDriver($trip);
+
         $data = $request->validate([
             'routeId' => 'nullable|exists:transport_routes,id',
             'vehicleId' => 'nullable|exists:transport_vehicles,id',
+            'driverUserId' => 'nullable|integer',
             'shift' => 'required|in:morning,afternoon,evening',
             'direction' => 'nullable|in:pickup,drop',
             'pickupPoints' => 'nullable|string',
@@ -758,10 +945,21 @@ class TransportManagementController extends Controller
                 ->findOrFail($data['vehicleId']);
         }
 
+        $this->assertDriverTripScope(
+            ! empty($data['routeId']) ? (int) $data['routeId'] : null,
+            ! empty($data['vehicleId']) ? (int) $data['vehicleId'] : null
+        );
+
         $trip->update([
             'academic_year_id' => $academicYearId,
             'route_id' => $data['routeId'] ?? null,
             'vehicle_id' => $data['vehicleId'] ?? null,
+            'driver_user_id' => $this->resolveTripDriverUserId(
+                $organization,
+                $data['driverUserId'] ?? null,
+                ! empty($data['routeId']) ? (int) $data['routeId'] : null,
+                ! empty($data['vehicleId']) ? (int) $data['vehicleId'] : null
+            ),
             'shift' => $data['shift'],
             'direction' => $data['direction'] ?? ($data['shift'] === 'afternoon' ? 'drop' : 'pickup'),
             'pickup_points' => $data['pickupPoints'] ?? null,
@@ -786,6 +984,7 @@ class TransportManagementController extends Controller
         $data = $request->validate([
             'routeId' => ['required', 'integer'],
             'vehicleId' => ['required', 'integer'],
+            'driverUserId' => ['nullable', 'integer'],
             'shift' => ['required', Rule::in(['morning', 'afternoon', 'evening'])],
             'direction' => ['required', Rule::in(['pickup', 'drop'])],
             'destinationPoint' => ['nullable', 'string', 'max:255'],
@@ -803,11 +1002,18 @@ class TransportManagementController extends Controller
             ->where('academic_year_id', $academicYearId)
             ->findOrFail($data['vehicleId']);
 
+        $this->authorizeDriverJourneySelection($route, $vehicle);
+
         $trip = DailyTrip::query()->create([
             'academic_year_id' => $academicYearId,
             'route_id' => $route->id,
             'vehicle_id' => $vehicle->id,
-            'driver_user_id' => Auth::id(),
+            'driver_user_id' => $this->resolveTripDriverUserId(
+                $organization,
+                $data['driverUserId'] ?? null,
+                $route->id,
+                $vehicle->id
+            ),
             'shift' => $data['shift'],
             'journey_date' => now()->toDateString(),
             'direction' => $data['direction'],
@@ -1080,6 +1286,8 @@ class TransportManagementController extends Controller
             ->where('academic_year_id', $academicYearId)
             ->findOrFail($id);
 
+        $this->authorizeDailyTripDriver($trip);
+
         $trip->delete();
 
         return back()->with('success', 'Daily trip removed.');
@@ -1322,7 +1530,9 @@ class TransportManagementController extends Controller
             ->all();
 
         return $query->where(function ($driverQuery) use ($user) {
-            $driverQuery->where('driver_name', $user->name);
+            $driverQuery
+                ->where('driver_user_id', $user->id)
+                ->orWhere('driver_name', $user->name);
 
             if ($user->phone) {
                 $driverQuery->orWhere('driver_phone', $user->phone);
@@ -1342,6 +1552,17 @@ class TransportManagementController extends Controller
                 $driverQuery->orWhere('driver_phone', $user->phone);
             }
         });
+    }
+
+    private function boardingCounts($rows, string $direction): array
+    {
+        $directionRows = $rows->where('direction', $direction);
+
+        return [
+            'present' => (int) ($directionRows->firstWhere('status', 'present')->total ?? 0),
+            'absent' => (int) ($directionRows->firstWhere('status', 'absent')->total ?? 0),
+            'marked' => (int) $directionRows->sum('total'),
+        ];
     }
 
     private function authorizeDriverJourneySelection(TransportRoute $route, TransportVehicle $vehicle): void
@@ -1371,6 +1592,10 @@ class TransportManagementController extends Controller
 
     private function driverMatchesRoute(User $user, TransportRoute $route): bool
     {
+        if ((int) $route->driver_user_id === (int) $user->id) {
+            return true;
+        }
+
         return $this->driverTextMatches($user, $route->driver_name, $route->driver_phone);
     }
 
@@ -1391,6 +1616,56 @@ class TransportManagementController extends Controller
         return $nameMatches || $phoneMatches;
     }
 
+    private function assertDriverTripScope(?int $routeId, ?int $vehicleId): void
+    {
+        $user = Auth::user();
+
+        if ($user?->role !== 'driver') {
+            return;
+        }
+
+        if ($routeId) {
+            $route = TransportRoute::query()->find($routeId);
+            abort_unless($route && $this->driverMatchesRoute($user, $route), 403);
+        }
+
+        if ($vehicleId) {
+            $vehicle = TransportVehicle::query()->find($vehicleId);
+            abort_unless($vehicle && $this->driverMatchesVehicle($user, $vehicle), 403);
+        }
+    }
+
+    private function resolveDriverUser(int $driverUserId, Organization $organization): User
+    {
+        $driver = User::query()
+            ->where('organization_id', $organization->id)
+            ->where('role', 'driver')
+            ->findOrFail($driverUserId);
+
+        abort_unless($driver->status === 'active', 403, 'Assigned driver is not active.');
+
+        return $driver;
+    }
+
+    private function resolveTripDriverUserId(Organization $organization, mixed $requestedDriverId, ?int $routeId, ?int $vehicleId): ?int
+    {
+        if (! empty($requestedDriverId)) {
+            return $this->resolveDriverUser((int) $requestedDriverId, $organization)->id;
+        }
+
+        $driverUserId = null;
+
+        if ($routeId) {
+            $driverUserId ??= TransportRoute::query()->find($routeId)?->driver_user_id;
+        }
+
+        if ($vehicleId && ! $driverUserId) {
+            $driverUserId ??= TransportVehicle::query()->find($vehicleId)?->driver_id;
+        }
+
+        return $driverUserId ?: Auth::id();
+    }
+
     private function normalizeRouteStops(mixed $stops): array
     {
         if (is_array($stops)) {
@@ -1408,133 +1683,6 @@ class TransportManagementController extends Controller
         }
 
         return array_values(array_filter(array_map('trim', explode(',', $stops))));
-    }
-
-    public function syncOrganizationTransportFees(Organization $organization, ?int $academicYearId = null): void
-    {
-        $academicYearId ??= $this->getActiveAcademicYearId($organization);
-
-        if (! $academicYearId) {
-            return;
-        }
-
-        $transportAssignments = TransportAssignment::query()
-            ->with(['student.schoolClass', 'route', 'vehicle'])
-            ->where('status', 'active')
-            ->where('academic_year_id', $academicYearId)
-            ->whereHas('student', fn ($query) => $query->where('organization_id', $organization->id))
-            ->get();
-
-        foreach ($transportAssignments as $assignment) {
-            $this->syncTransportFeeForAssignment($assignment, $academicYearId);
-        }
-    }
-
-    private function syncTransportFeeForAssignment(TransportAssignment $assignment, ?int $academicYearId = null): void
-    {
-        $student = $assignment->student;
-        $route = $assignment->route;
-
-        if (!$student || !$route || !$student->organization_id || !$student->class_id || $assignment->status !== 'active') {
-            return;
-        }
-
-        $organization = Organization::query()->find($student->organization_id);
-        if (!$organization) {
-            return;
-        }
-
-        $academicYearId ??= $assignment->academic_year_id ?: $this->getActiveAcademicYearId($organization);
-        if (!$academicYearId) {
-            return;
-        }
-
-        if ($assignment->academic_year_id && (int) $assignment->academic_year_id !== (int) $academicYearId) {
-            return;
-        }
-
-        $academicYear = AcademicYear::query()
-            ->where('organization_id', $organization->id)
-            ->find($academicYearId);
-
-        if (!$academicYear) {
-            return;
-        }
-
-        $feeStructure = $this->ensureTransportFeeStructure($organization, $academicYearId, $student, $route, $assignment);
-        $monthlyAmount = (float) ($assignment->monthly_fee ?: $route->monthly_fee ?: $route->fare ?: 0);
-
-        $periodStart = Carbon::parse($academicYear->start_date)->startOfMonth();
-        $assignmentStart = Carbon::parse($assignment->created_at ?? now())->startOfMonth();
-        $cursor = $assignmentStart->greaterThan($periodStart) ? $assignmentStart->copy() : $periodStart->copy();
-        $periodEnd = Carbon::parse($academicYear->end_date)->startOfMonth();
-
-        while ($cursor->lte($periodEnd)) {
-            $monthName = $cursor->format('F');
-            $dueDate = $this->determineTransportDueDate($cursor, $academicYear);
-
-            $studentFee = StudentFee::query()->firstOrNew([
-                'organization_id' => $organization->id,
-                'student_id' => $student->id,
-                'fee_structure_id' => $feeStructure->id,
-                'transport_assignment_id' => $assignment->id,
-                'academic_year_id' => $academicYearId,
-                'month' => $monthName,
-                'year' => (int) $cursor->format('Y'),
-            ]);
-
-            $discount = (float) ($studentFee->discount ?? 0);
-            $fine = (float) ($studentFee->fine ?? 0);
-            $paidAmount = (float) ($studentFee->paid_amount ?? 0);
-            $netAmount = max(0, $monthlyAmount - $discount + $fine);
-            $balance = max(0, $netAmount - $paidAmount);
-
-            $studentFee->fill([
-                'amount' => $monthlyAmount,
-                'discount' => $discount,
-                'fine' => $fine,
-                'net_amount' => $netAmount,
-                'paid_amount' => $paidAmount,
-                'balance' => $balance,
-                'due_date' => $dueDate->toDateString(),
-                'status' => $studentFee->status === 'waived'
-                    ? 'waived'
-                    : $this->determineFeeStatus($balance, $dueDate, $paidAmount),
-                'notes' => sprintf(
-                    'Auto-synced monthly transport fee for route %s and stop %s.',
-                    $route->route_name,
-                    $assignment->pickup_point
-                ),
-            ]);
-            $studentFee->save();
-
-            $cursor->addMonthNoOverflow();
-        }
-    }
-
-    private function ensureTransportFeeStructure(Organization $organization, int $academicYearId, Student $student, TransportRoute $route, TransportAssignment $assignment): FeeStructure
-    {
-        $stopLabel = $assignment->pickup_point ?: 'Assigned Stop';
-        $feeType = sprintf('%s%s / %s', self::TRANSPORT_FEE_PREFIX, $route->route_name, $stopLabel);
-        $amount = (float) ($assignment->monthly_fee ?: $route->monthly_fee ?: $route->fare ?: 0);
-
-        $feeStructure = FeeStructure::query()->firstOrNew([
-            'organization_id' => $organization->id,
-            'academic_year_id' => $academicYearId,
-            'class_id' => $student->class_id,
-            'fee_type' => $feeType,
-        ]);
-
-        $feeStructure->fill([
-            'amount' => $amount,
-            'frequency' => 'monthly',
-            'description' => sprintf('Auto-synced monthly transport fee for route %s (%s).', $route->route_name, $stopLabel),
-            'is_compulsory' => true,
-            'status' => 'active',
-        ]);
-        $feeStructure->save();
-
-        return $feeStructure;
     }
 
     public function getTransportFeeRecords(Organization $organization, ?int $academicYearId = null): array
@@ -1623,44 +1771,6 @@ class TransportManagementController extends Controller
             ->all();
     }
 
-    private function syncStudentTransportDetails(Student $student, ?TransportAssignment $assignment): void
-    {
-        $student->update([
-            'transport_required' => (bool) $assignment,
-            'transport_pickup_point' => $assignment?->pickup_point,
-            'transport_vehicle' => $assignment?->vehicle?->vehicle_number ?? '',
-            'transport_route' => $assignment?->route?->route_name ?? '',
-            'transport_route_details' => $assignment && $assignment->route
-                ? trim($assignment->route->route_name . ($assignment->pickup_point ? ' / ' . $assignment->pickup_point : ''))
-                : '',
-        ]);
-    }
-
-    private function clearTransportDuesForRemovedAssignment(TransportAssignment $assignment): void
-    {
-        StudentFee::query()
-            ->where('transport_assignment_id', $assignment->id)
-            ->withCount([
-                'payments as active_payments_count' => fn ($query) => $query->whereIn('status', ['success', 'pending']),
-            ])
-            ->get()
-            ->each(function (StudentFee $fee) {
-                $paidAmount = (float) $fee->paid_amount;
-
-                if ($paidAmount <= 0 && (int) $fee->active_payments_count === 0) {
-                    $fee->delete();
-                    return;
-                }
-
-                $fee->update([
-                    'net_amount' => $paidAmount,
-                    'balance' => 0,
-                    'status' => $paidAmount > 0 ? 'paid' : 'waived',
-                    'notes' => trim(($fee->notes ? $fee->notes . "\n" : '') . 'Transport assignment removed; remaining transport due cleared.'),
-                ]);
-            });
-    }
-
     private function formatTransportTime(mixed $time): string
     {
         if (empty($time)) {
@@ -1674,38 +1784,11 @@ class TransportManagementController extends Controller
         }
     }
 
-    private function determineTransportDueDate(Carbon $month, AcademicYear $academicYear): Carbon
-    {
-        $sessionStart = Carbon::parse($academicYear->start_date)->startOfDay();
-        $defaultDueDate = $month->copy()->startOfMonth();
-
-        return $defaultDueDate->format('Y-m') === $sessionStart->format('Y-m')
-            ? $sessionStart
-            : $defaultDueDate;
-    }
-
     private function transportFeeMonthOrdinal(?string $month): int
     {
         static $months = ['January' => 1, 'February' => 2, 'March' => 3, 'April' => 4, 'May' => 5, 'June' => 6, 'July' => 7, 'August' => 8, 'September' => 9, 'October' => 10, 'November' => 11, 'December' => 12];
 
         return $months[$month ?? ''] ?? 0;
-    }
-
-    public function determineFeeStatus(float $balance, Carbon|string|null $dueDate, float $paidAmount): string
-    {
-        if ($balance <= 0) {
-            return 'paid';
-        }
-
-        if ($paidAmount > 0) {
-            return 'partial';
-        }
-
-        if ($dueDate && Carbon::parse($dueDate)->isPast()) {
-            return 'overdue';
-        }
-
-        return 'pending';
     }
 
     private function getActiveAcademicYearId(Organization $organization): ?int

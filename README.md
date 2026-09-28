@@ -65,9 +65,54 @@ A keyed HTTP API lets biometric devices and the Windows agent mark attendance:
 
 Both endpoints also accept `X-Cctv-Key`/`X-Transport-Key`-style per-organization keys resolved against `organizations.settings`.
 
+### Built-in Staff Roles
+Roles are created per organization on first use from `app/Support/RolePermissionCatalog.php`, which also carries each built-in role's default permissions (Admin, Teacher, Receptionist, Accountant, Librarian, Transport Manager, Driver). Permission rows are only inserted, never overwritten, so customized roles survive upgrades. After adding or changing a built-in role's defaults, re-apply them to existing organizations with:
+
+```bash
+php artisan permissions:sync-defaults                 # every organization
+php artisan permissions:sync-defaults 1               # one organization
+php artisan permissions:sync-defaults 1 --role=transport_manager
+```
+
+Without this, a role created before its defaults existed keeps its empty (all-false) permission rows and every protected page returns 403.
+
+`php artisan db:seed --class=TransportDriverSeeder` seeds demo drivers (with license profiles), two routes, two vehicles with GPS device IDs, roster assignments, a running demo trip assigned to `driver@gurukul.com`, and a school-owned policy row for every demo vehicle.
+
+### Per-Vehicle Transport Policy
+Every bus carries its own switch set in `transport_vehicle_policies` (one row per vehicle, created by the driver or the transport office on the **Bus Roster** screen). The effective policy is resolved as *vehicle row → `organizations.settings.transport.vehicle_policy` → preset for the resolved bus type → school-owned preset*, so a vehicle with no row behaves exactly like a school bus.
+
+| Switch | Values | Meaning |
+| --- | --- | --- |
+| `bus_type` | `school_owned`, `private_vendor` | Selects which preset fills the unset keys. |
+| `roster_control` | `manager_only`, `driver_only`, `both` | Who may add/remove students. `driver_only` locks the transport manager out; `admin`/`super_admin` always bypass. |
+| `boarding_control` | `driver_only`, `driver_and_manager`, `manager_only` | Who may record pickup/drop. |
+| `requires_roster_approval` | bool | Driver submissions are stored as `pending` and only join the bus after the manager approves. |
+| `requires_fee_approval` | bool | Dues are held back until the manager approves, so a driver cannot bill the school on their own. |
+| `fee_ledger` | `school`, `vendor` | `school` posts the monthly amount to `student_fees`; `vendor` keeps it on the assignment as a vendor payable and never touches the school fee ledger. |
+| vendor paperwork | name, contract no, valid from/till, contact | Required whenever `bus_type = private_vendor`. |
+
+The `school_owned` preset keeps the roster with the transport office, boarding with the driver, no approvals, and the school fee ledger. The `private_vendor` preset hands the roster to the driver, requires roster and fee approval, and bills the vendor. A driver may only edit the policy of a bus assigned to them; the transport manager and system admins may force any vehicle.
+
+Roster writes go through `TransportAssignmentService`, which enforces the policy before field validation, blocks a second bus per student per session, records who created and who reviewed each assignment, and only flags a student as needing transport once the assignment is `active`. `/driver/bus-students` (web) and `/api/driver/assignments*` are the driver-facing entry points; the manager sees the same screen for the whole fleet.
+
+Pickup and drop are hardened: the trip must be `running`, the student must hold an `active` assignment on the trip's route, the trip's current stop must match the student's pickup/drop point when both are known, and parents are notified only when the status actually changes.
+
 ### Transport GPS Sync
 - `GET /api/transport/gps/status` — public health check
 - `POST /api/transport/gps` — requires `X-Transport-Key` equal to `TRANSPORT_GPS_KEY` (env) or the key managed under **Transport → Device Settings**. Payload: `vehicle_number` or `gps_device_id`, `lat`, `lng`, plus optional `speed_kmh`, `heading`, `recorded_at`, `daily_trip_id`. Writes a `TransportGpsPosition` and marks the linked daily trip as running.
+
+### Driver App API
+Driver-facing endpoints live under `/api/driver/*` (mirrored at `/api/v1/driver/*`) and require a Sanctum token whose user has the `driver` role — the `driver.role` middleware alias returns `403` for every other role. Drivers only ever see their own vehicles, routes, and trips; a trip they do not own returns `403`.
+- `GET /api/driver/me` — driver profile, license/compliance summary, and assigned vehicles
+- `GET /api/driver/trips` — today's trips plus anything still running or scheduled
+- `POST /api/driver/trips` — start a journey (`routeId`, `vehicleId`, `shift`, `direction`); the vehicle/route must be assigned to the driver
+- `GET /api/driver/trips/{trip}` — trip detail with the student roster, each student's stop, and current boarding status
+- `POST /api/driver/trips/{trip}/reached-stop` — records a reached stop in `stop_updates` and notifies the parents of students at that stop
+- `POST /api/driver/trips/{trip}/boarding` — marks a roster student `present`/`absent` for the trip's `pickup` or `drop` direction (`transport_boarding_records`, unique per trip/student/direction) and notifies the parent
+- `POST /api/driver/trips/{trip}/gps` — stores a live position for the trip's vehicle
+- `POST /api/driver/trips/{trip}/end` — completes the journey
+
+Boarding marks create an in-app message, a bell notification (`transport_boarding`), and a Firebase push to the parent. The **Transport Management** console shows the same counts per trip in the Journeys tab's Boarding column.
 
 ### CCTV Face-Scan Sync
 - `GET /api/cctv/status` — public health check

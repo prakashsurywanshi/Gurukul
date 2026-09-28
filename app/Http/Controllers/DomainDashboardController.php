@@ -1178,7 +1178,10 @@ class DomainDashboardController extends Controller
             ->whereDate('journey_date', Carbon::today())
             ->whereHas('route', fn ($q) => $q->where('organization_id', $orgId))
             ->count();
-        $assigned = TransportAssignment::query()->where('organization_id', $orgId)->where('status', 'active')->count();
+        $assigned = TransportAssignment::query()
+            ->whereHas('route', fn ($q) => $q->where('organization_id', $orgId))
+            ->where('status', 'active')
+            ->count();
         $drivers = User::query()->where('organization_id', $orgId)->where('role', 'driver')->where('status', 'active')->count();
 
         $metrics = [

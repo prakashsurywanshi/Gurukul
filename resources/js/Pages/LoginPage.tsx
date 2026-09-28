@@ -27,7 +27,17 @@ import { toast } from 'sonner';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { orgTypeLabel } from '../lib/orgTypeConfig';
 
-type LoginPortal = 'student_parent' | 'super_admin' | 'admin' | 'teacher' | 'accountant' | 'receptionist' | 'librarian' | 'driver' | 'staff';
+type LoginPortal =
+    | 'student_parent'
+    | 'super_admin'
+    | 'admin'
+    | 'teacher'
+    | 'accountant'
+    | 'receptionist'
+    | 'librarian'
+    | 'driver'
+    | 'transport_manager'
+    | 'staff';
 
 const portalOptions: Array<{
     id: LoginPortal;
@@ -119,18 +129,39 @@ const portalOptions: Array<{
         demoEmail: 'driver@gurukul.com',
         demoPassword: 'driver123',
     },
+    {
+        id: 'transport_manager',
+        label: 'Transport Manager Login',
+        title: 'Transport Manager Portal',
+        description: 'Manage routes, vehicles, drivers, and journeys.',
+        icon: Bus,
+        helper: 'Use your transport manager credentials to continue.',
+        demoEmail: 'transport_manager@gurukul.com',
+        demoPassword: 'transport123',
+    },
 ];
 
 const demoCredentials: Array<{ org: string; type: string; email: string; password: string }> = [
     { org: 'Gurukul Public School', type: 'School', email: 'admin@gurukul.com', password: 'admin123' },
     { org: 'Nova College of Science', type: 'College', email: 'admin@college.gurukul.com', password: 'college123' },
-    { org: 'Shine Test Prep Academy', type: 'Coaching Center', email: 'admin@coaching.gurukul.com', password: 'coaching123' },
-    { org: 'Sarvamaya University', type: 'University', email: 'admin@university.gurukul.com', password: 'university123' },
+    {
+        org: 'Shine Test Prep Academy',
+        type: 'Coaching Center',
+        email: 'admin@coaching.gurukul.com',
+        password: 'coaching123',
+    },
+    {
+        org: 'Sarvamaya University',
+        type: 'University',
+        email: 'admin@university.gurukul.com',
+        password: 'university123',
+    },
 ];
 
 interface LoginPageProps {
     onLogin?: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-}interface SsoStatus {
+}
+interface SsoStatus {
     enabled: boolean;
     providers: string[];
     installed?: boolean;
@@ -272,11 +303,11 @@ export default function LoginPage(_: LoginPageProps) {
                                 </div>
                                 <div>
                                     <h1 className="text-4xl font-bold tracking-tight text-[#93c5fd]">{schoolName}</h1>
-                            {orgType && orgType !== 'school' && (
-                                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[rgba(147,197,253,0.35)] bg-[rgba(147,197,253,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#bfdbfe]">
-                                    {t(orgTypeLabel(orgType))}
-                                </span>
-                            )}
+                                    {orgType && orgType !== 'school' && (
+                                        <span className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[rgba(147,197,253,0.35)] bg-[rgba(147,197,253,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#bfdbfe]">
+                                            {t(orgTypeLabel(orgType))}
+                                        </span>
+                                    )}
                                     <p className="text-sm uppercase tracking-[0.24em] text-[rgba(226,232,240,0.72)]">
                                         {t('Educational Institution Management System')}
                                     </p>
@@ -441,6 +472,7 @@ export default function LoginPage(_: LoginPageProps) {
                                                     { role: 'receptionist', label: t('Receptionist') },
                                                     { role: 'librarian', label: t('Librarian') },
                                                     { role: 'driver', label: t('Driver') },
+                                                    { role: 'transport-manager', label: t('Transport Manager') },
                                                     { role: 'parent', label: t('Parent / Student') },
                                                 ].map((item) => (
                                                     <button

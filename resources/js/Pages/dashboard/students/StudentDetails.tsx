@@ -25,6 +25,7 @@ import {
     Users,
     Wallet,
 } from 'lucide-react';
+import { canView } from '../../../lib/permissions';
 import DashboardLayout from '../../DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Badge } from '../../ui/badge';
@@ -265,11 +266,7 @@ export default function StudentDetails({
             ? relatedStudents[currentStudentIndex + 1]
             : null;
 
-    const isManagedStaffRole = ['admin', 'teacher', 'receptionist', 'accountant', 'librarian', 'branch_admin'].includes(
-        user?.role,
-    );
-    const can = (feature: string) =>
-        user?.role === 'branch_admin' || !isManagedStaffRole || Boolean(staffPermissions?.[feature]?.view);
+    const can = (feature: string) => canView(user?.role, feature, staffPermissions);
 
     const fees = hub?.fees;
     const attendance = hub?.attendance;

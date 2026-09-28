@@ -96,6 +96,6 @@ class LoginController extends Controller
 
     private function isStaffUser(?string $role): bool
     {
-        return in_array($role, ['admin', 'receptionist', 'teacher', 'accountant', 'librarian'], true);
+        return in_array($role, ['admin', 'receptionist', 'teacher', 'accountant', 'librarian', 'driver', 'transport_manager'], true);
     }
 }

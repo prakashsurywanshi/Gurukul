@@ -70,6 +70,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(StudentSeeder::class);
         $this->call(DemoAccountsSeeder::class);
+        $this->call(TransportDriverSeeder::class);
         $this->call(DemoOrganizationsSeeder::class);
         $this->call(TemplateLibrarySeeder::class);
     }

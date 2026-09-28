@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\VerifyNewEmailOtpNotification;
 use App\Services\LeaveBalanceService;
+use App\Support\RolePermissionCatalog;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,8 +23,6 @@ use Inertia\Response;
 class ProfileController extends Controller
 {
     private const EMAIL_OTP_CACHE_PREFIX = 'profile_email_otp:';
-    private const STAFF_ROLES = ['teacher', 'receptionist', 'accountant', 'librarian'];
-
     public function __construct(private readonly LeaveBalanceService $leaveBalanceService)
     {
     }
@@ -274,9 +273,9 @@ class ProfileController extends Controller
         return self::EMAIL_OTP_CACHE_PREFIX . $userId;
     }
 
-    private function isStaffUser(User $user): bool
+    private function isStaffUser(?User $user): bool
     {
-        return in_array($user->role, self::STAFF_ROLES, true);
+        return $user !== null && in_array($user->role, RolePermissionCatalog::staffRoleSlugs(), true);
     }
 
     private function leaveRequestsForUser(User $user)
