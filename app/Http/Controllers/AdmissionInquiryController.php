@@ -12,6 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\SuperAdminSetting;
 use App\Models\User;
+use App\Services\ActiveOrgResolver;
 use App\Services\CustomFieldValueService;
 use App\Services\QwaAutoAlertService;
 use App\Services\SmtpSettingsService;
@@ -41,15 +42,20 @@ class AdmissionInquiryController extends Controller
     public function __construct(
         private readonly CustomFieldValueService $customFieldValueService,
         private readonly StudentAcademicHistoryService $studentAcademicHistoryService,
-        private readonly SmtpSettingsService $smtpSettingsService
+        private readonly SmtpSettingsService $smtpSettingsService,
+        private readonly ActiveOrgResolver $activeOrgResolver
     )
     {
     }
 
     public function index(): Response
     {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
         try {
             $inquiries = AdmissionInquiry::query()
+                ->when($organization, fn ($query) => $query->where('organization_id', $organization->id))
                 ->latest()
                 ->get()
                 ->map(fn (AdmissionInquiry $inquiry) => [
@@ -79,9 +85,9 @@ class AdmissionInquiryController extends Controller
         }
 
         return Inertia::render('dashboard/students/OnlineAdmission', [
-            'user' => Auth::user(),
+            'user' => $user,
             'inquiries' => $inquiries,
-            'classRecords' => $this->getClassRecords($this->resolveOrganizationForUser(Auth::user())),
+            'classRecords' => $this->getClassRecords($organization),
             'tableReady' => $tableReady,
         ]);
     }
@@ -94,6 +100,8 @@ class AdmissionInquiryController extends Controller
         if (! $organization) {
             return back()->with('error', 'No organization is linked to this account.');
         }
+
+        $this->ensureInquiryBelongsToOrganization($admissionInquiry, $organization);
 
         if (($admissionInquiry->status ?? 'pending') === 'enrolled') {
             return back()->with('error', 'This admission request has already been enrolled.');
@@ -154,6 +162,7 @@ class AdmissionInquiryController extends Controller
 
 $admissionInquiry->update([
                 'status' => 'enrolled',
+                'organization_id' => $organization->id,
                 'enrolled_student_id' => $student->id,
                 'enrolled_at' => now(),
             ]);
@@ -177,7 +186,16 @@ $admissionInquiry->update([
 
     public function update(Request $request, AdmissionInquiry $admissionInquiry): RedirectResponse
     {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+
+        if (! $organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $this->ensureInquiryBelongsToOrganization($admissionInquiry, $organization);
+
         $validated = $this->validateAdmissionInquiryPayload($request);
+        $validated['organization_id'] = $organization->id;
 
         $admissionInquiry->update($validated);
 
@@ -188,6 +206,14 @@ $admissionInquiry->update([
 
     public function destroy(AdmissionInquiry $admissionInquiry): RedirectResponse
     {
+        $organization = $this->resolveOrganizationForUser(Auth::user());
+
+        if (! $organization) {
+            return back()->with('error', 'No organization is linked to this account.');
+        }
+
+        $this->ensureInquiryBelongsToOrganization($admissionInquiry, $organization);
+
         $fullName = $admissionInquiry->full_name;
 
         $admissionInquiry->delete();
@@ -290,8 +316,11 @@ $admissionInquiry->update([
 
         $customData = $this->validatePublicCustomFields($request);
 
+        $organization = $this->activeOrgResolver->resolvePublicOrganization($request);
+
         $admissionInquiryData = [
             ...$validated,
+            'organization_id' => $organization?->id,
             'student_stage' => 'Not provided',
             'email_verified_at' => now(),
             'status' => 'pending',
@@ -338,6 +367,7 @@ $admissionInquiry->update([
         try {
             AdmissionInquiry::create([
                 ...$pendingInquiry,
+                'organization_id' => $this->activeOrgResolver->resolvePublicOrganization($request)?->id,
                 'email_verified_at' => now(),
             ]);
             $this->admissionCache()->forget($this->legacyCacheKey($token));
@@ -403,6 +433,17 @@ $admissionInquiry->update([
             ->orderByRaw('CAST(name AS UNSIGNED), name')
             ->orderBy('section')
             ->get(['id', 'name', 'section']);
+    }
+
+    private function ensureInquiryBelongsToOrganization(AdmissionInquiry $inquiry, Organization $organization): void
+    {
+        if ($inquiry->organization_id === null) {
+            return;
+        }
+
+        if ((int) $inquiry->organization_id !== (int) $organization->id) {
+            abort(404);
+        }
     }
 
     private function resolveOrganizationForUser(User $user): ?Organization

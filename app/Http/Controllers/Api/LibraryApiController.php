@@ -36,7 +36,12 @@ class LibraryApiController extends Controller
 
         $outstandingFines = LibraryMember::where('organization_id', $organizationId)->sum('fine_due');
 
+        // `library_books` has no issued_count column; issue frequency lives in
+        // library_circulations, so rank by a correlated count instead.
         $popularBooks = LibraryBook::where('organization_id', $organizationId)
+            ->withCount([
+                'circulations as issued_count' => fn ($q) => $q->whereNotNull('issue_date'),
+            ])
             ->orderByDesc('issued_count')
             ->limit(5)
             ->get()

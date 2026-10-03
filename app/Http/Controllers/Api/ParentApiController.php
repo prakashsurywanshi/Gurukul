@@ -119,11 +119,25 @@ class ParentApiController extends Controller
     public function tickets(Request $request): JsonResponse
     {
         $parent = $request->user();
+
+        if ($parent->role !== 'parent') {
+            return response()->json(['message' => 'Parent account required.'], 403);
+        }
+
         $kids = collect($this->kidsFor($parent))->pluck('id');
 
+        // The `created_by` / `student_id` alternatives must be grouped under a single
+        // organization filter; without it the OR would also return tickets this
+        // parent raised in a different organization.
         $tickets = SupportTicket::query()
-            ->where('created_by', $parent->id)
-            ->orWhereIn('student_id', $kids)
+            ->where('organization_id', $parent->organization_id)
+            ->where(function (Builder $query) use ($parent, $kids) {
+                $query->where('created_by', $parent->id);
+
+                if ($kids->isNotEmpty()) {
+                    $query->orWhereIn('student_id', $kids);
+                }
+            })
             ->latest()
             ->get()
             ->map(fn (SupportTicket $ticket) => [
@@ -155,12 +169,16 @@ class ParentApiController extends Controller
             'student_id' => ['required', 'integer'],
         ]);
 
-        $kids = collect($this->kidsFor($parent))->pluck('id');
-        if (!$kids->contains($validated['student_id'])) {
+        // Compare as strings: `kidsFor` serialises ids as strings while the validated
+        // input is an integer.
+        $kids = collect($this->kidsFor($parent))->pluck('id')->map(fn ($id) => (string) $id);
+        if (!$kids->contains((string) $validated['student_id'])) {
             return response()->json(['message' => 'Student not linked to this parent account.'], 422);
         }
 
-        $student = Student::query()->findOrFail($validated['student_id']);
+        $student = Student::query()
+            ->where('organization_id', $parent->organization_id)
+            ->findOrFail($validated['student_id']);
 
         $ticket = SupportTicket::query()->create([
             'organization_id' => $student->organization_id,
@@ -209,13 +227,37 @@ class ParentApiController extends Controller
         return response()->json(['payments' => $payments]);
     }
 
+    /**
+     * Children linked to this parent account.
+     *
+     * Matching is by parent email, parent phone, or an explicit `user_id` link,
+     * because schools link parents inconsistently. All three can match students
+     * in *other* organizations: parent email/phone values are not unique across
+     * tenants, so an unscoped lookup would return students belonging to a
+     * different school entirely. The organization filter is therefore applied
+     * to the whole query, including the `user_id` branch, rather than inside the
+     * closure where it would only constrain the first branch.
+     */
     private function kidsFor($parent): array
     {
         $email = strtolower((string) $parent->email);
         $phone = $parent->phone ? $this->normalizePhone($parent->phone) : null;
+        $organizationId = $parent->organization_id;
+
+        if (! $organizationId) {
+            return [];
+        }
+
+        $linkedStudentIds = $parent->id
+            ? Student::query()
+                ->where('organization_id', $organizationId)
+                ->where('user_id', $parent->id)
+                ->pluck('id')
+            : collect();
 
         $students = Student::query()
-            ->where(function (Builder $query) use ($email, $phone, $parent) {
+            ->where('organization_id', $organizationId)
+            ->where(function (Builder $query) use ($email, $phone, $linkedStudentIds) {
                 $query->where(DB::raw('LOWER(father_email)'), $email)
                     ->orWhere(DB::raw('LOWER(mother_email)'), $email)
                     ->orWhere(DB::raw('LOWER(guardian_email)'), $email);
@@ -226,8 +268,8 @@ class ParentApiController extends Controller
                     }
                 }
 
-                if ($parent->id && $this->studentsWithUserId($parent->id)->isNotEmpty()) {
-                    $query->orWhereIn('id', $this->studentsWithUserId($parent->id)->pluck('id'));
+                if ($linkedStudentIds->isNotEmpty()) {
+                    $query->orWhereIn('id', $linkedStudentIds);
                 }
             })
             ->orderBy('admission_no')
@@ -242,11 +284,6 @@ class ParentApiController extends Controller
             'section' => $student->schoolClass?->section,
             'organization_id' => (string) $student->organization_id,
         ])->all();
-    }
-
-    private function studentsWithUserId(int $userId)
-    {
-        return Student::query()->where('user_id', $userId)->get();
     }
 
     private function normalizePhone(string $phone): string
@@ -264,8 +301,15 @@ class ParentApiController extends Controller
 
         $kids = collect($this->kidsFor($parent));
 
+        // `kidsFor` is already organization-scoped, so matching the id here
+        // rejects a student from another tenant as well as an unlinked one.
+        // Still re-scope the lookup as a second line of defence, since this
+        // method's return value is used to build queries for fees, attendance
+        // and payments.
         return $kids->firstWhere('id', $studentId)
-            ? Student::query()->find($studentId)
+            ? Student::query()
+                ->where('organization_id', $parent->organization_id)
+                ->find($studentId)
             : null;
     }
 }

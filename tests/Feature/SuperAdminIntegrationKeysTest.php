@@ -70,7 +70,7 @@ class SuperAdminIntegrationKeysTest extends TestCase
         config(['sync.keys.cctv' => 'env-cctv']);
         config(['sync.keys.transport_gps' => 'env-gps']);
 
-        SuperAdminSetting::query()->first()->forceFill([
+        SuperAdminSetting::singleton()->forceFill([
             'biometric_sync_key' => 'db-key',
             'transport_gps_sync_key' => 'db-gps',
         ])->save();

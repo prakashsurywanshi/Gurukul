@@ -296,6 +296,125 @@ class DriverApiContractTest extends TestCase
         $this->assertCount(1, $response->json('vehicles'));
     }
 
+    public function test_driver_lists_only_routes_they_may_operate(): void
+    {
+        [$organization, , , $route, $vehicle] = $this->createSetup();
+        $driver = $this->createDriver($organization, 'Route Listing Driver');
+
+        // Matched by driver_user_id, by name, and by phone respectively.
+        $route->update(['driver_user_id' => $driver->id]);
+        $vehicle->update(['driver_name' => $driver->name]);
+
+        $byName = TransportRoute::query()->create([
+            'organization_id' => $organization->id,
+            'route_name' => 'Name Matched Route',
+            'route_number' => 'R-202',
+            'driver_name' => $driver->name,
+            'stops' => 'Alpha, Beta',
+            'status' => 'active',
+        ]);
+
+        $byPhone = TransportRoute::query()->create([
+            'organization_id' => $organization->id,
+            'route_name' => 'Phone Matched Route',
+            'route_number' => 'R-303',
+            'driver_phone' => $driver->phone,
+            'stops' => ['Gamma'],
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($driver, 'sanctum')
+            ->getJson('/api/driver/routes')
+            ->assertOk()
+            ->assertJsonStructure(['success', 'routes' => [['id', 'route_name', 'route_number', 'stops']]]);
+
+        $names = collect($response->json('routes'))->pluck('route_name')->all();
+        $this->assertCount(3, $names, 'Every route the start-trip check would accept must be listed.');
+        $this->assertContains('Demo Route', $names);
+        $this->assertContains('Name Matched Route', $names);
+        $this->assertContains('Phone Matched Route', $names);
+
+        // A listed route must actually be startable, otherwise the client would
+        // offer a selection the server rejects.
+        $listedId = collect($response->json('routes'))
+            ->firstWhere('route_name', 'Phone Matched Route')['id'];
+
+        $this->actingAs($driver, 'sanctum')
+            ->postJson('/api/driver/trips', [
+                'routeId' => $listedId,
+                'vehicleId' => $vehicle->id,
+                'shift' => 'morning',
+                'direction' => 'pickup',
+            ])
+            ->assertCreated();
+
+        // Stops are normalised from either a JSON array or a comma string.
+        $stops = collect($response->json('routes'))->firstWhere('route_name', 'Phone Matched Route')['stops'];
+        $this->assertSame(['Gamma'], $stops);
+        $this->assertNotNull($byName);
+    }
+
+    public function test_driver_routes_exclude_unassigned_and_cross_organization_routes(): void
+    {
+        [$organization, , , $route] = $this->createSetup();
+        $driver = $this->createDriver($organization, 'Scoped Route Driver');
+        $route->update(['driver_name' => 'Someone Else Entirely']);
+
+        $otherOrganization = Organization::query()->create([
+            'name' => 'Other School',
+            'slug' => 'other-school',
+            'email' => 'other@example.com',
+            'phone' => '9876500001',
+            'address' => 'Other Road',
+            'type' => 'school',
+            'status' => 'active',
+            'subscription_plan' => 'premium',
+            'subscription_start_date' => now()->subMonth()->toDateString(),
+            'subscription_end_date' => now()->addMonth()->toDateString(),
+            'settings' => [],
+        ]);
+
+        TransportRoute::query()->create([
+            'organization_id' => $otherOrganization->id,
+            'route_name' => 'Foreign Route',
+            // route_number is NOT NULL on MySQL.
+            'route_number' => 'FOREIGN-1',
+            'driver_name' => $driver->name,
+            'stops' => ['X'],
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($driver, 'sanctum')
+            ->getJson('/api/driver/routes')
+            ->assertOk();
+
+        $names = collect($response->json('routes'))->pluck('route_name')->all();
+        $this->assertSame([], $names, 'Neither an unassigned nor a cross-tenant route may be offered.');
+    }
+
+    public function test_inactive_routes_are_excluded(): void
+    {
+        [$organization, , , $route] = $this->createSetup();
+        $driver = $this->createDriver($organization, 'Inactive Route Driver');
+        $route->update(['driver_user_id' => $driver->id, 'status' => 'inactive']);
+
+        $response = $this->actingAs($driver, 'sanctum')
+            ->getJson('/api/driver/routes')
+            ->assertOk();
+
+        $this->assertSame([], $response->json('routes'));
+    }
+
+    public function test_driver_routes_requires_driver_role(): void
+    {
+        [$organization] = $this->createSetup();
+        $admin = $this->createUser($organization, 'admin');
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/driver/routes')
+            ->assertForbidden();
+    }
+
     private function createSetup(): array
     {
         $organization = Organization::query()->create([

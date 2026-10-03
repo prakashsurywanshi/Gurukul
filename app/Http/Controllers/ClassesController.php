@@ -14,6 +14,7 @@ use App\Services\Approvals\ApprovalEngine;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -234,21 +235,34 @@ class ClassesController extends Controller
         $user = Auth::user();
         $organization = $this->resolveOrganizationForUser($user);
 
+// withCount() appends `classes.id` to the select, which MySQL rejects
+        // here because the query groups by `section` (ONLY_FULL_GROUP_BY).
+        // Aggregate the student count per section separately instead.
         $sections = $organization
             ? SchoolClass::query()
                 ->where('organization_id', $organization->id)
                 ->selectRaw('section, COUNT(*) as class_count, COALESCE(SUM(capacity), 0) as total_capacity')
                 ->groupBy('section')
-                ->withCount([
-                    'studentAcademicHistories as student_count' => fn ($query) => $query
-                        ->where('is_current', true)
-                        ->where('status', 'active')
-                        ->whereHas('student', fn ($studentQuery) => $studentQuery->where('status', 'active')),
-                ])
                 ->orderBy('section')
                 ->get()
                 ->keyBy('section')
-                : collect();
+            : collect();
+
+        if ($organization) {
+            $studentCounts = SchoolClass::query()
+                ->where('classes.organization_id', $organization->id)
+                ->join('student_academic_histories', 'student_academic_histories.class_id', '=', 'classes.id')
+                ->join('students', 'students.id', '=', 'student_academic_histories.student_id')
+                ->where('student_academic_histories.is_current', true)
+                ->where('student_academic_histories.status', 'active')
+                ->where('students.status', 'active')
+                ->groupBy('classes.section')
+                ->pluck(DB::raw('COUNT(DISTINCT students.id)'), 'classes.section');
+
+            foreach ($sections as $section) {
+                $section->student_count = (int) ($studentCounts[$section->section] ?? 0);
+            }
+        }
 
         $allSections = ($organization ? $this->getSectionRecords($organization) : [])
             ?: $sections->keys()->all();

@@ -741,7 +741,8 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
-            ->when($search !== '', fn ($q) => $q->where('book_title', 'like', "%{$search}%"));
+            // library_circulations stores no book_title; it is on library_books.
+            ->when($search !== '', fn ($q) => $q->whereHas('book', fn ($bq) => $bq->where('title', 'like', "%{$search}%")));
 
         $paginator = (clone $query)
             ->with(['book:id,title,category', 'member:id,name,member_type'])
@@ -876,7 +877,13 @@ class ReportsController extends Controller
     private function inventoryModuleReport(Organization $organization, int $page = 1, string $search = ''): array
     {
         $query = InventoryItem::query()->where('organization_id', $organization->id)
-            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('category', 'like', "%{$search}%"));
+            // `category` is a relation, not a column. Grouped so the search's
+            // second condition stays inside the organization filter; a bare
+            // orWhere here would drop the tenant scope entirely.
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+            }));
 
         $paginator = (clone $query)
             ->with(['category:id,name', 'store:id,name', 'supplier:id,name'])
@@ -921,7 +928,12 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
-            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"))
+            // Grouped so the phone branch stays inside the organization filter, and
+            // matched on full_name: the table has no `name` column.
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            }))
             ->latest('enquiry_date')
             ->get()
             ->map(fn (FrontOfficeAdmissionEnquiry $entry) => [
@@ -939,7 +951,11 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
-            ->when($search !== '', fn ($q) => $q->where('visitor_name', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                // No `phone` column here; visitor contact lives in `contact`.
+                $sub->where('visitor_name', 'like', "%{$search}%")
+                    ->orWhere('contact', 'like', "%{$search}%");
+            }))
             ->latest('entry_date')
             ->get()
             ->map(fn (VisitorRegisterEntry $entry) => [
@@ -957,7 +973,10 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->toDateString(),
             ])
-            ->when($search !== '', fn ($q) => $q->where('complainant_name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('complainant_name', 'like', "%{$search}%")
+                    ->orWhere('note', 'like', "%{$search}%");
+            }))
             ->latest('complaint_date')
             ->get()
             ->map(fn (ComplaintEntry $entry) => [
@@ -1089,7 +1108,10 @@ class ReportsController extends Controller
             ])
             ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name'])
             ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass))
-            ->when($search !== '', fn ($q) => $q->where('lesson_title', 'like', "%{$search}%")->orWhere('topic', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('lesson_title', 'like', "%{$search}%")
+                    ->orWhere('topic', 'like', "%{$search}%");
+            }))
             ->latest('lesson_date');
 
         $paginator = (clone $query)
@@ -1139,7 +1161,10 @@ class ReportsController extends Controller
         $staffPaginator = User::query()
             ->where('organization_id', $organization->id)
             ->whereIn('role', ['teacher', 'accountant', 'librarian', 'transport_manager', 'hostel_warden'])
-            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('employee_id', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('name', 'like', "%{$search}%")
+                    ->orWhere('employee_id', 'like', "%{$search}%");
+            }))
             ->with(['designation:id,name', 'department:id,name'])
             ->paginate(15, ['*'], 'page', $page);
 
@@ -1208,7 +1233,10 @@ class ReportsController extends Controller
             ])
             ->with(['schoolClass:id,name,section', 'subject:id,name,name_mr,name_hi', 'teacher:id,name', 'submissions'])
             ->when($selectedClass !== 'all', fn ($q) => $q->where('class_id', $selectedClass))
-            ->when($search !== '', fn ($q) => $q->where('title', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            }))
             ->latest('assign_date');
 
         $paginator = (clone $query)
@@ -1267,7 +1295,11 @@ class ReportsController extends Controller
     {
         $paginator = AlumniRecord::query()
             ->where('organization_id', $organization->id)
-            ->when($search !== '', fn ($q) => $q->where('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")->orWhere('admission_no', 'like', "%{$search}%"))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('admission_no', 'like', "%{$search}%");
+            }))
             ->latest('created_at')
             ->paginate(15, ['*'], 'page', $page);
 
@@ -1314,7 +1346,10 @@ class ReportsController extends Controller
                 $selectedMonthDate->copy()->startOfMonth()->toDateString(),
                 $selectedMonthDate->copy()->endOfMonth()->endOfDay()->toDateTimeString(),
             ])
-            ->when($search !== '', fn ($q) => $q->where('description', 'like', "%{$search}%")->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%")))
+            ->when($search !== '', fn ($q) => $q->where(function ($sub) use ($search) {
+                $sub->where('description', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%"));
+            }))
             ->with('user:id,name')
             ->latest()
             ->paginate(15, ['*'], 'page', $page);

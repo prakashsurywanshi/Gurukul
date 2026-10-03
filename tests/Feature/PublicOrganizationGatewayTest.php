@@ -55,8 +55,8 @@ class PublicOrganizationGatewayTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('SelectOrganization')
                 ->has('organizations', 2)
-                ->where('organizations.0.slug', 'career-college')
-                ->where('organizations.1.slug', 'gurukul-school'));
+                ->where('organizations.0.slug', 'gurukul-school')
+                ->where('organizations.1.slug', 'career-college'));
     }
 
     public function test_selecting_an_organization_sets_session_and_redirects_home(): void

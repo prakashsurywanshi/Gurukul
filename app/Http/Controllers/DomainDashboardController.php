@@ -576,9 +576,11 @@ class DomainDashboardController extends Controller
         $postalIn = PostalDeliveryEntry::query()->where('organization_id', $orgId)->count();
         $postalOut = PostalDispatchEntry::query()->where('organization_id', $orgId)->count();
 
+        $orgEnquiries = fn () => AdmissionInquiry::query()->where('organization_id', $orgId);
+
         $metrics = [
-            $this->metric('Admission Enquiries', AdmissionInquiry::query()->where('organization_id', $orgId)->count(), '', 'inbox', 'blue'),
-            $this->metric('Enquiries (Month)', AdmissionInquiry::query()->where('organization_id', $orgId)->where('created_at', '>=', $today->copy()->startOfMonth())->count(), '', 'inbox', 'sky'),
+            $this->metric('Admission Enquiries', $orgEnquiries()->count(), '', 'inbox', 'blue'),
+            $this->metric('Enquiries (Month)', $orgEnquiries()->where('created_at', '>=', $today->copy()->startOfMonth())->count(), '', 'inbox', 'sky'),
             $this->metric('Open Complaints', $openComplaints, '', 'triangle-alert', 'rose'),
             $this->metric('Visitors Today', $visitorsToday, '', 'door-open', 'emerald'),
             $this->metric('Gate Passes Today', $gatePassesToday, '', 'shield-check', 'teal'),
@@ -689,7 +691,8 @@ class DomainDashboardController extends Controller
         $metrics = [
             $this->metric('Exams', Exam::query()->where('organization_id', $orgId)->count(), '', 'file-text', 'blue'),
             $this->metric('Exam Types', ExamType::query()->where('organization_id', $orgId)->count(), '', 'layers', 'violet'),
-            $this->metric('Schedule Entries', ExamSchedule::query()->where('organization_id', $orgId)->count(), '', 'calendar-range', 'indigo'),
+            // exam_schedules has no organization_id; scope through the owning exam.
+            $this->metric('Schedule Entries', ExamSchedule::query()->whereHas('exam', fn ($q) => $q->where('organization_id', $orgId))->count(), '', 'calendar-range', 'indigo'),
             $this->metric('Results Entered', ExamResult::query()->where('organization_id', $orgId)->count(), '', 'clipboard-check', 'emerald'),
             $this->metric('Upcoming', $upcoming, '', 'calendar-clock', 'teal'),
             $this->metric('Ongoing', $ongoing, '', 'activity', 'amber'),

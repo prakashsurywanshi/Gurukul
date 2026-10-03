@@ -160,7 +160,7 @@ class GenerateDocumentFeatureTest extends TestCase
 
     public function test_preview_substitutes_student_name(): void
     {
-        [$admin, $organizationId, $classId, $templateId] = $this->seedContext();
+        [$admin, $organizationId, $classId, $studentId, $templateId] = $this->seedContext();
 
         $this->actingAs($admin)
             ->get('/documents/generate/preview?' . http_build_query([

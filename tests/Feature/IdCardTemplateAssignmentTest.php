@@ -172,7 +172,8 @@ class IdCardTemplateAssignmentTest extends TestCase
         return CertificateTemplate::query()->create([
             'organization_id' => $organization->id,
             'title' => 'Student ID Card Design',
-            'type' => 'programme',
+            // Award type enum; the ID-card kind is carried by `category`.
+            'type' => 'completion',
             'category' => 'staff_id_card',
             'editor_type' => 'fabric',
             'description' => 'Assigned react design',

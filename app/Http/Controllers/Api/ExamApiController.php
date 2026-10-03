@@ -275,7 +275,7 @@ class ExamApiController extends Controller
 
         $exams = Exam::where('organization_id', $organization->id)
             ->when($examId, fn ($q) => $q->where('id', $examId))
-            ->with(['schedules' => fn ($q) => $q->with(['subject:id,name,name_mr,name_hi', 'results' => fn ($r) => $r->with('student:id,first_name,last_name,admission_no,roll_number,school_class_id')])])
+            ->with(['schedules' => fn ($q) => $q->with(['subject:id,name,name_mr,name_hi', 'results' => fn ($r) => $r->with('student:id,first_name,last_name,admission_no,roll_number,class_id')])])
             ->orderByDesc('created_at')
             ->get();
 

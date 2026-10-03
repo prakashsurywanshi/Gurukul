@@ -33,7 +33,9 @@ class AllTransactionsFeatureTest extends TestCase
             'date' => '2026-07-01',
             'payment_mode' => 'cash',
             'received_from' => 'Wellwisher',
-            'status' => 'completed',
+            // income_entries.status is enum('received','pending'); 'completed'
+            // is rejected by MySQL strict mode (SQLite silently accepted it).
+            'status' => 'received',
         ]);
 
         ExpenseEntry::query()->create([
@@ -44,7 +46,8 @@ class AllTransactionsFeatureTest extends TestCase
             'date' => '2026-07-02',
             'payment_mode' => 'cash',
             'paid_to' => 'Vendor',
-            'status' => 'completed',
+            // expense_entries.status is enum('paid','due').
+            'status' => 'paid',
         ]);
 
         FeePayment::query()->create([
@@ -85,7 +88,9 @@ class AllTransactionsFeatureTest extends TestCase
             'date' => '2026-07-01',
             'payment_mode' => 'cash',
             'received_from' => 'Wellwisher',
-            'status' => 'completed',
+            // income_entries.status is enum('received','pending'); 'completed'
+            // is rejected by MySQL strict mode (SQLite silently accepted it).
+            'status' => 'received',
         ]);
 
         $this->actingAs($admin)
@@ -110,7 +115,7 @@ class AllTransactionsFeatureTest extends TestCase
             'date' => '2026-06-01',
             'payment_mode' => 'cash',
             'received_from' => 'A',
-            'status' => 'completed',
+            'status' => 'received',
         ]);
 
         IncomeEntry::query()->create([
@@ -121,7 +126,7 @@ class AllTransactionsFeatureTest extends TestCase
             'date' => '2026-08-01',
             'payment_mode' => 'bank',
             'received_from' => 'B',
-            'status' => 'completed',
+            'status' => 'received',
         ]);
 
         $this->actingAs($admin)

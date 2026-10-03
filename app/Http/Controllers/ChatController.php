@@ -298,7 +298,6 @@ class ChatController extends Controller
             ->where('organization_id', $organization->id)
             ->where('subject', 'Chat')
             ->where('sender_id', $otherId)
-            ->whereHas('recipients', fn ($x) => $x->where('recipient_id', $user->id))
             ->select('id');
 
         MessageRecipient::query()

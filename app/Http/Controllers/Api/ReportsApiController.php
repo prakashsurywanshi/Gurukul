@@ -21,12 +21,37 @@ use App\Models\FeePayment;
 use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class ReportsApiController extends Controller
 {
+    /**
+     * Organization every report query is scoped to.
+     *
+     * These endpoints were previously global: every aggregation ran across all
+     * organizations, so a report in one school leaked student counts, fee
+     * totals and names from every other school on the instance. Resolved from
+     * the authenticated user and cached per-request.
+     */
+    private ?int $organizationId = null;
+
+    private function organizationId(Request $request): int
+    {
+        if ($this->organizationId !== null) {
+            return $this->organizationId;
+        }
+
+        $organizationId = $request->user()?->organization_id;
+
+        abort_if(! $organizationId, 403, 'No organization is linked to this account.');
+
+        return $this->organizationId = (int) $organizationId;
+    }
+
     public function analytics(Request $request)
     {
+        $organizationId = $this->organizationId($request);
         $selectedClass = $request->input('class', 'all');
         $selectedMonth = (int) ($request->input('month', now()->month));
         $selectedYear = (int) ($request->input('year', now()->year));
@@ -34,18 +59,18 @@ class ReportsApiController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'classOptions' => $this->getClassOptions(),
+                'classOptions' => $this->getClassOptions($organizationId),
                 'selectedFilters' => [
                     'class' => $selectedClass,
                     'month' => (string) $selectedMonth,
                     'year' => (string) $selectedYear,
                 ],
-                'attendanceData' => $this->attendanceData($selectedClass, $selectedYear),
-                'feeCollectionData' => $this->feeCollectionData($selectedClass, $selectedYear),
-                'studentDistribution' => $this->studentDistribution(),
-                'examPerformance' => $this->examPerformance($selectedClass, $selectedYear),
-                'metrics' => $this->metrics($selectedClass, $selectedMonth, $selectedYear),
-                'yearOptions' => $this->yearOptions(),
+                'attendanceData' => $this->attendanceData($organizationId, $selectedClass, $selectedYear),
+                'feeCollectionData' => $this->feeCollectionData($organizationId, $selectedClass, $selectedYear),
+                'studentDistribution' => $this->studentDistribution($organizationId),
+                'examPerformance' => $this->examPerformance($organizationId, $selectedClass, $selectedYear),
+                'metrics' => $this->metrics($organizationId, $selectedClass, $selectedMonth, $selectedYear),
+                'yearOptions' => $this->yearOptions($organizationId),
                 'monthOptions' => collect(range(1, 12))->map(fn (int $month) => [
                     'value' => (string) $month,
                     'label' => Carbon::create()->month($month)->format('M'),
@@ -54,9 +79,10 @@ class ReportsApiController extends Controller
         ]);
     }
 
-    private function getClassOptions()
+    private function getClassOptions(int $organizationId)
     {
         return SchoolClass::query()
+            ->where('organization_id', $organizationId)
             ->where('status', 'active')
             ->orderByRaw('CAST(name AS UNSIGNED), name')
             ->orderBy('section')
@@ -68,9 +94,10 @@ class ReportsApiController extends Controller
             ->values();
     }
 
-    private function attendanceData(string $selectedClass, int $selectedYear)
+    private function attendanceData(int $organizationId, string $selectedClass, int $selectedYear)
     {
         $attendance = Attendance::query()
+            ->where('organization_id', $organizationId)
             ->whereYear('date', $selectedYear)
             ->when($selectedClass !== 'all', fn ($query) => $query->where('class_id', $selectedClass))
             ->get(['date', 'status']);
@@ -89,10 +116,15 @@ class ReportsApiController extends Controller
         })->values();
     }
 
-    private function feeCollectionData(string $selectedClass, int $selectedYear)
+    private function feeCollectionData(int $organizationId, string $selectedClass, int $selectedYear)
     {
+        // `status` must be `success`, which is the value every writer uses
+        // (FeesApiController, FeesController). It was previously filtered as
+        // `completed`, which matches no rows, so the "collected" series was
+        // always empty while "pending" still showed real balances.
         $payments = FeePayment::query()
-            ->where('status', 'completed')
+            ->where('organization_id', $organizationId)
+            ->where('status', 'success')
             ->whereYear('payment_date', $selectedYear)
             ->when($selectedClass !== 'all', function ($query) use ($selectedClass) {
                 $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $selectedClass));
@@ -100,6 +132,7 @@ class ReportsApiController extends Controller
             ->get(['amount', 'payment_date']);
 
         $studentFees = StudentFee::query()
+            ->where('organization_id', $organizationId)
             ->where('year', $selectedYear)
             ->when($selectedClass !== 'all', function ($query) use ($selectedClass) {
                 $query->whereHas('student', fn ($studentQuery) => $studentQuery->where('class_id', $selectedClass));
@@ -123,9 +156,10 @@ class ReportsApiController extends Controller
         })->values();
     }
 
-    private function studentDistribution()
+    private function studentDistribution(int $organizationId)
     {
         $students = Student::query()
+            ->where('organization_id', $organizationId)
             ->where('status', 'active')
             ->with('schoolClass:id,name')
             ->get();
@@ -151,9 +185,10 @@ class ReportsApiController extends Controller
         })->values();
     }
 
-    private function examPerformance(string $selectedClass, int $selectedYear)
+    private function examPerformance(int $organizationId, string $selectedClass, int $selectedYear)
     {
         return ExamResult::query()
+            ->where('organization_id', $organizationId)
             ->whereHas('examSchedule', function ($query) use ($selectedClass, $selectedYear) {
                 $query->whereYear('exam_date', $selectedYear)
                     ->when($selectedClass !== 'all', fn ($scheduleQuery) => $scheduleQuery->where('class_id', $selectedClass));
@@ -168,15 +203,17 @@ class ReportsApiController extends Controller
             ->values();
     }
 
-    private function metrics(string $selectedClass, int $selectedMonth, int $selectedYear): array
+    private function metrics(int $organizationId, string $selectedClass, int $selectedMonth, int $selectedYear): array
     {
         $studentsQuery = Student::query()
+            ->where('organization_id', $organizationId)
             ->where('status', 'active')
             ->when($selectedClass !== 'all', fn ($query) => $query->where('class_id', $selectedClass));
 
         $totalStudents = $studentsQuery->count();
 
         $attendance = Attendance::query()
+            ->where('organization_id', $organizationId)
             ->whereYear('date', $selectedYear)
             ->whereMonth('date', $selectedMonth)
             ->when($selectedClass !== 'all', fn ($query) => $query->where('class_id', $selectedClass))
@@ -187,7 +224,8 @@ class ReportsApiController extends Controller
         $attendanceRate = $attendanceTotal > 0 ? round(($attendancePresent / $attendanceTotal) * 100, 1) : 0;
 
         $feeCollected = FeePayment::query()
-            ->where('status', 'completed')
+            ->where('organization_id', $organizationId)
+            ->where('status', 'success')
             ->whereYear('payment_date', $selectedYear)
             ->whereMonth('payment_date', $selectedMonth)
             ->when($selectedClass !== 'all', function ($query) use ($selectedClass) {
@@ -196,6 +234,7 @@ class ReportsApiController extends Controller
             ->sum('amount');
 
         $monthlyFeeDemand = StudentFee::query()
+            ->where('organization_id', $organizationId)
             ->where('year', $selectedYear)
             ->where('month', $selectedMonth)
             ->when($selectedClass !== 'all', function ($query) use ($selectedClass) {
@@ -203,8 +242,11 @@ class ReportsApiController extends Controller
             })
             ->sum('net_amount');
 
-        $booksCount = LibraryBook::query()->sum('total_copies');
+        $booksCount = LibraryBook::query()
+            ->where('organization_id', $organizationId)
+            ->sum('total_copies');
         $issuedCount = LibraryCirculation::query()
+            ->where('organization_id', $organizationId)
             ->whereIn('status', ['Issued', 'Overdue'])
             ->count();
 
@@ -218,17 +260,28 @@ class ReportsApiController extends Controller
         ];
     }
 
-    private function yearOptions()
+    private function yearOptions(int $organizationId)
     {
         $years = collect([
             now()->year,
             now()->year - 1,
             now()->year - 2,
         ])
-            ->merge(Attendance::query()->selectRaw('DISTINCT '.$this->yearExpression('date').' as year')->pluck('year'))
-            ->merge(FeePayment::query()->selectRaw('DISTINCT '.$this->yearExpression('payment_date').' as year')->pluck('year'))
+            ->merge(
+                Attendance::query()
+                    ->where('organization_id', $organizationId)
+                    ->selectRaw('DISTINCT '.$this->yearExpression('date').' as year')
+                    ->pluck('year')
+            )
+            ->merge(
+                FeePayment::query()
+                    ->where('organization_id', $organizationId)
+                    ->selectRaw('DISTINCT '.$this->yearExpression('payment_date').' as year')
+                    ->pluck('year')
+            )
             ->merge(
                 ExamResult::query()
+                    ->where('exam_results.organization_id', $organizationId)
                     ->join('exam_schedules', 'exam_results.exam_schedule_id', '=', 'exam_schedules.id')
                     ->selectRaw('DISTINCT '.$this->yearExpression('exam_schedules.exam_date').' as year')
                     ->pluck('year')
@@ -253,14 +306,18 @@ class ReportsApiController extends Controller
             ? "strftime('%Y', {$column})"
             : "YEAR({$column})";
     }
-    public function overview()
+    public function overview(Request $request)
     {
-        $totalStudents = Student::count();
-        $totalStaff = User::where('role', '!=', 'super_admin')->count();
-        $totalClasses = SchoolClass::count();
-        $totalBooks = LibraryBook::count();
-        $totalRoutes = TransportRoute::count();
-        $totalHostelRooms = HostelRoom::count();
+        $organizationId = $this->organizationId($request);
+
+        $totalStudents = Student::where('organization_id', $organizationId)->count();
+        $totalStaff = User::where('organization_id', $organizationId)->where('role', '!=', 'super_admin')->count();
+        $totalClasses = SchoolClass::where('organization_id', $organizationId)->count();
+        $totalBooks = LibraryBook::where('organization_id', $organizationId)->count();
+        $totalRoutes = TransportRoute::where('organization_id', $organizationId)->count();
+        // hostel_rooms has no organization_id column; scope through the
+        // owning hostel, which does.
+        $totalHostelRooms = HostelRoom::whereHas('hostel', fn ($q) => $q->where('organization_id', $organizationId))->count();
 
         $reports = [
             ['name' => 'Attendance Report', 'endpoint' => '/api/reports/attendance', 'method' => 'GET', 'params' => ['class', 'month', 'year']],
@@ -294,7 +351,8 @@ class ReportsApiController extends Controller
 
     public function attendance(Request $request)
     {
-        $query = Attendance::with(['student', 'schoolClass']);
+        $query = Attendance::where('organization_id', $this->organizationId($request))
+            ->with(['student', 'schoolClass']);
 
         if ($request->has('class')) {
             $query->where('class_id', $request->class);
@@ -336,7 +394,8 @@ class ReportsApiController extends Controller
 
     public function fee(Request $request)
     {
-        $query = StudentFee::with(['student', 'feeStructure']);
+        $query = StudentFee::where('organization_id', $this->organizationId($request))
+            ->with(['student', 'feeStructure']);
 
         if ($request->has('class')) {
             $query->whereHas('student', function ($q) use ($request) {
@@ -383,7 +442,11 @@ class ReportsApiController extends Controller
 
     public function exam(Request $request)
     {
-        $query = ExamSchedule::with(['exam', 'schoolClass', 'subject', 'results.student']);
+        // `exam_schedules` has no organization_id column; the owning `exams` row does,
+        // so scope through that relation rather than filtering a column that
+        // does not exist.
+        $query = ExamSchedule::whereHas('exam', fn ($q) => $q->where('organization_id', $this->organizationId($request)))
+            ->with(['exam', 'schoolClass', 'subject', 'results.student']);
 
         if ($request->has('exam_id')) {
             $query->where('exam_id', $request->exam_id);
@@ -429,21 +492,34 @@ class ReportsApiController extends Controller
 
     public function progress(Request $request)
     {
+        $organizationId = $this->organizationId($request);
+
         $request->validate([
-            'student_id' => 'required|exists:students,id',
+            // Scoped rule: `exists:students,id` alone would accept a student id
+            // belonging to another organization.
+            'student_id' => [
+                'required',
+                'integer',
+                Rule::exists('students', 'id')->where(fn ($query) => $query->where('organization_id', $organizationId)),
+            ],
         ]);
 
-        $student = Student::with(['schoolClass', 'academicHistories'])->find($request->student_id);
+        $student = Student::where('organization_id', $organizationId)
+            ->with(['schoolClass', 'academicHistories'])
+            ->find($request->student_id);
 
-        $attendances = Attendance::where('student_id', $request->student_id)
+        $attendances = Attendance::where('organization_id', $organizationId)
+            ->where('student_id', $request->student_id)
             ->with('schoolClass')
             ->get();
 
-        $examResults = ExamResult::where('student_id', $request->student_id)
+        $examResults = ExamResult::where('organization_id', $organizationId)
+            ->where('student_id', $request->student_id)
             ->with(['examSchedule.exam', 'examSchedule.subject'])
             ->get();
 
-        $fees = StudentFee::where('student_id', $request->student_id)
+        $fees = StudentFee::where('organization_id', $organizationId)
+            ->where('student_id', $request->student_id)
             ->with('feeStructure')
             ->get();
 
@@ -488,9 +564,11 @@ class ReportsApiController extends Controller
         ]);
     }
 
-    public function staff()
+    public function staff(Request $request)
     {
-        $staff = User::where('role', '!=', 'super_admin')->get();
+        $staff = User::where('organization_id', $this->organizationId($request))
+            ->where('role', '!=', 'super_admin')
+            ->get();
 
         $activeStaff = $staff->where('status', 'active')->count();
         $inactiveStaff = $staff->where('status', 'inactive')->count();
@@ -513,7 +591,10 @@ class ReportsApiController extends Controller
 
     public function library(Request $request)
     {
-        $query = LibraryCirculation::with(['book', 'member']);
+        $organizationId = $this->organizationId($request);
+
+        $query = LibraryCirculation::where('organization_id', $organizationId)
+            ->with(['book', 'member']);
 
         if ($request->has('month') && $request->has('year')) {
             $query->whereMonth('issue_date', $request->month)
@@ -532,8 +613,8 @@ class ReportsApiController extends Controller
             ->where('due_date', '<', now())
             ->count();
 
-        $totalBooks = LibraryBook::count();
-        $availableBooks = LibraryBook::sum('available_copies');
+        $totalBooks = LibraryBook::where('organization_id', $organizationId)->count();
+        $availableBooks = LibraryBook::where('organization_id', $organizationId)->sum('available_copies');
 
         return response()->json([
             'success' => true,
@@ -555,11 +636,21 @@ class ReportsApiController extends Controller
         ]);
     }
 
-    public function transport()
+    public function transport(Request $request)
     {
-        $routes = TransportRoute::with(['vehicles', 'assignments.student'])->get();
-        $vehicles = TransportVehicle::with('route')->get();
-        $assignments = TransportAssignment::with(['student', 'route', 'vehicle'])->get();
+        $organizationId = $this->organizationId($request);
+
+        $routes = TransportRoute::where('organization_id', $organizationId)
+            ->with(['vehicles', 'assignments.student'])
+            ->get();
+        $vehicles = TransportVehicle::where('organization_id', $organizationId)->with('route')->get();
+        // transport_assignments has no organization_id column, so it is scoped
+        // through the route it belongs to.
+        // transport_assignments maps to the `student_transport` table, which has no
+        // organization_id; it is scoped through the route it belongs to.
+        $assignments = TransportAssignment::whereHas('route', fn ($q) => $q->where('organization_id', $organizationId))
+            ->with(['student', 'route', 'vehicle'])
+            ->get();
 
         $totalStudents = $assignments->count();
         $totalRoutes = $routes->count();
@@ -584,10 +675,18 @@ class ReportsApiController extends Controller
         ]);
     }
 
-    public function hostel()
+    public function hostel(Request $request)
     {
-        $rooms = HostelRoom::with(['hostel', 'allocations.student', 'beds'])->get();
-        $allocations = HostelAllocation::with(['student', 'hostel', 'room'])->get();
+        $organizationId = $this->organizationId($request);
+
+        // Neither hostel_rooms nor hostel_allocations has organization_id, so
+        // both are scoped through the owning hostel.
+        $rooms = HostelRoom::whereHas('hostel', fn ($q) => $q->where('organization_id', $organizationId))
+            ->with(['hostel', 'allocations.student', 'beds'])
+            ->get();
+        $allocations = HostelAllocation::whereHas('hostel', fn ($q) => $q->where('organization_id', $organizationId))
+            ->with(['student', 'hostel', 'room'])
+            ->get();
 
         $totalRooms = $rooms->count();
         $totalBeds = $rooms->sum('capacity');

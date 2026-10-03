@@ -31,7 +31,10 @@ class TemplateRenderIntegrationTest extends TestCase
         $library = CertificateTemplate::query()->create([
             'organization_id' => null,
             'title' => 'Library Cert',
-            'type' => 'certificate',
+            // certificate_templates.type is the award type
+            // enum('merit','achievement','participation','appreciation',
+            // 'completion'); the template kind lives in `category`.
+            'type' => 'completion',
             'category' => 'certificate',
             'editor_type' => 'fabric',
             'description' => 'Library row',
@@ -63,7 +66,10 @@ class TemplateRenderIntegrationTest extends TestCase
         $library = CertificateTemplate::query()->create([
             'organization_id' => null,
             'title' => 'Library Cert',
-            'type' => 'certificate',
+            // certificate_templates.type is the award type
+            // enum('merit','achievement','participation','appreciation',
+            // 'completion'); the template kind lives in `category`.
+            'type' => 'completion',
             'category' => 'certificate',
             'editor_type' => 'fabric',
             'description' => 'Library row',
@@ -231,7 +237,10 @@ class TemplateRenderIntegrationTest extends TestCase
         $legacy = CertificateTemplate::query()->create([
             'organization_id' => $organization->id,
             'title' => 'Legacy Preset',
-            'type' => 'certificate',
+            // certificate_templates.type is the award type
+            // enum('merit','achievement','participation','appreciation',
+            // 'completion'); the template kind lives in `category`.
+            'type' => 'completion',
             'design_settings' => ['preset' => 'red'],
             'status' => 'active',
         ]);
@@ -262,7 +271,7 @@ class TemplateRenderIntegrationTest extends TestCase
         return CertificateTemplate::query()->create([
             'organization_id' => $organization->id,
             'title' => ucfirst(str_replace('_', ' ', $type)) . ' Design',
-            'type' => $type,
+            'type' => 'completion',
             'category' => $type,
             'editor_type' => 'fabric',
             'description' => 'Assigned server design',

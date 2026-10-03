@@ -578,11 +578,16 @@ class StudentApiController extends Controller
         $className = $classRecord?->name;
         $section = $classRecord?->section;
 
+        // `exams` has no class_name/section column; the class lives on
+        // exam_schedules via class_id. Filter through that relation.
         $examGroups = Exam::query()
             ->where('organization_id', $organization->id)
-            ->where('class_name', $className)
-            ->where('section', $section)
             ->where('publish_status', 'published')
+            ->whereHas('schedules', function ($q) use ($className, $section) {
+                $q->whereHas('schoolClass', function ($cq) use ($className, $section) {
+                    $cq->where('name', $className)->where('section', $section);
+                });
+            })
             ->with(['schedules' => fn ($q) => $q->orderBy('exam_date')])
             ->orderByDesc('created_at')
             ->get();
@@ -758,10 +763,16 @@ class StudentApiController extends Controller
 
     private function getStudentOfflineExamGroups(int $organizationId, ?string $className, ?string $section, int $studentId): array
     {
+        // `exams` has no class_name/section column: ExamApiController stores the
+        // class in the JSON description. Filter through the schedules' class id
+        // instead of querying columns that do not exist.
         $exams = Exam::query()
             ->where('organization_id', $organizationId)
-            ->where('class_name', $className)
-            ->where('section', $section)
+            ->whereHas('schedules', function ($q) use ($className, $section) {
+                $q->whereHas('schoolClass', function ($cq) use ($className, $section) {
+                    $cq->where('name', $className)->where('section', $section);
+                });
+            })
             ->with(['schedules' => function ($q) {
                 $q->orderBy('exam_date');
             }])

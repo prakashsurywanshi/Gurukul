@@ -6,15 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Organization;
+use App\Models\QrScanLog;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Services\StudentAcademicHistoryService;
+use App\Support\QrToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AttendanceApiController extends Controller
 {
+    private const QR_SETTINGS_DEFAULTS = [
+        'enabled' => true,
+        'duplicate_upsert' => false,
+        'auto_late_mark' => false,
+        'opening_time' => '08:30',
+        'late_after_minutes' => 15,
+    ];
+
     public function __construct(private readonly StudentAcademicHistoryService $studentAcademicHistoryService)
     {
     }
@@ -252,6 +264,267 @@ class AttendanceApiController extends Controller
         ]);
     }
 
+    public function qrStudents(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $validated = $request->validate([
+            'class_id' => [
+                'required',
+                Rule::exists('classes', 'id')->where(
+                    fn ($query) => $query->where('organization_id', $organization->id)
+                ),
+            ],
+            'date' => ['nullable', 'date'],
+        ]);
+
+        $classId = (int) $validated['class_id'];
+        $date = $validated['date'] ?? now()->toDateString();
+
+        $this->ensureTeacherCanAccessClass($user, $organization, $classId);
+
+        $students = Student::query()
+            ->forCurrentSession($organization->id)
+            ->where('class_id', $classId)
+            ->where('status', 'active')
+            ->orderBy('roll_number')
+            ->get();
+
+        foreach ($students as $student) {
+            if (! $student->qr_token) {
+                $student->qr_token = QrToken::generate('QR', (int) $organization->id, (int) $student->id);
+                $student->save();
+            }
+        }
+
+        $attendanceRecords = Attendance::query()
+            ->where('organization_id', $organization->id)
+            ->where('class_id', $classId)
+            ->whereDate('date', $date)
+            ->get()
+            ->keyBy('student_id');
+
+        $roster = $students->map(function (Student $student) use ($attendanceRecords) {
+            $attendance = $attendanceRecords->get($student->id);
+
+            return [
+                'id' => (string) $student->id,
+                'admission_no' => $student->admission_no,
+                'first_name' => $student->first_name,
+                'last_name' => $student->last_name,
+                'roll_number' => $student->roll_number,
+                'qr_token' => $student->qr_token,
+                'status' => $attendance?->status,
+                'check_in_time' => $attendance?->check_in_time,
+            ];
+        })->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'class_id' => (string) $classId,
+                'date' => $date,
+                'settings' => $this->qrAttendanceSettings($organization),
+                'students' => $roster,
+            ],
+        ]);
+    }
+
+    public function qrStore(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $validated = $request->validate([
+            'class_id' => [
+                'required',
+                Rule::exists('classes', 'id')->where(
+                    fn ($query) => $query->where('organization_id', $organization->id)
+                ),
+            ],
+            'date' => ['required', 'date'],
+            'entries' => ['required', 'array', 'min:1'],
+            'entries.*.student_id' => [
+                'required',
+                Rule::exists('students', 'id')->where(
+                    fn ($query) => $query->where('organization_id', $organization->id)
+                ),
+            ],
+            'entries.*.status' => ['required', Rule::in(['present', 'absent', 'late', 'half_day'])],
+        ]);
+
+        $classId = (int) $validated['class_id'];
+        $this->ensureTeacherCanAccessClass($user, $organization, $classId);
+
+        $class = SchoolClass::query()
+            ->forCurrentSession($organization->id)
+            ->whereKey($classId)
+            ->first();
+
+        if (! $class) {
+            return response()->json(['success' => false, 'message' => 'Invalid class for the current session.'], 422);
+        }
+
+        $studentIds = collect($validated['entries'])->pluck('student_id')->all();
+
+        $enrolledStudentIds = Student::query()
+            ->forCurrentSession($organization->id)
+            ->where('class_id', $classId)
+            ->whereIn('id', $studentIds)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (count($enrolledStudentIds) !== count($studentIds)) {
+            return response()->json(['success' => false, 'message' => 'One or more students do not belong to the selected class.'], 422);
+        }
+
+        $qrTokens = Student::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('id', $studentIds)
+            ->pluck('qr_token', 'id');
+
+        $settings = $this->qrAttendanceSettings($organization);
+        $saved = 0;
+
+        foreach ($validated['entries'] as $entry) {
+            $studentId = (int) $entry['student_id'];
+            $status = $entry['status'];
+
+            if ($status === 'present' && $settings['auto_late_mark'] && $validated['date'] === now()->toDateString()) {
+                $lateAfter = Carbon::createFromFormat('H:i', $settings['opening_time'])
+                    ->addMinutes((int) $settings['late_after_minutes']);
+                $currentTime = Carbon::createFromFormat('H:i', now()->format('H:i'));
+
+                if ($currentTime->greaterThanOrEqualTo($lateAfter)) {
+                    $status = 'late';
+                }
+            }
+
+            $existing = Attendance::query()
+                ->where('organization_id', $organization->id)
+                ->where('student_id', $studentId)
+                ->where('class_id', $classId)
+                ->whereDate('date', $validated['date'])
+                ->first();
+
+            if ($existing) {
+                if (! $settings['duplicate_upsert']) {
+                    continue;
+                }
+
+                $existing->update([
+                    'status' => $status,
+                    'check_in_time' => $status === 'present' ? now()->format('H:i:s') : null,
+                    'marked_by' => $user->id,
+                ]);
+            } else {
+                Attendance::query()->create([
+                    'organization_id' => $organization->id,
+                    'student_id' => $studentId,
+                    'class_id' => $classId,
+                    'date' => $validated['date'],
+                    'status' => $status,
+                    'check_in_time' => $status === 'present' ? now()->format('H:i:s') : null,
+                    'marked_by' => $user->id,
+                ]);
+            }
+
+            QrScanLog::query()->create([
+                'organization_id' => $organization->id,
+                'student_id' => $studentId,
+                'scanned_by' => $user->id,
+                'method' => 'qr',
+                'status' => in_array($status, ['present', 'late'], true) ? 'success' : 'failure',
+                'qr_token' => $qrTokens[$studentId] ?? null,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'scan_date' => $validated['date'],
+            ]);
+
+            $saved++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Attendance saved successfully.',
+            'saved' => $saved,
+        ]);
+    }
+
+    public function qrSettings()
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'settings' => $this->qrAttendanceSettings($organization),
+            ],
+        ]);
+    }
+
+    public function qrSaveSettings(Request $request)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (!$organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $validated = $request->validate([
+            'enabled' => ['boolean'],
+            'duplicate_upsert' => ['boolean'],
+            'auto_late_mark' => ['boolean'],
+            'opening_time' => ['required', 'date_format:H:i'],
+            'late_after_minutes' => ['required', 'integer', 'between:0,180'],
+        ]);
+
+        $settings = $organization->settings ?? [];
+        $settings['qr_attendance'] = [
+            'enabled' => (bool) ($validated['enabled'] ?? false),
+            'duplicate_upsert' => (bool) ($validated['duplicate_upsert'] ?? false),
+            'auto_late_mark' => (bool) ($validated['auto_late_mark'] ?? false),
+            'opening_time' => $validated['opening_time'],
+            'late_after_minutes' => (int) $validated['late_after_minutes'],
+        ];
+
+        $organization->settings = $settings;
+        $organization->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'QR attendance settings saved.',
+            'data' => [
+                'settings' => $settings['qr_attendance'],
+            ],
+        ]);
+    }
+
+    private function qrAttendanceSettings(Organization $organization): array
+    {
+        $saved = is_array($organization->settings['qr_attendance'] ?? null)
+            ? $organization->settings['qr_attendance']
+            : [];
+
+        return array_merge(self::QR_SETTINGS_DEFAULTS, $saved);
+    }
+
     private function allowedClassIds(Organization $organization, $user): array
     {
         if ($user->role !== 'teacher') {
@@ -286,6 +559,10 @@ class AttendanceApiController extends Controller
     {
         if ($user->organization_id) {
             return Organization::query()->find($user->organization_id);
+        }
+
+        if ($user->role === 'super_admin') {
+            return Organization::query()->first();
         }
 
         if ($user->role !== 'admin') {

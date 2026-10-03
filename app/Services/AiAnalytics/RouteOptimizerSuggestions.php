@@ -24,8 +24,9 @@ class RouteOptimizerSuggestions
             ->where('status', 'active')
             ->get();
 
+        // student_transport has no organization_id column; scope through the route.
         $assignmentsByVehicle = TransportAssignment::query()
-            ->where('organization_id', $organizationId)
+            ->whereHas('route', fn ($q) => $q->where('organization_id', $organizationId))
             ->when($academicYearId, fn ($query) => $query->where('academic_year_id', $academicYearId))
             ->get()
             ->groupBy('vehicle_id');

@@ -19,7 +19,10 @@ class OrganizationGatewayController extends Controller
     {
         $organizations = Organization::query()
             ->where('status', 'active')
-            ->orderBy('type')
+            // `type` is a MySQL enum, so a plain orderBy sorts by the enum's
+            // declaration index. Order explicitly to match the canonical
+            // grouping used by the SelectOrganization page.
+            ->orderByRaw("FIELD(type, 'school', 'college', 'coaching', 'university')")
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'type', 'city', 'logo']);
 

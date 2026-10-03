@@ -642,6 +642,35 @@ class CommunicationApiController extends Controller
         return response()->json(['success' => true, 'message' => 'Voice call cancelled.']);
     }
 
+    public function serveVoiceCallAudio(int $id)
+    {
+        $user = Auth::user();
+        $organization = $this->resolveOrganizationForUser($user);
+
+        if (! $organization) {
+            return response()->json(['success' => false, 'message' => 'No organization linked to this account.'], 403);
+        }
+
+        $callLog = VoiceCallLog::query()
+            ->where('organization_id', $organization->id)
+            ->find($id);
+
+        if (! $callLog || ! $callLog->audio_file_path) {
+            return response()->json(['success' => false, 'message' => 'Voice call audio not found.'], 404);
+        }
+
+        $path = storage_path('app/public/'.$callLog->audio_file_path);
+
+        if (! file_exists($path)) {
+            return response()->json(['success' => false, 'message' => 'Voice call audio not found.'], 404);
+        }
+
+        return response()->file($path, [
+            'Content-Type' => $callLog->audio_mime_type ?: 'audio/mpeg',
+            'Content-Disposition' => 'inline; filename="'.($callLog->audio_file_name ?: 'audio.mp3').'"',
+        ]);
+    }
+
     // ==================== EMAILS ====================
 
     public function indexEmails(Request $request)

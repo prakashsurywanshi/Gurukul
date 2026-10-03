@@ -874,6 +874,7 @@ class CustomFieldsTest extends TestCase
 
         $inquiry = AdmissionInquiry::query()->where('email', $email)->first();
         $this->assertNotNull($inquiry);
+        $this->assertSame($organization->id, (int) $inquiry->organization_id);
         $this->assertIsArray($inquiry->custom_data);
         $this->assertSame(['Maths', 'English'], json_decode($inquiry->custom_data['subjects'], true));
         $this->assertSame('Diya', $inquiry->custom_data['nickname']);

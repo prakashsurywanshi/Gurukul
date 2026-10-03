@@ -153,7 +153,7 @@ class AiAnalyticsService
     {
         $students = Student::query()
             ->forCurrentSession($organization->id)
-            ->select('id', 'first_name', 'last_name', 'school_class_id', 'gender', 'status')
+            ->select('id', 'first_name', 'last_name', 'class_id', 'gender', 'status')
             ->get();
 
         $rows = [];
@@ -169,7 +169,7 @@ class AiAnalyticsService
                 'score_breakdown' => $result['breakdown'],
                 'context' => [
                     'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
-                    'class_id' => $student->school_class_id,
+                    'class_id' => $student->class_id,
                     'gender' => $student->gender,
                 ],
             ];

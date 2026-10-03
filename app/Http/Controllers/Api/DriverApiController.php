@@ -67,6 +67,46 @@ class DriverApiController extends Controller
         ]);
     }
 
+    /**
+     * Routes this driver is allowed to operate.
+     *
+     * `startTrip` validates a route against `driverMatchesRoute`, but before
+     * this endpoint drivers had no way to discover a valid `routeId`: the staff
+     * listing under `/transport/routes` requires the
+     * `staff.permission:Transport Management,view` permission that a driver
+     * account does not hold. Without it the "start trip" flow is unreachable.
+     *
+     * Reuses the exact same matcher as `startTrip` so the list can never offer
+     * a route the create call would reject.
+     */
+    public function routes(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $organization = $this->organization($user);
+
+        abort_unless($organization, 422, 'No organization is linked to this account.');
+
+        $routes = TransportRoute::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', 'active')
+            ->orderBy('route_name')
+            ->get()
+            ->filter(fn (TransportRoute $route) => $this->driverMatchesRoute($user, $route))
+            ->map(fn (TransportRoute $route) => [
+                'id' => (string) $route->id,
+                'route_name' => $route->route_name,
+                'route_number' => $route->route_number ?? '',
+                'area' => $route->area ?? '',
+                'vehicle_number' => $route->vehicle_number ?? '',
+                'fare' => $route->fare !== null ? (float) $route->fare : null,
+                'monthly_fee' => $route->monthly_fee !== null ? (float) $route->monthly_fee : null,
+                'stops' => $this->normalizeRouteStops($route->stops),
+            ])
+            ->values();
+
+        return response()->json(['success' => true, 'routes' => $routes]);
+    }
+
     public function trips(Request $request): JsonResponse
     {
         $user = $request->user();

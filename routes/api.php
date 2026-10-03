@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AcademicsApiController;
 use App\Http\Controllers\Api\AttendanceApiController;
+use App\Http\Controllers\Api\AttendanceCorrectionApiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateApiController;
 use App\Http\Controllers\Api\CommunicationApiController;
@@ -13,7 +14,10 @@ use App\Http\Controllers\Api\FeesApiController;
 use App\Http\Controllers\Api\FrontOfficeApiController;
 use App\Http\Controllers\Api\HostelApiController;
 use App\Http\Controllers\Api\OnlineExamApiController;
+use App\Http\Controllers\Api\PayrollApiController;
 use App\Http\Controllers\Api\StaffApiController;
+use App\Http\Controllers\Api\StaffAttendanceApiController;
+use App\Http\Controllers\Api\StaffLeaveApiController;
 use App\Http\Controllers\Api\StudentApiController;
 use App\Http\Controllers\Api\InventoryApiController;
 use App\Http\Controllers\Api\LibraryApiController;
@@ -26,8 +30,8 @@ use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:30,1');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:20,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -66,6 +70,26 @@ Route::middleware(['auth:sanctum', 'staff.permission:User Management,view'])->pr
     Route::delete('/{staff}', [StaffApiController::class, 'destroy'])->middleware('staff.permission:User Management,delete');
 });
 
+Route::middleware(['auth:sanctum', 'staff.permission:Staff Attendance,view'])->prefix('staff-attendance')->group(function () {
+    Route::get('/', [StaffAttendanceApiController::class, 'index']);
+    Route::post('/', [StaffAttendanceApiController::class, 'store'])->middleware('staff.permission:Staff Attendance,edit');
+});
+
+Route::middleware(['auth:sanctum', 'staff.permission:Leave Management,view'])->prefix('staff-leave')->group(function () {
+    Route::get('/', [StaffLeaveApiController::class, 'index']);
+    Route::post('/balances', [StaffLeaveApiController::class, 'updateBalances'])->middleware('staff.permission:Leave Management,edit');
+    Route::post('/', [StaffLeaveApiController::class, 'store'])->middleware('staff.permission:Leave Management,add');
+    Route::patch('/{leaveRequest}/status', [StaffLeaveApiController::class, 'updateStatus'])->middleware('staff.permission:Leave Management,edit');
+    Route::patch('/{leaveRequest}', [StaffLeaveApiController::class, 'update'])->middleware('staff.permission:Leave Management,edit');
+    Route::delete('/{leaveRequest}', [StaffLeaveApiController::class, 'destroy'])->middleware('staff.permission:Leave Management,delete');
+});
+
+Route::middleware(['auth:sanctum', 'staff.permission:Payroll Management,view'])->prefix('payroll')->group(function () {
+    Route::get('/', [PayrollApiController::class, 'index']);
+    Route::post('/', [PayrollApiController::class, 'store'])->middleware('staff.permission:Payroll Management,edit');
+    Route::get('/{payrollEntry}/payslip', [PayrollApiController::class, 'payslip']);
+});
+
 Route::middleware(['auth:sanctum', 'staff.permission:Class / Section,view'])->prefix('academics')->group(function () {
     Route::get('/classes', [AcademicsApiController::class, 'indexClasses']);
     Route::post('/classes', [AcademicsApiController::class, 'storeClass'])->middleware('staff.permission:Class / Section,add');
@@ -89,7 +113,7 @@ Route::middleware(['auth:sanctum', 'staff.permission:Class / Section,view'])->pr
     Route::get('/lesson-plans', [AcademicsApiController::class, 'indexLessonPlans'])->middleware('staff.permission:Lesson Plan,view');
     Route::post('/lesson-plans', [AcademicsApiController::class, 'storeLessonPlan'])->middleware('staff.permission:Lesson Plan,add');
     Route::put('/lesson-plans/{lessonPlan}', [AcademicsApiController::class, 'updateLessonPlan'])->middleware('staff.permission:Lesson Plan,edit');
-    Route::delete('/lesson-plans/{lessonPlan}', [AcademicsApiController::class, 'destroyLessonPlan'])->middleware('staff.permission:Lesson Plan,edit');
+    Route::delete('/lesson-plans/{lessonPlan}', [AcademicsApiController::class, 'destroyLessonPlan'])->middleware('staff.permission:Lesson Plan,delete');
 
     Route::get('/homework', [AcademicsApiController::class, 'indexHomework'])->middleware('staff.permission:Homework,view');
     Route::post('/homework', [AcademicsApiController::class, 'storeHomework'])->middleware('staff.permission:Homework,add');
@@ -107,6 +131,20 @@ Route::middleware(['auth:sanctum', 'staff.permission:Attendance Management,view'
     Route::get('/students', [AttendanceApiController::class, 'indexStudents']);
     Route::post('/', [AttendanceApiController::class, 'store'])->middleware('staff.permission:Attendance Management,add');
     Route::get('/records', [AttendanceApiController::class, 'indexRecords']);
+});
+
+Route::middleware(['auth:sanctum', 'staff.permission:QR Code Attendance,view'])->prefix('attendance/qr')->group(function () {
+    Route::get('/students', [AttendanceApiController::class, 'qrStudents']);
+    Route::post('/', [AttendanceApiController::class, 'qrStore'])->middleware('staff.permission:QR Code Attendance,add');
+    Route::get('/settings', [AttendanceApiController::class, 'qrSettings']);
+    Route::post('/settings', [AttendanceApiController::class, 'qrSaveSettings'])->middleware('staff.permission:QR Code Attendance,edit');
+});
+
+Route::middleware(['auth:sanctum', 'staff.permission:Attendance Correction,view'])->prefix('attendance-corrections')->group(function () {
+    Route::get('/', [AttendanceCorrectionApiController::class, 'index']);
+    Route::get('/students', [AttendanceCorrectionApiController::class, 'students']);
+    Route::post('/', [AttendanceCorrectionApiController::class, 'store'])->middleware('staff.permission:Attendance Correction,add');
+    Route::patch('/{attendanceCorrection}/review', [AttendanceCorrectionApiController::class, 'review'])->middleware('staff.permission:Attendance Correction,edit');
 });
 
 Route::middleware(['auth:sanctum', 'staff.permission:Fees Management,view'])->prefix('fees')->group(function () {
@@ -506,6 +544,7 @@ Route::prefix('cctv')->group(function () {
 
 Route::middleware(['auth:sanctum', 'driver.role'])->prefix('driver')->group(function () {
     Route::get('/me', [DriverApiController::class, 'me']);
+    Route::get('/routes', [DriverApiController::class, 'routes']);
     Route::get('/trips', [DriverApiController::class, 'trips']);
     Route::post('/trips', [DriverApiController::class, 'startTrip']);
     Route::get('/trips/{trip}', [DriverApiController::class, 'trip']);

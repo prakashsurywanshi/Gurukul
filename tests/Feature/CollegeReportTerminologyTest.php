@@ -105,7 +105,7 @@ class CollegeReportTerminologyTest extends TestCase
             'start_date' => now()->startOfMonth()->toDateString(),
             'end_date' => now()->endOfMonth()->toDateString(),
             'description' => json_encode(['class_name' => 'BSc Computer Science', 'section' => 'A']),
-            'status' => 'active',
+            'status' => 'scheduled',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -261,7 +261,7 @@ class CollegeReportTerminologyTest extends TestCase
             'start_date' => now()->addMonths(6)->toDateString(),
             'end_date' => now()->addMonths(7)->toDateString(),
             'description' => json_encode(['class_name' => 'BSc Computer Science', 'section' => 'A']),
-            'status' => 'active',
+            'status' => 'scheduled',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

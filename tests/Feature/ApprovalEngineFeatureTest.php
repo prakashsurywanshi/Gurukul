@@ -344,7 +344,9 @@ class ApprovalEngineFeatureTest extends TestCase
             'lesson_date' => now()->toDateString(),
             'lesson_title' => 'Linear Equations',
             'topic' => 'Chapter 5',
-            'status' => 'draft',
+            // lesson_plans.status is enum('planned','in_progress',
+            // 'completed','carried_forward'); there is no 'draft'.
+            'status' => 'planned',
             'created_by' => $teacher->id,
             'updated_by' => $teacher->id,
         ]);
